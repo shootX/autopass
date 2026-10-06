@@ -9,7 +9,8 @@ import { useSelector } from 'react-redux';
 import type { RootState } from '@/store';
 import { useTranslation } from '@/hooks/useTranslation';
 import { customFetch } from '@/utils/customFetch';
-import { Calendar, ChevronRight, Star } from 'lucide-react';
+import { Calendar, ChevronRight, Star, Ticket } from 'lucide-react';
+import { previewAppointments, previewMode } from '@/preview/fixtures';
 const NO_API_URL = import.meta.env.VITE_NO_API_URL;
 import PageSkeleton from '@/components/Skeletons/PageSkeleton';
 
@@ -86,6 +87,12 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    if (previewMode) {
+      const next = previewAppointments[0];
+      const label = new Date(next.date).toLocaleDateString('ka-GE', { day: 'numeric', month: 'long' });
+      setNextBooking(`${label} · ${next.time}`);
+      return;
+    }
     const token = localStorage.getItem('access_token');
     customFetch(`${import.meta.env.VITE_API_URL}/myappointments`, {
       headers: { Authorization: `Bearer ${token}` },
@@ -170,6 +177,14 @@ export default function Home() {
         <button type="button" className="pill-cta" onClick={() => navigate('/wash-appointment')}>
           რეცხვის დაჯავშნა
           <span className="arrow">→</span>
+        </button>
+        <button type="button" className="qpromo" onClick={() => navigate('/shop')}>
+          <span className="qpromo-mark" aria-hidden><Ticket size={18} /></span>
+          <span className="grow">
+            <small>ვაუჩერი</small>
+            <b>ქულები გადააქციე ფასდაკლებად</b>
+          </span>
+          <ChevronRight size={18} />
         </button>
         <button type="button" className="qrow" onClick={() => navigate('/customer-calendar')}>
           <span className="ico"><Calendar size={18} /></span>

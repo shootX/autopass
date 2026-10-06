@@ -10,8 +10,9 @@
   --gray-700: oklch(0.371 0 0);
   --gray-800: oklch(0.269 0 0);
   --gray-900: oklch(0.205 0 0);
-  --primary: oklch(62.3% 0.214 259.815);
-  --primary-foreground: oklch(98.5% 0 0);
+  --primary: #12284b;
+  --primary-foreground: #ffffff;
+  --gold: #e4b23c;
   --surface-base: #ffffff;
   --surface-raised: var(--gray-50);
   --surface-sunken: var(--gray-100);
@@ -27,7 +28,7 @@
   --status-error-text: oklch(0.396 0.141 25.723);
   --side-width: 256px;
   --top-height: 52px;
-  --font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-family: "Noto Sans Georgian", "Inter", ui-sans-serif, system-ui, sans-serif;
 }
 
 body.sb-nav-fixed,
@@ -761,4 +762,72 @@ a.umami-metric:hover {
   .umami-bar-label {
     display: none;
   }
+}
+
+body.sb-nav-fixed {
+  background: #f6f3ec;
+}
+
+.sb-nav-fixed #layoutSidenav #layoutSidenav_nav .sb-sidenav {
+  background: #12284b;
+  border-color: #0c1b33;
+  color: #fff;
+}
+
+body.sb-nav-fixed .umami-side-brand a,
+.sb-sidenav .sb-sidenav-menu .nav .nav-link,
+.sb-sidenav .sb-sidenav-menu .nav .sb-sidenav-menu-heading,
+.sb-sidenav .sb-sidenav-menu .nav .nav-link .sb-nav-link-icon {
+  color: #e7eef8;
+}
+
+.sb-sidenav .sb-sidenav-menu .nav .nav-link:hover,
+.sb-sidenav .sb-sidenav-menu .nav .nav-link.active {
+  background: rgba(228, 178, 60, 0.16);
+  color: #e4b23c;
+}
+
+.sb-sidenav .sb-sidenav-menu .nav .nav-link.active .sb-nav-link-icon {
+  color: #e4b23c;
+}
+
+.umami-mark {
+  background: #e4b23c;
+  color: #12284b;
+}
+
+body.sb-nav-fixed .btn-primary,
+body.umami-auth .btn-primary {
+  background: #12284b;
+  border-color: #12284b;
+  color: #fff;
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+body.sb-nav-fixed .btn-primary:hover,
+body.umami-auth .btn-primary:hover {
+  background: #1c3d6e;
+  border-color: #1c3d6e;
+}
+
+body.umami-auth {
+  background:
+    radial-gradient(80% 50% at 80% 100%, rgba(228, 178, 60, 0.35), transparent 46%),
+    #0c1b33;
+}
+
+.umami-login-card {
+  border-radius: 24px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: #12284b;
+  box-shadow: 0 0 0 3px rgba(228, 178, 60, 0.45);
+}
+
+.umami-metric {
+  border-radius: 18px;
 }

@@ -1,5 +1,6 @@
 import { customFetch } from "@/utils/customFetch";
 import { useEffect, useState } from "react";
+import { previewBranches, previewMode } from "@/preview/fixtures";
 
 export type Branch = {
   id: number;
@@ -30,6 +31,11 @@ export function useFetchBranches() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (previewMode) {
+      setBranches(previewBranches);
+      setLoading(false);
+      return;
+    }
     const token = localStorage.getItem("access_token");
 
     customFetch(`${import.meta.env.VITE_API_URL}/branches`, {

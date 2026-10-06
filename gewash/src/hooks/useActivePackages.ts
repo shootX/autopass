@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { customFetch } from '@/utils/customFetch';
+import { previewMode, previewPackages } from '@/preview/fixtures';
 
 export interface Package {
   id: number;
@@ -39,6 +40,10 @@ export function invalidatePackagesCache() {
 }
 
 function loadPackages(): Promise<Package[]> {
+  if (previewMode) {
+    packagesCache = previewPackages;
+    return Promise.resolve(previewPackages);
+  }
   if (packagesCache) return Promise.resolve(packagesCache);
   if (packagesInflight) return packagesInflight;
 

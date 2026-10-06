@@ -1,0 +1,270 @@
+/* Premium navy + gold layer. Tokens live in tailwind.config.js and :root in qref.scss. */
+
+:focus-visible {
+  outline: 3px solid #e4b23c;
+  outline-offset: 2px;
+}
+
+body,
+.main-container,
+button,
+input,
+textarea,
+select {
+  font-family: "Noto Sans Georgian", "Roboto", sans-serif;
+}
+
+.sign-in,
+.pill-cta,
+.add-car-btn.active,
+.activate-package-btn,
+.giveaway-detail__join-btn,
+.giveaway-sheet__confirm-btn,
+.discount-detail__buy-btn,
+.points-info-promo__btn,
+.referrals-info-promo__btn,
+.qr-approve-button,
+.save-button,
+.submit-button.active,
+.calendar-select-btn,
+.order-btn,
+.customer-data-container .save {
+  background: #12284b !important;
+  color: #fff !important;
+  border: 0;
+  border-radius: 999px;
+  font-weight: 700;
+  min-height: 48px;
+}
+
+.calendar-select-btn,
+.order-btn,
+.swap-type-display-packages button,
+.statistic-btn,
+.qr-approve-button,
+.activate-package-btn {
+  color: #fff !important;
+}
+
+.shop-page,
+.customer-data-container,
+.giveaway-page,
+.discounts-page {
+  background: transparent;
+}
+
+.shop-balance,
+.shop-header,
+.customer-data-wrapper,
+.active-packages {
+  border-radius: 24px !important;
+}
+
+.shop-balance {
+  background: linear-gradient(135deg, #12284b, #1a3a66) !important;
+}
+
+.add-car-btn.secondary,
+.vehicle-delete-btn,
+.order-btn.cancel {
+  background: #fff !important;
+  color: #12284b !important;
+  border: 1px solid #12284b !important;
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+header,
+.header,
+.shop-header,
+.giveaway-header,
+.customer-data-container > .header {
+  color: #12284b;
+  font-weight: 800;
+}
+
+.shop-header,
+.giveaway-header,
+.customer-data-container > .header,
+.header-container {
+  background: transparent;
+  box-shadow: none;
+}
+
+.customer-data-form,
+.shop-page,
+.giveaway-page,
+.giveaway-detail,
+.add-car-screen,
+.edit-car-screen,
+.privacy,
+.settings-wrapper,
+.help-wrapper,
+.contacts-wrapper,
+.my-packages-wrapper,
+.points-wrapper {
+  color: #14233c;
+}
+
+input,
+textarea,
+select,
+.input-select,
+.input-with-prefix,
+.input-with-icon input,
+.custom-input {
+  border-radius: 16px;
+}
+
+.branch-info-panel,
+.branch-info-panel-card,
+.giveaway-card,
+.shop-card,
+.discount-card,
+.package-card,
+.active-package-card,
+.review-item {
+  border-radius: 24px;
+}
+
+.branch-info-panel__status {
+  border-radius: 999px !important;
+  padding: 4px 10px;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.lang-loader {
+  background: #0c1b33;
+}
+
+.spinner {
+  border-top-color: #e4b23c;
+}
+
+.main-container:has(.auth-wrapper)::before {
+  content: "Geocar\A სუფთა მანქანა.\A ყოველთვის.";
+  white-space: pre-line;
+  display: none;
+}
+
+@media (min-width: 960px) {
+  .main-container:has(.auth-wrapper) {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1.15fr) minmax(340px, 0.9fr);
+    max-width: 1120px !important;
+    width: calc(100% - 48px);
+    min-height: calc(100dvh - 48px);
+    margin: 24px auto !important;
+    border-radius: 32px;
+    overflow: hidden;
+    padding: 0 !important;
+    background: #fff !important;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
+  }
+
+  .main-container:has(.auth-wrapper)::before {
+    display: flex;
+    align-items: flex-end;
+    padding: 48px;
+    color: #fff;
+    font-size: 48px;
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    background:
+      radial-gradient(90% 60% at 80% 100%, rgba(228, 178, 60, 0.55), transparent 50%),
+      radial-gradient(50% 40% at 15% 10%, rgba(255, 255, 255, 0.14), transparent 42%),
+      linear-gradient(165deg, #1c3d6e 0%, #0c1b33 72%);
+  }
+
+  .auth-wrapper {
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 40px 44px;
+    background: #fff;
+  }
+
+  .main-container:not(:has(.auth-wrapper)) {
+    max-width: 1180px !important;
+    width: calc(100% - 40px);
+    margin: 20px auto 28px !important;
+    min-height: calc(100dvh - 48px);
+    border-radius: 28px;
+    overflow: clip;
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
+  }
+
+  .nav-bar-wrapper {
+    max-width: 720px;
+    bottom: 28px;
+  }
+
+  .qhome {
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    column-gap: 8px;
+    align-items: start;
+  }
+
+  .qhome .header-container {
+    grid-column: 1 / -1;
+  }
+
+  .qhome-sheet {
+    grid-column: 2;
+    grid-row: 2 / span 5;
+    margin: 12px 20px 24px 0;
+    border-radius: 28px;
+    min-height: 520px;
+  }
+
+  .qbook {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 8px 28px;
+    align-items: start;
+    padding-top: 20px;
+  }
+
+  .qbook .qhead:first-child,
+  .qbook .pill-cta {
+    grid-column: 1 / -1;
+  }
+
+  .qbranch {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    grid-template-rows: auto auto 1fr;
+  }
+
+  .qbranch .qhead,
+  .qbranch .qsearch {
+    grid-column: 1 / -1;
+  }
+
+  .qbranch .qsearch {
+    position: relative;
+    top: auto;
+    left: auto;
+    right: auto;
+    margin: 0 20px 12px;
+    width: auto;
+  }
+
+  .qbranch .branch-screen,
+  .qbranch .branch-map-wrapper,
+  .qbranch .maplibregl-map,
+  .qbranch .branch-map-placeholder {
+    min-height: calc(100dvh - 220px);
+    height: calc(100dvh - 220px) !important;
+  }
+}
+
+@media (max-width: 959px) {
+  .main-container {
+    border-radius: 0;
+  }
+}

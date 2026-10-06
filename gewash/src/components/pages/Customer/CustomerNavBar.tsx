@@ -21,14 +21,16 @@ export default function CustomerNavBar() {
             return (
               <div className="qr-nav-bar-item" key={item.to}>
                 <Link to={item.to} className={active ? "qr-active" : ""} aria-label={item.label} aria-current={active ? "page" : undefined}>
-                  <Icon size={26} strokeWidth={1.8} color="#2474C1" />
+                  <Icon size={26} strokeWidth={1.8} />
+                  <span>{item.label}</span>
                 </Link>
               </div>
             );
           }
           return (
             <Link key={item.to} to={item.to} className={active ? "active" : ""} aria-label={item.label} aria-current={active ? "page" : undefined}>
-              <Icon size={22} strokeWidth={1.8} color={active ? "#2474C1" : "#8CA3B9"} />
+              <Icon size={22} strokeWidth={1.8} />
+              <span>{item.label}</span>
             </Link>
           );
         })}

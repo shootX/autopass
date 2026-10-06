@@ -2,11 +2,16 @@ import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { setAppointments } from "@/store/appointmentsSlice";
 import { customFetch } from "@/utils/customFetch";
+import { previewAppointments, previewMode } from "@/preview/fixtures";
 
 export function useLoadAppointmentsFromBackend() {
   const dispatch = useDispatch();
 
   useEffect(() => {
+    if (previewMode) {
+      dispatch(setAppointments(previewAppointments));
+      return;
+    }
     const token = localStorage.getItem("access_token");
 
     customFetch(`${import.meta.env.VITE_API_URL}/myappointments`, {

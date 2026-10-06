@@ -1,4 +1,5 @@
 import { customFetch } from "@/utils/customFetch";
+import { previewMode, previewShop } from "@/preview/fixtures";
 
 export type ShopTicket = {
   id: number;
@@ -230,6 +231,11 @@ export function invalidateShopBundle() {
 }
 
 export function loadShopBundle(): Promise<ShopBundle> {
+  if (previewMode) {
+    shopCache = previewShop;
+    shopAt = Date.now();
+    return Promise.resolve(previewShop);
+  }
   if (shopCache && shopAt > 0 && Date.now() - shopAt < 20000) return Promise.resolve(shopCache);
   if (shopInflight) return shopInflight;
 

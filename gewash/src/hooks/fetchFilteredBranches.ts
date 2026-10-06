@@ -1,5 +1,6 @@
 import { type Branch } from "@/hooks/useFetchBranches";
 import { customFetch } from "@/utils/customFetch";
+import { previewBranches, previewMode } from "@/preview/fixtures";
 
 export async function fetchFilteredBranches({
   selectedServices,
@@ -10,6 +11,7 @@ export async function fetchFilteredBranches({
   onlyOpen: boolean;
   roundTheClockOnly: boolean;
 }): Promise<Branch[]> {
+  if (previewMode) return previewBranches;
   const token = localStorage.getItem("access_token");
   const params = new URLSearchParams();
 
