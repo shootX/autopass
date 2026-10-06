@@ -1,0 +1,64 @@
+# ---- Secrets / environment ----
+.env
+.env.*
+!.env.example
+.user.ini
+*.pem
+*.key
+*.p12
+auth.json
+
+# ---- Dependencies ----
+node_modules/
+backend/vendor/
+
+# ---- Laravel runtime ----
+backend/storage/logs/*
+!backend/storage/logs/.gitignore
+backend/storage/framework/cache/*
+!backend/storage/framework/cache/.gitignore
+backend/storage/framework/sessions/*
+!backend/storage/framework/sessions/.gitignore
+backend/storage/framework/views/*
+!backend/storage/framework/views/.gitignore
+backend/storage/framework/testing/*
+!backend/storage/framework/testing/.gitignore
+backend/storage/pail/
+backend/bootstrap/cache/*.php
+backend/public/storage
+backend/public/hot
+
+# ---- User uploads ----
+backend/storage/app/public/*
+!backend/storage/app/public/.gitignore
+backend/storage/app/private/*
+!backend/storage/app/private/.gitignore
+backend/public/uploads/
+
+# ---- Build outputs (reproducible via `npm run build`) ----
+backend/public/build/
+gewash/dist/
+gewash/voucher-checker/dist/
+dist-ssr/
+*.tsbuildinfo
+
+# ---- Archives / dumps / backups ----
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.gz
+*.rar
+*.7z
+*.sql
+*.sql.gz
+*.bak
+
+# ---- Logs / OS / editor ----
+*.log
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+.phpunit.result.cache
+.phpunit.cache/

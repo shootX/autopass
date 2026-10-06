@@ -1,0 +1,924 @@
+{
+    "CalendarMobileSheet": {
+        "title": "სტატისტიკის მორგებული პერიოდი",
+        "prevMonthAlt": "წინა თვე",
+        "nextMonthAlt": "შემდეგი თვე",
+        "selectButton": "არჩევა"
+    },
+    "WashAppointmentsCalendar": {
+        "dayNames": {
+            "sun": "კვ",
+            "mon": "ორშ",
+            "tue": "სამ",
+            "wed": "ოთხშ",
+            "thu": "ხუთ",
+            "fri": "პარასკევი",
+            "sat": "შბ"
+        },
+        "noAppointments": "ჩანაწერები არ არის",
+        "branchNotFound": "ფილიალი ვერ მოიძებნა",
+        "popup": {
+            "title": "ჩანაწერის გაუქმება",
+            "description": "ნამდვილად გსურთ ამ ჩანაწერის გაუქმება?",
+            "cancelButton": "გაუქმება",
+            "deleteButton": "წაშლა"
+        }
+    },
+    "ManagerCalendarGrid": {
+        "header": "კალენდარი",
+        "dayNames": {
+            "sun": "კვ",
+            "mon": "ორშ",
+            "tue": "სამ",
+            "wed": "ოთხშ",
+            "thu": "ხუთ",
+            "fri": "პარასკევი",
+            "sat": "შბ"
+        },
+        "statusLabels": {
+            "new": "ახალი",
+            "rescheduled": "გადანიშნულია",
+            "confirmed": "დადასტურებულია"
+        },
+        "eventsCount": "{count} მოვლენა",
+        "freeSlots": "თავისუფალი სლოტები"
+    },
+    "SingleCalendarMobileSheet": {
+        "defaultTitle": "მორგებული არჩევანი",
+        "prevMonthAlt": "წინა",
+        "nextMonthAlt": "შემდეგი",
+        "selectButton": "არჩევა"
+    },
+    "AddCar": {
+        "header": {
+            "title": "ტრანსპორტის დამატება",
+            "backAlt": "უკან",
+            "closeAlt": "დახურვა"
+        },
+        "title": "ავტომობილის დამატება",
+        "subtitle": "შეიყვანეთ ავტომობილის მონაცემები",
+        "labels": {
+            "brand": "ავტომობილის მარკა",
+            "model": "მოდელი",
+            "plate": "ნომერი"
+        },
+        "placeholders": {
+            "plate": "XX - XXX - XX",
+            "chooseBrand": "აირჩიეთ მარკა",
+            "chooseModel": "აირჩიეთ მოდელი"
+        },
+        "errors": {
+            "invalidPlate": "არასწორი ნომრის ფორმატი",
+            "plateExists": "ეს ნომერი უკვე არსებობს"
+        },
+        "buttons": {
+            "add": "დამატება",
+            "addAnother": "კიდევ ერთის დამატება",
+            "useApp": "აპის გამოყენება"
+        },
+        "success": {
+            "message": "გილოცავთ! ავტომობილი წარმატებით დაემატა",
+            "carType": "ჯიპი",
+            "carAlt": "დაემატა ავტო"
+        },
+        "icons": {
+            "arrowAlt": "ისარი"
+        }
+    },
+    "Authentication": {
+        "logoAlt": "ლოგო",
+        "greeting": {
+            "title": "მოგესალმებით",
+            "subtitle": "შეიყვანეთ ტელეფონი და პაროლი შესვლისთვის"
+        },
+        "errors": {
+            "phoneNotFound": "ნომერი ვერ მოიძებნა",
+            "passwordIncorrect": "არასწორი პაროლი",
+            "phoneRequired": "შეიყვანეთ ტელეფონის ნომერი",
+            "passwordRequired": "შეიყვანეთ პაროლი"
+        },
+        "labels": {
+            "phone": "ტელეფონის ნომერი",
+            "password": "პაროლი"
+        },
+        "placeholders": {
+            "phone": "500500555",
+            "password": "შეიყვანეთ პაროლი"
+        },
+        "prefix": "+995",
+        "forgotPassword": "დაგავიწყდათ პაროლი?",
+        "buttons": {
+            "signIn": "შესვლა",
+            "signUp": "რეგისტრაცია"
+        },
+        "signupPrompt": "არ გაქვთ ანგარიში?",
+        "separator": "ან",
+        "social": {
+            "google": "Google",
+            "facebook": "Facebook",
+            "googleAlt": "google",
+            "facebookAlt": "facebook"
+        }
+    },
+    "BranchInfoPanel": {
+        "status": {
+            "open": "ღიაა",
+            "close": "დახურვა"
+        },
+        "schedule": "ორ–პარ {weekdayHours} შბ–კვ {weekendHours}",
+        "defaultHours": {
+            "weekday": "9:00 –17:00",
+            "weekend": "11:00 – 15:00"
+        }
+    },
+    "CustomerMyData": {
+        "header": {
+            "title": "ჩემი მონაცემები",
+            "backAlt": "უკან"
+        },
+        "form": {
+            "title": "ჩემი ინფორმაცია",
+            "fields": {
+                "firstName": "სახელი",
+                "secondName": "გვარი",
+                "dateOfBirth": "დაბადების თარიღი",
+                "sex": "სქესი"
+            },
+            "placeholders": {
+                "text": "---",
+                "date": "--/--/----"
+            },
+            "calendarAlt": "კალენდარი",
+            "sexAlt": "არჩევა",
+            "calendarTitle": "აირჩიეთ დაბადების თარიღი"
+        },
+        "modal": {
+            "title": "შეუნახავი მონაცემები",
+            "message": "შეუნახავი ცვლილებები გაქვთ მონაცემებში.",
+            "dangerAlt": "საფრთხე",
+            "buttons": {
+                "leave": "გასვლა",
+                "save": "შენახვა"
+            }
+        }
+    },
+    "CustomerNavBar": {
+        "routes": {
+            "home": "მთავარი",
+            "calendar": "კალენდარი",
+            "qr": "QR კოდი",
+            "branches": "ფილიალები",
+            "myData": "ჩემი მონაცემები"
+        },
+        "icons": {
+            "homeAlt": "მთავარი",
+            "calendarAlt": "კალენდარი",
+            "qrAlt": "qr",
+            "branchesAlt": "ფილიალები",
+            "myDataAlt": "ჩემი მონაცემები"
+        }
+    },
+    "EditCar": {
+        "header": {
+            "title": "ავტომობილის რედაქტირება",
+            "backAlt": "უკან",
+            "closeAlt": "დახურვა",
+            "lockedAlt": "დაბლოკილია"
+        },
+        "titleInfo": "განაახლეთ ავტომობილის მონაცემები",
+        "labels": {
+            "brand": "ავტომობილის მარკა",
+            "model": "მოდელი",
+            "plate": "ნომერი"
+        },
+        "placeholders": {
+            "plate": "XX - XXX - XX"
+        },
+        "fallbacks": {
+            "brand": "უცნობი მარკა",
+            "model": "უცნობი მოდელი"
+        },
+        "errors": {
+            "invalidPlate": "არასწორი ნომრის ფორმატი",
+            "loadFailed": "ავტომობილის მონაცემების ჩატვირთვა ვერ მოხერხდა",
+            "saveFailed": "ცვლილებების შენახვა ვერ მოხერხდა",
+            "deleteFailed": "ავტომობილის წაშლა ვერ მოხერხდა"
+        },
+        "buttons": {
+            "save": "ცვლილებების შენახვა",
+            "delete": "ავტომობილის წაშლა",
+            "cancel": "გაუქმება",
+            "confirmDelete": "წაშლა"
+        },
+        "popup": {
+            "title": "ავტომობილის წაშლა",
+            "message": "ნამდვილად გსურთ ამ ავტომობილის წაშლა?"
+        }
+    },
+    "EmailChanging": {
+        "header": {
+            "title": "ელფოსტის შეცვლა",
+            "backAlt": "უკან",
+            "closeAlt": "დახურვა"
+        },
+        "form": {
+            "title": "შეიყვანეთ ახალი ელფოსტა",
+            "label": "ელფოსტის მისამართი",
+            "placeholder": "simplemail@simple.domain",
+            "error": "ელფოსტა არასწორია",
+            "button": {
+                "set": "დაყენება"
+            }
+        }
+    },
+    "MyPackages": {
+        "header": {
+            "title": "ჩემი პაკეტები",
+            "backAlt": "უკან"
+        },
+        "tabs": {
+            "active": "აქტიური",
+            "history": "ისტორია"
+        },
+        "loading": "იტვირთება...",
+        "error": "შეცდომა: {message}",
+        "empty": "აქტიური პაკეტები არ არის"
+    },
+    "MyVehicles": {
+        "title": "ჩემი ავტომობილები",
+        "loading": "ავტომობილები იტვირთება...",
+        "error": "შეცდომა: {message}",
+        "empty": "ავტომობილები ვერ მოიძებნა",
+        "buttons": {
+            "add": "ავტომობილის დამატება",
+            "editAlt": "რედაქტირება",
+            "vehicleAlt": "ავტოს სურათი"
+        }
+    },
+    "NotificationSettings": {
+        "title": "შეტყობინებების პარამეტრები",
+        "options": {
+            "wash": "ავტოსამბრის ჩაწერა",
+            "subscription": "გამოწერის გახანგრძლივება",
+            "promo": "სპეცაქციები"
+        }
+    },
+    "PhoneNumberChanging": {
+        "header": {
+            "title": "ტელეფონის ნომრის შეცვლა",
+            "backAlt": "უკან",
+            "closeAlt": "დახურვა"
+        },
+        "form": {
+            "title": "შეიყვანეთ ახალი ტელეფონის ნომერი",
+            "label": "ტელეფონის ნომერი",
+            "prefix": "+995",
+            "placeholder": "XXX XXX XXX",
+            "error": "ნომერი ვერ მოიძებნა",
+            "invalidAlert": "❗ ტელეფონის ნომერი უნდა იყოს 9 ციფრი",
+            "button": {
+                "getCode": "კოდის მიღება"
+            }
+        },
+        "verification": {
+            "success": "ტელეფონის ნომერი წარმატებით შეიცვალა!",
+            "failure": "არასწორი კოდი ან სესიის ვადა გავიდა"
+        }
+    },
+    "QRPage": {
+        "header": {
+            "title": "QR"
+        },
+        "loading": "მონაცემები იტვირთება...",
+        "error": "მონაცემების ჩატვირთვა ვერ მოხერხდა",
+        "overlay": {
+            "close": "✕",
+            "loading": "QR იტვირთება..."
+        },
+        "noCars": "დარეგისტრირებული ავტომობილები არ გაქვთ.",
+        "car": {
+            "plate": "სახელმწიფო ნომერი",
+            "model": "მოდელი",
+            "showQRAlt": "QR-ის ჩვენება"
+        }
+    },
+    "Registration": {
+        "logoAlt": "ლოგო",
+        "stage": {
+            "register": {
+                "title": "ანგარიშის შექმნა",
+                "subtitle": "რეგისტრაციისთვის შეიყვანეთ ტელეფონი",
+                "label": "ტელეფონის ნომერი",
+                "placeholder": "706500505",
+                "button": "რეგისტრაცია",
+                "errors": {
+                    "duplicate": "ნომერი უკვე არსებობს",
+                    "invalidFormat": "არასწორი ნომერი",
+                    "empty": "შეიყვანეთ ტელეფონის ნომერი"
+                },
+                "navigate": {
+                    "text": "უკვე გაქვთ ანგარიში?",
+                    "link": "შესვლა"
+                },
+                "separator": "ან",
+                "social": {
+                    "google": "Google",
+                    "facebook": "Facebook",
+                    "googleAlt": "google",
+                    "facebookAlt": "facebook"
+                }
+            },
+            "setPassword": {
+                "title": {
+                    "errors": {
+                        "tooShort": "პაროლი მინიმუმ 6 სიმბოლო"
+                    }
+                },
+                "subtitle": "უსაფრთხო პაროლი რეგისტრაციის დასასრულებლად",
+                "finish": "დასრულება",
+                "label": "პაროლი",
+                "placeholder": "პაროლის შექმნა",
+                "button": "დასრულება",
+                "errors": {
+                    "tooShort": "პაროლი მინიმუმ 6 სიმბოლო",
+                    "serverError": "სერვერის შეცდომა. სცადეთ მოგვიანებით.",
+                    "network": "ქსელის შეცდომა. შეამოწმეთ კავშირი."
+                }
+            }
+        }
+    },
+    "PasswordChange": {
+        "request": {
+            "title": "პაროლის აღდგენა",
+            "subtitle": "შეიყვანეთ ტელეფონი კოდის მისაღებად",
+            "label": "ტელეფონის ნომერი",
+            "button": "კოდის გაგზავნა",
+            "navigate": {
+                "text": "გაიხსენეთ პაროლი?",
+                "link": "შესვლა"
+            },
+            "errors": {
+                "required": "შეიყვანეთ ტელეფონის ნომერი",
+                "invalid": "არასწორი ნომერი",
+                "not-found": "ნომერი ვერ მოიძებნა",
+                "server-error": "სერვერის შეცდომა. სცადეთ მოგვიანებით.",
+                "network": "ქსელის შეცდომა. შეამოწმეთ კავშირი."
+            }
+        },
+        "setPassword": {
+            "title": "ახალი პაროლის დაყენება",
+            "subtitle": "უსაფრთხო პაროლი თქვენი ანგარიშისთვის",
+            "label": "პაროლი",
+            "finish": "შენახვა",
+            "errors": {
+                "tooShort": "პაროლი მინიმუმ 6 სიმბოლო"
+            }
+        }
+    },
+    "WashAppointment": {
+        "header": {
+            "title": "ფილიალები",
+            "backAlt": "უკან"
+        },
+        "branch": {
+            "geoAlt": "მდებარეობა"
+        },
+        "appointments": {
+            "title": "ჩემი ჩანაწერები",
+            "dateAlt": "კალენდარი",
+            "typeAlt": "ტიპი",
+            "timeAlt": "საათი",
+            "statusAlt": "სტატუსი",
+            "status": "გაგზავნილია"
+        },
+        "form": {
+            "title": "ავტოსამბრის ჩაწერა",
+            "success": "ჯავშანი წარმატებით",
+            "error": "ჯავშანი ვერ მოხერხდა",
+            "date": {
+                "label": "თარიღი",
+                "placeholder": "--/--/----",
+                "pickerTitle": "აირჩიეთ თარიღი",
+                "arrowAlt": "ისარი"
+            },
+            "time": {
+                "label": "დრო",
+                "placeholder": "-- : --",
+                "arrowAlt": "ისარი"
+            },
+            "service": {
+                "label": "სერვისი",
+                "placeholder": "-",
+                "arrowAlt": "ისარი"
+            },
+            "submit": {
+                "button": "სერვისზე ჩაწერა",
+                "loading": "ჯავშანი..."
+            }
+        }
+    },
+    "Booking": {
+        "header": "ჯავშანი",
+        "fallback": {
+            "error": "მონაცემების ჩატვირთვა ვერ მოხერხდა"
+        },
+        "filters": {
+            "New": "ახალი",
+            "Confirmed": "დადასტურებულია",
+            "Sheduled": "დაგეგმილია",
+            "All": "ყველა"
+        },
+        "popup": {
+            "reasonLabel": "წაშლის მიზეზი",
+            "confirm": "დადასტურება",
+            "cancel": "გაუქმება"
+        }
+    },
+    "ManagerNavBar": {
+        "nav": {
+            "home": "მთავარი",
+            "booking": "ჯავშანი",
+            "qr": "QR",
+            "statistics": "სტატისტიკა",
+            "profile": "პროფილი"
+        },
+        "icons": {
+            "homeAlt": "მთავრის ხატულა",
+            "bookingAlt": "ჯავშნის ხატულა",
+            "qrAlt": "QR ხატულა",
+            "statisticsAlt": "სტატისტიკის ხატულა",
+            "profileAlt": "პროფილის ხატულა"
+        }
+    },
+    "ManagerOrdersList": {
+        "emptyMessage": "ახალი შეკვეთები არ გაქვთ",
+        "status": {
+            "New": "ახალი",
+            "Confirm": "დადასტურებულია",
+            "Deleted": "წაშლილია",
+            "Rescheduled": "გადანიშნულია",
+            "Expired": "ვადაგასულია"
+        }
+    },
+    "ManagerScanner": {
+        "header": "სკანერი",
+        "upload": {
+            "label": "QR სურათის ატვირთვა (სამუშაო მაგიდის ტესტისთვის):"
+        },
+        "status": {
+            "checking": "🔄 QR კოდის შემოწმება...",
+            "invalid": "QR წაიკითხა, მაგრამ მონაცემები არასწორია ან არასრულია"
+        },
+        "card": {
+            "closeAlt": "დახურვა",
+            "activePackage": "აქტიური პაკეტი",
+            "until": "მდე",
+            "washes": {
+                "label": "რეცხვები",
+                "remaining": "დარჩა"
+            },
+            "period": {
+                "label": "პერიოდი",
+                "unit": "თვეები"
+            },
+            "approve": {
+                "button": "დადასტურება",
+                "success": "წარმატებით დადასტურდა"
+            }
+        }
+    },
+    "MyData": {
+        "header": "ჩემი მონაცემები",
+        "info": {
+            "title": "ჩემი ინფორმაცია",
+            "firstName": "სახელი",
+            "lastName": "გვარი",
+            "phone": "ტელეფონის ნომერი",
+            "role": "როლი",
+            "roleValue": "რეცხვის მენეჯერი",
+            "branch": "ფილიალი",
+            "branchName": "Geocar შარტავაზე",
+            "branchAddress": "ჟიული შარტავას ქ. 57, თბილისი"
+        },
+        "statistic": {
+            "title": "ჩემი სტატისტიკა",
+            "buttons": {
+                "day": "დღე",
+                "week": "კვირა",
+                "month": "თვე"
+            }
+        },
+        "loading": "იტვირთება..."
+    },
+    "ReschudelingOrder": {
+        "header": {
+            "title": "შეკვეთის გადანიშვნა",
+            "backAlt": "უკან"
+        },
+        "customer": {
+            "name": "—",
+            "phone": "—",
+            "service": "—",
+            "serviceAlt": "სერვისის ტიპი"
+        },
+        "form": {
+            "date": {
+                "label": "თარიღი",
+                "placeholder": "---",
+                "pickerAlt": "კალენდარი"
+            },
+            "time": {
+                "label": "დრო",
+                "placeholder": "---",
+                "pickerAlt": "საათი"
+            },
+            "save": {
+                "button": "შენახვა",
+                "loading": "ინახება..."
+            }
+        }
+    },
+    "Home": {
+        "greeting": "გამარჯობა,",
+        "fallback": {
+            "guest": "სტუმარი",
+            "plate": "ნომერი არ არის",
+            "type": "უცნობი ტიპი",
+            "error": "ავტომობილების ჩატვირთვა ვერ მოხერხდა"
+        },
+        "navigation": {
+            "leftAlt": "ისარი მარცხნივ",
+            "rightAlt": "ისარი მარჯვნივ"
+        },
+        "car": {
+            "qrAlt": "QR ხატულა",
+            "imageAlt": "ჰეჩბეკი"
+        },
+        "washes": {
+            "title": "რეცხვები",
+            "remaining": "დარჩა",
+            "iconAlt": "რეცხვები"
+        },
+        "period": {
+            "title": "პერიოდი",
+            "unit": "თვე",
+            "expiration": "ვადის თარიღი",
+            "iconAlt": "დრო"
+        },
+        "promo": {
+            "regular": "სპეცშეთავაზება",
+            "bold": "ფასდაკლება 10%\nგამოწერის გახანგრძლივებით",
+            "arrowAlt": "პრომო ისარი"
+        }
+    },
+    "BranchFilterDropDown": {
+        "title": "ფილტრი",
+        "clear": "ფილტრის გასუფთავება",
+        "sections": {
+            "services": "სერვისები",
+            "hours": "სამუშაო საათები"
+        },
+        "options": {
+            "roundTheClock": "მხოლოდ 24/7",
+            "onlyOpen": "მხოლოდ ღია"
+        },
+        "button": "ფილტრების გამოყენება"
+    },
+    "MobileDropdownSheet": {
+        "title": "აირჩიეთ სტატისტიკის პერიოდი",
+        "options": {
+            "today": "დღეს",
+            "yesterday": "გუშინ",
+            "last7Days": "ბოლო 7 დღე",
+            "lastMonth": "წინა თვე",
+            "custom": "საკუთარი პერიოდი"
+        }
+    },
+    "Sidebar": {
+        "logoAlt": "Geocar ლოგო",
+        "menu": {
+            "myReviews": "ჩემი მიმოხილვები",
+            "myPackages": "ჩემი პაკეტები",
+            "shop": "მაღაზია",
+            "myPoints": "ჩემი ქულები",
+            "messages": "შეტყობინებები",
+            "settings": "პარამეტრები",
+            "contacts": "კონტაქტები",
+            "help": "დახმარება"
+        },
+        "icons": {
+            "myReviewsAlt": "მიმოხილვების ხატულა",
+            "myPackagesAlt": "პაკეტების ხატულა",
+            "messagesAlt": "შეტყობინებების ხატულა",
+            "contactsAlt": "კონტაქტების ხატულა",
+            "helpAlt": "დახმარების ხატულა"
+        }
+    },
+    "TimePickerMobileSheet": {
+        "title": "აირჩიეთ დრო",
+        "options": {
+            "09:00": "09:00",
+            "11:00": "11:00",
+            "13:00": "13:00",
+            "15:00": "15:00",
+            "17:00": "17:00",
+            "19:00": "19:00"
+        },
+        "button": "არჩევა"
+    },
+    "TypeWashingDropDown": {
+        "title": "აირჩიეთ სერვისის ტიპი",
+        "iconAlt": "სერვისის ტიპის ხატულა"
+    },
+    "ActivePackageCard": {
+        "header": "აქტიური პაკეტი",
+        "status": {
+            "expired": "ვადაგასულია",
+            "until": "მდე {{date}}"
+        },
+        "vehicle": {
+            "label": "თქვენი ავტომობილი"
+        },
+        "details": {
+            "washes": {
+                "label": "რეცხვები",
+                "remaining": "დარჩა",
+                "infinity": "∞",
+                "iconAlt": "ჩამოსაშლელი ხატულა"
+            },
+            "period": {
+                "label": "პერიოდი",
+                "unit": "თვე",
+                "iconAlt": "დროის ხატულა"
+            }
+        },
+        "autoRenewal": "ავტომატური განახლება",
+        "actions": {
+            "deleteAlt": "წაშლა",
+            "editAlt": "განახლება",
+            "calendarAlt": "კალენდარი",
+            "qrAlt": "qr"
+        },
+        "deletePopup": {
+            "title": "პაკეტის გაუქმება",
+            "message": "ნამდვილად გსურთ ამ ავტომობილის გაუქმება?",
+            "cancel": "გაუქმება",
+            "confirm": "წაშლა"
+        }
+    },
+    "BranchCard": {
+        "icons": {
+            "geoAlt": "მდებარეობა",
+            "calendarAlt": "კალენდარი",
+            "bookedAlt": "ჩაწერილია"
+        }
+    },
+    "BranchMap": {
+        "markerAlt": "ფილიალის მარკერი",
+        "panel": {
+            "status": {
+                "open": "ღიაა",
+                "closed": "დახურვა"
+            },
+            "schedule": {
+                "weekday": "ორ–პარ",
+                "weekdayHours": "9:00 –17:00",
+                "weekend": "შბ–კვ",
+                "weekendHours": "11:00 – 15:00"
+            },
+            "actions": {
+                "callAlt": "დარეკვა",
+                "pathAlt": "მარშრუტი",
+                "calendarAlt": "ჩაწერა"
+            }
+        }
+    },
+    "BranchScreen": {
+        "header": "ფილიალები",
+        "filter": {
+            "buttonAlt": "ფილტრი"
+        },
+        "viewToggle": {
+            "list": "სია",
+            "map": "რუკა"
+        },
+        "loading": "ფილიალები იტვირთება...",
+        "error": "ფილიალების ჩატვირთვა ვერ მოხერხდა"
+    },
+    "CustomerContactInfo": {
+        "title": "საკონტაქტო ინფორმაცია",
+        "phone": {
+            "label": "ტელეფონის ნომერი",
+            "editAlt": "ტელეფონის შეცვლა"
+        },
+        "email": {
+            "label": "ელფოსტა",
+            "confirmed": "(დადასტურებული)",
+            "unconfirmed": "(არა დადასტურებული)",
+            "editAlt": "ელფოსტის შეცვლა"
+        }
+    },
+    "DeleteReasonPopup": {
+        "title": "შეკვეთის წაშლა",
+        "description": "შეკვეთის წაშლის მიზეზი მიუთითეთ",
+        "textarea": {
+            "placeholder": "ტექსტის შეყვანა",
+            "charCounter": "{{count}}/500"
+        },
+        "actions": {
+            "cancel": "გასვლა",
+            "confirm": "OK"
+        }
+    },
+    "OTPVerification": {
+        "title": "კოდი გამოგიგზავნეთ ტელეფონზე. შეიყვანეთ დასადასტურებლად.",
+        "error": {
+            "invalid": "კოდი არასწორია"
+        },
+        "input": {
+            "placeholder": "-"
+        },
+        "button": {
+            "send": "გაგზავნა"
+        },
+        "resend": {
+            "text": "არ მიიღეთ კოდი?",
+            "link": "კიდევ გაგზავნა"
+        }
+    },
+    "WashingPackageForm": {
+        "title": {
+            "create": "რეცხვის პაკეტი",
+            "edit": "პაკეტის განახლება"
+        },
+        "warning": "პაკეტის ფასი დამოკიდებულია ავტომობილის ტიპზე",
+        "vehicle": {
+            "label": "თქვენი ავტომობილი",
+            "dropdownAlt": "ისარი"
+        },
+        "washes": {
+            "label": "რეცხვების რაოდენობა",
+            "infinity": "∞"
+        },
+        "term": {
+            "label": "გამოწერის ვადა",
+            "unit": "თვე"
+        },
+        "renewal": {
+            "label": "ავტომატური განახლება"
+        },
+        "price": {
+            "label": "გამოწერის ფასი",
+            "fallback": "—",
+            "currency": "₾"
+        },
+        "button": {
+            "create": "პაკეტის გააქტიურება",
+            "edit": "პაკეტის განახლება",
+            "loading": "დამუშავება..."
+        }
+    },
+    "Shop": {
+        "header": {
+            "title": "მაღაზია"
+        },
+        "balance": {
+            "label": "ბალანსი",
+            "unit": "მონეტები"
+        },
+        "categories": {
+            "discounts": "ფასდაკლებები",
+            "giveaway": "გათამაშება"
+        },
+        "all": "ყველა",
+        "loading": "იტვირთება…",
+        "loadError": "ვერ ჩაიტვირთა. გადაიტვირთეთ ან სცადეთ მოგვიანებით.",
+        "vouchers": {
+            "title": "ჩემი ვაუჩერები",
+            "buyMore": "კიდევ ყიდვა",
+            "empty": "ვაუჩერები ჯერ არ არის."
+        },
+        "tickets": {
+            "title": "ჩემი ბილეთები",
+            "daysLeft": "დარჩა დღეები",
+            "join": "მონაწილეობა გათამაშებაში",
+            "empty": "გათამაშებები ჯერ არ არის."
+        }
+    },
+    "Discounts": {
+        "title": "ფასდაკლებები",
+        "searchPlaceholder": "პარტნიორი კომპანიის ძებნა",
+        "loading": "იტვირთება…",
+        "empty": "ფასდაკლებები ვერ მოიძებნა.",
+        "detail": {
+            "termsTitle": "მოხმარების პირობები:",
+            "buy": "ყიდვა",
+            "take": "აიღე",
+            "currentBalance": "მიმდინარე ბალანსი:",
+            "newBalance": "ახალი ბალანსი:",
+            "points": "ქულები",
+            "successMsg": "ყიდვა წარმატებით",
+            "yourCode": "თქვენი ფასდაკლების კოდი:",
+            "notEnoughTitle": "არასაკმარისი ქულები",
+            "notEnoughDesc": "არასაკმარისი ქულები ამ ფასდაკლებისთვის. იყიდეთ ქულები გასაგრძელებლად.",
+            "buyPoints": "ქულების ყიდვა"
+        }
+    },
+    "Giveaway": {
+        "title": "გათამაშება",
+        "loading": "იტვირთება…",
+        "empty": "აქტიური შეთავაზებები არ არის.",
+        "notFound": "შეთავაზება ვერ მოიძებნა.",
+        "activeOffers": "აქტიური შეთავაზებები",
+        "daysLeft": "დარჩა დღეები",
+        "joinBtn": "მონაწილეობა გათამაშებაში",
+        "takePartBtn": "მონაწილეობა",
+        "buyMoreBtn": "კიდევ ბილეთების ყიდვა",
+        "joinedSuccess": "გათამაშებაში ხართ!",
+        "myTickets": "ჩემი ბილეთები:",
+        "daysLeftLabel": "დარჩა დღეები",
+        "participants": "მონაწილეები",
+        "termsTitle": "მონაწილეობის პირობები:",
+        "ticketPrice": "ბილეთის ფასი",
+        "quantity": "რაოდენობა",
+        "totalCost": "სულ:",
+        "currentBalance": "მიმდინარე ბალანსი:",
+        "newBalance": "ახალი ბალანსი:",
+        "points": "ქულები",
+        "confirmBtn": "დადასტურება",
+        "takeBtn": "აიღე",
+        "tickets": "ბილეთები",
+        "buyMorePointsBtn": "კიდევ ქულების ყიდვა",
+        "notEnoughTitle": "არასაკმარისი ქულები",
+        "notEnoughDesc": "არ გყოფნით {amount} ქულა. იყიდეთ ახლა.",
+        "amountToPay": "გადასახდელი თანხა",
+        "buyBtn": "ყიდვა",
+        "successTitle": "ყიდვა წარმატებით",
+        "successDesc": "წარმატებით იყიდეთ {amount} ქულა.",
+        "okBtn": "OK",
+        "takePartForBtn": "მონაწილეობა {price} ქულით"
+    },
+    "MyPoints": {
+        "header": {
+            "title": "ჩემი ქულები"
+        },
+        "balance": {
+            "label": "ბალანსი",
+            "unit": "ქულები"
+        },
+        "referrals": {
+            "label": "რეფერალები",
+            "unit": "ხალხი"
+        },
+        "notice": {
+            "addedLine": "დაემატა {count} ქულა"
+        },
+        "history": {
+            "title": "ოპერაციების ისტორია",
+            "empty": "ოპერაციები არ არის"
+        }
+    },
+    "PointsInfo": {
+        "header": {
+            "title": "ქულები"
+        },
+        "promo": {
+            "title": "GeoCar ქულები",
+            "desc": "ლოიალობის პროგრამა: დააგროვეთ ქულები და გაცვალეთ საჩუქრებსა და ფასდაკლებებზე პარტნიორებთან.",
+            "btn": "GeoCar ქულების ყიდვა"
+        },
+        "sheet": {
+            "title": "GeoCar ქულების ყიდვა",
+            "placeholder": "ქულების რაოდენობა",
+            "amountLabel": "გადასახდელი თანხა",
+            "buyBtn": "ყიდვა"
+        },
+        "how": {
+            "title": "როგორ მუშაობს?",
+            "step1": "ქულების ყიდვა ბარათით ან კრიპტოვალუტით",
+            "step2": "დააგროვეთ ქულები რეფერალებით",
+            "step3": "გაცვალეთ ქულები პარტნიორების ფასდაკლების ვაუჩერებზე"
+        }
+    },
+    "ReferralsInfo": {
+        "header": {
+            "title": "რეფერალები"
+        },
+        "promo": {
+            "title": "GeoCar რეფერალები",
+            "desc": "ლოიალობის პროგრამა: დააგროვეთ ქულები და გაცვალეთ საჩუქრებსა და ფასდაკლებებზე პარტნიორებთან.",
+            "btn": "რეფერალური ბმულის გაზიარება"
+        },
+        "how": {
+            "title": "როგორ მუშაობს?",
+            "step1": "გააზიარეთ ბმული ახალი მომხმარებლების მოსაწვევად",
+            "step2": "ქულები თქვენი რეფერალებით დაკავშირებული პაკეტებისთვის",
+            "step3": "გაცვალეთ ქულები პარტნიორების ფასდაკლების ვაუჩერებზე"
+        },
+        "sheet": {
+            "title": "რეფერალური ბმულის გაზიარება",
+            "yourLink": "თქვენი ბმული",
+            "shareTo": "გაზიარება:"
+        }
+    }
+}

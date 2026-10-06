@@ -1,0 +1,64 @@
+@use "../variables" as *;
+
+.customer-contact-info-wrapper {
+    border-radius: 16px;
+    padding: 16px;
+    margin: 16px;
+    box-shadow: 0 2px 4px 2px rgba(0, 0, 0, 0.1);
+    h1 {
+        @include font-roboto-bold-blue;
+        font-size: 20px;
+    }
+}
+
+.customer-contact-info-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.customer-phone-number {
+    display: flex;
+    @include font-roboto-regular-blue;
+    justify-content: space-between;
+    align-items: center;
+    img {
+        padding: 12px;
+        background-color: $blueMain;
+        border-radius: 16px;
+    }
+    p {
+        display: flex;
+        align-items: center;
+    }
+}
+
+.customer-email {
+    display: flex;
+    align-items: center;
+    @include font-roboto-regular-blue;
+    justify-content: space-between;
+
+    .verification-status {
+        color: $redMain;
+    }
+
+    img {
+        padding: 12px;
+        background-color: $blueMain;
+        border-radius: 16px;
+    }
+    p {
+        display: flex;
+        align-items: center;
+    }
+}
+
+.dot-status {
+    background-color: $redMain;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 8px;
+}

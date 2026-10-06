@@ -1,0 +1,61 @@
+@use "./variables" as *;
+header {
+    box-shadow: none;
+}
+.reservation-staus-bar {
+    ul {
+        display: flex;
+        justify-content: space-around;
+        color: $color-blue-200;
+        font-weight: 600;
+        li {
+            padding: 16px;
+        &:hover {
+            color: $yellowMain;
+        }
+    }
+    }
+    box-shadow: 0 2px 4px 0px rgba(0, 0, 0, 0.1);
+}
+
+.status-bar-item {
+    position: relative;
+    padding: 12px 20px;
+    font-weight: 600;
+    color: $color-blue-200;
+    cursor: pointer;
+    transition: color 0.5s ease;
+  
+    &:hover {
+      color: $yellowMain;
+    }
+  
+    &.active {
+      color: $yellowMain;
+  
+      &::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 10%;
+        width: 80%;
+        height: 5px;
+        background-color: $yellowMain;
+        border-top-left-radius: 16px;
+        border-top-right-radius: 16px;
+        transition: all 0.5s ease;
+      }
+    }
+  }
+
+  .empty-message {
+    border-radius: 16px;
+    box-shadow: 0 2px 4px 0px rgba(0, 0, 0, 0.1);
+    color: $textSecondary;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+    margin-top: 16px; 
+    font-weight: 600;
+  }

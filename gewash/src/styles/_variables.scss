@@ -1,0 +1,102 @@
+// Gray colors
+$color-gray-50: #d4d4d4;
+$color-gray-100: #c8c8c8;
+$color-gray-200: #afafaf;
+$color-gray-300: #979797;
+$color-gray-400: #7e7e7e;
+$color-gray-500: #666666;
+$color-gray-600: #565656;
+$color-gray-700: #454545;
+$color-gray-800: #353535;
+$color-gray-900: #252525;
+
+//Blue colors
+$color-blue-50: #EAF0F6;
+$color-blue-100: #C8D1DC;
+$color-blue-200: #879AB1;
+$color-blue-300: #627B99;
+$color-blue-400: #4B6D95;
+$color-blue-500: #183D69;
+$color-blue-600: #143358;
+$color-blue-700: #102947;
+$color-blue-800: #0C2037;
+$color-blue-900: #091626;
+
+//Yellow colors
+$color-yellow-50: #FFF9EE;
+$color-yellow-100: #FFE9C1; 
+$color-yellow-200: #FBD795;     
+$color-yellow-300: #FACB74;
+$color-yellow-400: #F8BE54;
+$color-yellow-500: #F7B233;
+$color-yellow-600: #CF962B;
+$color-yellow-800: #805D1B;
+$color-yellow-900: #4E370D;
+
+//Naturals colors
+$color-naturals-50: #FAFAFA;
+$color-naturals-100: #DAD8D8;
+$color-naturals-200: #AFAFAF;
+$color-naturals-300: #979797;
+$color-naturals-400: #7E7E7E;
+$color-naturals-500: #666666;
+$color-naturals-600: #565656;
+$color-naturals-700: #454545;
+$color-naturals-800: #353535;
+$color-naturals-900: #222;
+
+//Green colors
+$color-green-200: #d4f5d4;
+$color-green-500: #17BA68;
+
+//Named colors
+$bg: #FAFAFA;
+$blueMain: $color-blue-500;
+$textSecondary: $color-blue-400;
+$textPrimary: $color-blue-600; 
+$redMain: #BA1717;
+$yellowMain: $color-yellow-500;
+$dark: $color-naturals-900;
+$border: $color-blue-200;
+$divider: $color-blue-100;
+
+// Shop: header / balance / category tiles
+$shop-ui-shadow: 0px 0px 12px 0px rgba(24, 61, 105, 0.08);
+// Horizontal-scroll cards (voucher, ticket, shop-more, my-area lists)
+$shop-card-shadow: 0 2px 4px 2px rgba(0, 0, 0, 0.1);
+
+//Fonts
+$font-arvo: 'Arvo', serif;
+$font-nunito: 'Nunito', sans-serif;
+$font-roboto: 'Roboto', sans-serif;
+
+@mixin font-roboto-regular-blue {
+    font-family: 'Roboto', sans-serif;
+    font-weight: 400;
+    font-style: Regular;
+    font-size: 16px;
+    line-height: 22px;
+    letter-spacing: 0%;
+    color: $blueMain;
+}
+
+@mixin font-roboto-regular-yellow {
+    font-family: 'Roboto', sans-serif;
+    font-weight: 400;
+    font-style: 'Regular';
+    font-size: 16px;
+    line-height: 22px;
+    letter-spacing: 0%;
+    color: $yellowMain;
+}
+
+@mixin font-roboto-bold-blue {
+    font-family: 'Roboto', sans-serif;
+        font-weight: 700;
+        font-style: Bold;
+        font-size: 32px;
+        line-height: 100%;
+        letter-spacing: 0%;
+        color: $blueMain;
+}
+

@@ -1,0 +1,16 @@
+# SPA (React Router): при F5 по /shop и т.д. отдаём index.html, а не 404.
+# Нужен Apache с mod_rewrite и AllowOverride (обычно уже включено на хостинге).
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  RewriteRule ^index\.html$ - [L]
+
+  # Если на этом же поддомене есть прокси /api — не переписывать в index.html
+  RewriteCond %{REQUEST_URI} !^/api/
+
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule . index.html [L]
+</IfModule>

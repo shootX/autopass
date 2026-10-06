@@ -1,0 +1,318 @@
+@use "../variables" as *;
+
+$card-shadow: 0 0 12px 0 rgba(24, 61, 105, 0.08);
+
+// ── Page ──────────────────────────────────────────────────────────────────────
+.discounts-page {
+  display: flex;
+  flex-direction: column;
+  background-color: $bg;
+  height: calc(100dvh - 104px);
+  overflow: hidden;
+}
+
+// ── Header ────────────────────────────────────────────────────────────────────
+.discounts-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+  padding: 12px 16px;
+  background-color: #fff;
+  box-shadow: $card-shadow;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+
+  &__back {
+    background: none;
+    border: none;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    width: 40px;
+  }
+
+  &__title {
+    font-size: 18px;
+    font-weight: 600;
+    color: $blueMain;
+    text-align: center;
+    flex: 1;
+  }
+
+  &__balance {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background-color: $blueMain;
+    border-radius: 8px;
+    padding: 4px 8px 4px 4px;
+    box-shadow: $card-shadow;
+  }
+
+  &__coin {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+  }
+
+  &__amount {
+    font-size: 14px;
+    font-weight: 600;
+    color: $yellowMain;
+    white-space: nowrap;
+  }
+}
+
+// ── Wrapper ───────────────────────────────────────────────────────────────────
+.discounts-wrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  gap: 12px;
+  padding: 12px 16px 8px;
+  overflow: hidden;
+}
+
+// ── Search ────────────────────────────────────────────────────────────────────
+.discounts-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  &__input {
+    width: 100%;
+    height: 32px;
+    background-color: $divider;
+    border: none;
+    border-radius: 50px;
+    padding: 0 36px 0 16px;
+    font-size: 14px;
+    color: $textPrimary;
+    outline: none;
+
+    &::placeholder {
+      color: $border;
+    }
+  }
+
+  &__icon {
+    position: absolute;
+    right: 12px;
+    pointer-events: none;
+  }
+}
+
+// ── Tabs ──────────────────────────────────────────────────────────────────────
+.discounts-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+}
+
+.discounts-tab {
+  flex-shrink: 0;
+  height: 38px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 8px;
+  background-color: #fff;
+  box-shadow: $card-shadow;
+  font-size: 16px;
+  font-weight: 400;
+  color: $blueMain;
+  cursor: pointer;
+  white-space: nowrap;
+
+  &--active {
+    background-color: $blueMain;
+    color: $yellowMain;
+  }
+}
+
+// ── Section ───────────────────────────────────────────────────────────────────
+.discounts-section {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  gap: 8px;
+  overflow: hidden;
+
+  &__title {
+    font-size: 20px;
+    font-weight: 600;
+    color: $textPrimary;
+    flex-shrink: 0;
+  }
+}
+
+.discounts-page .shop-offers-wrap {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.discounts-page .shop-offers-rail {
+  flex: 1;
+  min-height: 0;
+  align-items: stretch;
+}
+
+.discounts-page .discounts-offers {
+  height: 100%;
+  align-content: stretch;
+  grid-template-rows: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.discounts-page .shop-offer {
+  height: 100%;
+  min-height: 0;
+}
+
+.discounts-page .shop-offer__media {
+  flex: 1 1 0;
+  min-height: 0;
+  aspect-ratio: auto;
+}
+
+.discounts-page .shop-offer__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.discounts-page .shop-offer__body {
+  flex: 0 0 auto;
+  gap: 4px;
+  padding: 6px 8px 8px;
+}
+
+.discounts-page .shop-offer__title {
+  min-height: 0;
+  -webkit-line-clamp: 1;
+  font-size: 12px;
+}
+
+.discounts-page .shop-offers-dots {
+  flex-shrink: 0;
+  margin-top: 8px;
+}
+
+.discounts-grid {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+
+  .discount-card {
+    flex-shrink: 0;
+    width: 156px;
+  }
+}
+
+// ── Card ──────────────────────────────────────────────────────────────────────
+.discount-card {
+  display: flex;
+  flex-direction: column;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: $card-shadow;
+  cursor: pointer;
+  height: 203px;
+
+  &__img {
+    width: 100%;
+    height: 96px;
+    object-fit: cover;
+    flex-shrink: 0;
+    display: block;
+  }
+
+  &__body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background-color: #fff;
+    padding: 12px;
+    min-height: 0;
+  }
+
+  &__text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  &__title {
+    font-size: 14px;
+    font-weight: 600;
+    color: $blueMain;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: 1;
+  }
+
+  &__subtitle {
+    font-size: 12px;
+    font-weight: 400;
+    color: $textSecondary;
+    line-height: 1;
+  }
+
+  &__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 24px;
+    padding: 0 8px;
+    background-color: $yellowMain;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    color: $blueMain;
+    white-space: nowrap;
+  }
+
+  &__price {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 24px;
+    padding: 0 8px 0 4px;
+    border: 1px solid $blueMain;
+    border-radius: 8px;
+    box-shadow: $card-shadow;
+  }
+
+  &__price-coin {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+  }
+
+  &__price span {
+    font-size: 16px;
+    font-weight: 600;
+    color: $blueMain;
+    white-space: nowrap;
+  }
+}

@@ -1,0 +1,924 @@
+{
+    "CalendarMobileSheet": {
+        "title": "Пользовательский период статистики",
+        "prevMonthAlt": "Предыдущий месяц",
+        "nextMonthAlt": "Следующий месяц",
+        "selectButton": "Выбрать"
+    },
+    "WashAppointmentsCalendar": {
+        "dayNames": {
+            "sun": "ВС",
+            "mon": "ПН",
+            "tue": "ВТ",
+            "wed": "СР",
+            "thu": "ЧТ",
+            "fri": "ПТ",
+            "sat": "СБ"
+        },
+        "noAppointments": "Нет записей",
+        "branchNotFound": "Филиал не найден",
+        "popup": {
+            "title": "Отменить запись",
+            "description": "Действительно отменить эту запись?",
+            "cancelButton": "Отмена",
+            "deleteButton": "Удалить"
+        }
+    },
+    "ManagerCalendarGrid": {
+        "header": "Календарь",
+        "dayNames": {
+            "sun": "ВС",
+            "mon": "ПН",
+            "tue": "ВТ",
+            "wed": "СР",
+            "thu": "ЧТ",
+            "fri": "ПТ",
+            "sat": "СБ"
+        },
+        "statusLabels": {
+            "new": "Новое",
+            "rescheduled": "Перенесено",
+            "confirmed": "Подтверждено"
+        },
+        "eventsCount": "{count} событий",
+        "freeSlots": "Свободные слоты"
+    },
+    "SingleCalendarMobileSheet": {
+        "defaultTitle": "Пользовательский выбор",
+        "prevMonthAlt": "назад",
+        "nextMonthAlt": "далее",
+        "selectButton": "Выбрать"
+    },
+    "AddCar": {
+        "header": {
+            "title": "Добавить транспорт",
+            "backAlt": "Назад",
+            "closeAlt": "Закрыть"
+        },
+        "title": "Добавить автомобиль",
+        "subtitle": "Введите данные автомобиля",
+        "labels": {
+            "brand": "Марка авто",
+            "model": "Модель авто",
+            "plate": "Госномер"
+        },
+        "placeholders": {
+            "plate": "XX - XXX - XX",
+            "chooseBrand": "Выберите марку авто",
+            "chooseModel": "Выберите модель авто"
+        },
+        "errors": {
+            "invalidPlate": "Неверный формат номера",
+            "plateExists": "Такой номер уже зарегистрирован"
+        },
+        "buttons": {
+            "add": "Добавить",
+            "addAnother": "Добавить ещё",
+            "useApp": "Использовать приложение"
+        },
+        "success": {
+            "message": "Поздравляем! Автомобиль успешно добавлен",
+            "carType": "Внедорожник",
+            "carAlt": "авто добавлено"
+        },
+        "icons": {
+            "arrowAlt": "Стрелка"
+        }
+    },
+    "Authentication": {
+        "logoAlt": "ЛОГОТИП",
+        "greeting": {
+            "title": "Добро пожаловать",
+            "subtitle": "Введите номер телефона и пароль для входа"
+        },
+        "errors": {
+            "phoneNotFound": "Номер не найден",
+            "passwordIncorrect": "Неверный пароль",
+            "phoneRequired": "Введите номер телефона",
+            "passwordRequired": "Введите пароль"
+        },
+        "labels": {
+            "phone": "Номер телефона",
+            "password": "Пароль"
+        },
+        "placeholders": {
+            "phone": "500500555",
+            "password": "Введите пароль"
+        },
+        "prefix": "+995",
+        "forgotPassword": "Забыли пароль?",
+        "buttons": {
+            "signIn": "Войти",
+            "signUp": "Зарегистрироваться"
+        },
+        "signupPrompt": "Нет аккаунта?",
+        "separator": "ИЛИ",
+        "social": {
+            "google": "Google",
+            "facebook": "Facebook",
+            "googleAlt": "google",
+            "facebookAlt": "facebook"
+        }
+    },
+    "BranchInfoPanel": {
+        "status": {
+            "open": "Открыто",
+            "close": "Закрыть"
+        },
+        "schedule": "Пн–Пт {weekdayHours} Сб–Вс {weekendHours}",
+        "defaultHours": {
+            "weekday": "9:00 –17:00",
+            "weekend": "11:00 – 15:00"
+        }
+    },
+    "CustomerMyData": {
+        "header": {
+            "title": "Мои данные",
+            "backAlt": "назад"
+        },
+        "form": {
+            "title": "Моя информация",
+            "fields": {
+                "firstName": "Имя",
+                "secondName": "Фамилия",
+                "dateOfBirth": "Дата рождения",
+                "sex": "Пол"
+            },
+            "placeholders": {
+                "text": "---",
+                "date": "--/--/----"
+            },
+            "calendarAlt": "календарь",
+            "sexAlt": "выбрать",
+            "calendarTitle": "Выберите дату рождения"
+        },
+        "modal": {
+            "title": "Несохранённые данные",
+            "message": "Есть несохранённые изменения в данных.",
+            "dangerAlt": "опасность",
+            "buttons": {
+                "leave": "Выйти",
+                "save": "Сохранить"
+            }
+        }
+    },
+    "CustomerNavBar": {
+        "routes": {
+            "home": "Главная",
+            "calendar": "Календарь",
+            "qr": "QR-код",
+            "branches": "Филиалы",
+            "myData": "Мои данные"
+        },
+        "icons": {
+            "homeAlt": "главная",
+            "calendarAlt": "календарь",
+            "qrAlt": "qr",
+            "branchesAlt": "филиалы",
+            "myDataAlt": "мои данные"
+        }
+    },
+    "EditCar": {
+        "header": {
+            "title": "Редактировать авто",
+            "backAlt": "Назад",
+            "closeAlt": "Закрыть",
+            "lockedAlt": "Заблокировано"
+        },
+        "titleInfo": "Обновите данные авто",
+        "labels": {
+            "brand": "Марка авто",
+            "model": "Модель авто",
+            "plate": "Госномер"
+        },
+        "placeholders": {
+            "plate": "XX - XXX - XX"
+        },
+        "fallbacks": {
+            "brand": "Неизвестная марка",
+            "model": "Неизвестная модель"
+        },
+        "errors": {
+            "invalidPlate": "Неверный формат номера",
+            "loadFailed": "Не удалось загрузить данные авто",
+            "saveFailed": "Не удалось сохранить изменения",
+            "deleteFailed": "Не удалось удалить авто"
+        },
+        "buttons": {
+            "save": "Сохранить изменения",
+            "delete": "Удалить автомобиль",
+            "cancel": "Отмена",
+            "confirmDelete": "Удалить"
+        },
+        "popup": {
+            "title": "Удаление авто",
+            "message": "Действительно удалить этот автомобиль?"
+        }
+    },
+    "EmailChanging": {
+        "header": {
+            "title": "Смена email",
+            "backAlt": "Назад",
+            "closeAlt": "Закрыть"
+        },
+        "form": {
+            "title": "Введите новый email",
+            "label": "Адрес email",
+            "placeholder": "simplemail@simple.domain",
+            "error": "Некорректный email",
+            "button": {
+                "set": "Задать"
+            }
+        }
+    },
+    "MyPackages": {
+        "header": {
+            "title": "Мои пакеты",
+            "backAlt": "Назад"
+        },
+        "tabs": {
+            "active": "Активно",
+            "history": "История"
+        },
+        "loading": "Загрузка...",
+        "error": "Ошибка: {message}",
+        "empty": "Нет активных пакетов"
+    },
+    "MyVehicles": {
+        "title": "Мои автомобили",
+        "loading": "Загрузка автомобилей...",
+        "error": "Ошибка: {message}",
+        "empty": "Автомобили не найдены",
+        "buttons": {
+            "add": "Добавить автомобиль",
+            "editAlt": "редактирование",
+            "vehicleAlt": "изображение авто"
+        }
+    },
+    "NotificationSettings": {
+        "title": "Настройки уведомлений",
+        "options": {
+            "wash": "Запись на мойку",
+            "subscription": "Продление подписки",
+            "promo": "Спецакции"
+        }
+    },
+    "PhoneNumberChanging": {
+        "header": {
+            "title": "Смена номера телефона",
+            "backAlt": "Назад",
+            "closeAlt": "Закрыть"
+        },
+        "form": {
+            "title": "Введите новый номер телефона",
+            "label": "Номер телефона",
+            "prefix": "+995",
+            "placeholder": "XXX XXX XXX",
+            "error": "Номер не найден",
+            "invalidAlert": "❗ Номер телефона должен содержать 9 цифр",
+            "button": {
+                "getCode": "Получить код"
+            }
+        },
+        "verification": {
+            "success": "Номер телефона успешно изменён!",
+            "failure": "Неверный код или сессия истекла"
+        }
+    },
+    "QRPage": {
+        "header": {
+            "title": "QR"
+        },
+        "loading": "Загрузка данных...",
+        "error": "Не удалось загрузить данные",
+        "overlay": {
+            "close": "✕",
+            "loading": "Загрузка QR..."
+        },
+        "noCars": "У вас нет зарегистрированных авто.",
+        "car": {
+            "plate": "Госномер",
+            "model": "Модель",
+            "showQRAlt": "Показать QR"
+        }
+    },
+    "Registration": {
+        "logoAlt": "ЛОГОТИП",
+        "stage": {
+            "register": {
+                "title": "Создать аккаунт",
+                "subtitle": "Введите номер телефона для регистрации",
+                "label": "Номер телефона",
+                "placeholder": "706500505",
+                "button": "Зарегистрироваться",
+                "errors": {
+                    "duplicate": "Номер уже зарегистрирован",
+                    "invalidFormat": "Неверный номер",
+                    "empty": "Введите номер телефона"
+                },
+                "navigate": {
+                    "text": "Уже есть аккаунт?",
+                    "link": "Войти"
+                },
+                "separator": "ИЛИ",
+                "social": {
+                    "google": "Google",
+                    "facebook": "Facebook",
+                    "googleAlt": "google",
+                    "facebookAlt": "facebook"
+                }
+            },
+            "setPassword": {
+                "title": {
+                    "errors": {
+                        "tooShort": "Пароль не менее 6 символов"
+                    }
+                },
+                "subtitle": "Придумайте надёжный пароль для завершения регистрации",
+                "finish": "Готово",
+                "label": "Пароль",
+                "placeholder": "Придумайте пароль",
+                "button": "Готово",
+                "errors": {
+                    "tooShort": "Пароль не менее 6 символов",
+                    "serverError": "Ошибка сервера. Попробуйте позже.",
+                    "network": "Ошибка сети. Проверьте подключение."
+                }
+            }
+        }
+    },
+    "PasswordChange": {
+        "request": {
+            "title": "Сброс пароля",
+            "subtitle": "Введите номер телефона для получения кода",
+            "label": "Номер телефона",
+            "button": "Отправить код",
+            "navigate": {
+                "text": "Вспомнили пароль?",
+                "link": "Войти"
+            },
+            "errors": {
+                "required": "Введите номер телефона",
+                "invalid": "Некорректный номер",
+                "not-found": "Номер не найден",
+                "server-error": "Ошибка сервера. Попробуйте позже.",
+                "network": "Ошибка сети. Проверьте подключение."
+            }
+        },
+        "setPassword": {
+            "title": "Задать новый пароль",
+            "subtitle": "Придумайте надёжный пароль для аккаунта",
+            "label": "Пароль",
+            "finish": "Сохранить",
+            "errors": {
+                "tooShort": "Пароль не менее 6 символов"
+            }
+        }
+    },
+    "WashAppointment": {
+        "header": {
+            "title": "Филиалы",
+            "backAlt": "Назад"
+        },
+        "branch": {
+            "geoAlt": "Локация"
+        },
+        "appointments": {
+            "title": "Мои записи",
+            "dateAlt": "календарь",
+            "typeAlt": "тип",
+            "timeAlt": "часы",
+            "statusAlt": "статус",
+            "status": "Заявка подана"
+        },
+        "form": {
+            "title": "Запись на мойку",
+            "success": "Бронирование успешно",
+            "error": "Не удалось забронировать",
+            "date": {
+                "label": "Дата",
+                "placeholder": "--/--/----",
+                "pickerTitle": "Выберите дату",
+                "arrowAlt": "Стрелка"
+            },
+            "time": {
+                "label": "Время",
+                "placeholder": "-- : --",
+                "arrowAlt": "Стрелка"
+            },
+            "service": {
+                "label": "Услуга",
+                "placeholder": "-",
+                "arrowAlt": "Стрелка"
+            },
+            "submit": {
+                "button": "Записаться на услугу",
+                "loading": "Бронирование..."
+            }
+        }
+    },
+    "Booking": {
+        "header": "Бронирование",
+        "fallback": {
+            "error": "Не удалось загрузить данные"
+        },
+        "filters": {
+            "New": "Новое",
+            "Confirmed": "Подтверждено",
+            "Sheduled": "Запланировано",
+            "All": "Все"
+        },
+        "popup": {
+            "reasonLabel": "Причина удаления",
+            "confirm": "Подтвердить",
+            "cancel": "Отмена"
+        }
+    },
+    "ManagerNavBar": {
+        "nav": {
+            "home": "Главная",
+            "booking": "Бронирование",
+            "qr": "QR",
+            "statistics": "Статистика",
+            "profile": "Профиль"
+        },
+        "icons": {
+            "homeAlt": "Иконка главной",
+            "bookingAlt": "Иконка бронирования",
+            "qrAlt": "Иконка QR",
+            "statisticsAlt": "Иконка статистики",
+            "profileAlt": "Иконка профиля"
+        }
+    },
+    "ManagerOrdersList": {
+        "emptyMessage": "У вас нет новых заказов",
+        "status": {
+            "New": "Новое",
+            "Confirm": "Подтверждено",
+            "Deleted": "Удалено",
+            "Rescheduled": "Перенесено",
+            "Expired": "Истёк"
+        }
+    },
+    "ManagerScanner": {
+        "header": "Сканер",
+        "upload": {
+            "label": "Загрузить изображение QR (для теста на ПК):"
+        },
+        "status": {
+            "checking": "🔄 Проверка QR-кода...",
+            "invalid": "QR считан, но данные некорректны или неполны"
+        },
+        "card": {
+            "closeAlt": "Закрыть",
+            "activePackage": "Активный пакет",
+            "until": "до",
+            "washes": {
+                "label": "Мойки",
+                "remaining": "осталось"
+            },
+            "period": {
+                "label": "Период",
+                "unit": "месяцев"
+            },
+            "approve": {
+                "button": "Подтвердить",
+                "success": "Успешно подтверждено"
+            }
+        }
+    },
+    "MyData": {
+        "header": "Мои данные",
+        "info": {
+            "title": "Моя информация",
+            "firstName": "Имя",
+            "lastName": "Фамилия",
+            "phone": "Номер телефона",
+            "role": "Роль",
+            "roleValue": "Администратор мойки",
+            "branch": "Филиал",
+            "branchName": "Geocar на Шартаве",
+            "branchAddress": "ул. Джиули Шартава, 57, Тбилиси"
+        },
+        "statistic": {
+            "title": "Моя статистика",
+            "buttons": {
+                "day": "День",
+                "week": "Неделя",
+                "month": "Месяц"
+            }
+        },
+        "loading": "Загрузка..."
+    },
+    "ReschudelingOrder": {
+        "header": {
+            "title": "Перенос заказа",
+            "backAlt": "Назад"
+        },
+        "customer": {
+            "name": "—",
+            "phone": "—",
+            "service": "—",
+            "serviceAlt": "Тип услуги"
+        },
+        "form": {
+            "date": {
+                "label": "Дата",
+                "placeholder": "---",
+                "pickerAlt": "Календарь"
+            },
+            "time": {
+                "label": "Время",
+                "placeholder": "---",
+                "pickerAlt": "Часы"
+            },
+            "save": {
+                "button": "Сохранить",
+                "loading": "Сохранение..."
+            }
+        }
+    },
+    "Home": {
+        "greeting": "Здравствуйте,",
+        "fallback": {
+            "guest": "Гость",
+            "plate": "Без номера",
+            "type": "Неизвестный тип",
+            "error": "Не удалось загрузить автомобили"
+        },
+        "navigation": {
+            "leftAlt": "стрелка влево",
+            "rightAlt": "стрелка вправо"
+        },
+        "car": {
+            "qrAlt": "Иконка QR",
+            "imageAlt": "хэтчбек"
+        },
+        "washes": {
+            "title": "Мойки",
+            "remaining": "осталось",
+            "iconAlt": "мойки"
+        },
+        "period": {
+            "title": "Период",
+            "unit": "месяц",
+            "expiration": "дата окончания",
+            "iconAlt": "время"
+        },
+        "promo": {
+            "regular": "Спецпредложение",
+            "bold": "СКИДКА 10%\nПРИ ПРОДЛЕНИИ ПОДПИСКИ",
+            "arrowAlt": "промо-стрелка"
+        }
+    },
+    "BranchFilterDropDown": {
+        "title": "Фильтр",
+        "clear": "Сбросить фильтр",
+        "sections": {
+            "services": "Услуги",
+            "hours": "Часы работы"
+        },
+        "options": {
+            "roundTheClock": "Только круглосуточно",
+            "onlyOpen": "Только открытые"
+        },
+        "button": "Применить фильтры"
+    },
+    "MobileDropdownSheet": {
+        "title": "Выберите период статистики",
+        "options": {
+            "today": "Сегодня",
+            "yesterday": "Вчера",
+            "last7Days": "Последние 7 дней",
+            "lastMonth": "Прошлый месяц",
+            "custom": "Свой период"
+        }
+    },
+    "Sidebar": {
+        "logoAlt": "Логотип Geocar",
+        "menu": {
+            "myReviews": "Мои отзывы",
+            "myPackages": "Мои пакеты",
+            "shop": "Магазин",
+            "myPoints": "Мои баллы",
+            "messages": "Сообщения",
+            "settings": "Настройки",
+            "contacts": "Контакты",
+            "help": "Помощь"
+        },
+        "icons": {
+            "myReviewsAlt": "Иконка отзывов",
+            "myPackagesAlt": "Иконка пакетов",
+            "messagesAlt": "Иконка сообщений",
+            "contactsAlt": "Иконка контактов",
+            "helpAlt": "Иконка помощи"
+        }
+    },
+    "TimePickerMobileSheet": {
+        "title": "Выберите время",
+        "options": {
+            "09:00": "09:00",
+            "11:00": "11:00",
+            "13:00": "13:00",
+            "15:00": "15:00",
+            "17:00": "17:00",
+            "19:00": "19:00"
+        },
+        "button": "Выбрать"
+    },
+    "TypeWashingDropDown": {
+        "title": "Выберите тип услуги",
+        "iconAlt": "Иконка типа услуги"
+    },
+    "ActivePackageCard": {
+        "header": "Активный пакет",
+        "status": {
+            "expired": "Истёк",
+            "until": "до {{date}}"
+        },
+        "vehicle": {
+            "label": "Ваш автомобиль"
+        },
+        "details": {
+            "washes": {
+                "label": "Мойки",
+                "remaining": "осталось",
+                "infinity": "∞",
+                "iconAlt": "иконка выпадающего списка"
+            },
+            "period": {
+                "label": "Период",
+                "unit": "месяц",
+                "iconAlt": "иконка времени"
+            }
+        },
+        "autoRenewal": "Автопродление",
+        "actions": {
+            "deleteAlt": "Удалить",
+            "editAlt": "обновить",
+            "calendarAlt": "календарь",
+            "qrAlt": "qr"
+        },
+        "deletePopup": {
+            "title": "Отмена пакета",
+            "message": "Действительно отменить этот автомобиль?",
+            "cancel": "Отмена",
+            "confirm": "Удалить"
+        }
+    },
+    "BranchCard": {
+        "icons": {
+            "geoAlt": "Локация",
+            "calendarAlt": "Календарь",
+            "bookedAlt": "Записано"
+        }
+    },
+    "BranchMap": {
+        "markerAlt": "Маркер филиала",
+        "panel": {
+            "status": {
+                "open": "Открыто",
+                "closed": "Закрыть"
+            },
+            "schedule": {
+                "weekday": "Пн–Пт",
+                "weekdayHours": "9:00 –17:00",
+                "weekend": "Сб–Вс",
+                "weekendHours": "11:00 – 15:00"
+            },
+            "actions": {
+                "callAlt": "Позвонить",
+                "pathAlt": "Маршрут",
+                "calendarAlt": "Записаться"
+            }
+        }
+    },
+    "BranchScreen": {
+        "header": "Филиалы",
+        "filter": {
+            "buttonAlt": "Фильтр"
+        },
+        "viewToggle": {
+            "list": "Список",
+            "map": "Карта"
+        },
+        "loading": "Загрузка филиалов...",
+        "error": "Не удалось загрузить филиалы"
+    },
+    "CustomerContactInfo": {
+        "title": "Контактная информация",
+        "phone": {
+            "label": "Номер телефона",
+            "editAlt": "Изменить телефон"
+        },
+        "email": {
+            "label": "Email",
+            "confirmed": "(Подтверждено)",
+            "unconfirmed": "(Не подтверждено)",
+            "editAlt": "Изменить email"
+        }
+    },
+    "DeleteReasonPopup": {
+        "title": "Удаление заказа",
+        "description": "Укажите причину удаления заказа",
+        "textarea": {
+            "placeholder": "Ввод текста",
+            "charCounter": "{{count}}/500"
+        },
+        "actions": {
+            "cancel": "Выйти",
+            "confirm": "OK"
+        }
+    },
+    "OTPVerification": {
+        "title": "Мы отправили код на ваш номер. Введите его для подтверждения.",
+        "error": {
+            "invalid": "Код недействителен"
+        },
+        "input": {
+            "placeholder": "-"
+        },
+        "button": {
+            "send": "Отправить"
+        },
+        "resend": {
+            "text": "Не получили код?",
+            "link": "Отправить снова"
+        }
+    },
+    "WashingPackageForm": {
+        "title": {
+            "create": "Пакет мойки",
+            "edit": "Обновить пакет"
+        },
+        "warning": "Цена пакета зависит от типа авто",
+        "vehicle": {
+            "label": "Ваш автомобиль",
+            "dropdownAlt": "стрелка"
+        },
+        "washes": {
+            "label": "Количество моек",
+            "infinity": "∞"
+        },
+        "term": {
+            "label": "Срок подписки",
+            "unit": "месяц"
+        },
+        "renewal": {
+            "label": "Автопродление"
+        },
+        "price": {
+            "label": "Стоимость подписки",
+            "fallback": "—",
+            "currency": "₾"
+        },
+        "button": {
+            "create": "Активировать пакет",
+            "edit": "Обновить пакет",
+            "loading": "Обработка..."
+        }
+    },
+    "Shop": {
+        "header": {
+            "title": "Магазин"
+        },
+        "balance": {
+            "label": "Баланс",
+            "unit": "Монеты"
+        },
+        "categories": {
+            "discounts": "Скидки",
+            "giveaway": "Розыгрыш"
+        },
+        "all": "Все",
+        "loading": "Загрузка…",
+        "loadError": "Не удалось загрузить. Потяните для обновления или попробуйте позже.",
+        "vouchers": {
+            "title": "Мои ваучеры",
+            "buyMore": "Купить ещё",
+            "empty": "Пока нет ваучеров."
+        },
+        "tickets": {
+            "title": "Мои билеты",
+            "daysLeft": "дней осталось",
+            "join": "Участвовать в розыгрыше",
+            "empty": "Пока нет розыгрышей."
+        }
+    },
+    "Discounts": {
+        "title": "Скидки",
+        "searchPlaceholder": "Поиск компании-партнёра",
+        "loading": "Загрузка…",
+        "empty": "Скидки не найдены.",
+        "detail": {
+            "termsTitle": "Условия использования:",
+            "buy": "Купить",
+            "take": "Взять",
+            "currentBalance": "Текущий баланс:",
+            "newBalance": "Новый баланс:",
+            "points": "баллы",
+            "successMsg": "Покупка успешна",
+            "yourCode": "Ваш код скидки:",
+            "notEnoughTitle": "Недостаточно баллов",
+            "notEnoughDesc": "Недостаточно баллов для этой скидки. Купите баллы, чтобы продолжить.",
+            "buyPoints": "Купить баллы"
+        }
+    },
+    "Giveaway": {
+        "title": "Розыгрыш",
+        "loading": "Загрузка…",
+        "empty": "Нет активных предложений.",
+        "notFound": "Предложение не найдено.",
+        "activeOffers": "Активные предложения",
+        "daysLeft": "дней осталось",
+        "joinBtn": "Участвовать в розыгрыше",
+        "takePartBtn": "Участвовать",
+        "buyMoreBtn": "Купить ещё билеты",
+        "joinedSuccess": "Вы участвуете в розыгрыше!",
+        "myTickets": "Мои билеты:",
+        "daysLeftLabel": "Осталось дней",
+        "participants": "Участники",
+        "termsTitle": "Условия участия:",
+        "ticketPrice": "Цена билета",
+        "quantity": "Количество",
+        "totalCost": "Итого:",
+        "currentBalance": "Текущий баланс:",
+        "newBalance": "Новый баланс:",
+        "points": "баллы",
+        "confirmBtn": "Подтвердить",
+        "takeBtn": "Взять",
+        "tickets": "Билеты",
+        "buyMorePointsBtn": "Купить ещё баллы",
+        "notEnoughTitle": "Недостаточно баллов",
+        "notEnoughDesc": "Не хватает {amount} баллов. Купите их сейчас.",
+        "amountToPay": "Сумма к оплате",
+        "buyBtn": "Купить",
+        "successTitle": "Покупка успешна",
+        "successDesc": "Вы успешно купили {amount} баллов.",
+        "okBtn": "OK",
+        "takePartForBtn": "Участие за {price} баллов"
+    },
+    "MyPoints": {
+        "header": {
+            "title": "Мои баллы"
+        },
+        "balance": {
+            "label": "Баланс",
+            "unit": "баллы"
+        },
+        "referrals": {
+            "label": "Рефералы",
+            "unit": "люди"
+        },
+        "notice": {
+            "addedLine": "добавлено {count} баллов"
+        },
+        "history": {
+            "title": "История операций",
+            "empty": "Нет операций"
+        }
+    },
+    "PointsInfo": {
+        "header": {
+            "title": "Баллы"
+        },
+        "promo": {
+            "title": "Баллы GeoCar",
+            "desc": "Программа лояльности: накапливайте баллы и обменивайте их на подарки и скидки у партнёров.",
+            "btn": "Купить баллы GeoCar"
+        },
+        "sheet": {
+            "title": "Купить баллы GeoCar",
+            "placeholder": "Количество баллов",
+            "amountLabel": "Сумма к оплате",
+            "buyBtn": "Купить"
+        },
+        "how": {
+            "title": "Как это работает?",
+            "step1": "Покупка баллов картой или криптовалютой",
+            "step2": "Зарабатывайте баллы с рефералами",
+            "step3": "Обменивайте баллы на ваучеры скидок у партнёров"
+        }
+    },
+    "ReferralsInfo": {
+        "header": {
+            "title": "Рефералы"
+        },
+        "promo": {
+            "title": "Рефералы GeoCar",
+            "desc": "Программа лояльности: накапливайте баллы и обменивайте их на подарки и скидки у партнёров.",
+            "btn": "Поделиться реферальной ссылкой"
+        },
+        "how": {
+            "title": "Как это работает?",
+            "step1": "Поделитесь ссылкой, чтобы пригласить пользователей",
+            "step2": "Баллы за пакеты по вашим рефералам",
+            "step3": "Обменивайте баллы на ваучеры скидок у партнёров"
+        },
+        "sheet": {
+            "title": "Поделиться реферальной ссылкой",
+            "yourLink": "Ваша ссылка",
+            "shareTo": "Поделиться:"
+        }
+    }
+}

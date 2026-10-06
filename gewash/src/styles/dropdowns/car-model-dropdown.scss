@@ -1,0 +1,39 @@
+@use "../variables" as *;
+
+.model-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    border-radius: 50px;
+    background-color: $divider;
+    padding: 6px 16px;
+    border: 1px solid transparent;
+    margin-bottom: 16px;
+  
+    &.focused {
+      border-color: $yellowMain;
+    }
+  
+    .model-icon {
+      position: absolute;
+      left: 16px;
+      width: 16px;
+      height: 16px;
+      pointer-events: none;
+    }
+  
+    .model-select {
+      width: 100%;
+      padding-left: 40px;
+      border: none;
+      background: transparent;
+      appearance: none;
+      color: inherit;
+      font: inherit;
+  
+      &:focus {
+        outline: none;
+      }
+    }
+  }
+  

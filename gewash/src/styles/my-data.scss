@@ -1,0 +1,293 @@
+@use './variables' as *;
+
+.my-data-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+header {
+    padding: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    @include font-roboto-bold-blue;
+    font-weight: 600;
+    font-size: 18px;
+    box-shadow: 0 2px 4px 2px rgba(0, 0, 0, 0.1);
+}
+
+.my-info {
+    display: flex;
+    flex-direction: column;
+    border-radius: 16px;
+    box-shadow: 0 2px 4px 2px rgba(0, 0, 0, 0.1);
+    margin: 0px 16px;
+    padding: 24px 16px;
+    gap: 16px;
+    @include font-roboto-regular-blue;
+    h2 {
+        @include font-roboto-bold-blue;
+        font-weight: 600    ;
+        font-size: 20px;
+    }
+    p {
+        padding: 4px;
+    }
+}
+
+.name-info {
+    gap: 8px;
+    display: flex;
+}
+
+.bold {
+    @include font-roboto-bold-blue;
+    font-weight: 600;
+    font-size: 20px;
+}
+
+.my-statistic {
+    padding: 24px 16px;
+    @include font-roboto-bold-blue;
+    font-size: 20px;
+    border-radius: 16px;
+    box-shadow: 0 2px 4px 2px rgba(0, 0, 0, 0.1);
+    margin: 0px 16px;
+    justify-content: space-around;
+}
+
+.statistic-button-block {
+    display: flex;
+    justify-content: space-around;
+    padding-top: 16px;
+    button {
+        color: $textPrimary;
+        padding: 8px 0px;
+        width: 33%;
+        &:hover {
+            background-color: $blueMain;
+            color: $yellowMain;
+            border-radius: 16px;
+        }
+    }
+    
+}
+
+.branch-block {
+    border-radius: 16px;
+    box-shadow: 0 2px 4px 2px rgba(0, 0, 0, 0.1);
+    padding: 16px;
+    margin: 16px;
+    @include font-roboto-regular-blue;
+    h4 {
+        padding-bottom: 16px;
+    }
+}
+
+.branch-info-header {
+    display: flex;
+    justify-content: space-between;
+    div {
+        p {
+            color: $blueMain;
+        }
+    }
+    button {
+        padding: 4px 12px;
+        background-color: #17BA68;
+        color: white;
+        border-radius: 12px;
+    }
+    p {
+        color: $textSecondary;
+    }
+}
+
+.branch-time {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding-bottom: 16px;
+    padding-top: 8px;
+}
+
+.dot {
+    width: 4px;
+    height: 4px;
+    background-color: $blueMain;
+    border-radius: 50%;
+}
+.period {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    .period-dropdown {
+        padding: 16px;
+        border: 1px solid $color-blue-200;
+        border-radius: 16px;
+        display: flex;
+        justify-content: space-between;
+        img {
+            rotate: 90deg;
+        }
+    }
+}
+
+.count-whashes {
+    display: flex;
+    border-radius: 16px;
+    box-shadow: 0 2px 4px 2px rgba(0, 0, 0, 0.1);
+    padding: 16px;
+    margin: 16px;
+
+    .whashes-img {
+        padding: 12px 16px;
+        border-radius: 16px;
+        margin-right: 12px;
+        background-color: $yellowMain;
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .whashes-info {
+        display: flex;
+        flex-direction: column;
+        p {
+        &:first-child {
+            @include font-roboto-bold-blue;
+        font-size: 16px;
+        }
+        &:last-child {
+            @include font-roboto-regular-blue;
+            font-size: 14px;
+        }
+    }
+    }
+}
+
+.whashes-flex {
+    display: flex;
+    gap: 53px;
+}
+
+.stats {
+    @include font-roboto-bold-blue;
+}
+
+.packeges {
+    border-radius: 16px;
+    box-shadow: 0 2px 4px 2px rgba(0, 0, 0, 0.1);
+    padding: 16px;
+    margin: 16px;
+    @include font-roboto-regular-blue;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.packeges-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.pcent-bar {
+    position: relative;
+    height: 4px;
+    border-radius: 16px;
+    background-color: $blueMain;
+    overflow: hidden;
+    width: 94%;
+    margin-bottom: 8px;
+    box-shadow: 0 2px 4px 2px rgba(0, 0, 0, 0.1);
+  
+    .filledBar {
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 46%;
+      background-color: $yellowMain;
+      border-radius: 16px;
+      transition: width 0.7s ease;
+    }
+  }  
+
+  .bottom-bar {
+    display: flex;
+    gap: 8px;
+    line-height: 1;
+    &:nth-child(2) {
+        text-transform: uppercase;
+    }
+    span {
+        @include font-roboto-bold-blue;
+        margin-left: auto;
+        line-height: 0.2;
+    }
+  }
+
+  .car-types-wrapper {
+    border-radius: 16px;
+    box-shadow: 0 2px 4px 2px rgba(0, 0, 0, 0.1);
+    padding: 16px;
+    margin: 16px;
+    .blue-box {
+        width: 47px;
+        height: 40px;
+    }
+  }
+  .car-types-row {
+    display: flex;
+    align-items:flex-end;
+    gap: 8px;
+  }
+  .bar-container {
+    flex-grow: 1;
+    width: 100%;
+  }
+  .car-types-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 16px;
+  }
+
+  .workload {
+    border-radius: 16px;
+    box-shadow: 0 2px 4px 2px rgba(0, 0, 0, 0.1);
+    padding: 16px;
+    margin: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    @include font-roboto-regular-blue;
+  }
+
+  .graphics-container {
+    display: flex;
+    flex-direction: column;
+    .graph-info {
+        display: flex;
+        justify-content: space-between;
+        padding-top: 4px;
+        border-top: 1px solid $divider;
+    }
+    .graph {
+        height: 82px;
+    }
+    .avg-whashes {
+        display: flex;
+        margin-top: 16px;
+        span {
+            margin-left: auto;
+            @include font-roboto-bold-blue;
+        }
+    }
+  }
+
+  
+

@@ -1,0 +1,119 @@
+@use "../variables" as *;
+
+.edit-car-screen {
+    header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        h3 {
+            padding: 0px;
+        }
+    }
+}
+
+.edit-car-content {
+    padding: 16px;
+    box-shadow: 0 2px 4px 2px rgba(0, 0, 0, 0.1);
+    margin: 16px;
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 12px;
+    label {
+        @include font-roboto-regular-blue;
+        font-size: 14px;
+    }
+}
+
+.input-select {
+    padding: 16px;
+    @include font-roboto-regular-blue;
+    border-radius: 16px;
+    border: 1px solid $border;
+    display: flex;
+    justify-content: space-between;
+    img {
+        rotate: -90deg;
+    }
+}
+
+.vehicle-delete-btn {
+    padding: 16px;
+    background-color: transparent;
+    border: 1px solid $textSecondary;
+    border-radius: 16px;
+    color: $redMain;
+    font-weight: 700;
+}
+
+.delete-vehicle-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(#183D69, 0.5);
+    z-index: 999;
+  }
+  
+
+.delete-vehicle-popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    background-color: white;
+    border-radius: 16px;
+    padding: 24px;
+    width: 400px;
+    max-width: 90vw;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  
+    h4 {
+      @include font-roboto-bold-blue;
+      font-size: 18px;
+      font-weight: 700;
+    }
+  
+    p {
+      @include font-roboto-regular-blue;
+      font-size: 16px;
+    }
+  
+    .delete-vehicle-popup-btns {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 16px;
+  
+      button {
+        flex: 1;
+        padding: 12px 16px;
+        border-radius: 16px;
+        color: $yellowMain;
+        font-size: 14px;
+  
+        &:first-child {
+          background-color: transparent;
+          border: 1px solid $textSecondary;
+        }
+  
+        &:last-child {
+          background-color: $blueMain;
+          border: none;
+        }
+      }
+    }
+  }
+  
+  .fade-out {
+    animation: fadeOut 300ms ease-in forwards;
+  }
+  
+  @keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+  }
+  

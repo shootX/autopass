@@ -1,0 +1,903 @@
+{
+    "CalendarMobileSheet": {
+        "title": "Custom statistic period",
+        "prevMonthAlt": "Previous Month",
+        "nextMonthAlt": "Next Month",
+        "selectButton": "Select"
+    },
+    "WashAppointmentsCalendar": {
+        "dayNames": {
+            "sun": "SUN",
+            "mon": "MON",
+            "tue": "TUE",
+            "wed": "WED",
+            "thu": "THU",
+            "fri": "FRI",
+            "sat": "SAT"
+        },
+        "noAppointments": "No appointments",
+        "branchNotFound": "Branch not found",
+        "popup": {
+            "title": "Cancel appointment",
+            "description": "Do you really want to cancel this appointment?",
+            "cancelButton": "Cancel",
+            "deleteButton": "Delete"
+        }
+    },
+    "ManagerCalendarGrid": {
+        "header": "Calendar",
+        "dayNames": {
+            "sun": "SUN",
+            "mon": "MON",
+            "tue": "TUE",
+            "wed": "WED",
+            "thu": "THU",
+            "fri": "FRI",
+            "sat": "SAT"
+        },
+        "statusLabels": {
+            "new": "New",
+            "rescheduled": "Rescheduled",
+            "confirmed": "Confirmed"
+        },
+        "eventsCount": "{count} Events",
+        "freeSlots": "Free time slots"
+    },
+    "SingleCalendarMobileSheet": {
+        "defaultTitle": "Custom select chose",
+        "prevMonthAlt": "prev",
+        "nextMonthAlt": "next",
+        "selectButton": "Select"
+    },
+    "AddCar": {
+        "header": {
+            "title": "Add Vehicle",
+            "backAlt": "Back",
+            "closeAlt": "Close"
+        },
+        "title": "Add Car",
+        "subtitle": "Enter your vehicle's data",
+        "labels": {
+            "brand": "Car brand",
+            "model": "Car model",
+            "plate": "Number plate"
+        },
+        "placeholders": {
+            "plate": "XX - XXX - XX",
+            "chooseBrand": "Choose your car brand",
+            "chooseModel": "Choose your car model"
+        },
+        "errors": {
+            "invalidPlate": "Invalid number plate format",
+            "plateExists": "Number plate is already exist"
+        },
+        "buttons": {
+            "add": "Add",
+            "addAnother": "Add one more",
+            "useApp": "Use the app"
+        },
+        "success": {
+            "message": "Congratulations! Your vehicle has been successfully added",
+            "carType": "SUV",
+            "carAlt": "added car"
+        },
+        "icons": {
+            "arrowAlt": "Arrow"
+        }
+    },
+    "Authentication": {
+        "logoAlt": "LOGO",
+        "greeting": {
+            "title": "Welcome",
+            "subtitle": "Enter your phone number and password to access your account"
+        },
+        "errors": {
+            "phoneNotFound": "Phone number doesn't exist",
+            "passwordIncorrect": "Password is incorrect",
+            "phoneRequired": "Phone number is required",
+            "passwordRequired": "Password is required"
+        },
+        "labels": {
+            "phone": "Phone number",
+            "password": "Password"
+        },
+        "placeholders": {
+            "phone": "500500555",
+            "password": "Input your password"
+        },
+        "prefix": "+995",
+        "forgotPassword": "Forgot password?",
+        "buttons": {
+            "signIn": "Sign In",
+            "signUp": "Sign Up"
+        },
+        "signupPrompt": "Don't have an account?",
+        "separator": "OR",
+        "social": {
+            "google": "Google",
+            "facebook": "Facebook",
+            "googleAlt": "google",
+            "facebookAlt": "facebook"
+        }
+    },
+    "BranchInfoPanel": {
+        "status": {
+            "open": "Open",
+            "close": "Close"
+        },
+        "schedule": "Mn – Fr {weekdayHours} St – Sn {weekendHours}",
+        "defaultHours": {
+            "weekday": "9:00 –17:00",
+            "weekend": "11:00 – 15:00"
+        }
+    },
+    "CustomerMyData": {
+        "header": {
+            "title": "My Data",
+            "backAlt": "back"
+        },
+        "form": {
+            "title": "My Information",
+            "fields": {
+                "firstName": "First Name",
+                "secondName": "Second Name",
+                "dateOfBirth": "Date of Birth",
+                "sex": "Sex"
+            },
+            "placeholders": {
+                "text": "---",
+                "date": "--/--/----"
+            },
+            "calendarAlt": "calendar",
+            "sexAlt": "select",
+            "calendarTitle": "Select date of birth"
+        },
+        "modal": {
+            "title": "Unsaved data",
+            "message": "You have unsaved changes to your information.",
+            "dangerAlt": "danger",
+            "buttons": {
+                "leave": "Leave",
+                "save": "Save"
+            }
+        }
+    },
+    "CustomerNavBar": {
+        "routes": {
+            "home": "Home",
+            "calendar": "Calendar",
+            "qr": "QR Code",
+            "branches": "Branches",
+            "myData": "My Data"
+        },
+        "icons": {
+            "homeAlt": "home",
+            "calendarAlt": "calendar",
+            "qrAlt": "qr",
+            "branchesAlt": "branches",
+            "myDataAlt": "my data"
+        }
+    },
+    "EditCar": {
+        "header": {
+            "title": "Edit Vehicle",
+            "backAlt": "Back",
+            "closeAlt": "Close",
+            "lockedAlt": "Locked"
+        },
+        "titleInfo": "Update your vehicle's data",
+        "labels": {
+            "brand": "Car brand",
+            "model": "Car model",
+            "plate": "Number plate"
+        },
+        "placeholders": {
+            "plate": "XX - XXX - XX"
+        },
+        "fallbacks": {
+            "brand": "Unknown brand",
+            "model": "Unknown model"
+        },
+        "errors": {
+            "invalidPlate": "Invalid number plate format",
+            "loadFailed": "Failed to load car data",
+            "saveFailed": "Failed to save changes",
+            "deleteFailed": "Failed to delete car"
+        },
+        "buttons": {
+            "save": "Save Changes",
+            "delete": "Delete vehicle",
+            "cancel": "Cancel",
+            "confirmDelete": "Delete"
+        },
+        "popup": {
+            "title": "Vehicle deleting",
+            "message": "Do you really want to remove this vehicle?"
+        }
+    },
+    "EmailChanging": {
+        "header": {
+            "title": "Changing the email",
+            "backAlt": "Back",
+            "closeAlt": "Close"
+        },
+        "form": {
+            "title": "Enter a new email address",
+            "label": "Email address",
+            "placeholder": "simplemail@simple.domain",
+            "error": "Email address is not valid",
+            "button": {
+                "set": "Set"
+            }
+        }
+    },
+    "MyPackages": {
+        "header": {
+            "title": "My packages",
+            "backAlt": "Back"
+        },
+        "tabs": {
+            "active": "Active",
+            "history": "History"
+        },
+        "loading": "Loading...",
+        "error": "Error: {message}",
+        "empty": "No active packages"
+    },
+    "MyVehicles": {
+        "title": "My vehicles",
+        "loading": "Loading vehicles...",
+        "error": "Error: {message}",
+        "empty": "No vehicles found",
+        "buttons": {
+            "add": "Add Car",
+            "editAlt": "edit-icon",
+            "vehicleAlt": "vehicle-image"
+        }
+    },
+    "NotificationSettings": {
+        "title": "Notification settings",
+        "options": {
+            "wash": "Wash appointment",
+            "subscription": "Subscription renewal",
+            "promo": "Special promotions"
+        }
+    },
+    "PhoneNumberChanging": {
+        "header": {
+            "title": "Changing the phone number",
+            "backAlt": "Back",
+            "closeAlt": "Close"
+        },
+        "form": {
+            "title": "Enter a new phone number",
+            "label": "Phone number",
+            "prefix": "+995",
+            "placeholder": "XXX XXX XXX",
+            "error": "Phone number doesn't exist",
+            "invalidAlert": "❗ Phone number must be 9 digits",
+            "button": {
+                "getCode": "Get code"
+            }
+        },
+        "verification": {
+            "success": "Phone number changed successfully!",
+            "failure": "Invalid code or expired session"
+        }
+    },
+    "QRPage": {
+        "header": {
+            "title": "QR"
+        },
+        "loading": "Loading data...",
+        "error": "Failed to load data",
+        "overlay": {
+            "close": "✕",
+            "loading": "Loading QR..."
+        },
+        "noCars": "You have no registered cars.",
+        "car": {
+            "plate": "License Plate",
+            "model": "Model",
+            "showQRAlt": "Show QR"
+        }
+    },
+    "Registration": {
+        "logoAlt": "LOGO",
+        "stage": {
+            "register": {
+                "title": "Create account",
+                "subtitle": "Please enter your phone number to register",
+                "label": "Phone number",
+                "placeholder": "706500505",
+                "button": "Sign Up",
+                "errors": {
+                    "duplicate": "Phone number already exists",
+                    "invalidFormat": "Phone number is incorrect",
+                    "empty": "Phone number is required"
+                },
+                "navigate": {
+                    "text": "Already have an account?",
+                    "link": "Sign In"
+                },
+                "separator": "OR",
+                "social": {
+                    "google": "Google",
+                    "facebook": "Facebook",
+                    "googleAlt": "google",
+                    "facebookAlt": "facebook"
+                }
+            },
+            "setPassword": {
+                "title": "Set your password",
+                "subtitle": "Choose a secure password to complete registration",
+                "finish": "Finish",
+                "label": "Password",
+                "placeholder": "Create your password",
+                "button": "Finish",
+                "title": {
+                    "errors": {
+                        "tooShort": "Password must be at least 6 characters"
+                    }
+                },
+                "errors": {
+                    "tooShort": "Password must be at least 6 characters",
+                    "serverError": "Server error. Please try again.",
+                    "network": "Network error. Please check your connection."
+                }
+            }
+        }
+    },
+    "PasswordChange": {
+        "request": {
+            "title": "Reset password",
+            "subtitle": "Enter your phone number to receive a verification code",
+            "label": "Phone number",
+            "button": "Send code",
+            "navigate": {
+                "text": "Remembered your password?",
+                "link": "Sign In"
+            },
+            "errors": {
+                "required": "Phone number is required",
+                "invalid": "Phone number is invalid",
+                "not-found": "Phone number doesn't exist",
+                "server-error": "Server error. Please try again.",
+                "network": "Network error. Please check your connection."
+            }
+        },
+        "setPassword": {
+            "title": "Set a new password",
+            "subtitle": "Choose a secure password for your account",
+            "label": "Password",
+            "finish": "Save",
+            "errors": {
+                "tooShort": "Password must be at least 6 characters"
+            }
+        }
+    },
+    "WashAppointment": {
+        "header": {
+            "title": "Branches",
+            "backAlt": "Back"
+        },
+        "branch": {
+            "geoAlt": "Location"
+        },
+        "appointments": {
+            "title": "My appointments",
+            "dateAlt": "calendar",
+            "typeAlt": "type",
+            "timeAlt": "clock",
+            "statusAlt": "status",
+            "status": "Applied"
+        },
+        "form": {
+            "title": "Car wash appointment",
+            "success": "Booking success",
+            "error": "Booking failed",
+            "date": {
+                "label": "Date",
+                "placeholder": "--/--/----",
+                "pickerTitle": "Select date",
+                "arrowAlt": "Arrow"
+            },
+            "time": {
+                "label": "Time",
+                "placeholder": "-- : --",
+                "arrowAlt": "Arrow"
+            },
+            "service": {
+                "label": "Service",
+                "placeholder": "-",
+                "arrowAlt": "Arrow"
+            },
+            "submit": {
+                "button": "Book a service",
+                "loading": "Booking..."
+            }
+        }
+    },
+    "Booking": {
+        "header": "Booking",
+        "fallback": {
+            "error": "Failed to load data"
+        },
+        "filters": {
+            "New": "New",
+            "Confirmed": "Confirmed",
+            "Sheduled": "Scheduled",
+            "All": "All"
+        },
+        "popup": {
+            "reasonLabel": "Reason for deletion",
+            "confirm": "Confirm",
+            "cancel": "Cancel"
+        }
+    },
+    "ManagerNavBar": {
+        "nav": {
+            "home": "Home",
+            "booking": "Booking",
+            "qr": "QR",
+            "statistics": "Statistics",
+            "profile": "Profile"
+        },
+        "icons": {
+            "homeAlt": "Home icon",
+            "bookingAlt": "Booking icon",
+            "qrAlt": "QR icon",
+            "statisticsAlt": "Statistics icon",
+            "profileAlt": "Profile icon"
+        }
+    },
+    "ManagerOrdersList": {
+        "emptyMessage": "You haven't left any new orders",
+        "status": {
+            "New": "New",
+            "Confirm": "Confirmed",
+            "Deleted": "Deleted",
+            "Rescheduled": "Rescheduled",
+            "Expired": "Expired"
+        }
+    },
+    "ManagerScanner": {
+        "header": "Scanner",
+        "upload": {
+            "label": "Upload QR image (for desktop test):"
+        },
+        "status": {
+            "checking": "🔄 Checking QR code...",
+            "invalid": "QR scanned, but data is not valid or not full"
+        },
+        "card": {
+            "closeAlt": "Close",
+            "activePackage": "Active package",
+            "until": "until",
+            "washes": {
+                "label": "Washes",
+                "remaining": "remaining"
+            },
+            "period": {
+                "label": "Period",
+                "unit": "months"
+            },
+            "approve": {
+                "button": "Approve",
+                "success": "Approve success"
+            }
+        }
+    },
+    "MyData": {
+        "header": "My Data",
+        "info": {
+            "title": "My information",
+            "firstName": "First Name",
+            "lastName": "Second Name",
+            "phone": "Phone number",
+            "role": "Role",
+            "roleValue": "Wash manager",
+            "branch": "Branch",
+            "branchName": "Geocar on Shartava",
+            "branchAddress": "57 Zhiuli Shartava St, Tbilisi"
+        },
+        "statistic": {
+            "title": "My statistic",
+            "buttons": {
+                "day": "Day",
+                "week": "Week",
+                "month": "Month"
+            }
+        },
+        "loading": "Loading..."
+    },
+    "ReschudelingOrder": {
+        "header": {
+            "title": "Rescheduling the order",
+            "backAlt": "Back"
+        },
+        "customer": {
+            "name": "—",
+            "phone": "—",
+            "service": "—",
+            "serviceAlt": "Service type"
+        },
+        "form": {
+            "date": {
+                "label": "Date",
+                "placeholder": "---",
+                "pickerAlt": "Calendar"
+            },
+            "time": {
+                "label": "Time",
+                "placeholder": "---",
+                "pickerAlt": "Clock"
+            },
+            "save": {
+                "button": "Save",
+                "loading": "Saving..."
+            }
+        }
+    },
+    "Home": {
+        "greeting": "Hello,",
+        "fallback": {
+            "guest": "Guest",
+            "plate": "No plate",
+            "type": "Unknown type",
+            "error": "Failed to load cars"
+        },
+        "navigation": {
+            "leftAlt": "arrow to left",
+            "rightAlt": "arrow to right"
+        },
+        "car": {
+            "qrAlt": "QR icon",
+            "imageAlt": "hatchback image"
+        },
+        "washes": {
+            "title": "Washes",
+            "remaining": "remaining",
+            "iconAlt": "washes"
+        },
+        "period": {
+            "title": "Period",
+            "unit": "month",
+            "expiration": "expiration date",
+            "iconAlt": "time"
+        },
+        "promo": {
+            "regular": "Special offer",
+            "bold": "GET 10% DISCOUNT\nBY EXTENDING YOUR SUBSCRIPTION",
+            "arrowAlt": "promo arrow"
+        }
+    },
+    "BranchFilterDropDown": {
+        "title": "Filter",
+        "clear": "Clear filter",
+        "sections": {
+            "services": "Services",
+            "hours": "Opening hours"
+        },
+        "options": {
+            "roundTheClock": "Round the clock only",
+            "onlyOpen": "Only open"
+        },
+        "button": "Apply filters"
+    },
+    "MobileDropdownSheet": {
+        "title": "Choose statistic period",
+        "options": {
+            "today": "Today",
+            "yesterday": "Yesterday",
+            "last7Days": "Last 7 Days",
+            "lastMonth": "Last Month",
+            "custom": "Custom period"
+        }
+    },
+    "Sidebar": {
+        "logoAlt": "Geocar Logo",
+        "menu": {
+            "myReviews": "My reviews",
+            "myPackages": "My packages",
+            "shop": "Shop",
+            "myPoints": "My points",
+            "messages": "Messages",
+            "settings": "Settings",
+            "contacts": "Contacts",
+            "help": "Help"
+        },
+        "icons": {
+            "myReviewsAlt": "Reviews icon",
+            "myPackagesAlt": "Packages icon",
+            "messagesAlt": "Messages icon",
+            "contactsAlt": "Contacts icon",
+            "helpAlt": "Help icon"
+        }
+    },
+    "TimePickerMobileSheet": {
+        "title": "Choose a time",
+        "options": {
+            "09:00": "09:00",
+            "11:00": "11:00",
+            "13:00": "13:00",
+            "15:00": "15:00",
+            "17:00": "17:00",
+            "19:00": "19:00"
+        },
+        "button": "Select"
+    },
+    "TypeWashingDropDown": {
+        "title": "Choose service type",
+        "iconAlt": "Service type icon"
+    },
+    "ActivePackageCard": {
+        "header": "Active package",
+        "status": {
+            "expired": "Expired",
+            "until": "until {{date}}"
+        },
+        "vehicle": {
+            "label": "Your vehicle"
+        },
+        "details": {
+            "washes": {
+                "label": "Washes",
+                "remaining": "remaining",
+                "infinity": "∞",
+                "iconAlt": "drop icon"
+            },
+            "period": {
+                "label": "Period",
+                "unit": "month",
+                "iconAlt": "time icon"
+            }
+        },
+        "autoRenewal": "Auto-renewal",
+        "actions": {
+            "deleteAlt": "Delete",
+            "editAlt": "reload",
+            "calendarAlt": "calendar",
+            "qrAlt": "qr"
+        },
+        "deletePopup": {
+            "title": "Package canceling",
+            "message": "Do you really want to cancel this vehicle?",
+            "cancel": "Cancel",
+            "confirm": "Delete"
+        }
+    },
+    "BranchCard": {
+        "icons": {
+            "geoAlt": "Location",
+            "calendarAlt": "Calendar",
+            "bookedAlt": "Booked"
+        }
+    },
+    "BranchMap": {
+        "markerAlt": "Branch marker",
+        "panel": {
+            "status": {
+                "open": "Open",
+                "closed": "Close"
+            },
+            "schedule": {
+                "weekday": "Mn – Fr",
+                "weekdayHours": "9:00 –17:00",
+                "weekend": "St – Sn",
+                "weekendHours": "11:00 – 15:00"
+            },
+            "actions": {
+                "callAlt": "Call",
+                "pathAlt": "Route",
+                "calendarAlt": "Book appointment"
+            }
+        }
+    },
+    "BranchScreen": {
+        "header": "Branches",
+        "filter": {
+            "buttonAlt": "Filter"
+        },
+        "viewToggle": {
+            "list": "List",
+            "map": "Map"
+        },
+        "loading": "Loading branches...",
+        "error": "Failed to load branches"
+    },
+    "CustomerContactInfo": {
+        "title": "Contact information",
+        "phone": {
+            "label": "Phone number",
+            "editAlt": "Edit phone"
+        },
+        "email": {
+            "label": "Email",
+            "confirmed": "(Confirmed)",
+            "unconfirmed": "(Unconfirmed)",
+            "editAlt": "Edit email"
+        }
+    },
+    "DeleteReasonPopup": {
+        "title": "Deleting an order",
+        "description": "To delete an order, please leave a description of the reason",
+        "textarea": {
+            "placeholder": "Input text",
+            "charCounter": "{{count}}/500"
+        },
+        "actions": {
+            "cancel": "Leave",
+            "confirm": "OK"
+        }
+    },
+    "OTPVerification": {
+        "title": "We sent a verification code to your phone number. Please enter to verify.",
+        "error": {
+            "invalid": "Code is not valid"
+        },
+        "input": {
+            "placeholder": "-"
+        },
+        "button": {
+            "send": "Send"
+        },
+        "resend": {
+            "text": "Didn't get the code?",
+            "link": "Send again"
+        }
+    },
+    "WashingPackageForm": {
+        "title": {
+            "create": "Washing package",
+            "edit": "Update package"
+        },
+        "warning": "Package price depends on the type of vehicle",
+        "vehicle": {
+            "label": "Your vehicle",
+            "dropdownAlt": "arrow"
+        },
+        "washes": {
+            "label": "Number of washes",
+            "infinity": "∞"
+        },
+        "term": {
+            "label": "Subscription term",
+            "unit": "month"
+        },
+        "renewal": {
+            "label": "Auto-renewal"
+        },
+        "price": {
+            "label": "Subscription price",
+            "fallback": "—",
+            "currency": "₾"
+        },
+        "button": {
+            "create": "Activate package",
+            "edit": "Update package",
+            "loading": "Processing..."
+        }
+    },
+    "Shop": {
+        "header": { "title": "Shop" },
+        "balance": { "label": "Balance", "unit": "Coins" },
+        "categories": {
+            "discounts": "Discounts",
+            "giveaway": "Giveaway"
+        },
+        "all": "All",
+        "loading": "Loading…",
+        "loadError": "Could not load. Pull to refresh or try again later.",
+        "vouchers": {
+            "title": "My Vouchers",
+            "buyMore": "Buy more",
+            "empty": "No vouchers yet."
+        },
+        "tickets": {
+            "title": "My Tickets",
+            "daysLeft": "days left",
+            "join": "Join the giveaway",
+            "empty": "No giveaways yet."
+        }
+    },
+    "Discounts": {
+        "title": "Discounts",
+        "searchPlaceholder": "Search for a partner company",
+        "loading": "Loading…",
+        "empty": "No discounts found.",
+        "detail": {
+            "termsTitle": "Terms of Use:",
+            "buy": "Buy",
+            "take": "Take",
+            "currentBalance": "Current balance:",
+            "newBalance": "New balance:",
+            "points": "points",
+            "successMsg": "Purchased successfully",
+            "yourCode": "Your discount code:",
+            "notEnoughTitle": "Not enough points",
+            "notEnoughDesc": "You don't have enough points to get this discount. Buy more points to continue.",
+            "buyPoints": "Buy points"
+        }
+    },
+    "Giveaway": {
+        "title": "Giveaway",
+        "loading": "Loading…",
+        "empty": "No active offers.",
+        "notFound": "Offer not found.",
+        "activeOffers": "Active offers",
+        "daysLeft": "days left",
+        "joinBtn": "Join the giveaway",
+        "takePartBtn": "Take part",
+        "buyMoreBtn": "Buy more tickets",
+        "joinedSuccess": "You've joined the giveaway!",
+        "myTickets": "My tickets:",
+        "daysLeftLabel": "Days left",
+        "participants": "Participants",
+        "termsTitle": "Terms of Participation:",
+        "ticketPrice": "Ticket price",
+        "quantity": "Quantity",
+        "totalCost": "Total cost:",
+        "currentBalance": "Current balance:",
+        "newBalance": "New balance:",
+        "points": "points",
+        "confirmBtn": "Confirm",
+        "takeBtn": "Take",
+        "tickets": "Tickets",
+        "buyMorePointsBtn": "Buy more points",
+        "notEnoughTitle": "Not enough points",
+        "notEnoughDesc": "You are {amount} points short. Purchase them now.",
+        "amountToPay": "Amount to pay",
+        "buyBtn": "Buy",
+        "successTitle": "Successful purchase",
+        "successDesc": "You have successfully purchased {amount} points.",
+        "okBtn": "OK",
+        "takePartForBtn": "Take part for {price} points"
+    },
+    "MyPoints": {
+        "header": { "title": "My points" },
+        "balance": { "label": "Balance", "unit": "points" },
+        "referrals": { "label": "Referrals", "unit": "people" },
+        "notice": { "addedLine": "{count} points added" },
+        "history": { "title": "Transaction history", "empty": "No transactions" }
+    },
+    "PointsInfo": {
+        "header": { "title": "Points" },
+        "promo": {
+            "title": "GeoCar points",
+            "desc": "This is a loyalty program that gives participants the opportunity to accumulate points and exchange them for gifts or discounts from partners.",
+            "btn": "Buy GeoCar points"
+        },
+        "sheet": {
+            "title": "Buy GeoCar points",
+            "placeholder": "Points amount",
+            "amountLabel": "Amount to pay",
+            "buyBtn": "Buy"
+        },
+        "how": {
+            "title": "How it works?",
+            "step1": "Purchase points using a bank card or cryptocurrency",
+            "step2": "Earn points with your referrals",
+            "step3": "Exchange points for discount vouchers from our partners"
+        }
+    },
+    "ReferralsInfo": {
+        "header": { "title": "Referrals" },
+        "promo": {
+            "title": "GeoCar referrals",
+            "desc": "This is a loyalty program that gives participants the opportunity to accumulate points and exchange them for gifts or discounts from partners.",
+            "btn": "Share Referral Link"
+        },
+        "how": {
+            "title": "How it works?",
+            "step1": "Share your referral link to register new users",
+            "step2": "Earn points for packages connected by your referrals",
+            "step3": "Exchange points for discount vouchers from our partners"
+        },
+        "sheet": {
+            "title": "Share Referral Link",
+            "yourLink": "Your link",
+            "shareTo": "Sharet to:"
+        }
+    }
+}

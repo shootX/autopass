@@ -1,0 +1,169 @@
+@use './variables' as *;
+
+
+header {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.calendar-wrapper {
+    margin: auto;
+    background: white;
+    font-family: sans-serif;
+    overflow: hidden;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    margin: 16px;
+  }  
+  
+  .calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px;
+    font-weight: 600;
+    font-size: 18px;
+    color: $blueMain;
+    border-radius: 16px;
+    box-shadow: 0 4px 6px 4px rgba(0, 0, 0, 0.1);
+    margin: 16px;
+  
+    button {
+      font-size: 18px;
+      color: $yellowMain;
+      cursor: pointer;
+    }
+  }
+  
+  .calendar-daynames {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    font-weight: 400;
+    color: $color-blue-200;
+    font-size: 12px;
+    padding: 16px 16px 0px 16px;
+    
+  }
+  
+  .calendar-dayname {
+    text-align: center;
+  }
+  
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    border: 1px solid #D3D3D3;
+    border-radius: 16px;
+    overflow: hidden;
+    margin: 16px;
+  }
+  
+  
+  .calendar-cell {
+    box-shadow: inset -1px 0 0 #D3D3D3, inset 0 -1px 0 #D3D3D3;
+    box-sizing: border-box;
+    background: white;
+    text-align: center;
+    padding: 21px 8px;
+    color: #183D69;
+    cursor: pointer;
+    outline: none;
+  
+    &:hover {
+      background-color: #EDF4FF;
+    }
+  
+    &.selected {
+      background-color: #CDF5D8;
+      font-weight: bold;
+      border: 1px solid #17BA68;
+      transition: all 0.3s ease;
+    }
+  }
+
+  .calendar-cell:first-child {
+  border-top-left-radius: 16px;
+}
+
+.calendar-cell:nth-child(7) {
+  border-top-right-radius: 16px;
+}
+
+.calendar-cell:nth-last-child(7) {
+  border-bottom-left-radius: 16px;
+}
+
+.calendar-cell:last-child {
+  border-bottom-right-radius: 16px;
+}
+
+.calendar-dots {
+    margin-top: 4px;
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+  }
+  
+  .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+  }
+  
+  .dot.confirm      { background-color: #17BA68; }
+  .dot.new          { background-color: $yellowMain; }
+  .dot.expired      { background-color: $redMain; }
+  .dot.rescheduled  { background-color: $blueMain; }
+  .dot.deleted      { background-color: #879AB1; }
+  
+
+  .date-events {
+    border-radius: 16px;
+    margin: 16px;
+    box-shadow: 0 4px 6px 4px rgba(0, 0, 0, 0.1);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .current-date {
+    display: flex;
+    justify-content: space-between;
+    @include font-roboto-regular-yellow;
+    font-weight: 700;
+    font-size: 20px;
+    .quantity-events {
+     @include font-roboto-bold-blue;
+     font-size: 20px;
+    }
+  }
+
+  .calendar-status-list {
+    display: flex;
+    gap: 4px;
+    font-size: 14px;
+    .calendar-status-list {
+        padding: 4px 12px;
+        border-radius: 8px;
+    &.new {
+        background-color: $yellowMain;
+        color: $blueMain;
+    }
+    &.rescheduled {
+        background-color: $blueMain;
+        color: $yellowMain;
+    }
+    &.confirmed {
+        background-color: #17BA68;
+        color: white;
+    }
+    span {
+        margin-left: 8px;
+    }
+    }
+  }
+
+  .manager-order-container {
+    box-shadow: 0 4px 6px 4px rgba(0, 0, 0, 0.1);
+  }

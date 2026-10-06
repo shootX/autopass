@@ -1,0 +1,798 @@
+@use "../variables" as *;
+
+$shadow: 0 0 12px 0 rgba(24, 61, 105, 0.08);
+
+// ── Page ──────────────────────────────────────────────────────────────────────
+.giveaway-page {
+  display: flex;
+  flex-direction: column;
+  background-color: $bg;
+}
+
+// ── Header ────────────────────────────────────────────────────────────────────
+.giveaway-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+  padding: 12px 16px;
+  background-color: #fff;
+  box-shadow: $shadow;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+
+  &__back {
+    background: none;
+    border: none;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    width: 40px;
+  }
+
+  &__title {
+    font-size: 18px;
+    font-weight: 600;
+    color: $blueMain;
+    text-align: center;
+    flex: 1;
+  }
+
+  &__balance {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background-color: $blueMain;
+    border-radius: 8px;
+    padding: 4px 8px 4px 4px;
+    box-shadow: $shadow;
+
+    img {
+      width: 16px;
+      height: 16px;
+      object-fit: contain;
+    }
+
+    span {
+      font-size: 14px;
+      font-weight: 600;
+      color: $yellowMain;
+      white-space: nowrap;
+    }
+  }
+}
+
+// ── Wrapper ───────────────────────────────────────────────────────────────────
+.giveaway-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+}
+
+.giveaway-section-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: $blueMain;
+}
+
+// ── Card ──────────────────────────────────────────────────────────────────────
+.giveaway-card {
+  background: transparent;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+
+  // ── Image + overlay badge ──────────────────────────────────────────────────
+  &__img-wrap {
+    position: relative;
+    width: 100%;
+    height: 192px;
+    flex-shrink: 0;
+    border-radius: 16px 16px 0 0;
+    overflow: hidden;
+  }
+
+  &__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  &__ticket-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background-color: rgba(0, 0, 0, 0.35);
+    border-radius: 8px;
+    padding: 4px 8px 4px 6px;
+    backdrop-filter: blur(4px);
+
+    img {
+      width: 16px;
+      height: 16px;
+      object-fit: contain;
+    }
+
+    span {
+      font-size: 14px;
+      font-weight: 600;
+      color: #fff;
+    }
+  }
+
+  // ── Body ──────────────────────────────────────────────────────────────────
+  &__body {
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: #fff;
+  }
+
+  &__banner {
+    background-color: rgba(23, 186, 104, 0.15);
+    border: 1px solid rgba(23, 186, 104, 0.3);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #17BA68;
+  }
+
+  &__info-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  &__text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+  }
+
+  &__title {
+    font-size: 16px;
+    font-weight: 600;
+    color: $blueMain;
+    line-height: 1.2;
+  }
+
+  &__days {
+    font-size: 13px;
+    font-weight: 400;
+    color: $textSecondary;
+  }
+
+  &__price-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid $blueMain;
+    border-radius: 8px;
+    padding: 4px 10px 4px 6px;
+    box-shadow: $shadow;
+    flex-shrink: 0;
+
+    img {
+      width: 20px;
+      height: 20px;
+      object-fit: contain;
+    }
+
+    span {
+      font-size: 16px;
+      font-weight: 600;
+      color: $blueMain;
+    }
+  }
+
+  // ── Tear edge ─────────────────────────────────────────────────────────────
+  &__tear {
+    position: relative;
+    height: 13px;
+    flex-shrink: 0;
+    margin-top: -1px;
+    background-color: #fff;
+    background-image: radial-gradient(circle at 18px 100%, $bg 13px, #fff 13.5px);
+    background-size: 37px 13px;
+    background-repeat: repeat-x;
+    background-position: 0 0;
+    overflow: hidden;
+  }
+
+  &__tear::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: radial-gradient(circle at 18px 100%, transparent 12px, rgba(24, 61, 105, 0.06) 13px, transparent 14.5px);
+    background-size: 37px 13px;
+    background-repeat: repeat-x;
+    background-position: 0 0;
+  }
+}
+
+// ── Overlay ───────────────────────────────────────────────────────────────────
+.giveaway-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(24, 61, 105, 0.5);
+  z-index: 100;
+}
+
+// ── Bottom sheet ──────────────────────────────────────────────────────────────
+.giveaway-sheet {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border-radius: 16px 16px 0 0;
+  box-shadow: $shadow;
+  padding: 0 16px 32px;
+  z-index: 101;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  &__handle {
+    width: 32px;
+    height: 4px;
+    background: rgba(116, 133, 148, 0.4);
+    border-radius: 100px;
+    align-self: center;
+    margin: 16px 0 0;
+    flex-shrink: 0;
+  }
+
+  &__title {
+    font-size: 20px;
+    font-weight: 600;
+    color: $textPrimary;
+  }
+
+  &__subtitle {
+    font-size: 14px;
+    font-weight: 400;
+    color: $textSecondary;
+    margin-top: -8px;
+  }
+
+  &__qty-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__qty-label {
+    font-size: 14px;
+    font-weight: 400;
+    color: $textSecondary;
+  }
+
+  &__qty-ctrl {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  &__qty-label {
+    font-size: 14px;
+    font-weight: 400;
+    color: $textSecondary;
+    margin-right: 4px;
+  }
+
+  &__qty-btn {
+    background: none;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  &__qty-input {
+    width: 56px;
+    height: 36px;
+    background: #E8ECF0;
+    border: none;
+    border-radius: 50px;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 600;
+    color: $blueMain;
+    outline: none;
+
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button { -webkit-appearance: none; }
+    &[type=number] { -moz-appearance: textfield; }
+  }
+
+  &__divider {
+    height: 0;
+    border: none;
+    border-top: 1px dashed $divider;
+    margin: 0 -16px;
+  }
+
+  &__balances {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  &__balance-row {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  &__balance-label {
+    font-size: 14px;
+    font-weight: 400;
+    color: $textSecondary;
+  }
+
+  &__balance-value {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    span:first-child {
+      font-size: 16px;
+      font-weight: 600;
+      color: $textPrimary;
+    }
+
+    &--new span:first-child {
+      color: $yellowMain;
+    }
+  }
+
+  &__balance-unit {
+    font-size: 12px;
+    font-weight: 400;
+    color: $textSecondary;
+  }
+
+  &__ticket-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  &__coin-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 36px;
+    padding: 4px 12px 4px 8px;
+    border: 1px solid $blueMain;
+    border-radius: 8px;
+    box-shadow: 0 0 12px 0 rgba(24, 61, 105, 0.08);
+
+    img { width: 20px; height: 20px; object-fit: contain; }
+    span { font-size: 16px; font-weight: 600; color: $blueMain; }
+  }
+
+  &__balance-value--negative {
+    span:first-child {
+      font-size: 16px;
+      font-weight: 600;
+      color: #e53935;
+    }
+  }
+
+  // Sub-header (back + title row)
+  &__sub-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  &__sub-back {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  &__title--success {
+    color: #17BA68;
+  }
+
+  // Input row
+  &__input-row {
+    display: flex;
+    align-items: center;
+    border: 1px solid $divider;
+    border-radius: 12px;
+    padding: 0 16px;
+    height: 52px;
+    gap: 8px;
+  }
+
+  &__input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 18px;
+    font-weight: 600;
+    color: $textPrimary;
+    background: transparent;
+
+    &::placeholder { color: $border; }
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button { -webkit-appearance: none; }
+  }
+
+  &__input-unit {
+    font-size: 14px;
+    font-weight: 400;
+    color: $textSecondary;
+    flex-shrink: 0;
+  }
+
+  &__amount-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: -8px;
+  }
+
+  &__amount-label {
+    font-size: 14px;
+    font-weight: 400;
+    color: $textSecondary;
+  }
+
+  &__amount-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: $blueMain;
+  }
+
+  &__confirm-btn {
+    width: 100%;
+    height: 48px;
+    background-color: $blueMain;
+    border: none;
+    border-radius: 16px;
+    font-size: 16px;
+    font-weight: 600;
+    color: $yellowMain;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:disabled { opacity: 0.85; cursor: default; }
+  }
+
+  &__spinner {
+    width: 22px;
+    height: 22px;
+    border: 2.5px solid rgba(247, 178, 51, 0.3);
+    border-top-color: $yellowMain;
+    border-radius: 50%;
+    animation: giveaway-spin 0.7s linear infinite;
+  }
+}
+
+@keyframes giveaway-spin {
+  to { transform: rotate(360deg); }
+}
+
+// ── Detail page ───────────────────────────────────────────────────────────────
+.giveaway-detail {
+  display: flex;
+  flex-direction: column;
+  background-color: $bg;
+
+  &__hero {
+    position: relative;
+    width: 100%;
+    height: 264px;
+    flex-shrink: 0;
+    z-index: 2;
+    margin-bottom: -16px;
+    border-radius: 0 0 16px 16px;
+    overflow: hidden;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+  }
+
+  &__appbar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+  }
+
+  &__back {
+    width: 24px;
+    height: 24px;
+    background: rgba(255, 255, 255, 0.5);
+    border: none;
+    border-radius: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  &__balance {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background-color: $blueMain;
+    border-radius: 8px;
+    padding: 4px 8px 4px 4px;
+    box-shadow: $shadow;
+
+    img { width: 16px; height: 16px; object-fit: contain; }
+    span { font-size: 14px; font-weight: 600; color: $yellowMain; white-space: nowrap; }
+  }
+
+  &__body {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding: 32px 16px 24px;
+    background-color: $bg;
+    border-radius: 16px 16px 0 0;
+    position: relative;
+    z-index: 1;
+  }
+
+  &__banner {
+    background-color: rgba(23, 186, 104, 0.15);
+    border: 1px solid rgba(23, 186, 104, 0.3);
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #17BA68;
+  }
+
+  &__price-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: flex-start;
+
+    // push coin badge to the right
+    .giveaway-detail__coin-badge {
+      margin-left: auto;
+    }
+  }
+
+  // Yellow pill — "14 days left"
+  &__days-badge {
+    display: inline-flex;
+    align-items: center;
+    height: 36px;
+    padding: 0 16px;
+    background-color: $yellowMain;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    color: $blueMain;
+    white-space: nowrap;
+  }
+
+  &__my-ticket-badge {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    img { width: 32px; height: 32px; object-fit: contain; }
+    span { font-size: 18px; font-weight: 600; color: $yellowMain; }
+  }
+
+  &__coin-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 36px;
+    padding: 4px 12px 4px 8px;
+    border: 1px solid $blueMain;
+    border-radius: 8px;
+    box-shadow: $shadow;
+
+    img { width: 20px; height: 20px; object-fit: contain; }
+    span { font-size: 16px; font-weight: 600; color: $blueMain; }
+  }
+
+  &__info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  &__title {
+    font-size: 20px;
+    font-weight: 600;
+    color: $blueMain;
+    line-height: 1.3;
+  }
+
+  &__desc {
+    font-size: 14px;
+    font-weight: 400;
+    color: $textSecondary;
+    line-height: 20px;
+  }
+
+  &__join-btn {
+    width: 100%;
+    height: 52px;
+    background-color: $blueMain;
+    border: none;
+    border-radius: 16px;
+    font-size: 16px;
+    font-weight: 600;
+    color: $yellowMain;
+    cursor: pointer;
+  }
+
+  &__my-tickets {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: rgba(23, 186, 104, 0.08);
+    border-radius: 12px;
+    padding: 12px 16px;
+  }
+
+  &__my-tickets-label {
+    font-size: 14px;
+    font-weight: 400;
+    color: $textSecondary;
+  }
+
+  &__my-tickets-count {
+    font-size: 18px;
+    font-weight: 600;
+    color: #17BA68;
+  }
+
+  // Terms block
+  &__terms {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  &__terms-heading {
+    font-size: 16px;
+    font-weight: 600;
+    color: $textPrimary;
+  }
+
+  &__terms-subheading {
+    font-size: 14px;
+    font-weight: 600;
+    color: $textPrimary;
+    margin-top: 6px;
+  }
+
+  &__terms-line {
+    font-size: 14px;
+    font-weight: 400;
+    color: $textPrimary;
+    line-height: 22px;
+
+    strong { font-weight: 600; }
+  }
+
+  &__terms-list {
+    padding-left: 20px;
+    list-style: disc;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    li {
+      font-size: 14px;
+      font-weight: 400;
+      color: $textPrimary;
+      line-height: 22px;
+
+      &::marker {
+        color: $yellowMain;
+      }
+    }
+  }
+
+  // Yellow draw-date banner
+  &__draw-banner {
+    background-color: $yellowMain;
+    border-radius: 8px;
+    padding: 4px 8px;
+    font-size: 14px;
+    font-weight: 700;
+    color: $blueMain;
+    text-align: center;
+  }
+
+  // Results text
+  &__results {
+    font-size: 14px;
+    font-weight: 600;
+    color: $textPrimary;
+    line-height: 22px;
+  }
+
+  &__results-link {
+    color: $yellowMain;
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  // Company info (same as discount-detail)
+  &__company {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+    // border-top: 1px solid $divider;
+    margin-top: 4px;
+  }
+
+  &__company-left {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  &__company-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: $blueMain;
+  }
+
+  &__company-contact {
+    font-size: 12px;
+    font-weight: 400;
+    color: $blueMain;
+  }
+
+  &__company-right {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 16px;
+    font-weight: 600;
+    color: $blueMain;
+  }
+}

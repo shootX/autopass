@@ -1,0 +1,156 @@
+@use "../variables" as *;
+
+.my-points-page {
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+    font-size: 18px;
+    font-weight: 600;
+    color: $blueMain;
+
+    img {
+      width: 24px;
+      height: 24px;
+      cursor: pointer;
+    }
+
+    span {
+      width: 24px;
+    }
+  }
+}
+
+.my-points-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 16px;
+}
+
+.my-points-card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 2px 2px 8px rgba(143, 143, 143, 0.15);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  cursor: pointer;
+
+  .yellow-box {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+  }
+
+  &__top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  &__bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__arrow {
+    width: 16px;
+    height: 16px;
+  }
+
+  &__label {
+    font-size: 16px;
+    font-weight: 500;
+    color: $blueMain;
+  }
+
+  &__value {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    font-size: 28px;
+    font-weight: 700;
+    color: $blueMain;
+  }
+
+  &__unit {
+    font-size: 14px;
+    font-weight: 600;
+    color: $blueMain;
+  }
+}
+
+.my-points-notice {
+  background: $color-green-200;
+  color: $color-green-500;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 10px 14px;
+  border-radius: 10px;
+}
+
+.my-points-history {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 2px 2px 8px rgba(143, 143, 143, 0.15);
+  padding: 16px;
+  margin-top: 4px;
+
+  &__title {
+    font-size: 18px;
+    font-weight: 700;
+    color: $blueMain;
+    margin-bottom: 12px;
+  }
+
+  &__empty {
+    font-size: 14px;
+    color: $textSecondary;
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  &__item {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  &__meta {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  &__date {
+    font-size: 13px;
+    font-weight: 600;
+    color: $yellowMain;
+  }
+
+  &__desc {
+    font-size: 14px;
+    color: $blueMain;
+  }
+
+  &__points {
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+
+    &.plus  { color: $color-green-500; }
+    &.minus { color: $redMain; }
+  }
+}

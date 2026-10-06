@@ -1,0 +1,143 @@
+@extends('admin.layout.app')
+
+@push('css')
+    <style>
+        td {
+            vertical-align: middle;
+        }
+        td:last-child{
+            text-align:center;
+        }
+    </style>
+@endpush
+
+@section('content')
+    <div class="container-fluid px-4">
+        @if(session()->has('message'))
+            <div class="alert alert-success mt-4">
+                {{ session()->get('message') }}
+            </div>
+        @endif
+        <div class="card mt-4 mb-4">
+            <div class="card-header" style="display: flex;justify-content: space-between;align-items: baseline;">
+                <div>{{ __('admin.appointments') }}</div>
+
+                <div style="display: flex;">
+                    <form method="GET">
+                        <button style="margin-left: 5px;" class="btn btn-success" name="export" type="submit"><svg class="svg-inline--fa fa-file-excel" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="file-excel" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512" data-fa-i2svg=""><path fill="currentColor" d="M64 0C28.7 0 0 28.7 0 64V448c0 35.3 28.7 64 64 64H320c35.3 0 64-28.7 64-64V160H256c-17.7 0-32-14.3-32-32V0H64zM256 0V128H384L256 0zM155.7 250.2L192 302.1l36.3-51.9c7.6-10.9 22.6-13.5 33.4-5.9s13.5 22.6 5.9 33.4L221.3 344l46.4 66.2c7.6 10.9 5 25.8-5.9 33.4s-25.8 5-33.4-5.9L192 385.8l-36.3 51.9c-7.6 10.9-22.6 13.5-33.4 5.9s-13.5-22.6-5.9-33.4L162.7 344l-46.4-66.2c-7.6-10.9-5-25.8 5.9-33.4s25.8-5 33.4 5.9z"></path></svg><!-- <i class="fa-solid fa-file-excel"></i> Font Awesome fontawesome.com --></button>
+                    </form>
+                    <a style="margin-left: 5px;" href="{{route('admin.appointments.add')}}" class="btn btn-primary"><i class="fa fa-plus"></i> {{ __('admin.add') }}</a>
+
+                </div>
+            </div>
+            <div class="card-body table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th scope="col">ID</th>
+                        <th scope="col">{{ __('admin.client') }}</th>
+                        <th scope="col">{{ __('admin.car') }}</th>
+                        <th scope="col">{{ __('admin.car_wash') }}</th>
+                        <th scope="col">{{ __('admin.services') }}</th>
+                        <th scope="col">{{ __('admin.manager') }}</th>
+                        <th scope="col">{{ __('admin.appointment_datetime') }}</th>
+                        <th scope="col">{{ __('admin.status') }}</th>
+                        <th scope="col">{{ __('admin.actions') }}</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach($appointments as $appointment)
+                        <tr>
+                            <td scope="row">{{$appointment->id}}</td>
+                            <td>{{$appointment->user->name}} {{$appointment->user->surname}}</td>
+                            <td>{{$appointment->car->model->brand->name}} {{$appointment->car->model->name}} ({{$appointment->car->plate}}) - {{$appointment->car->model->type}}</td>
+                            <td>{{$appointment->washing->name}} ({{$appointment->washing->address}})</td>
+                            <td>{{$appointment->servicesList}}</td>
+                            <td>{{$appointment->washing->manager->name}} {{$appointment->washing->manager->surname}}</td>
+                            <td>{{$appointment->dateFormatted}} - {{$appointment->time}}</td>
+                            <td>
+                                <select class="form-select form-select-sm changeStatus" data-id="{{$appointment->id}}">
+                                    <option value="0" @if($appointment->approved == 0) selected @endif>{{ __('admin.pending') }}</option>
+                                    <option value="1" @if($appointment->approved == 1) selected @endif>{{ __('admin.confirmed') }}</option>
+                                    <option value="2" @if($appointment->approved == 2) selected @endif>{{ __('admin.cancelled') }}</option>
+                                    <option value="3" @if($appointment->approved == 3) selected @endif>{{ __('admin.completed') }}</option>
+                                </select>
+
+
+                            </td>
+                            <td>
+                                <div class="btn-group">
+{{--                                    <a class="btn btn-primary"><i class="fas fa-eye"></i></a>--}}
+{{--                                    <a class="btn btn-secondary"><i class="fas fa-pencil"></i></a>--}}
+                                    <a data-id="{{$appointment->id}}" class="btn btn-sm btn-danger removeBtn"><i class="fas fa-trash"></i></a>
+                                </div>
+                            </td>
+                        </tr>
+                    @endforeach
+                    </tbody>
+                </table>
+                {{$appointments->links('pagination::bootstrap-5')}}
+            </div>
+        </div>
+
+    </div>
+@endsection
+
+@push('js')
+    <script>
+        $(document).ready(function(){
+            $('.removeBtn').click(function(){
+                let removeID = $(this).data('id');
+                $.confirm({
+                    title: I18N.deletion,
+                    content: I18N.delete_appointment,
+                    buttons: {
+                        yes: { text: I18N.yes,
+                            btnClass: 'btn-red',
+                            action: function() {
+                                window.location.href = '/dashboard/appointments/'+removeID+'/delete';
+                            }
+                        },
+                        no: { text: I18N.no,
+                            btnClass: 'btn-blue',
+                        }
+                    }
+                });
+            });
+
+            $(".changeStatus").on("focus", function () {
+                // сохраняем текущее (старое) значение при фокусе
+                $(this).data("prev", $(this).val());
+            });
+
+            $(".changeStatus").change(function(){
+
+                var prev = $(this).data("prev");
+
+                let me = $(this);
+                let status = $(this).val();
+                let appointmentID = $(this).data('id');
+
+                $.confirm({
+                    title: I18N.change_status,
+                    content: I18N.change_status_confirm,
+                    buttons: {
+                        yes: { text: I18N.yes,
+                            btnClass: 'btn-green',
+                            action: function() {
+                                $.post('/dashboard/appointments/'+appointmentID+'/change_status', { approved : status});
+                            }
+                        },
+                        no: { text: I18N.no,
+                            btnClass: 'btn-blue',
+                            action: function() {
+                                // если пользователь отменил действие, возвращаем старое значение
+                                $(me).val(prev);
+                            }
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+@endpush

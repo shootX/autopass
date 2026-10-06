@@ -1,0 +1,124 @@
+@use "./variables" as *;
+.rescheduling-header {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 21px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  
+    .rescheduling-back-btn {
+      position: absolute;
+      left: 16px;
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+  
+      img {
+        width: 20px;
+        height: 20px;
+      }
+    }
+  
+    .rescheduling-title {
+      @include font-roboto-bold-blue;
+      font-size: 18px;
+      margin: 0;
+    }
+  }
+  
+  
+.rescheduling-order-container {
+    margin: 16px;
+    padding: 16px;
+    border-radius: 16px;
+    box-shadow: 0 2px 4px 2px rgba(0, 0, 0, 0.1);
+}
+
+.rescheduling-customer-info-name {
+    @include font-roboto-bold-blue;
+    font-size: 18px;
+}
+
+.rescheduling-customer-info-phone {
+    @include font-roboto-regular-blue;
+    font-size: 18px;
+    color: $textSecondary;
+    margin-top: 8px;
+    margin-bottom: 12px;
+}
+
+.rescheduling-customer-info {
+    div:last-child {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        p {
+            @include font-roboto-regular-blue;
+            font-size: 16px;
+        }
+        margin-bottom: 12px;
+    }
+}
+
+.rescheduling-calendar-dropdown {
+    padding: 16px;
+    border-radius: 16px;
+    border: 1px solid #879AB1;
+    display: flex;
+    justify-content: space-between;
+    img {
+        rotate: -90deg;
+    }
+}
+
+.rescheduling-time-date {
+    padding: 16px;
+    border-radius: 16px;
+    border: 1px solid #879AB1;
+    display: flex;
+    justify-content: space-between;
+    @include font-roboto-regular-blue;
+    img {
+        rotate: -90deg;
+    }
+    margin-top: 4px;
+}
+
+.rescheduling-date {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    p {
+        @include font-roboto-regular-blue;
+        font-size: 16px;
+    }
+}
+
+.rescheduling-save-block {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  
+    .rescheduling-save-btn {
+      padding: 16px;
+      width: 100%;
+      border-radius: 16px;
+      margin-top: 24px;
+      transition: background-color 0.3s ease;
+  
+      &.active {
+        background-color: $blueMain;
+        color: white;
+      }
+  
+      &.inactive {
+        background-color: #D6DCE5;
+        color: #9CA9BA;
+        cursor: not-allowed;
+      }
+    }
+  }
+  
+  

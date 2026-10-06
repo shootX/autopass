@@ -1,0 +1,164 @@
+:root {
+  --c-bg: #F3F7FB;
+  --c-surface: #FFFFFF;
+  --c-surface-2: #E5F0FA;
+  --c-border: #E2EAF2;
+  --c-text: #1D3449;
+  --c-text-muted: #637E97;
+  --c-primary: #2474C1;
+  --c-on-primary: #FFFFFF;
+  --c-success-soft: #E8F5EE;
+  --c-success-text: #277456;
+}
+html, body { background: #E8F3FB; }
+.main-container {
+  max-width: 480px !important;
+  margin: 0 auto;
+  background: linear-gradient(180deg, #DCEEFF 0px, #F3F7FB 260px) !important;
+  min-height: 100dvh;
+  padding-bottom: 118px;
+}
+.qhome, .qbook, .qbranch { color: var(--c-text); }
+.qhome { padding: 0 0 12px; }
+.qhome-hello {
+  margin: 4px 20px 0;
+  font-size: 28px;
+  line-height: 1.15;
+  font-weight: 500;
+  color: var(--c-text-muted);
+}
+.qhome-hello b { display: block; margin-top: 2px; font-size: 34px; font-weight: 700; color: var(--c-text); }
+.qhome-hero { position: relative; min-height: 210px; padding: 8px 12px 0; }
+.nav-bar-container a svg, .nav-bar-container a svg path { fill: none !important; }
+.qhome-hero img.car, .qhome-hero svg.car {
+  width: 100%;
+  height: 210px;
+  object-fit: contain;
+  display: block;
+}
+.qhome-meta { text-align: center; margin-top: -4px; }
+.qhome-meta strong { display: block; font-size: 16px; font-weight: 700; }
+.qhome-meta span { color: var(--c-text-muted); font-size: 14px; font-weight: 600; }
+.qhome-dots { display: flex; justify-content: center; gap: 6px; margin: 10px 0 0; }
+.qhome-dots button {
+  width: 7px; height: 7px; border: 0; border-radius: 99px; padding: 0;
+  background: #C5D7EA;
+}
+.qhome-dots button.on { width: 18px; background: var(--c-primary); }
+.qhome-sheet {
+  background: var(--c-surface);
+  border-radius: 36px 36px 0 0;
+  margin-top: 14px;
+  padding: 22px 20px 8px;
+  box-shadow: 0 -8px 28px rgba(57, 113, 168, 0.06);
+}
+.qhome-sheet h2 { font-size: 20px; font-weight: 700; margin: 0 0 14px; }
+.qstats { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+.qstats strong { display: block; font-size: 40px; line-height: 1; font-weight: 700; }
+.qstats strong small { font-size: 18px; font-weight: 700; margin-left: 4px; }
+.qstats p { margin: 4px 0 8px; color: var(--c-text-muted); font-size: 14px; font-weight: 600; }
+.qbar { height: 6px; border-radius: 99px; background: #E3EEF8; overflow: hidden; }
+.qbar i { display: block; height: 100%; background: var(--c-primary); border-radius: 99px; }
+
+.pill-cta {
+  position: relative;
+  width: 100%;
+  min-height: 56px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--c-primary);
+  color: var(--c-on-primary);
+  font-size: 16px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 62px;
+  text-decoration: none;
+}
+.pill-cta .arrow {
+  position: absolute;
+  right: 6px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #fff;
+  color: var(--c-primary);
+  display: grid;
+  place-items: center;
+}
+.qrow {
+  width: 100%;
+  margin-top: 10px;
+  border: 0;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  text-align: left;
+  color: var(--c-text);
+  padding: 8px 0;
+  border-top: 1px solid var(--c-border);
+}
+.qrow .ico {
+  width: 36px; height: 36px; border-radius: 12px;
+  background: var(--c-surface-2); color: var(--c-primary);
+  display: grid; place-items: center; flex: none;
+}
+.qrow b { display: block; font-size: 15px; }
+.qrow small { color: var(--c-text-muted); font-size: 13px; font-weight: 600; }
+.qrow .grow { flex: 1; }
+.qrow svg.chev { margin-left: auto; color: var(--c-text-muted); }
+
+.qbook { padding: 8px 20px 24px; }
+.qbook-car {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--c-surface); border-radius: 20px; padding: 10px 12px;
+  box-shadow: 0 10px 28px rgba(57,113,168,.08);
+}
+.qbook-car img { width: 92px; height: 58px; object-fit: contain; }
+.qbook-car button { margin-left: auto; border: 0; background: transparent; color: var(--c-text-muted); min-width: 44px; min-height: 44px; }
+.qweek { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 8px 0 4px; }
+.qweek button {
+  border: 0; background: transparent; border-radius: 16px; min-height: 58px;
+  color: var(--c-text); font-weight: 700;
+}
+.qweek button small { display: block; font-size: 12px; font-weight: 600; color: var(--c-text-muted); }
+.qweek button.on { background: var(--c-primary); color: var(--c-on-primary); }
+.qweek button.on small { color: var(--c-on-primary); }
+.qtimes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.qtimes button {
+  min-height: 44px; border-radius: 14px; border: 0;
+  background: var(--c-surface-2); color: var(--c-text); font-weight: 700;
+}
+.qtimes button.on { background: var(--c-primary); color: var(--c-on-primary); }
+.qtimes button:disabled { opacity: .4; }
+.qhead {
+  display: flex; align-items: center; justify-content: space-between;
+  min-height: 48px; margin-bottom: 8px;
+}
+.qhead h1 { font-size: 18px; font-weight: 700; }
+.qhead button { border: 0; background: transparent; min-width: 44px; min-height: 44px; color: var(--c-text); }
+
+.qbranch { position: relative; min-height: 100dvh; }
+.qsearch {
+  position: absolute; z-index: 5; left: 16px; right: 16px; top: 64px;
+  height: 48px; border-radius: 16px; border: 0;
+  background: var(--c-surface); color: var(--c-text);
+  box-shadow: 0 10px 28px rgba(57,113,168,.12);
+  padding: 0 16px; font-size: 16px;
+}
+.qbranch .branch-map-wrapper { height: calc(100dvh - 150px); }
+.qbranch .maplibregl-map, .qbranch .branch-map-placeholder { height: calc(100dvh - 150px) !important; }
+.qbranch .branch-info-panel {
+  left: 0; right: 0; bottom: 0; border-radius: 32px 32px 0 0; padding: 12px 20px 24px;
+}
+.qbranch .branch-info-panel__status { background: var(--c-success-soft) !important; color: var(--c-success-text) !important; border-radius: 99px; }
+
+.header-container.qbar-head {
+  background: transparent;
+  border-bottom: 0;
+  backdrop-filter: none;
+}
+.gewash-word { font-weight: 700; letter-spacing: .22em; font-size: 14px; color: var(--c-primary); }

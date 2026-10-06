@@ -1,0 +1,55 @@
+@use "../variables" as *;
+
+.vehicles-wrapper {
+    padding: 16px;
+    margin: 16px;
+    border-radius: 16px;
+    box-shadow: 0 2px 4px 2px rgba(0, 0, 0, 0.1);
+    h1 {
+        @include font-roboto-bold-blue;
+        font-size: 20px;
+        font-weight: 600;
+    }
+
+    hr {
+        background-color: $border;
+        margin: 24px 0px;
+    }
+
+    button {
+        @include font-roboto-bold-blue;
+        font-weight: 600;
+        font-size: 16px;
+        background-color: $blueMain;
+        padding: 15px;
+        width: 100%;
+        color: $yellowMain;
+        border-radius: 16px;
+    }
+}
+
+.vehicles-flex {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    justify-content: space-between;
+    h4 {
+        @include font-roboto-bold-blue;
+        font-size: 32px;
+    }
+
+    p {
+        @include font-roboto-regular-blue;
+        font-size: 16px;
+        color: $textSecondary;
+    }
+    img {
+        padding: 12px;
+        background-color: $blueMain;
+        border-radius: 16px;
+    }
+}
+
+.vehicles-image {
+  }
+  

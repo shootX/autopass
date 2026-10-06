@@ -1,0 +1,33 @@
+@use "../variables" as *;
+.flexible-reviws {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    .review-score-container {
+        font-size: 20px;
+        color: $yellowMain;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+    }
+}
+
+.review-item {
+    padding: 16px;
+    margin: 16px;
+    border-radius: 16px;
+    box-shadow: 0 2px 4px 2px rgba(0, 0, 0, 0.1);
+    @include font-roboto-regular-blue;
+    h4 {
+        @include font-roboto-bold-blue;
+        font-size: 20px;
+    }
+    .review-adres {
+        color: $textSecondary;
+    }
+}
+
+.review-data {
+    color:$yellowMain;
+    margin-top: 12px;
+}

@@ -1,0 +1,163 @@
+@use "../variables" as *;
+
+.add-car-wrapper {
+    padding: 16px;
+    margin: 16px;
+    border-radius: 16px;
+    box-shadow: 0 2px 4px 2px rgba(0, 0, 0, 0.1);
+}
+
+.add-car-title-info {
+  @include font-roboto-bold-blue;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.add-car-cap {
+    h3 {
+        padding: 0px;
+        font-size: 20px;
+        font-weight: 700;
+    }
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.add-car-screen {
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px;
+      h3 {
+        padding: 0px;
+        font-size: 20px;
+        font-weight: 700;
+      }
+    }
+  
+    .add-car-content {
+      padding: 16px;
+      box-shadow: 0 2px 4px 2px rgba(0, 0, 0, 0.1);
+      margin: 16px;
+      border-radius: 16px;
+      h1 {
+        @include font-roboto-bold-blue;
+        font-size: 20px;
+        text-align: center;
+        margin-bottom: 24px;
+      }
+      p {
+        margin-bottom: 20px;
+      }
+  
+      .input-block {
+        margin-top: 20px;
+        label {
+          display: block;
+          margin-bottom: 8px;
+          @include font-roboto-regular-blue;
+          font-size: 14px;
+        }
+  
+        .input-select {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 16px;
+          border: 1px solid #C2D1E1;
+          border-radius: 16px;
+          cursor: pointer;
+          transition: opacity 0.2s ease;
+          -webkit-tap-highlight-color: transparent;
+  
+          &.disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+          }
+  
+          span {
+            color: #B0B0B0;
+  
+            &.active {
+              color: #183D69;
+            }
+          }
+  
+          img {
+            width: 16px;
+            height: 16px;
+
+              rotate: -90deg;
+          }
+        }
+      }
+    }
+  }
+
+  .number-plate-input {
+    margin-top: 16px;
+    label {
+      @include font-roboto-regular-blue;
+      font-size: 14px;
+      display: block;
+      margin-bottom: 8px;
+    }
+  }
+
+  .add-car-btn {
+    padding: 15px;
+    background-color: $border;
+    width: 100%;
+    border-radius: 16px;
+    color: #C8D1DC;
+    margin-top: 24px;
+    &.active {
+      background-color: $blueMain;
+      cursor: pointer;
+      color: $yellowMain;
+    }
+  }
+  
+  .plate-error {
+    display: flex;
+    width: 100%;
+    padding: 12px;
+    align-items: center;
+    justify-content: center;
+    color: $redMain;
+    background-color: #FFC6C6;
+    border-radius: 16px;
+  }
+  
+  .car-preview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    h4 {
+      @include font-roboto-bold-blue;
+      font-size: 32px;
+    }
+    div {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .car-type {
+      @include font-roboto-regular-blue;
+      font-size: 16px;
+      color: $textSecondary;
+      margin-top: 4px;
+    }
+  }
+
+  .after-submit-btns {
+    button {
+      background-color: $blueMain;
+      &:first-child {
+        background-color: transparent;
+        border: 1px solid $textSecondary;
+      }
+    }
+  }

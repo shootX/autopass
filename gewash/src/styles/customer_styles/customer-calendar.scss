@@ -1,0 +1,175 @@
+@use "../variables" as *;
+
+.wash-calendar {
+    padding: 1rem;
+  
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+  
+      button {
+        background: none;
+        border: none;
+        font-size: 1.2rem;
+        cursor: pointer;
+      }
+  
+      span {
+        font-weight: bold;
+        font-size: 1rem;
+      }
+    }
+  
+    .calendar-daynames {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      text-align: center;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+  
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+      border: none;
+    }
+  
+    .calendar-cell {
+      border-radius: 16px;
+      padding: 8px;
+      text-align: center;
+      cursor: pointer;
+      position: relative;
+      border: none;
+      box-shadow: none;
+  
+      &.selected {
+        background: #CDF5D8;
+        color: #17BA68;
+      }
+  
+      .dot {
+        width: 6px;
+        height: 6px;
+        background: $yellowMain;
+        border-radius: 50%;
+        position: absolute;
+        bottom: 4px;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+    }
+  
+    .appointments-panel {
+      h3 {
+        margin-bottom: 0.5rem;
+        font-size: 1rem;
+        color: #183d69;
+      }
+  
+      .no-events {
+        color: #999;
+        text-align: center;
+      }
+  
+      .appointment-card {
+        background: white;
+        padding: 0.75rem;
+        margin: 16px;
+        border-radius: 16px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        @include font-roboto-regular-blue;
+  
+        p {
+          margin: 0.25rem 0;
+        }
+      }
+    }
+  }
+  
+  .functional-block-caledar {
+    display: flex;
+    gap: 8px;
+    button {
+        background-color: $blueMain;
+        border-radius: 16px;
+        img {
+            padding: 14px;
+        }
+    }
+  }
+
+  .appointment-date-time {
+    font-weight: 600;
+    color: $yellowMain;
+  }
+
+  .appointment-branch {
+    font-weight: 600;
+    font-size: 18px;
+  }
+  .appointment-address {
+    color: $textSecondary;
+  }
+
+  .delete-popup-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(24, 61, 105, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+  }
+  
+  .delete-popup {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 360px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  
+    h3 {
+      margin-bottom: 0.5rem;
+      font-size: 1.2rem;
+      color: #183d69;
+    }
+  
+    p {
+      margin-bottom: 1rem;
+      color: #555;
+    }
+  
+    .popup-actions {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+  
+      button {
+        flex: 1;
+        padding: 0.5rem 1rem;
+        border-radius: 16px;
+        padding: 15px;
+        color: $yellowMain;
+        border: none;
+        font-weight: 600;
+        cursor: pointer;
+  
+        &:first-child {
+            background-color: transparent;
+            border: 1px solid $textSecondary;
+        }
+  
+        &:last-child {
+          background: $blueMain;
+          color: $yellowMain;
+        }
+      }
+    }
+  }
+  

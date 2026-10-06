@@ -1,0 +1,151 @@
+@use "./variables" as *;
+@use "./scss-reset.scss";
+@use "./nav-bar.scss";
+@use "./home.scss";
+@use './my-data.scss';
+@use './carwash-statistics.scss';
+@use './booking.scss';
+@use './manager-order.scss';
+@use './delete-reason-popup.scss';
+@use './rescheduling-order.scss';
+@use './manager-calendar.scss';
+@use "./customer_styles/auth.scss";
+@use "./customer_styles//otp-verification.scss";
+@use "./customer_styles/customer-my-data.scss";
+@use "./customer_styles/customer-contact-info.scss";
+@use "./customer_styles//my-vehicles.scss";
+@use "./customer_styles/add-car.scss";
+@use "./customer_styles/edit-car.scss";
+@use "./customer_styles/branches.scss";
+@use "./customer_styles/wash-apointment.scss";
+@use "./customer_styles/my-packages.scss";
+@use "./customer_styles/my-points.scss";
+@use "./customer_styles/points-info.scss";
+@use "./customer_styles/referrals-info.scss";
+@use "./customer_styles/shop.scss";
+@use "./customer_styles/discounts.scss";
+@use "./customer_styles/discount-detail.scss";
+@use "./customer_styles/giveaway.scss";
+@use "./customer_styles/my-area.scss";
+@use "./qref.scss";
+
+body {
+  font-family: $font-roboto;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.main-container {
+  max-width: 100%;
+  margin: 0 auto;
+  background-color: $bg;
+  min-height: 100vh;
+  position: relative;
+  padding-bottom: 80px;
+}
+
+.yellow {
+  color: $yellowMain;
+}
+
+.yellow-box {
+  width: 48px;
+  height: 48px;
+  background-color: $yellowMain;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.blue-box {
+  width: 48px;
+  height: 48px;
+  background-color: $blueMain;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.blue-box-40 {
+  width: 40px;
+  height: 40px;
+  background-color: $blueMain;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.calendar-select-btn {
+  border-radius: 16px;
+  background-color: $blueMain;
+  padding: 12px 0px;
+  text-align: center;
+  color: $yellowMain;
+  margin: 0px 16px;
+  margin-bottom: 16px;
+}
+
+.lang-loader {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: #f9f9f9;
+}
+
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 5px solid rgba(0, 0, 0, 0.1);
+  border-top-color: $blueMain;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Отключаем выделение текста и нативное меню на iOS */
+* {
+  -webkit-touch-callout: none;
+  /* Отключает контекстное меню при долгом нажатии (ссылки, картинки) */
+  -webkit-user-select: none;
+  /* Отключает выделение текста */
+  user-select: none;
+}
+
+/* Если в приложении есть поля ввода (input, textarea), им нужно вернуть возможность выделения текста, иначе в них нельзя будет печатать */
+input,
+textarea {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* Отключаем эффект "подсветки" ссылок при нажатии в iOS */
+a,
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  overscroll-behavior: none;
+}
+
+img {
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}

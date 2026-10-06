@@ -1,0 +1,251 @@
+@use "../variables" as *;
+
+.branch-locate-btn {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 12px);
+  z-index: 11;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 12px;
+  background: #183d69;
+  color: #f7b233;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.branch-user-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #2f80ed;
+  border: 3px solid #fff;
+  box-shadow: 0 0 0 6px rgba(47, 128, 237, 0.25);
+}
+
+.branch-map-placeholder {
+  width: 100%;
+  height: 85vh;
+  background: #f3f0e8;
+}
+
+.branch-map-wrapper .maplibregl-ctrl-bottom-right {
+  top: 8px;
+  bottom: auto;
+  right: 8px;
+}
+
+.branch-map-wrapper {
+    position: relative;
+  
+    // запретить scroll страницы, когда открыт попап
+    body.map-locked & {
+      overflow: hidden;
+    }
+  }
+  
+  .branch-info-panel {
+    position: absolute;
+    left: 16px;
+    right: 16px;
+    bottom: 40px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15);
+    overflow: visible;
+    z-index: 10;
+    padding: 16px;
+  
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  
+    &.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  
+    &__handle {
+      width: 40px;
+      height: 4px;
+      background: #ccc;
+      border-radius: 2px;
+      margin: 8px auto;
+    }
+  
+    &__content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+  
+    &__title {
+    font-size: 18px;
+    font-weight: 700;
+    padding: 0px;
+    }
+  
+    &__text {
+      @include font-roboto-regular-blue;
+      font-size: 14px;
+      color: $textSecondary;
+      
+    }
+  
+    &__status {
+      margin: 8px 0;
+      font-size: 14px;
+      background-color: $redMain;
+      padding: 4px 12px;
+      border-radius: 8px;
+      color: #fff;
+    }
+  
+    &__schedule {
+      font-size: 14px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-top: 8px;
+      span {
+        color: $yellowMain;
+      }
+    }
+  
+    &__actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+      :is(img, svg) {
+        padding: 12px;
+        border-radius: 16px;
+        background-color: $blueMain;
+        display: block;
+        box-sizing: content-box;
+      }
+    }
+  
+    &__route-btn {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      background: #3498db;
+      color: #fff;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.2s;
+  
+      &:hover {
+        background: #2a85c6;
+      }
+    }
+  }
+  
+  // полная блокировка прокрутки страницы
+  body.map-locked {
+    overflow: hidden;
+  }
+
+  .branch-screen-wrapper {
+    header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+  }
+  
+
+  .branch-info-panel-card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 16px;
+  }
+
+  .branch-list {
+    display: flex;
+    flex-direction: column;
+    margin-top: 16px;
+  }
+
+  .branch-screen {
+    margin: 16px;
+  }
+  .branch-view-toggle {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+  
+    button {
+      flex: 1 1 0;
+      text-align: center;
+      padding: 16px;
+      border-radius: 16px;
+      background-color: #fff;
+      border: none;
+      color: $textSecondary;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      transition: all 0.2s ease;
+  
+      &.active {
+        background-color: $blueMain;
+        color: $yellowMain;
+      }
+    }
+  
+    &.map-mode {
+      position: absolute;
+      top: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 100;
+      background-color: transparent;
+      padding: 16px;
+    }
+  }  
+  
+  
+  .branch-card {
+    position: relative;
+  }
+
+  // List view: BranchInfoPanel uses branch-info-panel-card, not .branch-info-panel
+  .branch-info-panel-card .branch-info-panel__actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    :is(img, svg) {
+      padding: 12px;
+      border-radius: 16px;
+      background-color: $blueMain;
+      display: block;
+      box-sizing: content-box;
+    }
+  }
+  .branch-booked-icon {
+    position: absolute;
+    bottom: 40px;
+    right: 8px;
+    width: 32px;
+    height: 32px;
+    pointer-events: none;
+    display: block;
+  }
+
+  .filter-button svg path {
+    transition: fill 0.2s ease;
+    fill: $blueMain;
+  }
+  
+  .filter-button.active svg path {
+    fill: $yellowMain; 
+  }
+  
+  

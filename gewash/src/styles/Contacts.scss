@@ -1,0 +1,17 @@
+@use "./variables" as *;
+
+.contacts-wrapper {
+    box-shadow: 0 2px 4px 2px rgba(0, 0, 0, 0.1);
+    border-radius: 16px;
+    padding: 16px;
+    margin: 16px;
+    h4 {
+        @include font-roboto-bold-blue;
+        font-size: 20px;
+        margin-bottom: 16px;
+    }
+    label {
+        @include font-roboto-regular-blue;
+        font-size: 15px;
+    }
+}

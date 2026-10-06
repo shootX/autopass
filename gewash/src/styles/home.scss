@@ -1,0 +1,170 @@
+@use "./variables" as *;
+
+b,
+strong {
+    font-weight: bold;
+}
+
+main {
+    padding: 16px;
+
+    h3 {
+        font-style: normal;
+        font-weight: 300;
+        font-size: 24px;
+        line-height: 28px;
+        color: $blueMain;
+        text-align: center;
+        padding: 16px 0;
+    }
+}
+
+
+.auto_info {
+    display: flex;
+    justify-content: space-between;
+    padding: 16px;
+    text-align: center;
+    b {
+        font-style: normal;
+        font-weight: 700;
+        font-size: 28px;
+        line-height: 33px;
+        color: $blueMain;
+    }
+
+    p {
+        color: $textSecondary;
+    }
+}
+
+.auto_images {
+    img {
+        padding: 0px 32px;
+        margin: 0px auto;
+        display: block;
+    }
+}
+
+.hatchback_qr {
+    padding: 14px;
+    width: 48px;
+    height: 48px;
+
+    &:hover {
+        border-radius: 16px;
+        background: $blueMain;
+    }
+
+    &:active {
+        border-radius: 16px;
+        background: $blueMain;
+    }
+
+    svg {
+        color: #183D69;
+        cursor: pointer;
+
+        &:active {
+            color: $yellowMain;
+        }
+
+        &:hover {
+            color: $yellowMain;
+        }
+    }
+}
+
+.whashes_info {
+    display: flex;
+    gap: 8px;
+    justify-content: space-between;
+    padding-bottom: 20px;
+}
+
+.whashes_info-block {
+    border-radius: 16px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 16px;
+    width: 50%;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    flex-direction: column;
+    span {
+        padding: 8px 10px;
+        background-color: $yellowMain;
+        border-radius: 8px;
+    }
+    h2 {
+        @include font-roboto-bold-blue;
+        span {
+            font-size: 16px;
+            background-color: transparent;
+            padding: 0;
+        }
+    }
+}
+.info-block.header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.status {
+    @include font-roboto-regular-yellow;
+}
+
+.data {
+    @include font-roboto-regular-blue;
+}
+
+.home-slider-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    .home-slider {
+        width: 8px;
+        height: 8px;
+        background-color: $divider;
+        border-radius: 12px;
+    }
+    
+  
+    .active {
+      border-radius: 12px;
+      background-color: $yellowMain;
+      width: 16px;
+      height: 8px;
+    }
+}
+
+.promo {
+    background-image: url(../../public/images/promo-bg.png);
+    background-color: $blueMain;
+    background-repeat: no-repeat;
+    background-size: cover;
+    height: 100px;
+    border-radius: 16px;
+    margin: 16px 0;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    .promo-regular-text {
+        @include font-roboto-regular-blue;
+        color: white;
+        text-transform: uppercase;
+    }
+    .promo-bold-text {
+        @include font-roboto-bold-blue;
+        color: white;
+        text-transform: uppercase;
+        font-size: 16px;
+        span {
+            color: $yellowMain;
+            font-size: 16px;
+        }
+    }
+}

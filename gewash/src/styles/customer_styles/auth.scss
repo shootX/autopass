@@ -1,0 +1,252 @@
+@use "../variables" as *;
+
+.auth-wrapper {
+    padding: 32px 16px;
+    margin: 16px;
+    border-radius: 16px;
+    box-shadow: 0 2px 4px 2px rgba(0, 0, 0, 0.1);
+    // height: 100vh;
+    .auth-logo-block {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0px 86px;
+        img {
+        }
+    }
+}
+  
+  .auth-logo-block {
+    text-align: center;
+    img {
+      height: 48px;
+    }
+  }
+  
+  .auth-greetings {
+    text-align: center;
+  
+    h1 {
+      @include font-roboto-bold-blue;
+      margin-top: 40px;
+    }
+  
+    p {
+      font-size: 16px;
+      color: $textSecondary;
+      margin-top: 8px;
+    }
+    margin-bottom: 24px;
+  }
+  
+  .auth-input-block {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .auth-phone-input,
+  .auth-password-input {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  
+    label {
+      @include font-roboto-regular-blue;
+      font-size: 14px;
+    }
+  
+    input {
+      padding: 16px;
+      border: 1px solid $border;
+      border-radius: 16px;
+      @include font-roboto-regular-blue;
+      font-size: 18px;
+      &:focus {
+        border-color: $yellowMain;
+        outline: none;
+      }
+    }
+  }
+  
+  .forgot-password {
+    text-align: center;
+    @include font-roboto-regular-yellow;
+  }
+  
+  .sign-in {
+      width: 100%;
+      background: $blueMain;
+      color: $yellowMain;
+      font-weight: 700;
+      padding: 15px;
+      border-radius: 16px;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+  
+      &:hover {
+        background: #245080;
+      }
+      button {
+        color: $yellowMain;
+        text-align: center;
+        display: flex;
+        justify-content: center;
+      }
+    }
+  
+  .input-with-icon {
+    position: relative;
+  
+    input {
+      width: 100%;
+      padding: 16px 48px 16px 16px; // справа место под иконку
+      border: 1px solid $border;
+      border-radius: 16px;
+      font-size: 18px;
+      @include font-roboto-regular-blue;
+  
+      &:focus {
+        border-color: $yellowMain;
+        outline: none;
+      }
+    }
+  
+    .input-icon {
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      transition: fill 0.2s ease;
+      pointer-events: auto;
+  
+      &.active {
+        fill: #F5A623;
+      }
+    }
+  }
+
+  .input-with-prefix {
+    display: flex;
+    align-items: center;
+    border: 1px solid $border;
+    border-radius: 16px;
+    overflow: hidden;
+    background-color: white;
+  
+    .phone-prefix {
+      padding: 16px 0px 16px 12px;
+      color: $textSecondary;
+      white-space: nowrap;
+      @include font-roboto-regular-blue;
+      font-size: 16px;
+    }
+  
+    input {
+      flex: 1;
+      border: none;
+      padding: 16px;
+      @include font-roboto-regular-blue;
+      font-size: 16px;
+      line-height: 22px;
+  
+      &:focus {
+        outline: none;
+      }
+    }
+  
+    &:focus-within {
+      border-color: $yellowMain;
+    }
+  }
+
+  .incorrect-password-error {
+    color: $redMain;
+    border-radius: 12px;
+    background-color: #FFC6C6;
+    padding: 12px 0px;
+    text-align: center;
+    margin-bottom: 12px;
+  }
+
+  .incorrect-code-error {
+    border-radius: 12px;
+    background-color: #FFC6C6;
+    padding: 12px 0px;
+    text-align: center;
+    margin-top: 12px;
+    width: 100%;
+    p {
+      color: $redMain;
+    }
+  }
+  
+  .phone-number-doesnt-exist-error {
+    border-radius: 12px;
+    background-color: #FFC6C6;
+    padding: 12px 0px;
+    text-align: center;
+    margin-bottom: 8px;
+    p {
+      color: $redMain;
+    }
+  }
+
+  .sign-up-navigate {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    @include font-roboto-regular-blue;
+    margin-top: 16px;
+    a {
+        color: $yellowMain;
+    }
+  }
+
+  .auth-separator {
+    display: none; //flex
+    align-items: center;
+    justify-content: center;
+    margin-top: 24px;
+    hr {
+      background-color: #C8D1DC;
+    }
+    p {
+      color: $textSecondary;
+      margin: 0px 16px;
+    }
+  }
+
+  .alternative-servives-auth {
+    display: none; //flex
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    margin-top: 24px;
+    a {
+      padding: 12px 32px;
+      display: flex;
+      align-items: center;
+      border-radius: 16px;
+      border: 1px solid $border;
+    }
+    p {
+      @include font-roboto-regular-blue;
+      color: $textPrimary;
+    }
+  }
+
+  .google-auth {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .facebook-auth {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }

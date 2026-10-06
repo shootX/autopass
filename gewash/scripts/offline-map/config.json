@@ -1,0 +1,43 @@
+{
+  "layers": {
+    "water": {
+      "minzoom": 6,
+      "maxzoom": 14,
+      "simplify_below": 12,
+      "simplify_level": 0.0004,
+      "simplify_ratio": 2
+    },
+    "waterway": {
+      "minzoom": 9,
+      "maxzoom": 14,
+      "simplify_below": 13,
+      "simplify_level": 0.0002,
+      "simplify_ratio": 2
+    },
+    "road_name": {
+      "minzoom": 13,
+      "maxzoom": 14,
+      "simplify_below": 14,
+      "simplify_level": 0.0001
+    },
+    "roads": {
+      "minzoom": 6,
+      "maxzoom": 14,
+      "simplify_below": 13,
+      "simplify_level": 0.00015,
+      "simplify_ratio": 2
+    }
+  },
+  "settings": {
+    "minzoom": 6,
+    "maxzoom": 14,
+    "basezoom": 14,
+    "include_ids": false,
+    "compress": "gzip",
+    "combine_below": 14,
+    "name": "Georgia",
+    "version": "1",
+    "description": "Offline roads and water for Georgia",
+    "bounding_box": [39.35, 40.95, 46.85, 43.65]
+  }
+}

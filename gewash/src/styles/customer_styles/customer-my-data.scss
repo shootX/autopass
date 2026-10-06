@@ -1,0 +1,160 @@
+@use "../variables" as *;
+
+.customer-data-wrapper {
+    padding: 16px;
+    margin: 16px;
+    border-radius: 16px;
+    box-shadow: 0 2px 4px 2px rgba(0, 0, 0, 0.1);
+
+    h1 {
+      @include font-roboto-bold-blue;
+      font-size: 20px;
+      margin-bottom: 16px
+    }
+}
+  
+  .customer-data-wrapper {
+    .customer-data-form {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+
+      input {
+        color: $blueMain;
+        background-color: transparent !important; 
+      }
+  
+      .form-group {
+        display: flex;
+        flex-direction: column;
+        input {
+          &:last-child {
+            padding: 28px 16px;
+          border: 1px solid $border;
+          border-radius: 16px;
+          outline: none;
+  
+          &:focus {
+            border-color: $yellowMain;
+          }
+          }
+        }
+        div {
+          border: 1px solid $border;
+          border-radius: 16px;
+          padding: 8px 16px;
+        }
+  
+        label {
+          font-size: 13px;
+          margin-bottom: 6px;
+          @include font-roboto-regular-blue;
+          font-size: 14px;
+        }
+  
+        input,
+        select {
+          height: 40px;
+          font-size: 14px;
+          outline: none;
+  
+          &:focus {
+            border-color: $yellowMain;
+          }
+        }
+  
+        .input-with-icon-customer {
+          display: flex;
+          align-items: center;
+          border: 1px solid $border;
+          border-radius: 16px;
+          padding: 8px 16px;
+  
+          input,
+            select {
+              flex: 1;
+              color: $blueMain;
+              option {
+                color: $border;
+              }
+            }
+
+            .dropdown-arrow-sex {
+            margin-left: 8px;
+            rotate: -90deg;
+          }
+        }
+      }
+    }
+  }
+  
+  .save-data-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(24, 61, 105, 0.5);
+    z-index: 1001;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .save-data-modal-cap {
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .save-data-modal-window {
+    background-color: #fff;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.12);
+    width: 90%;
+    max-width: 480px;
+    display: flex;
+    flex-direction: column;
+  
+    h4 {
+      color: #DE771D;
+      font-weight: 600;
+      font-size: 18px;
+      display: flex;
+      margin-left: 8px;
+    }
+  
+    p {
+      @include font-roboto-regular-blue;
+      font-size: 14px;
+      color: $textSecondary;
+      margin-bottom: 12px;
+      white-space: nowrap;
+    }
+  
+    .actions {
+      display: flex;
+      gap: 16px;
+  
+      button {
+        padding: 15px 0px;
+        border-radius: 16px;
+        width: 50%;
+        @include font-roboto-bold-blue;
+        font-size: 14px;
+        cursor: pointer;
+        border: 1px solid $border;
+  
+        &.save {
+          background-color: #183D69;
+          color: $yellowMain;
+          border-color: #183D69;
+        }
+  
+        &.leave {
+          background-color: transparent;
+          color: #FF9400;
+          border: 1px solid $border;
+        }
+      }
+    }
+  }
+
+  

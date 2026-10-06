@@ -1,0 +1,118 @@
+@use "./variables" as *;
+.delete-popup-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(28, 66, 112, 0.5);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.2s ease-in-out;
+  overflow-y: auto;
+}
+
+.delete-popup {
+  background: #ffffff;
+  padding: 24px;
+  border-radius: 12px;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  animation: slideUp 0.2s ease-in-out;
+}
+
+.delete-popup h3 {
+  margin-bottom: 12px;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.delete-popup textarea {
+  width: 100%;
+  height: 120px;
+  resize: none;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  margin-bottom: 16px;
+}
+
+.popup-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.popup-actions button {
+  padding: 15px 0px;
+  border-radius: 8px;
+  width: 50%;
+  font-weight: 500;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.popup-actions button:first-child {
+  background: transparent;
+  border: 1px solid #ccc;
+  color: $yellowMain;
+}
+
+.popup-actions button:last-child {
+  background: #183D69;
+  color: #fff;
+  border: none;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.leave-a-description {
+  color: $textSecondary;
+  margin-bottom: 16px;
+}
+
+.lable {
+  @include font-roboto-bold-blue;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.textarea-wrapper {
+  position: relative;
+}
+
+.textarea-wrapper .char-counter {
+  position: absolute;
+  bottom: -2px;
+  right: 0px;
+  font-size: 12px;
+  color: $textPrimary;
+}
+
+.delete-popup textarea.active {
+  border: 1px solid $yellowMain;
+}
+
+.popup-actions button.disabled {
+  background-color: #ccc;
+  color: #666;
+  cursor: not-allowed;
+}
+
+button.disabled {
+  background-color: #ccc;
+  color: #666;            
+  cursor: not-allowed;
+  pointer-events: none;
+  opacity: 0.6;
+}

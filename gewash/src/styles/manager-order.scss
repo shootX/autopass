@@ -1,0 +1,106 @@
+@use "./variables" as *;
+
+.manager-order-container {
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 2px 4px 0px rgba(0, 0, 0, 0.1);
+    margin: 16px;
+
+    &.gray-scale {
+        filter: grayscale(1);
+      }
+    
+      .order-cap {
+        transition: background-color 0.3s ease-out;
+      }
+    
+      .order-status {
+        font-weight: bold;
+        font-size: 0.875rem;
+      }
+}
+
+.order-btn {
+    padding: 14px;
+    height: 48px;
+    width: 48px;
+    border: none;
+    border-radius: 16px;
+}
+
+.order-cap{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: $blueMain;
+    padding-bottom: 16px;
+    border-top-right-radius: 16px;
+    border-top-left-radius: 16px;
+    padding: 16px;
+    h4 {
+        color: $yellowMain;
+        @include font-roboto-regular-yellow;
+        font-weight: 600;
+        font-size: 18px;
+    }
+    span {
+        padding: 4px 12px;
+        background-color: $yellowMain;
+        color: $blueMain;
+        border-radius: 8px;
+    }
+}
+
+.order-info {
+    display: flex;
+    gap: 14px;
+    flex-direction: column;
+    padding: 16px;
+    .washing-type-container {
+        display: flex;
+        gap: 10px;
+        p {
+            @include font-roboto-regular-blue;
+            font-size: 18px;
+        }
+    }
+    .customer-order-info {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        .customer-order-name {
+            @include font-roboto-bold-blue;
+            font-size: 18px;
+        }
+        .customer-order-phone-number {
+            color: $textSecondary;
+        }
+    }
+    .order-controll-panel {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        .order-btn.cancel {
+            background-color: transparent;
+            border: 1px solid $redMain;
+            transition: background-color 0.3s ease-out;
+          
+            &:hover {
+              background-color: $textSecondary;
+            }
+          }          
+    }
+    .order-controll-right-box {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        button {
+            background-color: $blueMain;
+            transition: background-color 0.3s ease-out;
+            &:hover {
+                background-color: $textSecondary;
+            }
+        }
+    }
+}
