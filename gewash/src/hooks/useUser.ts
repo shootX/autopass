@@ -3,6 +3,7 @@ import { useDispatch } from "react-redux";
 import { customFetch } from "@/utils/customFetch";
 import { setRole, setUser, type UserRole, type User } from "@/store/userSlice";
 import type { AppDispatch } from "@/store";
+import { previewMode, previewUser } from "@/preview/fixtures";
 
 /** Fetches /me and updates Redux. Safe to call after payment or when restoring from bfcache. */
 export async function refreshCurrentUser(dispatch: AppDispatch): Promise<void> {
@@ -66,6 +67,12 @@ export function useUser() {
 
   useEffect(() => {
     const token = localStorage.getItem("access_token");
+    if (previewMode && !token) {
+      dispatch(setUser(previewUser));
+      dispatch(setRole("customer"));
+      setLoading(false);
+      return;
+    }
     if (!token) {
       setError(new Error("No access token"));
       setLoading(false);

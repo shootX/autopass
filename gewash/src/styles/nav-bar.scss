@@ -6,8 +6,8 @@
   left: 50%;
   transform: translateX(-50%);
   width: 100%;
-  max-width: 480px;
-  padding: 0 18px;
+  max-width: 560px;
+  padding: 0 16px;
   display: flex;
   justify-content: center;
   z-index: 100;
@@ -16,37 +16,42 @@
 
 .nav-bar-container {
   width: 100%;
-  padding: 8px;
+  padding: 8px 6px 10px;
   border-radius: 28px;
-  background-color: #fff;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(16px);
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-around;
-  box-shadow: 0 10px 28px rgba(57, 113, 168, 0.12);
+  box-shadow: 0 16px 40px rgba(12, 27, 51, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.7);
   pointer-events: auto;
   overflow: visible;
 
   a {
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 12px;
-    border-radius: 12px;
-    transition: background-color 0.3s ease;
+    gap: 2px;
+    padding: 6px 8px;
+    border-radius: 14px;
+    color: #7d8da3;
+    font-size: 10px;
+    font-weight: 700;
+    text-decoration: none;
+    min-width: 52px;
 
     &.active {
-      background-color: transparent;
-
-      svg path {
-        fill: #2474C1;
-      }
+      color: #12284b;
+      background: #fff6df;
     }
   }
 
   svg {
     margin: 0;
-    width: 21 px;
-    height: 21px;
+    width: 22px;
+    height: 22px;
   }
 }
 
@@ -60,26 +65,29 @@
     height: 68px;
     padding: 0;
     border-radius: 50%;
-    background-color: #fff;
-    box-shadow: 0 8px 18px rgba(36, 116, 193, 0.18);
-    outline: 6px solid #F3F7FB;
+    background: #12284b;
+    color: #e4b23c;
+    box-shadow: 0 10px 22px rgba(18, 40, 75, 0.28);
+    outline: 6px solid #f6f3ec;
+    font-size: 10px;
 
     svg {
-      width: 28px;
-      height: 28px;
-    }
-
-    svg path {
-      fill: #2474C1;
+      width: 26px;
+      height: 26px;
     }
   }
 
   .qr-active {
-    background-color: #E5F0FA;
-    outline: 6px solid #F3F7FB;
+    background: #e4b23c;
+    color: #12284b;
+    outline: 6px solid #f6f3ec;
+  }
 
-    svg path {
-      fill: #2474C1;
-    }
+  a span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
   }
 }

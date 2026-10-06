@@ -105,7 +105,7 @@
             "phone": "599 12 34 56",
             "password": "Input your password"
         },
-        "prefix": "",
+        "prefix": "+995",
         "forgotPassword": "Forgot password?",
         "buttons": {
             "signIn": "Sign In",
@@ -296,7 +296,7 @@
         "form": {
             "title": "Enter a new phone number",
             "label": "Phone number",
-            "prefix": "",
+            "prefix": "+995",
             "placeholder": "599 12 34 56",
             "error": "Phone number doesn't exist",
             "invalidAlert": "❗ Phone number must be 9 digits",

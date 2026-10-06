@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { customFetch } from "@/utils/customFetch";
+import { previewCars, previewMode } from "@/preview/fixtures";
 
 type EnrichedCar = {
   id: number;
@@ -19,6 +20,10 @@ export function invalidateCarsCache() {
 }
 
 function loadCars(): Promise<EnrichedCar[]> {
+  if (previewMode) {
+    carsCache = previewCars;
+    return Promise.resolve(previewCars);
+  }
   if (carsCache) return Promise.resolve(carsCache);
   if (carsInflight) return carsInflight;
 

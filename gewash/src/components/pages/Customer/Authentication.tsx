@@ -4,6 +4,7 @@ import { useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 const API_URL = import.meta.env.VITE_API_URL;
 import { useTranslation } from "@/hooks/useTranslation";
+import { phonePrefix } from "@/lib/phonePrefix";
 import {
   logoUrl,
   googleServiceIconUrl,
@@ -133,7 +134,7 @@ export default function Authentication() {
         <div className="auth-phone-input">
           <label>{t("Authentication.labels.phone")}</label>
           <div className="input-with-prefix">
-            <span className="phone-prefix">{t("Authentication.prefix")}</span>
+            <span className="phone-prefix">{phonePrefix(t("Authentication.prefix"))}</span>
             <input
               type="tel"
               inputMode="numeric"

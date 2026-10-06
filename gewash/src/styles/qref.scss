@@ -1,20 +1,23 @@
 :root {
-  --c-bg: #F3F7FB;
-  --c-surface: #FFFFFF;
-  --c-surface-2: #E5F0FA;
-  --c-border: #E2EAF2;
-  --c-text: #1D3449;
-  --c-text-muted: #637E97;
-  --c-primary: #2474C1;
-  --c-on-primary: #FFFFFF;
-  --c-success-soft: #E8F5EE;
-  --c-success-text: #277456;
+  --c-bg: #f6f3ec;
+  --c-surface: #ffffff;
+  --c-surface-2: #fff6df;
+  --c-border: #e4ddd0;
+  --c-text: #14233c;
+  --c-text-muted: #5d6e86;
+  --c-primary: #12284b;
+  --c-on-primary: #ffffff;
+  --c-gold: #e4b23c;
+  --c-success-soft: #e7f6ee;
+  --c-success-text: #1f7a4d;
 }
-html, body { background: #E8F3FB; }
+html, body { background: #0c1b33; }
 .main-container {
-  max-width: 480px !important;
+  max-width: 100% !important;
   margin: 0 auto;
-  background: linear-gradient(180deg, #DCEEFF 0px, #F3F7FB 260px) !important;
+  background:
+    radial-gradient(900px 280px at 0% -10%, rgba(228, 178, 60, 0.22), transparent 55%),
+    linear-gradient(180deg, #e7eef8 0px, #f6f3ec 280px) !important;
   min-height: 100dvh;
   padding-bottom: 118px;
 }
@@ -29,7 +32,7 @@ html, body { background: #E8F3FB; }
 }
 .qhome-hello b { display: block; margin-top: 2px; font-size: 34px; font-weight: 700; color: var(--c-text); }
 .qhome-hero { position: relative; min-height: 210px; padding: 8px 12px 0; }
-.nav-bar-container a svg, .nav-bar-container a svg path { fill: none !important; }
+.nav-bar-container a svg.lucide, .nav-bar-container a svg.lucide path { fill: none !important; stroke: currentColor; }
 .qhome-hero img.car, .qhome-hero svg.car {
   width: 100%;
   height: 210px;
@@ -42,7 +45,7 @@ html, body { background: #E8F3FB; }
 .qhome-dots { display: flex; justify-content: center; gap: 6px; margin: 10px 0 0; }
 .qhome-dots button {
   width: 7px; height: 7px; border: 0; border-radius: 99px; padding: 0;
-  background: #C5D7EA;
+  background: #d7deea;
 }
 .qhome-dots button.on { width: 18px; background: var(--c-primary); }
 .qhome-sheet {
@@ -57,8 +60,30 @@ html, body { background: #E8F3FB; }
 .qstats strong { display: block; font-size: 40px; line-height: 1; font-weight: 700; }
 .qstats strong small { font-size: 18px; font-weight: 700; margin-left: 4px; }
 .qstats p { margin: 4px 0 8px; color: var(--c-text-muted); font-size: 14px; font-weight: 600; }
-.qbar { height: 6px; border-radius: 99px; background: #E3EEF8; overflow: hidden; }
-.qbar i { display: block; height: 100%; background: var(--c-primary); border-radius: 99px; }
+.qbar { height: 6px; border-radius: 99px; background: #efe6d2; overflow: hidden; }
+.qbar i { display: block; height: 100%; background: var(--c-gold); border-radius: 99px; }
+.qpromo {
+  width: 100%;
+  margin-top: 14px;
+  border: 0;
+  border-radius: 22px;
+  background: linear-gradient(135deg, #12284b 0%, #1a3a66 70%);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  text-align: left;
+  box-shadow: 0 16px 32px rgba(18, 40, 75, 0.18);
+}
+.qpromo small { display: block; color: var(--c-gold); font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+.qpromo b { display: block; font-size: 15px; font-weight: 700; }
+.qpromo .grow { flex: 1; }
+.qpromo-mark {
+  width: 40px; height: 40px; border-radius: 14px; flex: none;
+  background: rgba(228, 178, 60, 0.16); color: var(--c-gold);
+  display: grid; place-items: center;
+}
 
 .pill-cta {
   position: relative;
@@ -82,11 +107,12 @@ html, body { background: #E8F3FB; }
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: #fff;
+  background: var(--c-gold);
   color: var(--c-primary);
   display: grid;
   place-items: center;
 }
+.pill-cta:disabled { opacity: .45; cursor: not-allowed; }
 .qrow {
   width: 100%;
   margin-top: 10px;
@@ -125,14 +151,14 @@ html, body { background: #E8F3FB; }
   color: var(--c-text); font-weight: 700;
 }
 .qweek button small { display: block; font-size: 12px; font-weight: 600; color: var(--c-text-muted); }
-.qweek button.on { background: var(--c-primary); color: var(--c-on-primary); }
-.qweek button.on small { color: var(--c-on-primary); }
+.qweek button.on { background: var(--c-primary); color: var(--c-gold); }
+.qweek button.on small { color: var(--c-gold); }
 .qtimes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .qtimes button {
   min-height: 44px; border-radius: 14px; border: 0;
   background: var(--c-surface-2); color: var(--c-text); font-weight: 700;
 }
-.qtimes button.on { background: var(--c-primary); color: var(--c-on-primary); }
+.qtimes button.on { background: var(--c-gold); color: var(--c-primary); }
 .qtimes button:disabled { opacity: .4; }
 .qhead {
   display: flex; align-items: center; justify-content: space-between;

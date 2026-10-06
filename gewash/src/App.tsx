@@ -15,6 +15,15 @@ import { CarCheckRoute } from "./components/CarCheckRoute";
 import { customFetch } from "./utils/customFetch";
 import { loadShopBundle } from "./lib/shopApi";
 import { loadDefaultBranches } from "./hooks/fetchFilteredBranches";
+import kaBundle from "../ka.json";
+import enBundle from "../en.json";
+import ruBundle from "../ru.json";
+
+const bundledLang: Record<string, Record<string, unknown>> = {
+  ka: kaBundle as Record<string, unknown>,
+  en: enBundle as Record<string, unknown>,
+  ru: ruBundle as Record<string, unknown>,
+};
 
 const Home = lazy(() => import("./components/pages/Home"));
 const ManagerCalendar = lazy(() => import("./components/Calendars/ManagerCalendar"));
@@ -107,7 +116,12 @@ function AppRoutes() {
         dispatch(setTranslations(data));
       })
       .catch((err) => {
-        if (!cancelled) console.error("Failed to load translations:", err);
+        if (!cancelled) {
+          console.error("Failed to load translations:", err);
+          if (!readLangCache(currentLang)) {
+            dispatch(setTranslations(bundledLang[currentLang] ?? bundledLang.ka));
+          }
+        }
       })
       .finally(() => {
         window.clearTimeout(timer);

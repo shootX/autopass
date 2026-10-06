@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import OTPVerification from "../../OTPVerification";
 import { customFetch } from "@/utils/customFetch";
 import { useTranslation } from "@/hooks/useTranslation";
+import { phonePrefix } from "@/lib/phonePrefix";
 import { leftArrowUrl } from "@/assets/staticUrls";
 
 export default function PhoneNumberChanging() {
@@ -151,7 +152,7 @@ export default function PhoneNumberChanging() {
         <div className='auth-phone-input'>
           <label>{t("PhoneNumberChanging.form.label")}</label>
           <div className='input-with-prefix'>
-            <span className='phone-prefix'>{t("PhoneNumberChanging.form.prefix")}</span>
+            <span className='phone-prefix'>{phonePrefix(t("PhoneNumberChanging.form.prefix"))}</span>
             <input
               type='tel'
               inputMode='numeric'

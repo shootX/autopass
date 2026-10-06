@@ -1,5 +1,6 @@
 import { customFetch } from "@/utils/customFetch";
 import { useEffect, useState } from "react";
+import { previewContacts, previewMode } from "@/preview/fixtures";
 
 export function useFetchContacts() {
   const [contacts, setContacts] = useState<{
@@ -14,6 +15,11 @@ export function useFetchContacts() {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    if (previewMode) {
+      setContacts(previewContacts);
+      setLoading(false);
+      return;
+    }
     const fetchContacts = async () => {
         const token = localStorage.getItem("access_token");
       

@@ -188,8 +188,8 @@
   font-weight: 700;
   cursor: pointer;
   border: none;
-  background: #183d69;
-  color: #f7b233;
+  background: #12284b;
+  color: #ffffff;
   transition: background 0.2s ease, opacity 0.15s ease;
   -webkit-appearance: none;
   appearance: none;
@@ -530,8 +530,8 @@
   margin-top: 14px;
   border-radius: 12px;
   border: none;
-  background: #183d69;
-  color: #f5a623;
+  background: #12284b;
+  color: #ffffff;
   font-weight: 700;
   cursor: pointer;
   -webkit-appearance: none;
@@ -846,6 +846,59 @@
   .cv-success-check__mark {
     animation: none;
     stroke-dashoffset: 0;
+  }
+}
+
+.auth-page,
+.cv-page {
+  font-family: "Noto Sans Georgian", system-ui, sans-serif;
+}
+
+.sign-in:focus-visible,
+.cv-send:focus-visible,
+.cv-btn:focus-visible {
+  outline: 3px solid #e4b23c;
+  outline-offset: 2px;
+}
+
+.auth-greetings h1,
+.cv-title {
+  letter-spacing: -0.03em;
+}
+
+@media (min-width: 960px) {
+  .auth-page {
+    display: grid;
+    grid-template-columns: 1.15fr 0.9fr;
+    place-items: stretch;
+    padding: 24px;
+    background: #0c1b33;
+  }
+
+  .auth-page::before {
+    content: "Geocar\A სუფთა მანქანა.\A ყოველთვის.";
+    white-space: pre-line;
+    display: flex;
+    align-items: flex-end;
+    padding: 48px;
+    color: #fff;
+    font-size: 48px;
+    font-weight: 800;
+    line-height: 1.05;
+    border-radius: 28px 0 0 28px;
+    background:
+      radial-gradient(90% 60% at 80% 100%, rgba(228, 178, 60, 0.55), transparent 50%),
+      linear-gradient(165deg, #1c3d6e 0%, #0c1b33 72%);
+  }
+
+  .auth-wrapper {
+    width: 100%;
+    max-width: none;
+    border-radius: 0 28px 28px 0;
+    box-shadow: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
   }
 }
 

@@ -2,3 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --navy-950: #0c1b33;
+  --navy-900: #12284b;
+  --gold-500: #e4b23c;
+  --gold-700: #8a5a12;
+  --canvas: #f6f3ec;
+  --ink: #14233c;
+}
+
