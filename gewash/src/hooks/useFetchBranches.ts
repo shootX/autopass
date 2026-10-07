@@ -1,4 +1,5 @@
 import { customFetch } from "@/utils/customFetch";
+import { parseBranch } from "@/hooks/fetchFilteredBranches";
 import { useEffect, useState } from "react";
 
 export type Branch = {
@@ -8,17 +9,20 @@ export type Branch = {
   lat: number;
   lng: number;
   phone: string;
+  workStart?: string | null;
+  workEnd?: string | null;
+  isOpen?: boolean | null;
   manager: {
     id: number;
     name: string;
     surname: string;
     email: string;
     phone: string;
-  };
+  } | null;
   services: {
     id: number;
     name: string;
-    pivot: {
+    pivot?: {
       car_wash_id: number;
     };
   }[];
@@ -41,30 +45,7 @@ export function useFetchBranches() {
         if (!res.ok) throw new Error("Failed to fetch branches");
         const data = await res.json();
 
-        const parsed = data.branches.map((b: any) => {
-          const [latStr, lngStr] = b.location.split(",");
-          return {
-            id: b.id,
-            name: b.name,
-            address: b.address,
-            lat: parseFloat(latStr),
-            lng: parseFloat(lngStr),
-            phone: b.phone,
-            isOpen: true,
-            openTime: "09:00",
-            closeTime: "18:00",
-            manager: {
-              id: b.manager.id,
-              name: b.manager.name,
-              surname: b.manager.surname,
-              email: b.manager.email,
-              phone: b.manager.phone,
-            },
-            services: b.services ?? [],
-          };
-        });        
-
-        setBranches(parsed);
+        setBranches((data.branches ?? []).map(parseBranch));
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));

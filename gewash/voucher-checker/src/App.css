@@ -10,8 +10,8 @@
   height: 22px;
   border-radius: 50%;
   border: 2px solid transparent;
-  border-top-color: #f5a623;
-  border-right-color: #f5a623;
+  border-top-color: #8DB523;
+  border-right-color: #8DB523;
   border-left-color: rgba(245, 166, 35, 0.2);
   border-bottom-color: rgba(245, 166, 35, 0.12);
   animation: ui-spin 0.7s linear infinite;
@@ -84,7 +84,7 @@
 }
 
 .auth-greetings h1 {
-  color: #183d69;
+  color: #14482F;
   font-weight: 700;
   margin: 22px 0 0;
   font-size: 26px;
@@ -115,7 +115,7 @@
 }
 
 .auth-field label {
-  color: #183d69;
+  color: #14482F;
   font-size: 14px;
   font-weight: 500;
 }
@@ -127,7 +127,7 @@
   border: 1px solid #c8d1dc;
   border-radius: 14px;
   font-size: 16px;
-  color: #183d69;
+  color: #14482F;
   background: #fff;
   -webkit-appearance: none;
   appearance: none;
@@ -138,7 +138,7 @@
 }
 
 .custom-input:focus {
-  border-color: #183d69;
+  border-color: #14482F;
   outline: none;
   box-shadow: 0 0 0 3px rgba(24, 61, 105, 0.12);
 }
@@ -188,8 +188,8 @@
   font-weight: 700;
   cursor: pointer;
   border: none;
-  background: #183d69;
-  color: #f7b233;
+  background: #14482F;
+  color: #B5DD3A;
   transition: background 0.2s ease, opacity 0.15s ease;
   -webkit-appearance: none;
   appearance: none;
@@ -202,7 +202,7 @@
 }
 
 .sign-in:hover:not(:disabled) {
-  background: #245080;
+  background: #14482F;
 }
 
 .incorrect-password-error {
@@ -245,7 +245,7 @@
   background: #ffffff;
   box-shadow: 0 6px 18px rgba(2, 6, 23, 0.08);
   cursor: pointer;
-  color: #f5a623;
+  color: #8DB523;
   font-weight: 600;
   -webkit-appearance: none;
   appearance: none;
@@ -401,7 +401,7 @@
   margin: 0;
   font-size: 20px;
   font-weight: 800;
-  color: #183d69;
+  color: #14482F;
 }
 
 .cv-success-sub {
@@ -409,13 +409,13 @@
   z-index: 1;
   margin: 6px 0 0;
   font-size: 14px;
-  color: #4B6D95;
+  color: #2D7F50;
 }
 
 .cv-title {
   font-size: 22px;
   font-weight: 700;
-  color: #183d69;
+  color: #14482F;
 }
 
 .cv-subtitle {
@@ -456,21 +456,21 @@
 }
 
 .cv-stage--done .cv-stage__bar {
-  background: #183d69;
+  background: #14482F;
 }
 
 .cv-stage--done .cv-stage__label {
-  color: #183d69;
+  color: #14482F;
   font-weight: 600;
   font-size: 14px;
 }
 
 .cv-stage--active .cv-stage__bar {
-  background: #f5a623;
+  background: #8DB523;
 }
 
 .cv-stage--active .cv-stage__label {
-  color: #f5a623;
+  color: #8DB523;
   font-weight: 600;
   font-size: 14px;
 }
@@ -494,7 +494,7 @@
 .cv-label {
   display: block;
   font-size: 14px;
-  color: #183D69;
+  color: #14482F;
   margin-bottom: 8px;
   font-weight: 400;
 }
@@ -508,7 +508,7 @@
   padding: 0 14px;
   box-sizing: border-box;
   font-size: 14px;
-  color: #183d69;
+  color: #14482F;
   -webkit-appearance: none;
   appearance: none;
 }
@@ -530,8 +530,8 @@
   margin-top: 14px;
   border-radius: 12px;
   border: none;
-  background: #183d69;
-  color: #f5a623;
+  background: #14482F;
+  color: #8DB523;
   font-weight: 700;
   cursor: pointer;
   -webkit-appearance: none;
@@ -586,7 +586,7 @@
   border: none;
   background: none;
   padding: 0;
-  color: #183d69;
+  color: #14482F;
   font-weight: 600;
   text-decoration: underline;
   cursor: pointer;
@@ -615,17 +615,17 @@
 
 .cv-btn--outline {
   background: #fff;
-  border: 2px solid #183d69;
-  color: #f5a623;
+  border: 2px solid #14482F;
+  color: #8DB523;
 }
 
 .cv-btn--primary {
   background: #8b9cb0;
-  color: #f5a623;
+  color: #8DB523;
 }
 
 .cv-btn--primary:not(:disabled) {
-  background: #183d69;
+  background: #14482F;
 }
 
 .cv-btn--primary:disabled {
@@ -816,8 +816,8 @@
 @media (prefers-reduced-motion: reduce) {
   .ui-spinner {
     animation: none;
-    border-top-color: #f5a623;
-    border-right-color: #f5a623;
+    border-top-color: #8DB523;
+    border-right-color: #8DB523;
     opacity: 0.85;
   }
 

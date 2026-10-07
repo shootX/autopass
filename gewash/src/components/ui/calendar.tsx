@@ -75,7 +75,7 @@ function Calendar({
         ),
         weekdays: cn("flex mb-2", defaultClassNames.weekdays),
         weekday: cn(
-          "text-[#879AB1] font-normal text-[20px] leading-[23px] flex-1 text-center",
+          "text-[#A2ABA4] font-normal text-[20px] leading-[23px] flex-1 text-center",
           defaultClassNames.weekday
         ),
         week: cn("flex w-full gap-y-2 mb-1", defaultClassNames.week),
@@ -83,9 +83,9 @@ function Calendar({
         week_number: cn("text-[0.8rem] select-none text-muted-foreground", defaultClassNames.week_number),
         day: cn("relative w-full h-[40px] text-center select-none", defaultClassNames.day),
 
-        range_start: cn("bg-[#CDF5D8] text-[#17BA68] rounded-full", defaultClassNames.range_start),
-        range_middle: cn("text-[#17BA68]", defaultClassNames.range_middle),
-        range_end: cn("bg-[#CDF5D8] text-[#17BA68] rounded-full", defaultClassNames.range_end),
+        range_start: cn("bg-[#CDF5D8] text-[#1E9E5A] rounded-full", defaultClassNames.range_start),
+        range_middle: cn("text-[#1E9E5A]", defaultClassNames.range_middle),
+        range_end: cn("bg-[#CDF5D8] text-[#1E9E5A] rounded-full", defaultClassNames.range_end),
 
         today: cn(
           "bg-accent text-accent-foreground rounded-md data-[selected=true]:rounded-none",
@@ -152,8 +152,8 @@ function CalendarDayButton({
       data-range-end={modifiers.range_end}
       data-range-middle={modifiers.range_middle}
       className={cn(
-        "flex items-center aspect-square w-full h-full rounded-full text-[20px] leading-[23px] font-[Roboto] text-[#183D69]",
-        modifiers.selected && "bg-[#CDF5D8] text-[#17BA68]",
+        "flex items-center aspect-square w-full h-full rounded-full text-[20px] leading-[23px] font-[Roboto] text-[#14482F]",
+        modifiers.selected && "bg-[#CDF5D8] text-[#1E9E5A]",
         className
       )}
       {...props}

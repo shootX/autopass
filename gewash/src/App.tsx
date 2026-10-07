@@ -7,6 +7,7 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import { useUser, useRefreshUserOnBfcacheRestore } from "@/hooks/useUser";
 import { lazy, Suspense, useEffect, useState } from "react";
 import { setTranslations } from "./store/langSlice";
+import { setRole, setUser } from "./store/userSlice";
 import { ensureDeviceToken } from "./hooks/useDeviceToken";
 
 import ManagerLayout from "./components/Layouts/ManagerLayout";
@@ -29,6 +30,8 @@ const EmailChanging = lazy(() => import("./components/pages/Customer/EmailChangi
 const AddCar = lazy(() => import("./components/pages/Customer/AddCar"));
 const EditCar = lazy(() => import("./components/pages/Customer/EditCar"));
 const BranchScreen = lazy(() => import("./components/BranchScreen"));
+const BranchDetail = lazy(() => import("./components/pages/Customer/BranchDetail"));
+const ProfilePage = lazy(() => import("./components/pages/Customer/ProfilePage"));
 const WashAppointment = lazy(() => import("./components/pages/Customer/WashApointment"));
 const MyReviews = lazy(() => import("./components/pages/Customer/MyReviews"));
 const MyPackages = lazy(() => import("./components/pages/Customer/MyPackages"));
@@ -67,6 +70,15 @@ function AppRoutes() {
   const [langLoading, setLangLoading] = useState(() => readLangCache(currentLang) === null);
   const { loading: userLoading } = useUser();
   useRefreshUserOnBfcacheRestore();
+
+  useEffect(() => {
+    if (import.meta.env.VITE_BYPASS_AUTH !== "true") return;
+    if (localStorage.getItem("access_token")) return;
+    void import("./dev/previewFixtures").then(({ previewUser }) => {
+      dispatch(setUser(previewUser));
+      dispatch(setRole("customer"));
+    });
+  }, [dispatch]);
 
   useEffect(() => {
     ensureDeviceToken().then((token) => {
@@ -128,7 +140,9 @@ function AppRoutes() {
       void loadShopBundle();
       void loadDefaultBranches();
       void import("./components/BranchMap");
-      void import("./components/georgiaMap").then((mod) => mod.prepareGeorgiaMap());
+      if (import.meta.env.VITE_LIVE_MAP === "true") {
+        void import("./components/georgiaMap").then((mod) => mod.prepareGeorgiaMap());
+      }
     };
     const idle = window.requestIdleCallback?.(run);
     const timer = window.setTimeout(run, 250);
@@ -177,10 +191,12 @@ function AppRoutes() {
     ) : (
       <Route element={<CustomerLayout />}>
         <Route path="/" element={<Home />} />
+        <Route path="/profile" element={<ProfilePage />} />
         <Route path="/customer-my-data" element={<CustomerMyData />} />
         <Route path="/change-phone" element={<PhoneNumberChanging />} />
         <Route path="/change-email" element={<EmailChanging />} />
         <Route path="/edit-car/:carid" element={<EditCar />} />
+        <Route path="/branches/:id" element={<BranchDetail />} />
         <Route path="/branches" element={<BranchScreen />} />
         <Route path="/wash-appointment" element={<WashAppointment />} />
         <Route path="/my-reviews" element={<MyReviews />} />

@@ -10,15 +10,17 @@
   --gray-700: oklch(0.371 0 0);
   --gray-800: oklch(0.269 0 0);
   --gray-900: oklch(0.205 0 0);
-  --primary: oklch(62.3% 0.214 259.815);
-  --primary-foreground: oklch(98.5% 0 0);
+  --primary: #14482F;
+  --primary-foreground: #F7F9F4;
   --surface-base: #ffffff;
-  --surface-raised: var(--gray-50);
-  --surface-sunken: var(--gray-100);
-  --text-primary: var(--gray-900);
-  --text-muted: var(--gray-500);
-  --border-default: var(--gray-300);
-  --border-muted: var(--gray-200);
+  --surface-raised: #F7F9F4;
+  --surface-sunken: #EEF6E8;
+  --text-primary: #0E1712;
+  --text-muted: #5E6A62;
+  --border-default: #DCE1DB;
+  --border-muted: #EDF0EC;
+  --ap-lime: #B5DD3A;
+  --ap-ink: #0E1712;
   --status-success: oklch(0.723 0.219 149.579);
   --status-success-bg: oklch(0.982 0.018 155.826);
   --status-success-text: oklch(0.393 0.095 152.535);
@@ -27,7 +29,20 @@
   --status-error-text: oklch(0.396 0.141 25.723);
   --side-width: 256px;
   --top-height: 52px;
-  --font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-family: "Plus Jakarta Sans", "Noto Sans Georgian", ui-sans-serif, system-ui, sans-serif;
+}
+
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  src: url("/fonts/PlusJakartaSans.ttf") format("truetype");
+  font-weight: 200 800;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Noto Sans Georgian";
+  src: url("/fonts/NotoSansGeorgian.ttf") format("truetype");
+  font-weight: 100 900;
+  font-display: swap;
 }
 
 body.sb-nav-fixed,
@@ -761,4 +776,56 @@ a.umami-metric:hover {
   .umami-bar-label {
     display: none;
   }
+}
+
+.sb-nav-fixed #layoutSidenav #layoutSidenav_nav .sb-sidenav {
+  background: #0E1712;
+  border-color: #0E1712;
+  color: #F7F9F4;
+}
+
+body.sb-nav-fixed .umami-side-brand a,
+.sb-sidenav .sb-sidenav-menu .nav .nav-link,
+.sb-sidenav .sb-sidenav-footer,
+.umami-user-name,
+body.sb-nav-fixed .umami-user-meta a {
+  color: #DCE1DB;
+}
+
+.sb-sidenav .sb-sidenav-menu .nav .sb-sidenav-menu-heading,
+.sb-sidenav .sb-sidenav-menu .nav .nav-link .sb-nav-link-icon {
+  color: #A2ABA4;
+}
+
+.sb-sidenav .sb-sidenav-menu .nav .nav-link:hover,
+.sb-sidenav .sb-sidenav-menu .nav .nav-link.active {
+  background: #14482F;
+  color: #fff;
+}
+
+.sb-sidenav .sb-sidenav-menu .nav .nav-link.active .sb-nav-link-icon {
+  color: #B5DD3A;
+}
+
+.sb-sidenav .sb-sidenav-footer {
+  border-top-color: rgba(255, 255, 255, 0.08);
+}
+
+.umami-avatar {
+  background: #B5DD3A;
+  color: #14482F;
+}
+
+body.sb-nav-fixed .btn-primary,
+.umami-login .btn-primary {
+  background: #B5DD3A;
+  border-color: #8DB523;
+  color: #0E1712;
+}
+
+body.sb-nav-fixed .btn-primary:hover,
+.umami-login .btn-primary:hover {
+  background: #8DB523;
+  border-color: #8DB523;
+  color: #0E1712;
 }

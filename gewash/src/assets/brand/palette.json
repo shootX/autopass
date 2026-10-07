@@ -1,0 +1,119 @@
+{
+  "name": "autopass",
+  "colors": [
+    {
+      "token": "forest",
+      "name": "Forest",
+      "hex": "#14482F",
+      "usage": "Primary brand green — logo squares, headers, primary surfaces"
+    },
+    {
+      "token": "lime",
+      "name": "Pass Lime",
+      "hex": "#B5DD3A",
+      "usage": "Accent — highlight square, primary CTA buttons, active states"
+    },
+    {
+      "token": "lime-deep",
+      "name": "Lime Deep",
+      "hex": "#8DB523",
+      "usage": "Lime hover/pressed; lime-on-light graphics"
+    },
+    {
+      "token": "pine",
+      "name": "Pine",
+      "hex": "#0B2A1B",
+      "usage": "Darkest green — dark-mode background"
+    },
+    {
+      "token": "moss",
+      "name": "Moss",
+      "hex": "#2D7F50",
+      "usage": "Mid green — secondary actions, dark-mode logo squares"
+    },
+    {
+      "token": "mint",
+      "name": "Mint",
+      "hex": "#DCEFD0",
+      "usage": "Light green tint — chips, selected rows, subtle fills"
+    },
+    {
+      "token": "mist",
+      "name": "Mist",
+      "hex": "#EEF6E8",
+      "usage": "Lightest green tint — section backgrounds"
+    },
+    {
+      "token": "ink",
+      "name": "Ink",
+      "hex": "#0E1712",
+      "usage": "Near-black — wordmark, body text"
+    },
+    {
+      "token": "foam",
+      "name": "Foam",
+      "hex": "#F7F9F4",
+      "usage": "Off-white — app background"
+    },
+    {
+      "token": "white",
+      "name": "White",
+      "hex": "#FFFFFF",
+      "usage": "Cards, inverse text"
+    },
+    {
+      "token": "gray-100",
+      "name": "Gray 100",
+      "hex": "#EDF0EC",
+      "usage": "Dividers on Foam, input fills"
+    },
+    {
+      "token": "gray-200",
+      "name": "Gray 200",
+      "hex": "#DCE1DB",
+      "usage": "Borders"
+    },
+    {
+      "token": "gray-400",
+      "name": "Gray 400",
+      "hex": "#A2ABA4",
+      "usage": "Disabled, placeholders"
+    },
+    {
+      "token": "gray-600",
+      "name": "Gray 600",
+      "hex": "#5E6A62",
+      "usage": "Secondary text"
+    },
+    {
+      "token": "gray-800",
+      "name": "Gray 800",
+      "hex": "#2B342E",
+      "usage": "Strong text on light, dark-mode surfaces"
+    },
+    {
+      "token": "success",
+      "name": "Success",
+      "hex": "#1E9E5A",
+      "usage": "Confirmations, valid pass"
+    },
+    {
+      "token": "warning",
+      "name": "Warning",
+      "hex": "#F0A020",
+      "usage": "Expiring pass, attention"
+    },
+    {
+      "token": "error",
+      "name": "Error",
+      "hex": "#D64541",
+      "usage": "Errors, invalid pass"
+    },
+    {
+      "token": "info",
+      "name": "Rinse Blue",
+      "hex": "#2E86D6",
+      "usage": "Info, water/wash-in-progress states"
+    }
+  ]
+}

@@ -184,7 +184,7 @@ const [isSubmitting, setIsSubmitting] = useState(false);
               >
                 <InfinityIcon
                   color={
-                    selectedWashCount === "infinity" ? "#F7B233" : "#183D69"
+                    selectedWashCount === "infinity" ? "#B5DD3A" : "#14482F"
                   }
                 />
               </div> */}
@@ -204,7 +204,7 @@ const [isSubmitting, setIsSubmitting] = useState(false);
                   <span>{term}</span>
                   <span
                     style={{
-                      color: selectedTerm === term ? "#F7B233" : "#183D69",
+                      color: selectedTerm === term ? "#B5DD3A" : "#14482F",
                     }}
                   >
                     {t("WashingPackageForm.term.unit")}

@@ -102,7 +102,7 @@ export function CalendarMobileSheet({
               textAlign: "center",
               fontSize: "20px",
               fontWeight: 600,
-              color: "#183D69",
+              color: "#14482F",
               margin: 0,
               padding: "0px"
             }}
@@ -124,7 +124,7 @@ export function CalendarMobileSheet({
               style={{
                 border: "none",
                 background: "transparent",
-                color: "#17BA68",
+                color: "#1E9E5A",
                 fontWeight: 700,
                 cursor: "pointer",
               }}
@@ -136,7 +136,7 @@ export function CalendarMobileSheet({
               style={{
                 fontSize: "18px",
                 fontWeight: 500,
-                color: "#183D69",
+                color: "#14482F",
               }}
             >
               {month.toLocaleDateString("en-US", {
@@ -151,7 +151,7 @@ export function CalendarMobileSheet({
               style={{
                 border: "none",
                 background: "transparent",
-                color: "#17BA68",
+                color: "#1E9E5A",
                 fontWeight: 700,
                 cursor: "pointer",
               }}
@@ -178,7 +178,7 @@ export function CalendarMobileSheet({
                 textAlign: "center",
                 fontSize: "16px",
                 fontWeight: 500,
-                color: "#183D69",
+                color: "#14482F",
               }}
             >
               {format(range.from, "d MMMM yyyy")} – {format(range.to, "d MMMM yyyy")}
@@ -195,10 +195,10 @@ export function CalendarMobileSheet({
             disabled={!range?.from || !range?.to}
             style={{
               borderRadius: "16px",
-              backgroundColor: "#183D69",
+              backgroundColor: "#14482F",
               padding: "12px 24px",
               textAlign: "center",
-              color: "#F7B233",
+              color: "#B5DD3A",
               fontWeight: 600,
               fontSize: "14px",
               border: "none",

@@ -28,10 +28,13 @@
 @use "./customer_styles/giveaway.scss";
 @use "./customer_styles/my-area.scss";
 @use "./qref.scss";
+@use "./autopass.scss";
 
 body {
-  font-family: $font-roboto;
+  font-family: "Plus Jakarta Sans", "Noto Sans Georgian", sans-serif;
   -webkit-tap-highlight-color: transparent;
+  background: #F7F9F4;
+  color: #0E1712;
 }
 
 .main-container {
@@ -40,7 +43,7 @@ body {
   background-color: $bg;
   min-height: 100vh;
   position: relative;
-  padding-bottom: 80px;
+  padding-bottom: 0;
 }
 
 .yellow {

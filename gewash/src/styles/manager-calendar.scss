@@ -65,7 +65,7 @@ header {
     background: white;
     text-align: center;
     padding: 21px 8px;
-    color: #183D69;
+    color: #14482F;
     cursor: pointer;
     outline: none;
   
@@ -76,7 +76,7 @@ header {
     &.selected {
       background-color: #CDF5D8;
       font-weight: bold;
-      border: 1px solid #17BA68;
+      border: 1px solid #1E9E5A;
       transition: all 0.3s ease;
     }
   }
@@ -110,11 +110,11 @@ header {
     border-radius: 50%;
   }
   
-  .dot.confirm      { background-color: #17BA68; }
+  .dot.confirm      { background-color: #1E9E5A; }
   .dot.new          { background-color: $yellowMain; }
   .dot.expired      { background-color: $redMain; }
   .dot.rescheduled  { background-color: $blueMain; }
-  .dot.deleted      { background-color: #879AB1; }
+  .dot.deleted      { background-color: #A2ABA4; }
   
 
   .date-events {
@@ -155,7 +155,7 @@ header {
         color: $yellowMain;
     }
     &.confirmed {
-        background-color: #17BA68;
+        background-color: #1E9E5A;
         color: white;
     }
     span {

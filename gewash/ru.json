@@ -328,6 +328,8 @@
                     "facebookAlt": "facebook"
                 }
             },
+            "policy": "Я согласен",
+            "policyLink": "политикой конфиденциальности",
             "setPassword": {
                 "title": {
                     "errors": {
@@ -595,7 +597,7 @@
         }
     },
     "Sidebar": {
-        "logoAlt": "Логотип Geocar",
+        "logoAlt": "autopass",
         "menu": {
             "myReviews": "Мои отзывы",
             "myPackages": "Мои пакеты",

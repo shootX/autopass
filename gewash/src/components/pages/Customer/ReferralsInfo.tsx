@@ -225,7 +225,7 @@ export default function ReferralsInfo() {
               >
                 {copied ? (
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <path d="M20 6L9 17l-5-5" stroke="#17BA68" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M20 6L9 17l-5-5" stroke="#1E9E5A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 ) : (
                   <img src={copyIcon} alt="copy" width={24} height={24} />

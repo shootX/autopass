@@ -626,7 +626,7 @@
         }
     },
     "Sidebar": {
-        "logoAlt": "Geocar Logo",
+        "logoAlt": "autopass",
         "menu": {
             "myReviews": "My reviews",
             "myPackages": "My packages",

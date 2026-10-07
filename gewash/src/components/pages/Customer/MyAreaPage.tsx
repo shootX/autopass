@@ -71,7 +71,7 @@ function AreaRail({
       {pages.length > 1 && page < pages.length - 1 && (
         <span className="shop-offers-hint" aria-hidden="true">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-            <path d="M9 6l6 6-6 6" stroke="#183D69" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M9 6l6 6-6 6" stroke="#14482F" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </span>
       )}
@@ -228,7 +228,7 @@ export default function MyAreaPage() {
             >
               <span className="shop-more-card__plus">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                  <path d="M12 5v14M5 12h14" stroke="#183D69" strokeWidth="2" strokeLinecap="round" />
+                  <path d="M12 5v14M5 12h14" stroke="#14482F" strokeWidth="2" strokeLinecap="round" />
                 </svg>
               </span>
               <span className="shop-more-card__label">

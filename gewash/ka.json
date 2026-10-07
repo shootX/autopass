@@ -328,6 +328,8 @@
                     "facebookAlt": "facebook"
                 }
             },
+            "policy": "ვეთანხმები",
+            "policyLink": "კონფიდენციალურობის პოლიტიკას",
             "setPassword": {
                 "title": {
                     "errors": {
@@ -595,7 +597,7 @@
         }
     },
     "Sidebar": {
-        "logoAlt": "Geocar ლოგო",
+        "logoAlt": "autopass",
         "menu": {
             "myReviews": "ჩემი მიმოხილვები",
             "myPackages": "ჩემი პაკეტები",

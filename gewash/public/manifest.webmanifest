@@ -1,0 +1,16 @@
+{
+  "name": "autopass",
+  "short_name": "autopass",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F7F9F4",
+  "theme_color": "#14482F",
+  "icons": [
+    {
+      "src": "/brand/app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

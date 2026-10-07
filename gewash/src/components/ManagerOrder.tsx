@@ -32,33 +32,33 @@ const statusColorMap: Record<
 > = {
   Confirm: {
     capBg: "#B0EFBC",
-    capText: "#183D69",
-    labelBg: "#17BA68",
+    capText: "#14482F",
+    labelBg: "#1E9E5A",
     labelText: "#FFFFFF",
   },
   Rescheduled: {
-    capBg: "#879AB1",
-    capText: "#183D69",
-    labelBg: "#183D69",
-    labelText: "#F7B233",
+    capBg: "#A2ABA4",
+    capText: "#14482F",
+    labelBg: "#14482F",
+    labelText: "#B5DD3A",
   },
   Expired: {
     capBg: "#FFC6C6",
-    capText: "#183D69",
-    labelBg: "#BA1717",
-    labelText: "#F7B233",
+    capText: "#14482F",
+    labelBg: "#D64541",
+    labelText: "#B5DD3A",
   },
   Deleted: {
-    capBg: "#879AB1",
+    capBg: "#A2ABA4",
     capText: "#FFFFFF",
-    labelBg: "#C8D1DC",
-    labelText: "#879AB1",
+    labelBg: "#DCE1DB",
+    labelText: "#A2ABA4",
   },
   New: {
-    capBg: "#183D69",
-    capText: "#F7B233",
-    labelBg: "#F8BE54",
-    labelText: "#183D69",
+    capBg: "#14482F",
+    capText: "#B5DD3A",
+    labelBg: "#B5DD3A",
+    labelText: "#14482F",
   },
 };
 
@@ -66,7 +66,7 @@ const statusColorMap: Record<
 function getStatusStyle(status: Status): React.CSSProperties {
   const { labelBg, labelText } = statusColorMap[status]
 
-  const correctedBg = status === 'Deleted' ? '#C8D1DC' : labelBg
+  const correctedBg = status === 'Deleted' ? '#DCE1DB' : labelBg
 
   return {
     backgroundColor: correctedBg,

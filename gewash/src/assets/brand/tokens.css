@@ -1,0 +1,43 @@
+:root {
+  /* autopass brand tokens */
+  --ap-forest: #14482F; /* Forest — Primary brand green — logo squares, headers, primary surfaces */
+  --ap-lime: #B5DD3A; /* Pass Lime — Accent — highlight square, primary CTA buttons, active states */
+  --ap-lime-deep: #8DB523; /* Lime Deep — Lime hover/pressed; lime-on-light graphics */
+  --ap-pine: #0B2A1B; /* Pine — Darkest green — dark-mode background */
+  --ap-moss: #2D7F50; /* Moss — Mid green — secondary actions, dark-mode logo squares */
+  --ap-mint: #DCEFD0; /* Mint — Light green tint — chips, selected rows, subtle fills */
+  --ap-mist: #EEF6E8; /* Mist — Lightest green tint — section backgrounds */
+  --ap-ink: #0E1712; /* Ink — Near-black — wordmark, body text */
+  --ap-foam: #F7F9F4; /* Foam — Off-white — app background */
+  --ap-white: #FFFFFF; /* White — Cards, inverse text */
+  --ap-gray-100: #EDF0EC; /* Gray 100 — Dividers on Foam, input fills */
+  --ap-gray-200: #DCE1DB; /* Gray 200 — Borders */
+  --ap-gray-400: #A2ABA4; /* Gray 400 — Disabled, placeholders */
+  --ap-gray-600: #5E6A62; /* Gray 600 — Secondary text */
+  --ap-gray-800: #2B342E; /* Gray 800 — Strong text on light, dark-mode surfaces */
+  --ap-success: #1E9E5A; /* Success — Confirmations, valid pass */
+  --ap-warning: #F0A020; /* Warning — Expiring pass, attention */
+  --ap-error: #D64541; /* Error — Errors, invalid pass */
+  --ap-info: #2E86D6; /* Rinse Blue — Info, water/wash-in-progress states */
+
+  /* semantic aliases */
+  --ap-primary: var(--ap-forest);
+  --ap-accent: var(--ap-lime);
+  --ap-bg: var(--ap-foam);
+  --ap-surface: var(--ap-white);
+  --ap-text: var(--ap-ink);
+  --ap-text-muted: var(--ap-gray-600);
+  --ap-border: var(--ap-gray-200);
+  --ap-on-primary: var(--ap-white);
+  --ap-on-accent: var(--ap-forest);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ap-bg: var(--ap-pine);
+    --ap-surface: #12382A;
+    --ap-text: var(--ap-foam);
+    --ap-text-muted: var(--ap-gray-400);
+    --ap-border: #24503A;
+  }
+}

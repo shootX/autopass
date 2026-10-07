@@ -1,22 +1,10 @@
-:root {
-  --c-bg: #F3F7FB;
-  --c-surface: #FFFFFF;
-  --c-surface-2: #E5F0FA;
-  --c-border: #E2EAF2;
-  --c-text: #1D3449;
-  --c-text-muted: #637E97;
-  --c-primary: #2474C1;
-  --c-on-primary: #FFFFFF;
-  --c-success-soft: #E8F5EE;
-  --c-success-text: #277456;
-}
-html, body { background: #E8F3FB; }
+html, body { background: var(--ap-foam, #F7F9F4); }
 .main-container {
-  max-width: 480px !important;
+  max-width: 100% !important;
   margin: 0 auto;
-  background: linear-gradient(180deg, #DCEEFF 0px, #F3F7FB 260px) !important;
+  background: var(--ap-foam, #F7F9F4) !important;
   min-height: 100dvh;
-  padding-bottom: 118px;
+  padding-bottom: 0;
 }
 .qhome, .qbook, .qbranch { color: var(--c-text); }
 .qhome { padding: 0 0 12px; }
@@ -63,30 +51,23 @@ html, body { background: #E8F3FB; }
 .pill-cta {
   position: relative;
   width: 100%;
-  min-height: 56px;
+  min-height: 60px;
   border: 0;
-  border-radius: 999px;
-  background: var(--c-primary);
-  color: var(--c-on-primary);
-  font-size: 16px;
+  border-radius: 18px;
+  background: var(--ap-lime, #B5DD3A);
+  color: var(--ap-ink, #0E1712);
+  font-family: "Noto Sans Georgian", "Plus Jakarta Sans", sans-serif;
+  font-size: 17px;
   font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 62px;
+  padding: 0 18px;
   text-decoration: none;
+  cursor: pointer;
 }
-.pill-cta .arrow {
-  position: absolute;
-  right: 6px;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: #fff;
-  color: var(--c-primary);
-  display: grid;
-  place-items: center;
-}
+.pill-cta:disabled { opacity: 0.45; }
+.pill-cta .arrow { display: none; }
 .qrow {
   width: 100%;
   margin-top: 10px;
@@ -121,19 +102,19 @@ html, body { background: #E8F3FB; }
 .qbook-car button { margin-left: auto; border: 0; background: transparent; color: var(--c-text-muted); min-width: 44px; min-height: 44px; }
 .qweek { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 8px 0 4px; }
 .qweek button {
-  border: 0; background: transparent; border-radius: 16px; min-height: 58px;
+  border: 1px solid var(--ap-gray-100, #EDF0EC); background: #fff; border-radius: 16px; min-height: 58px;
   color: var(--c-text); font-weight: 700;
 }
 .qweek button small { display: block; font-size: 12px; font-weight: 600; color: var(--c-text-muted); }
-.qweek button.on { background: var(--c-primary); color: var(--c-on-primary); }
-.qweek button.on small { color: var(--c-on-primary); }
+.qweek button.on { background: var(--ap-forest, #14482F); color: #fff; }
+.qweek button.on small { color: #C9D8CD; }
 .qtimes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .qtimes button {
   min-height: 44px; border-radius: 14px; border: 0;
   background: var(--c-surface-2); color: var(--c-text); font-weight: 700;
 }
-.qtimes button.on { background: var(--c-primary); color: var(--c-on-primary); }
-.qtimes button:disabled { opacity: .4; }
+.qtimes button.on { background: var(--ap-forest, #14482F); color: #fff; }
+.qtimes button:disabled { opacity: 1; color: var(--ap-gray-400, #A2ABA4); background: transparent; text-decoration: line-through; }
 .qhead {
   display: flex; align-items: center; justify-content: space-between;
   min-height: 48px; margin-bottom: 8px;

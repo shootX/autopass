@@ -13,7 +13,7 @@ export default function MyVehicles() {
   const t = useTranslation();
 
   return (
-    <div className='vehicles-wrapper'>
+    <div className='vehicles-wrapper' id="vehicles">
       <h1>{t("MyVehicles.title")}</h1>
 
       {loading && <p>{t("MyVehicles.loading")}</p>}

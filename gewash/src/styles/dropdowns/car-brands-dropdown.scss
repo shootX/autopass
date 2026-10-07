@@ -49,7 +49,7 @@
       text-align: center;
       font-size: 20px;
       font-weight: 600;
-      color: #183d69;
+      color: #14482F;
     }
   
     .brand-options {
@@ -60,7 +60,7 @@
       .brand-option {
         padding: 12px 16px;
         border-radius: 8px;
-        color: #183d69;
+        color: #14482F;
         font-weight: 500;
         cursor: pointer;
   
@@ -73,10 +73,10 @@
   
     .submit-button {
       border-radius: 16px;
-      background-color: #183d69;
+      background-color: #14482F;
       padding: 12px 24px;
       text-align: center;
-      color: #f7b233;
+      color: #B5DD3A;
       font-weight: 600;
       font-size: 14px;
       border: none;
@@ -99,7 +99,7 @@
   .brand-search {
     width: 100%;
     font-size: 16px;
-    color: #183d69;
+    color: #14482F;
     background-color: transparent;
     &::placeholder {
         color: $border;
@@ -149,7 +149,7 @@
   .brand-letter {
     font-weight: 600;
     font-size: 14px;
-    color: #183d69;
+    color: #14482F;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -161,7 +161,7 @@
   .brand-option {
     padding: 10px 12px;
     border-radius: 8px;
-    color: #183d69;
+    color: #14482F;
     cursor: pointer;
     transition: all 0.2s ease;
    -webkit-tap-highlight-color: transparent;

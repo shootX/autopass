@@ -216,7 +216,7 @@ export default function AddCar({ showHeader }: { showHeader?: boolean }) {
           <div className='add-car-success'>
             <p
               style={{
-                color: "#183D69",
+                color: "#14482F",
                 fontSize: "18px",
                 textAlign: "center",
               }}
@@ -241,14 +241,14 @@ export default function AddCar({ showHeader }: { showHeader?: boolean }) {
               <button
                 className='add-car-btn'
                 onClick={resetForm}
-                style={{ backgroundColor: "#83D69", color: "#F7B233" }}
+                style={{ backgroundColor: "#83D69", color: "#B5DD3A" }}
               >
                 {t("AddCar.buttons.addAnother")}
               </button>
               <button
                 className='add-car-btn secondary'
                 onClick={() => navigate("/customer-my-data")}
-                style={{ background: "#83D69", color: "#F7B233" }}
+                style={{ background: "#83D69", color: "#B5DD3A" }}
               >
                 {t("AddCar.buttons.useApp")}
               </button>

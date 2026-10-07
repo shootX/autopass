@@ -119,7 +119,7 @@ export default function SettingsPage() {
           >
             <div>
               <img
-                style={{ backgroundColor: '#BA1717' }}
+                style={{ backgroundColor: '#D64541' }}
                 className="setting-left-icon"
                 src={deleteSettingsIconUrl}
                 alt=""
@@ -127,7 +127,7 @@ export default function SettingsPage() {
               <span>{t('Settings.deleteAccount')}</span>
             </div>
             <div>
-              <span style={{ color: '#BA1717', marginRight: '12px' }}>
+              <span style={{ color: '#D64541', marginRight: '12px' }}>
                 {t('Settings.deleteBtn')}
               </span>
               <svg
@@ -139,7 +139,7 @@ export default function SettingsPage() {
               >
                 <path
                   d="M1 1.5L7 7.5L0.999999 13.5"
-                  stroke="#BA1717"
+                  stroke="#D64541"
                   stroke-width="2"
                   stroke-linecap="round"
                   stroke-linejoin="round"
@@ -164,7 +164,7 @@ export default function SettingsPage() {
       {deleteModalOpen && (
         <div className="modal-backdrop">
           <div className="modal-window">
-            <h2 style={{ color: '#BA1717' }}>{t('Settings.deleteAccount')}?</h2>
+            <h2 style={{ color: '#D64541' }}>{t('Settings.deleteAccount')}?</h2>
             <h3>{t('Settings.sure_delete')}</h3>
             <div className="modal-actions">
               <button onClick={() => setDeleteModalOpen(false)}>{t('Settings.cancel')}</button>

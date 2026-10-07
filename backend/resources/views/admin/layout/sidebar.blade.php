@@ -1,8 +1,7 @@
 <nav class="sb-sidenav accordion" id="sidenavAccordion">
     <div class="umami-side-brand">
         <a href="{{ route('admin.dashboard') }}">
-            <span class="umami-mark" aria-hidden="true">G</span>
-            <span>GeoCar</span>
+            <img src="/brand/logo-horizontal-dark.svg" alt="autopass" style="height:28px;width:auto">
         </a>
     </div>
     <div class="sb-sidenav-menu">

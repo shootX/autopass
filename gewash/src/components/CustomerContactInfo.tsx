@@ -14,7 +14,7 @@ export default function CustomerContactInfo() {
     ? t("CustomerContactInfo.email.confirmed")
     : t("CustomerContactInfo.email.unconfirmed");
 
-  const emailColor = user?.emailVerified ? "#4CAF50" : "#BA1717";
+  const emailColor = user?.emailVerified ? "#4CAF50" : "#D64541";
 
   return (
     <div className='customer-contact-info-wrapper'>

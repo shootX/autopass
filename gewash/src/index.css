@@ -1,4 +1,63 @@
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  src: url("/fonts/PlusJakartaSans.ttf") format("truetype");
+  font-weight: 200 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Noto Sans Georgian";
+  src: url("/fonts/NotoSansGeorgian.ttf") format("truetype");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --ap-forest: #14482f;
+  --ap-lime: #b5dd3a;
+  --ap-lime-deep: #8db523;
+  --ap-pine: #0b2a1b;
+  --ap-moss: #2d7f50;
+  --ap-mint: #dcefd0;
+  --ap-mist: #eef6e8;
+  --ap-ink: #0e1712;
+  --ap-foam: #f7f9f4;
+  --ap-white: #ffffff;
+  --ap-gray-100: #edf0ec;
+  --ap-gray-200: #dce1db;
+  --ap-gray-400: #a2aba4;
+  --ap-gray-600: #5e6a62;
+  --ap-gray-800: #2b342e;
+  --ap-success: #1e9e5a;
+  --ap-warning: #f0a020;
+  --ap-error: #d64541;
+  --ap-info: #2e86d6;
+  --c-bg: var(--ap-foam);
+  --c-surface: #ffffff;
+  --c-surface-2: var(--ap-mist);
+  --c-border: var(--ap-gray-100);
+  --c-text: var(--ap-ink);
+  --c-text-muted: var(--ap-gray-600);
+  --c-primary: var(--ap-forest);
+  --c-on-primary: var(--ap-ink);
+  --c-success-soft: #e3f4e9;
+  --c-success-text: #137443;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+html,
+body,
+#root {
+  background: var(--ap-foam);
+  color: var(--ap-ink);
+}
+
+body {
+  font-family: "Plus Jakarta Sans", "Noto Sans Georgian", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}

@@ -4,7 +4,9 @@
  */
 export { default as leftArrowUrl } from "./icons/left-arrow.svg?url";
 export { default as rightArrowUrl } from "./icons/right-arrow.svg?url";
-export { default as logoUrl } from "./logo.svg?url";
+export { default as logoUrl } from "./brand/logo-horizontal.svg?url";
+export { default as logoDarkUrl } from "./brand/logo-horizontal-dark.svg?url";
+export { default as markUrl } from "./brand/mark.svg?url";
 export { default as shopIconUrl } from "./icons/shop_icon.svg?url";
 export { default as geoPointIconUrl } from "./icons/geo_piont_icon.svg?url";
 export { default as qrIconUrl } from "./icons/qr_icon.svg?url";
