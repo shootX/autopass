@@ -1,24 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import { type RootState } from '@/store';
 import { useCreateAppointment } from '@/hooks/useCreateAppointment';
 import { useLoadAppointmentsFromBackend } from '@/hooks/useLoadAppointmentsFromBackend';
 import { useFetchBranches } from '@/hooks/useFetchBranches';
 import { formatKaMonth } from '@/lib/format';
 import { useFetchCars } from '@/hooks/useFetchCars';
+import { useMyPackages } from '@/hooks/useActivePackages';
 import { useTranslation } from '@/hooks/useTranslation';
-
-import { SingleCalendarMobileSheet } from '@/components/Calendars/SingleCalendarDropDownSheet';
-import { TimePickerMobileSheet } from '@/components/ui/TimePickerMobileSheet';
-import { TypeWashingDropDown } from '@/components/ui/TypeWashingDropDown';
-import {
-  leftArrowUrl,
-  branchSummaryCalendarUrl,
-  branchSummaryTimeUrl,
-  branchSummaryAppliedUrl,
-  carWashTypeIconUrl,
-} from '@/assets/staticUrls';
+import { branchPhoto, carParts, carPhoto } from '@/lib/v4';
+import { ArrowLeft, ChevronLeft, ChevronRight, Droplets, Sparkles, Ticket, Zap } from 'lucide-react';
 import PageSkeleton from '@/components/Skeletons/PageSkeleton';
 
 type Service = {
@@ -31,16 +21,9 @@ export default function WashAppointment() {
   const location = useLocation();
   const navigate = useNavigate();
   const { cars, loading: carsLoading } = useFetchCars();
+  const { packages } = useMyPackages();
   const firstCar = cars[0];
 
-  const appointments = useSelector((state: RootState) => state.appointments.appointments);
-
-  const APPOINTMENT_STATUS_LABELS: Record<number, string> = {
-    0: 'New',
-    1: 'Confirm',
-    2: 'Deleted',
-    3: 'Rescheduled',
-  };
   const slots = ['10:00', '11:00', '12:30', '14:30', '15:00', '16:30'];
   const slotAt = (day: Date, time: string) => {
     const [h, m] = time.split(':').map(Number);
@@ -72,12 +55,9 @@ export default function WashAppointment() {
   const initialDate = presetDate ?? defaultDay();
   const initialTime = preset?.time || freeOn(initialDate)[0] || slots[0];
 
-  const [calendarOpen, setCalendarOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(initialDate);
   const [pickedTime, setPickedTime] = useState(initialTime);
   const [weekStart, setWeekStart] = useState(() => weekStartFor(initialDate));
-  const [timePickerOpen, setTimePickerOpen] = useState(false);
-  const [typeOpen, setTypeOpen] = useState(false);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { createAppointment, loading, error, success } = useCreateAppointment();
@@ -109,17 +89,6 @@ export default function WashAppointment() {
   const selectedCar = cars[carIndex] ?? firstCar;
 
   const isFormValid = Boolean(selectedDate && pickedTime && selectedService && branch && selectedCar);
-
-  const handleGoToMap = () => {
-    if (branch) {
-      navigate('/branches', {
-        state: {
-          selectedBranchId: branch.id,
-          viewMode: 'map',
-        },
-      });
-    }
-  };
 
   const handleSubmit = async () => {
     if (!isFormValid || isSubmitting || !branch || !selectedService || !selectedDate) return;
@@ -166,87 +135,110 @@ export default function WashAppointment() {
   };
   const monthLabel = formatKaMonth(selectedDate ?? weekStart);
 
+  const pkg = selectedCar ? packages.find((item) => item.car.id === selectedCar.id) : null;
+  const remaining = pkg ? pkg.number_of_washes - pkg.used_washes : null;
+  const today0 = new Date();
+  today0.setHours(0, 0, 0, 0);
+
   return (
-    <div className="ap-book">
-      <button type="button" className="ap-back" onClick={() => navigate(-1)} aria-label="უკან">←</button>
-      <h1 className="ap-title" style={{ marginTop: 12 }}>რეცხვის დაჯავშნა</h1>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 8, color: 'var(--ap-gray-600)' }}>
-        <span style={{ flex: 1 }}>{[branch?.name, selectedService?.name].filter(Boolean).join(' · ') || 'აირჩიე ფილიალი'}</span>
-        <button type="button" className="ap-link" style={{ border: 0, background: 'transparent', cursor: 'pointer' }} onClick={() => navigate('/branches')}>შეცვლა</button>
+    <div className="v4-screen ap-book">
+      <div className="v4-hd">
+        <button type="button" className="v4-ib" onClick={() => navigate(-1)} aria-label="უკან"><ArrowLeft size={21} /></button>
+        <h1>რეცხვის დაჯავშნა</h1>
+        <span className="spacer" />
       </div>
-      {cars.length > 1 && (
-        <button type="button" className="ap-link" style={{ marginTop: 8, border: 0, background: 'transparent' }} onClick={() => setCarIndex((i) => (i + 1) % cars.length)}>
-          {selectedCar?.plate}
+      <div className="v4-branch">
+        {branch && <span className="ph" style={{ backgroundImage: `url(${branchPhoto(branch)})` }} />}
+        <div style={{ flex: 1 }}>
+          <div style={{ fontWeight: 800 }}>{branch?.name || 'აირჩიე ფილიალი'}</div>
+          <div className="v4-kicker">
+            {branch?.address}
+            {branch?.isOpen === true && <span style={{ color: 'var(--ap-success)' }}> · {t('BranchInfoPanel.status.open')}</span>}
+          </div>
+        </div>
+        <button type="button" onClick={() => navigate('/branches')} style={{ border: 0, background: 'transparent', color: 'var(--ap-lime-deep)', fontWeight: 800, cursor: 'pointer' }}>
+          შეცვლა
         </button>
+      </div>
+      {cars.length > 0 && (
+        <div className="v4-cars">
+          {cars.map((car, index) => {
+            const parts = carParts(car);
+            return (
+              <button key={car.id} type="button" className={`v4-cr${car.id === selectedCar?.id ? ' on' : ''}`} onClick={() => setCarIndex(index)}>
+                <img src={carPhoto(parts.type, parts.image)} alt="" />
+                <span>
+                  <b>{parts.short || car.plate}</b>
+                  <small>{car.plate}</small>
+                </span>
+              </button>
+            );
+          })}
+        </div>
       )}
-      <div className="qhead">
-        <button type="button" aria-label="წინა" onClick={() => setWeekStart(new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() - 1))}>‹</button>
-        <h1 style={{ textTransform: 'capitalize' }}>{monthLabel}</h1>
-        <button type="button" aria-label="შემდეგი" onClick={() => setWeekStart(new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() + 1))}>›</button>
+      <div style={{ display: 'flex', alignItems: 'center', marginTop: 16 }}>
+        <span className="v4-sec" style={{ flex: 1 }}>თარიღი</span>
+        <button type="button" className="v4-ib" style={{ width: 36, height: 36 }} aria-label="წინა" onClick={() => setWeekStart(new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() - 5))}>
+          <ChevronLeft size={18} />
+        </button>
+        <span className="v4-kicker" style={{ textTransform: 'capitalize', margin: '0 8px' }}>{monthLabel}</span>
+        <button type="button" className="v4-ib" style={{ width: 36, height: 36 }} aria-label="შემდეგი" onClick={() => setWeekStart(new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() + 5))}>
+          <ChevronRight size={18} />
+        </button>
       </div>
-      <div className="qweek">
-        {days.map((date) => (
-          <button
-            key={date.toISOString()}
-            type="button"
-            className={sameDay(date, selectedDate) ? 'on' : ''}
-            onClick={() => { setSelectedDate(date); setPickedTime(''); }}
-          >
-            <small>{dayNames[date.getDay()]}</small>
-            {date.getDate()}
-          </button>
-        ))}
+      <div className="v4-week">
+        {days.map((date) => {
+          const past = date < today0;
+          const on = sameDay(date, selectedDate);
+          return (
+            <button
+              key={date.toISOString()}
+              type="button"
+              disabled={past}
+              className={on ? 'on' : past ? 'off' : ''}
+              onClick={() => { setSelectedDate(date); setPickedTime(freeOn(date)[0] || ''); }}
+            >
+              <small>{dayNames[date.getDay()]}</small>
+              <b>{date.getDate()}</b>
+            </button>
+          );
+        })}
       </div>
-      <p style={{ margin: '14px 0 8px', fontWeight: 700 }}>თავისუფალი დრო</p>
-      <div className="qtimes">
+      <div className="v4-sec" style={{ marginTop: 16 }}>დრო</div>
+      <div className="v4-slots">
         {slots.map((time) => (
           <button key={time} type="button" disabled={slotOff(time)} className={pickedTime === time ? 'on' : ''} onClick={() => setPickedTime(time)}>
             {time}
           </button>
         ))}
       </div>
-      <button type="button" className="qrow" onClick={() => setTypeOpen(true)}>
-        <span className="grow"><b>{selectedService?.name || 'მომსახურება'}</b></span>
-        <span>›</span>
-      </button>
-      {selectedDate && pickedTime && (
-        <button type="button" className="qrow">
-          <span className="grow"><b>{selectedDate.toLocaleDateString('ka-GE', { day: 'numeric', month: 'long' })} · {pickedTime}</b></span>
-        </button>
+      <div className="v4-sec" style={{ marginTop: 16 }}>სერვისი</div>
+      <div className="v4-sv">
+        {(branch?.services ?? []).map((service) => {
+          const name = service.name.toLowerCase();
+          const Icon = name.includes('ექსპრეს') || name.includes('express') ? Zap : name.includes('სალონ') ? Sparkles : Droplets;
+          return (
+            <button key={service.id} type="button" className={selectedService?.id === service.id ? 'on' : ''} onClick={() => setSelectedService(service)}>
+              <Icon size={22} />
+              {service.name}
+            </button>
+          );
+        })}
+      </div>
+      {remaining != null && remaining > 0 && (
+        <div className="v4-passnote">
+          <span className="v4-limeico" style={{ background: '#F3F5F2' }}><Ticket size={19} /></span>
+          <div>
+            <div className="v4-kicker">ჩემი პაკეტი</div>
+            <div style={{ fontWeight: 800, fontSize: 14.5 }}>ჩამოიჭრება 1 რეცხვა · დარჩება {Math.max(0, remaining - 1)}</div>
+          </div>
+        </div>
       )}
       {success && <p>{t('WashAppointment.form.success')}</p>}
-      {!success && error && <p>{error}</p>}
+      {!success && error && <p className="ap-error">{error}</p>}
       <button type="button" className="ap-btn" style={{ marginTop: 16 }} onClick={handleSubmit} disabled={!isFormValid || isSubmitting}>
         {t('WashAppointment.form.submit.button')}
       </button>
-
-        <SingleCalendarMobileSheet
-          open={calendarOpen}
-          setOpen={setCalendarOpen}
-          applyDate={(date) => {
-            setSelectedDate(date);
-            setPickedTime('');
-          }}
-          initialDate={selectedDate}
-          title={t('WashAppointment.form.date.pickerTitle')}
-          disabled={true}
-        />
-
-        <TimePickerMobileSheet
-          open={timePickerOpen}
-          setOpen={setTimePickerOpen}
-          applyTime={(time) => setPickedTime(time)}
-          disabled={!selectedDate}
-          toDate={selectedDate}
-        />
-
-        <TypeWashingDropDown
-          open={typeOpen}
-          setOpen={setTypeOpen}
-          selectedService={selectedService}
-          applyType={(service) => setSelectedService(service)}
-          availableServices={branch?.services ?? []}
-        />
     </div>
   );
 }

@@ -19,8 +19,8 @@ export const previewUser: User = {
   enablePushWashAppointment: true,
   enablePushRenewalSubscription: true,
   enablePushSpecialPromotions: false,
-  points: 240,
-  referralsCount: 2,
+  points: 1250,
+  referralsCount: 4,
 };
 
 const langs: Record<string, unknown> = { ka, en, ru };
@@ -51,6 +51,20 @@ const branches = [
     manager: { id: 3, name: "ლაშა", surname: "კაპანაძე", email: "lasha@example.com", phone: "995555445566" },
     services: [{ id: 1, name: "სრული რეცხვა" }],
   },
+  {
+    id: 3,
+    name: "autopass საბურთალო",
+    address: "ვაჟა-ფშაველას გამზ. 71",
+    work_start: "00:00:00",
+    work_end: "00:00:00",
+    phone: "995555778899",
+    location: "41.723,44.752",
+    manager: { id: 4, name: "ანა", surname: "გელაშვილი", email: "ana@example.com", phone: "995555778899" },
+    services: [
+      { id: 1, name: "სრული რეცხვა" },
+      { id: 3, name: "სალონის წმენდა" },
+    ],
+  },
 ];
 
 function json(body: unknown, status = 200) {
@@ -68,6 +82,9 @@ export function previewResponse(url: string, method = "GET"): Response | null {
   if (match(url, "/lang/")) {
     const code = url.split("/lang/")[1]?.split("?")[0] || "ka";
     return json(langs[code] ?? langs.ka);
+  }
+  if (match(url, "/me/get-referral-link")) {
+    return json({ success: true, referral_link: "https://app.geocar.ge/ref/preview" });
   }
   if (match(url, "/me")) {
     return json({
@@ -95,10 +112,55 @@ export function previewResponse(url: string, method = "GET"): Response | null {
   if (match(url, "/mycars")) {
     return json({
       cars: [
-        { id: 1, plate: "KL-482-TB", image: null, model: { name: "Prius", type: "sedan", brand: { name: "Toyota" } } },
-        { id: 2, plate: "AB-190-QQ", image: null, model: { name: "Camry", type: "sedan", brand: { name: "Toyota" } } },
+        { id: 1, plate: "KL-482-TB", image: null, model: { name: "XC90", type: "suv", brand: { name: "Volvo" } } },
+        { id: 2, plate: "TB-117-AA", image: null, model: { name: "CLA", type: "sedan", brand: { name: "Mercedes" } } },
       ],
     });
+  }
+  if (match(url, "/packages") && !match(url, "/packages/my") && !match(url, "/qr") && !match(url, "/buy")) {
+    const carId = Number(new URL(url, "http://preview.local").searchParams.get("carid") || "1");
+    const type = carId === 2 ? "sedan" : "suv";
+    const catalog = [
+      {
+        id: 1,
+        car_type: "suv",
+        washes: 4,
+        prices: [
+          { id: 11, package_id: 1, month: 1, price: 90 },
+          { id: 12, package_id: 1, month: 3, price: 240 },
+        ],
+      },
+      {
+        id: 2,
+        car_type: "suv",
+        washes: 8,
+        prices: [
+          { id: 21, package_id: 2, month: 1, price: 140 },
+          { id: 22, package_id: 2, month: 3, price: 360 },
+          { id: 23, package_id: 2, month: 6, price: 640 },
+        ],
+      },
+      {
+        id: 3,
+        car_type: "sedan",
+        washes: 4,
+        prices: [
+          { id: 31, package_id: 3, month: 1, price: 70 },
+          { id: 32, package_id: 3, month: 3, price: 180 },
+        ],
+      },
+      {
+        id: 4,
+        car_type: "sedan",
+        washes: 8,
+        prices: [
+          { id: 41, package_id: 4, month: 1, price: 110 },
+          { id: 42, package_id: 4, month: 3, price: 280 },
+          { id: 43, package_id: 4, month: 6, price: 500 },
+        ],
+      },
+    ];
+    return json({ success: true, packages: catalog.filter((pkg) => pkg.car_type === type) });
   }
   if (match(url, "/packages/my")) {
     return json({
@@ -106,11 +168,11 @@ export function previewResponse(url: string, method = "GET"): Response | null {
       packages: [
         {
           id: 9,
-          package: { id: 1, car_type: "sedan", count_washes: 10, created_at: null, updated_at: null },
+          package: { id: 2, car_type: "suv", count_washes: 8, created_at: null, updated_at: null },
           car: { id: 1, user_id: 1, model_id: 1, plate: "KL-482-TB", created_at: "", updated_at: "" },
-          start_date: "2026-09-20",
-          end_date: "2026-10-25",
-          number_of_washes: 10,
+          start_date: "2026-09-26",
+          end_date: "2026-12-26",
+          number_of_washes: 8,
           used_washes: 3,
           renewal: true,
         },

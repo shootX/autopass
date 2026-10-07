@@ -18,6 +18,7 @@ export function parseBranch(b: any): Branch {
     isOpen: branchIsOpen(workStart, workEnd),
     manager: b.manager ?? null,
     services: b.services ?? [],
+    image: b.image || b.photo || b.picture || null,
   };
 }
 

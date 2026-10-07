@@ -1,98 +1,129 @@
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store";
 import { customFetch } from "@/utils/customFetch";
-import { loadDefaultBranches } from "@/hooks/fetchFilteredBranches";
-import type { Branch } from "@/hooks/useFetchBranches";
-import { formatKaDate, formatPhone, initials } from "@/lib/format";
-import { CarFront, ChevronRight, LayoutGrid, Settings, ShoppingBag, UserRound } from "lucide-react";
+import { formatPhone, initials } from "@/lib/format";
+import { useFetchCars } from "@/hooks/useFetchCars";
+import { useMyPackages } from "@/hooks/useActivePackages";
+import { useTranslation } from "@/hooks/useTranslation";
+import { Bell, CarFront, ChevronRight, Settings, Share2, ShoppingBag, Star, Ticket } from "lucide-react";
 
-type Row = {
-  id: number;
-  title: string;
-  meta: string;
-};
+async function loadReferralLink(): Promise<string | null> {
+  const token = localStorage.getItem("access_token");
+  if (!token) return null;
+  try {
+    const res = await customFetch(`${import.meta.env.VITE_API_URL}/me/get-referral-link`, {
+      headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
+    });
+    if (!res.ok) return null;
+    const data = (await res.json()) as Record<string, unknown>;
+    const nested = data.data && typeof data.data === "object" ? (data.data as Record<string, unknown>) : null;
+    const link =
+      (typeof data.referral_link === "string" && data.referral_link) ||
+      (typeof data.referralLink === "string" && data.referralLink) ||
+      (typeof data.link === "string" && data.link) ||
+      (typeof nested?.referral_link === "string" && nested.referral_link) ||
+      "";
+    return link || null;
+  } catch {
+    return null;
+  }
+}
 
 export default function ProfilePage() {
+  const navigate = useNavigate();
+  const t = useTranslation();
   const user = useSelector((s: RootState) => s.user.data);
-  const [rows, setRows] = useState<Row[]>([]);
+  const { cars } = useFetchCars();
+  const { packages } = useMyPackages();
+  const [shareNote, setShareNote] = useState("");
+  const today = new Date().toISOString().slice(0, 10);
+  const active = packages.some((pkg) => (pkg.end_date ?? "") >= today);
 
-  useEffect(() => {
-    let branches: Branch[] = [];
-    const token = localStorage.getItem("access_token");
-    Promise.all([
-      loadDefaultBranches().catch(() => [] as Branch[]),
-      customFetch(`${import.meta.env.VITE_API_URL}/myappointments`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-        .then((res) => (res.ok ? res.json() : { appointments: [] }))
-        .catch(() => ({ appointments: [] })),
-    ]).then(([list, data]) => {
-      branches = list;
-      const today = new Date().toISOString().slice(0, 10);
-      const past = (data.appointments ?? [])
-        .filter((row: { date?: string; approved?: number }) => (row.date ?? "") < today && row.approved !== 2)
-        .sort((a: { date?: string }, b: { date?: string }) => String(b.date).localeCompare(String(a.date)))
-        .slice(0, 6);
-      setRows(
-        past.map((row: { id: number; date?: string; services?: { name?: string }[]; car_wash_id?: number; washing?: { name?: string } }) => {
-          const branch = row.washing?.name || branches.find((b) => b.id === row.car_wash_id)?.name || "";
-          const when = row.date ? formatKaDate(row.date, "short") : "";
-          return {
-            id: row.id,
-            title: row.services?.[0]?.name || "რეცხვა",
-            meta: [branch, when].filter(Boolean).join(" · "),
-          };
-        }),
-      );
-    });
-  }, []);
+  const share = async () => {
+    const link = await loadReferralLink();
+    if (!link) {
+      setShareNote("ბმული ვერ ჩაიტვირთა");
+      return;
+    }
+    setShareNote("");
+    if (navigator.share) {
+      try {
+        await navigator.share({ url: link });
+        return;
+      } catch {
+        /* cancelled or unsupported */
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(link);
+      setShareNote("ბმული დაკოპირდა");
+    } catch {
+      setShareNote(link);
+    }
+  };
 
   const items = [
-    { to: "/customer-my-data", label: "ჩემი მონაცემები", icon: UserRound },
-    { to: "/customer-my-data#vehicles", label: "ჩემი ავტომობილები", icon: CarFront },
-    { to: "/my-packages", label: "ჩემი პაკეტები", icon: LayoutGrid },
-    { to: "/shop", label: "მაღაზია", icon: ShoppingBag },
-    { to: "/settings", label: "პარამეტრები", icon: Settings },
+    { to: "/customer-my-data#vehicles", label: t("MyVehicles.title"), icon: CarFront, value: cars.length ? String(cars.length) : "" },
+    { to: "/my-packages", label: t("MyPackages.header.title"), icon: Ticket, value: active ? t("MyPackages.tabs.active") : "" },
+    { to: "/shop", label: t("Shop.header.title"), icon: ShoppingBag, value: "" },
+    { to: "/my-points", label: t("MyPoints.header.title"), icon: Star, value: "" },
+    { to: "/customer-my-data#notifications", label: t("NotificationSettings.title"), icon: Bell, value: "" },
   ];
 
   return (
-    <div className="ap-profile">
-      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-        <div className="ap-avatar" style={{ width: 64, height: 64, fontSize: 21 }}>{initials(user?.firstName, user?.lastName)}</div>
-        <div>
-          <h1 className="ap-title" style={{ fontSize: 24 }}>{[user?.firstName, user?.lastName].filter(Boolean).join(" ") || "პროფილი"}</h1>
-          <div style={{ marginTop: 2, color: "var(--ap-gray-600)", fontVariantNumeric: "tabular-nums" }}>{formatPhone(user?.phone)}</div>
+    <div className="v4-screen ap-profile">
+      <div className="v4-profile-top">
+        <button type="button" className="av" onClick={() => navigate("/customer-my-data")}>
+          {initials(user?.firstName, user?.lastName)}
+        </button>
+        <div style={{ flex: 1 }}>
+          <h1>{[user?.firstName, user?.lastName].filter(Boolean).join(" ") || t("CustomerMyData.header.title")}</h1>
+          <div className="v4-kicker" style={{ marginTop: 2 }}>{formatPhone(user?.phone)}</div>
         </div>
+        <button type="button" className="v4-ib" aria-label="პარამეტრები" onClick={() => navigate("/settings")}>
+          <Settings size={20} />
+        </button>
       </div>
 
-      <div className="ap-menu" style={{ marginTop: 28 }}>
+      <div className="v4-balance v4-dk">
+        <div className="v4-kicker" style={{ color: "#A7B1AA" }}>{t("MyPoints.balance.label")}</div>
+        <div style={{ marginTop: 4 }}>
+          <span className="n">{user?.points ?? 0}</span>
+          <span className="unit">{t("MyPoints.balance.unit")}</span>
+        </div>
+        <span className="v4-limeico" style={{ position: "absolute", right: 16, top: 16 }}>
+          <Star size={20} />
+        </span>
+        <div className="foot">
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 12, color: "#A7B1AA" }}>{t("MyPoints.referrals.label")}</div>
+            <div style={{ fontWeight: 800 }}>
+              {user?.referralsCount ?? 0} {t("MyPoints.referrals.unit")}
+            </div>
+          </div>
+          <button type="button" className="v4-share" onClick={() => void share()}>
+            <Share2 size={16} />
+            ბმულის გაზიარება
+          </button>
+        </div>
+        {shareNote && <div style={{ marginTop: 8, fontSize: 12, color: "#D7E3D4" }}>{shareNote}</div>}
+      </div>
+
+      <div className="v4-menu">
         {items.map((item) => {
           const Icon = item.icon;
           return (
-            <Link key={item.label} to={item.to}>
-              <Icon size={21} />
-              {item.label}
-              <ChevronRight className="ch" size={19} />
+            <Link key={item.to} to={item.to}>
+              <span className="ii"><Icon size={20} /></span>
+              <span style={{ flex: 1 }}>{item.label}</span>
+              {item.value && <span className="v">{item.value}</span>}
+              <ChevronRight size={18} color="#A2ABA4" />
             </Link>
           );
         })}
       </div>
-
-      {rows.length > 0 && (
-        <div style={{ marginTop: 28 }}>
-          <h2 style={{ fontFamily: "Noto Sans Georgian, sans-serif", fontSize: 18, fontWeight: 800, margin: "0 0 6px" }}>ბოლო რეცხვები</h2>
-          {rows.map((row) => (
-            <div className="ap-wash" key={row.id}>
-              <div style={{ flex: 1 }}>
-                <b>{row.title}</b>
-                {row.meta && <small>{row.meta}</small>}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 const API_URL = import.meta.env.VITE_API_URL;
 import { useTranslation } from "@/hooks/useTranslation";
 import { logoUrl } from "@/assets/staticUrls";
+import { CAR_SEDAN } from "@/lib/v4";
 import { Eye, EyeOff } from "lucide-react";
 export default function Authentication() {
   const [showPassword, setShowPassword] = useState(false);
@@ -93,23 +94,28 @@ export default function Authentication() {
     }
   };
 
+  const phoneError = error.phone === "not-found"
+    ? t("Authentication.errors.phoneNotFound")
+    : error.phone;
+  const passwordError = error.password === "incorrect"
+    ? t("Authentication.errors.passwordIncorrect")
+    : error.password;
+
   return (
-    <div className="ap-auth">
-      <img src={logoUrl} alt={t("Authentication.logoAlt")} style={{ height: 30, width: "auto" }} />
-      <div style={{ marginTop: 48 }}>
-        <h1 className="ap-title">{t("Authentication.greeting.title")}</h1>
-        <p className="ap-sub">{t("Authentication.greeting.subtitle")}</p>
+    <div className="v4-auth">
+      <div className="top">
+        <img className="logo" src={logoUrl} alt={t("Authentication.logoAlt")} />
+        <img className="car" src={CAR_SEDAN} alt="" />
       </div>
+      <div className="panel v4-dk">
+        <h1>{t("Authentication.greeting.title")}</h1>
+        <p className="sub">{t("Authentication.greeting.subtitle")}</p>
+        {phoneError && <p className="ap-error" style={{ marginTop: 16 }}>{phoneError}</p>}
+        {passwordError && <p className="ap-error">{passwordError}</p>}
 
-      <div style={{ marginTop: 28 }}>
-        {error.phone === "required" && <p className="ap-error">{t("Authentication.errors.phoneRequired")}</p>}
-        {error.password === "required" && <p className="ap-error">{t("Authentication.errors.passwordRequired")}</p>}
-        {error.phone === "not-found" && <p className="ap-error">{t("Authentication.errors.phoneNotFound")}</p>}
-        {error.password === "incorrect" && <p className="ap-error">{t("Authentication.errors.passwordIncorrect")}</p>}
-
-        <div className="ap-field">
+        <div style={{ marginTop: 24 }}>
           <label>{t("Authentication.labels.phone")}</label>
-          <div className="ap-input">
+          <div className="v4-dinput">
             <span className="prefix">{t("Authentication.prefix")}</span>
             <span className="bar" />
             <input
@@ -123,9 +129,9 @@ export default function Authentication() {
           </div>
         </div>
 
-        <div className="ap-field" style={{ marginTop: 20 }}>
+        <div style={{ marginTop: 16 }}>
           <label>{t("Authentication.labels.password")}</label>
-          <div className="ap-input">
+          <div className="v4-dinput">
             <input
               type={showPassword ? "text" : "password"}
               value={password}
@@ -135,25 +141,29 @@ export default function Authentication() {
               }}
               placeholder={t("Authentication.placeholders.password")}
             />
-            <button type="button" onClick={togglePassword} aria-label={t("Authentication.labels.password")} style={{ border: 0, background: "transparent", color: "var(--ap-gray-400)", display: "grid" }}>
-              {showPassword ? <EyeOff size={22} /> : <Eye size={22} />}
+            <button type="button" onClick={togglePassword} aria-label={t("Authentication.labels.password")}>
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
             </button>
           </div>
         </div>
 
-        <div style={{ textAlign: "right", marginTop: 16 }}>
-          <Link className="ap-link" to="/renew-password" style={{ fontSize: 14 }}>{t("Authentication.forgotPassword")}</Link>
+        <div style={{ textAlign: "right", marginTop: 12 }}>
+          <Link to="/renew-password" style={{ color: "var(--ap-lime)", fontWeight: 700, fontSize: 14, textDecoration: "none" }}>
+            {t("Authentication.forgotPassword")}
+          </Link>
         </div>
 
-        <button className="ap-btn" style={{ marginTop: 32 }} onClick={handleLogin} disabled={isLoading}>
+        <button className="ap-btn" style={{ marginTop: 20, boxShadow: "none" }} onClick={handleLogin} disabled={isLoading}>
           {isLoading ? <span className="spinner" /> : t("Authentication.buttons.signIn")}
         </button>
-      </div>
 
-      <p style={{ marginTop: 36, textAlign: "center", color: "var(--ap-gray-600)", fontSize: 15 }}>
-        {t("Authentication.signupPrompt")}{" "}
-        <Link className="ap-link" to="/register">{t("Authentication.buttons.signUp")}</Link>
-      </p>
+        <p style={{ marginTop: 22, textAlign: "center", color: "#97A29A", fontSize: 14.5 }}>
+          {t("Authentication.signupPrompt")}{" "}
+          <Link to="/register" style={{ color: "#fff", fontWeight: 800, textDecoration: "none" }}>
+            {t("Authentication.buttons.signUp")}
+          </Link>
+        </p>
+      </div>
     </div>
   );
 }

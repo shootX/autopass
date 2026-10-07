@@ -19,7 +19,7 @@ export default function NotificationSettings({
   const t = useTranslation();
 
   return (
-    <div style={{ padding: "16px", backgroundColor: "#fff", borderRadius: "16px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", margin: "16px", fontFamily: "Roboto, sans-serif" }}>
+    <div id="notifications" style={{ padding: "16px", backgroundColor: "#fff", borderRadius: "16px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", margin: "16px", fontFamily: "Roboto, sans-serif" }}>
       <h1 style={{ fontSize: "20px", color: "#14482F", fontWeight: 600, marginBottom: "24px" }}>
         {t("NotificationSettings.title")}
       </h1>

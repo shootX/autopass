@@ -16,6 +16,9 @@ import { CarCheckRoute } from "./components/CarCheckRoute";
 import { customFetch } from "./utils/customFetch";
 import { loadShopBundle } from "./lib/shopApi";
 import { loadDefaultBranches } from "./hooks/fetchFilteredBranches";
+import SplashScreen from "./components/v4/SplashScreen";
+import Onboarding from "./components/v4/Onboarding";
+import PaymentSuccess from "./components/v4/PaymentSuccess";
 
 const Home = lazy(() => import("./components/pages/Home"));
 const ManagerCalendar = lazy(() => import("./components/Calendars/ManagerCalendar"));
@@ -68,6 +71,7 @@ function AppRoutes() {
   const dispatch = useDispatch();
   const currentLang = useSelector((s: RootState) => s.lang.currentLang);
   const [langLoading, setLangLoading] = useState(() => readLangCache(currentLang) === null);
+  const [onboarded, setOnboarded] = useState(() => localStorage.getItem("autopass.onboarding.v4") === "1");
   const { loading: userLoading } = useUser();
   useRefreshUserOnBfcacheRestore();
 
@@ -155,18 +159,27 @@ function AppRoutes() {
   const waitingForRole = Boolean(localStorage.getItem("access_token")) && userLoading;
 
   if (langLoading || waitingForRole) {
+    return <SplashScreen />;
+  }
+
+  const loggedOut = !localStorage.getItem("access_token") && import.meta.env.VITE_BYPASS_AUTH !== "true";
+  if (loggedOut && !onboarded) {
     return (
-      <div className="lang-loader">
-        <div className="spinner" />
-      </div>
+      <Onboarding
+        onDone={() => {
+          localStorage.setItem("autopass.onboarding.v4", "1");
+          setOnboarded(true);
+        }}
+      />
     );
   }
 
   return (
-    <Suspense fallback={<div className="lang-loader"><div className="spinner" /></div>}>
+    <Suspense fallback={<SplashScreen />}>
     <Routes>
       {/* Public routes */}
       <Route path="/auth" element={<Authentication />} />
+      <Route path="/payment-success" element={<PaymentSuccess />} />
       <Route path="/register" element={<Registration />} />
       <Route path="/renew-password" element={<RenewPasswordPage/>} />
       <Route path="/privacy" element={<PrivacyPage/>} />

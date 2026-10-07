@@ -9,19 +9,13 @@ import { customFetch } from "@/utils/customFetch";
 import { loadDefaultBranches } from "@/hooks/fetchFilteredBranches";
 import type { Branch } from "@/hooks/useFetchBranches";
 import { formatKaDate, initials } from "@/lib/format";
+import { bodyLabel, carParts, carPhoto, washCells } from "@/lib/v4";
 import PageSkeleton from "@/components/Skeletons/PageSkeleton";
-import { ArrowRight, Bell, CalendarCheck, CarFront, ChevronRight, MapPin, QrCode, Search, Star } from "lucide-react";
+import { ArrowRight, Bell, CalendarCheck, CalendarDays, Car, CarFront, ChevronRight, Clock3, MapPin, Plus, QrCode, Search, Star } from "lucide-react";
 
 const BranchMap = lazy(() => import("../BranchMap").then((m) => ({ default: m.BranchMap })));
 
 type NextBooking = { label: string; branch?: string; rawDate: string; time: string };
-
-function squares(total: number | null, remaining: number | null) {
-  if (!total || total <= 0 || remaining == null) return [];
-  const cells = Math.min(total, 10);
-  const filled = Math.round((Math.max(0, remaining) / total) * cells);
-  return Array.from({ length: cells }, (_, i) => i < filled);
-}
 
 export default function Home() {
   const user = useSelector((state: RootState) => state.user.data);
@@ -44,8 +38,9 @@ export default function Home() {
   const daysLeft = activePackage?.end_date
     ? Math.max(0, Math.ceil((new Date(activePackage.end_date).getTime() - Date.now()) / 86400000))
     : null;
-  const cells = squares(total, remaining);
-  const carTitle = selectedCar ? [selectedCar.brand, selectedCar.model].filter((p) => p && p !== "Unknown").join(" ") : "";
+  const cells = washCells(total, remaining);
+  const selectedParts = carParts(selectedCar);
+  const carTitle = selectedParts.title;
   const name = user?.firstName || "";
 
   useEffect(() => {
@@ -116,77 +111,91 @@ export default function Home() {
 
   return (
     <div className="ap-home">
-      <section className="ap-home-m">
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <div style={{ flex: 1 }}>
-            <div className="ap-kicker">{t("Home.greeting")}</div>
-            <h1 className="ap-title">{name || t("Home.washes.title")}</h1>
-          </div>
-          <button type="button" className="ap-avatar" onClick={() => navigate("/profile")} aria-label="პროფილი">
+      <section className="v4-screen ap-home-m" style={{ paddingTop: 12 }}>
+        <div className="v4-hello">
+          <button type="button" className="av" onClick={() => navigate("/profile")} aria-label="პროფილი">
             {initials(user?.firstName, user?.lastName)}
           </button>
+          <div style={{ flex: 1 }}>
+            <div className="v4-kicker">{t("Home.greeting")}</div>
+            <b>{name || t("Home.washes.title")}</b>
+          </div>
+          <button type="button" className="v4-ib" aria-label="შეტყობინებები" onClick={() => navigate("/messages")}>
+            <Bell size={20} />
+          </button>
         </div>
 
-        <div className="ap-pass" style={{ marginTop: 28 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span className="ap-kicker" style={{ flex: 1 }}>ჩემი პაკეტი</span>
-            {selectedCar?.plate && (
-              <span className="ap-plate"><b>GE</b><span>{selectedCar.plate}</span></span>
-            )}
-          </div>
-          {activePackage && remaining != null ? (
-            <>
-              <div style={{ display: "flex", alignItems: "flex-end", gap: 12, marginTop: 22 }}>
-                <span className="ap-pass-num">{remaining}</span>
-                <span style={{ color: "var(--ap-gray-600)", fontSize: 16, lineHeight: 1.35, paddingBottom: 4 }}>
-                  {total}-დან<br />დარჩენილი რეცხვა
-                </span>
-              </div>
-              {cells.length > 0 && (
-                <div className="ap-sq" style={{ marginTop: 24 }}>
-                  {cells.map((on, i) => <i key={i} className={on ? "on" : ""} />)}
-                </div>
-              )}
-              <div style={{ marginTop: 14, fontSize: 14, color: "var(--ap-gray-600)" }}>
-                {carTitle}
-                {daysLeft != null && <> · პაკეტის ვადა <b style={{ color: "var(--ap-ink)" }}>{daysLeft}</b> დღე</>}
-              </div>
-            </>
-          ) : (
-            <button type="button" className="ap-btn" style={{ marginTop: 18 }} onClick={() => navigate("/my-packages")}>
-              შეარჩიე პაკეტი
-            </button>
-          )}
-        </div>
-
-        {cars.length > 1 && (
-          <div className="ap-dots">
-            {cars.map((car, index) => (
-              <button key={car.id} type="button" className={index === carIndex ? "on" : ""} aria-label={car.plate} onClick={() => setCarIndex(index)} />
-            ))}
-          </div>
+        {selectedCar && (
+          <>
+            <div className="v4-carname">
+              <h2>{carTitle || selectedCar.plate}</h2>
+              {selectedCar.plate && <span className="ap-plate"><b>GE</b><span>{selectedCar.plate}</span></span>}
+            </div>
+            <div className="v4-kicker" style={{ marginTop: 2 }}>
+              {[bodyLabel(selectedParts.type), activePackage ? "აქტიური პაკეტი" : ""].filter(Boolean).join(" · ")}
+            </div>
+            <div className="v4-hero">
+              <img src={carPhoto(selectedParts.type, selectedParts.image)} alt="" />
+            </div>
+          </>
         )}
-        {!cars.length && (
-          <button type="button" className="ap-btn" style={{ marginTop: 16 }} onClick={() => navigate("/add-car")}>
-            დაამატე ავტომობილი
+
+        <div className="v4-ctiles" style={{ marginTop: selectedCar ? 8 : 22, gridTemplateColumns: `repeat(${Math.min(Math.max(cars.length + 1, 1), 3)}, minmax(0, 1fr))` }}>
+          {cars.map((car, index) => {
+            const parts = carParts(car);
+            const on = index === carIndex;
+            return (
+              <button key={car.id} type="button" className={`v4-ct${on ? " on" : ""}`} onClick={() => setCarIndex(index)}>
+                <span className="ci">{on ? <CarFront size={19} /> : <Car size={19} />}</span>
+                {parts.short || car.plate}
+              </button>
+            );
+          })}
+          <button type="button" className="v4-ct add" onClick={() => navigate("/add-car")}>
+            <Plus size={20} strokeWidth={2.4} />
+            <span style={{ fontSize: 12 }}>დამატება</span>
+          </button>
+        </div>
+
+        {activePackage && remaining != null ? (
+          <div className="v4-stats">
+            <div className="v4-st v4-dk">
+              <div className="v4-kicker" style={{ color: "#A7B1AA" }}>დარჩენილი რეცხვა</div>
+              <div className="n">{remaining}{total != null && <span> / {total}</span>}</div>
+              {cells.length > 0 && (
+                <div className="sq">{cells.map((on, i) => <i key={i} className={on ? "on" : ""} />)}</div>
+              )}
+            </div>
+            <div className="v4-st">
+              <div className="v4-kicker">პაკეტის ვადა</div>
+              <div className="n">{daysLeft ?? "—"}{daysLeft != null && <span> დღე</span>}</div>
+              {activePackage.end_date && (
+                <div className="v4-kicker" style={{ marginTop: 8 }}>მდე {activePackage.end_date.slice(0, 10).split("-").reverse().join(".")}</div>
+              )}
+              <span className="v4-ib" style={{ position: "absolute", right: 14, top: 14, width: 32, height: 32, borderRadius: 10, background: "#fff" }}>
+                <Clock3 size={17} />
+              </span>
+            </div>
+          </div>
+        ) : (
+          <button type="button" className="ap-btn" style={{ marginTop: 16 }} onClick={() => navigate("/my-packages")}>
+            შეარჩიე პაკეტი
           </button>
         )}
 
-        <button type="button" className="ap-btn" style={{ marginTop: 20 }} onClick={() => navigate("/wash-appointment", { state: { selectedBranchId: branch?.id } })}>
-          რეცხვის დაჯავშნა
-        </button>
-
-        <button type="button" className="ap-next" onClick={() => navigate("/customer-calendar")}>
-          <span className="ic"><CalendarCheck size={20} /></span>
+        <button type="button" className="v4-next" onClick={() => navigate("/customer-calendar")}>
+          <span className="v4-ib" style={{ width: 40, height: 40, borderRadius: 12, background: "#fff" }}>
+            <CalendarDays size={19} />
+          </span>
           <span style={{ flex: 1 }}>
-            <span className="ap-kicker" style={{ fontSize: 13 }}>
-              შემდეგი ჯავშანი{nextBooking?.branch ? ` · ${nextBooking.branch}` : ""}
-            </span>
-            <strong style={{ display: "block", marginTop: 2, fontSize: 16 }}>
-              {nextBooking ? `${nextBooking.label}, ${nextBooking.time}` : "ჯავშანი ჯერ არ არის"}
-            </strong>
+            <span className="v4-kicker">შემდეგი ჯავშანი{nextBooking?.branch ? ` · ${nextBooking.branch}` : ""}</span>
+            <b>{nextBooking ? `${nextBooking.label} · ${nextBooking.time}` : "ჯავშანი ჯერ არ არის"}</b>
           </span>
           <ChevronRight size={20} color="#A2ABA4" />
+        </button>
+
+        <button type="button" className="ap-btn" style={{ marginTop: 12 }} onClick={() => navigate("/wash-appointment", { state: { selectedBranchId: branch?.id } })}>
+          რეცხვის დაჯავშნა <ArrowRight size={20} strokeWidth={2.4} />
         </button>
       </section>
 

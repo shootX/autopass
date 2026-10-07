@@ -4,7 +4,9 @@ import { useFetchCars } from '@/hooks/useFetchCars';
 import { customFetch } from '@/utils/customFetch';
 import { useMyPackages } from '@/hooks/useActivePackages';
 import { useTranslation } from '@/hooks/useTranslation';
+import { carParts, washCells } from '@/lib/v4';
 import PageSkeleton from '@/components/Skeletons/PageSkeleton';
+import { Car, CarFront, Sun } from 'lucide-react';
 
 export default function QRPage() {
   const t = useTranslation();
@@ -19,6 +21,7 @@ export default function QRPage() {
   const { cars, loading: carsLoading, error: carsError } = useFetchCars();
 
   const [carIndex, setCarIndex] = useState(0);
+  const [bright, setBright] = useState(false);
   const [activePackageId, setActivePackageId] = useState<number | null>(null);
   const [qrImageUrl, setQrImageUrl] = useState<string | null>(null);
 
@@ -28,9 +31,7 @@ export default function QRPage() {
   const pkg = selected ? carIdToPackage[selected.id] : null;
   const remaining = pkg ? pkg.number_of_washes - pkg.used_washes : null;
   const total = pkg?.number_of_washes ?? null;
-  const cells = total && remaining != null
-    ? Array.from({ length: Math.min(total, 10) }, (_, i) => i < Math.round((Math.max(0, remaining) / total) * Math.min(total, 10)))
-    : [];
+  const cells = washCells(total, remaining);
 
   useEffect(() => {
     if (pkg?.id && pkg.id !== activePackageId) {
@@ -76,15 +77,28 @@ export default function QRPage() {
     );
   }
 
-  const carTitle = selected ? [selected.brand, selected.model].filter((part) => part && part !== 'Unknown').join(' ') : '';
+  const carTitle = selected ? carParts(selected).title : '';
 
   return (
-    <div className="ap-qr">
-      <h1 className="ap-title">{t('QRPage.header.title')}</h1>
-      {selected && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 10 }}>
-          {selected.plate && <span className="ap-plate" style={{ height: 26, fontSize: 13 }}><b>GE</b><span>{selected.plate}</span></span>}
-          {carTitle && <span style={{ color: 'var(--ap-gray-600)' }}>{carTitle}</span>}
+    <div className="v4-screen ap-qr" style={bright ? { background: '#fff' } : undefined}>
+      <div className="v4-hd" style={{ padding: 0 }}>
+        <h1 className="ap-title" style={{ flex: 1, textAlign: 'left', fontSize: 28 }}>{t('CustomerNavBar.routes.qr')}</h1>
+        <button type="button" className="v4-ib" aria-pressed={bright} aria-label="სიკაშკაშე" onClick={() => setBright((v) => !v)}>
+          <Sun size={20} />
+        </button>
+      </div>
+      {cars.length > 0 && (
+        <div className="v4-chips">
+          {cars.map((car, index) => {
+            const parts = carParts(car);
+            const on = index === carIndex;
+            return (
+              <button key={car.id} type="button" className={on ? 'on' : ''} onClick={() => setCarIndex(index)}>
+                {on ? <CarFront size={17} /> : <Car size={17} />}
+                {parts.title || car.plate}
+              </button>
+            );
+          })}
         </div>
       )}
       {!selected && <p className="ap-sub">{t('QRPage.noCars')}</p>}
@@ -94,29 +108,35 @@ export default function QRPage() {
         </button>
       )}
       {pkg && (
-        <div className="ap-qr-card" style={{ marginTop: 22 }}>
-          {qrImageUrl ? <img src={qrImageUrl} alt="QR" /> : <p>{t('QRPage.overlay.loading')}</p>}
+        <div className="v4-qrwrap">
+          <div className="c" style={{ width: 300, height: 300, background: bright ? '#F7FBEA' : '#F5F9EC' }} />
+          <div className="c" style={{ width: 250, height: 250, background: '#EAF4D6' }} />
+          <div className="card">
+            {qrImageUrl ? <img src={qrImageUrl} alt="QR" /> : <p>{t('QRPage.overlay.loading')}</p>}
+          </div>
         </div>
       )}
-      {cars.length > 1 && (
-        <div className="ap-dots">
-          {cars.map((car, index) => (
-            <button key={car.id} type="button" className={index === carIndex ? 'on' : ''} aria-label={car.plate} onClick={() => setCarIndex(index)} />
-          ))}
+      {selected && (
+        <div className="v4-info">
+          <div>
+            <div className="v4-kicker">{t('QRPage.car.plate')}</div>
+            <b>{selected.plate}</b>
+          </div>
+          <div>
+            <div className="v4-kicker">{t('QRPage.car.model')}</div>
+            <b>{carTitle || '—'}</b>
+          </div>
         </div>
       )}
       {pkg && remaining != null && (
-        <div style={{ marginTop: 28 }}>
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <span style={{ flex: 1, fontWeight: 700 }}>დარჩენილი რეცხვა</span>
-            <span style={{ fontWeight: 800 }}>{remaining}{total != null && <span style={{ color: 'var(--ap-gray-400)', fontWeight: 600 }}> / {total}</span>}</span>
+        <div className="v4-washbar v4-dk">
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 12.5, color: '#A7B1AA', fontWeight: 600 }}>დარჩენილი რეცხვა</div>
+            {cells.length > 0 && (
+              <div className="sq">{cells.map((on, i) => <i key={i} className={on ? 'on' : ''} />)}</div>
+            )}
           </div>
-          {cells.length > 0 && (
-            <div className="ap-sq" style={{ marginTop: 12 }}>
-              {cells.map((on, i) => <i key={i} className={on ? 'on' : ''} />)}
-            </div>
-          )}
-          <p style={{ marginTop: 22, textAlign: 'center', color: 'var(--ap-gray-600)', fontSize: 14 }}>აჩვენეთ კოდი ოპერატორს სკანირებისთვის</p>
+          <div className="n">{remaining}{total != null && <span> / {total}</span>}</div>
         </div>
       )}
     </div>

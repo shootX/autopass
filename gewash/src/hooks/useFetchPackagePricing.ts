@@ -11,6 +11,7 @@ export type PriceOption = {
 export type PackagePricing = {
   id: number;
   car_type: string;
+  washes?: number;
   prices: PriceOption[];
 };
 
