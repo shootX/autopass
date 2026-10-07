@@ -76,7 +76,7 @@ export function TypeWashingDropDown({
               textAlign: "center",
               fontSize: "20px",
               fontWeight: 600,
-              color: "#183D69",
+              color: "#14482F",
               padding: "0px",
             }}
           >
@@ -105,13 +105,13 @@ export function TypeWashingDropDown({
                     borderRadius: "16px",
                     cursor: "pointer",
                     padding: "8px",
-                    backgroundColor: isSelected ? "#F7B23322" : "transparent",
+                    backgroundColor: isSelected ? "#B5DD3A22" : "transparent",
                     transition: "all 0.3s ease",
                   }}
                 >
                   <div
                     style={{
-                      backgroundColor: "#183D69",
+                      backgroundColor: "#14482F",
                       padding: "12px",
                       borderRadius: "16px",
                     }}
@@ -127,7 +127,7 @@ export function TypeWashingDropDown({
                     style={{
                       fontSize: "16px",
                       fontWeight: 500,
-                      color: isSelected ? "#F7B233" : "#183D69",
+                      color: isSelected ? "#B5DD3A" : "#14482F",
                       marginLeft: "12px",
                       whiteSpace: "nowrap",
                     }}

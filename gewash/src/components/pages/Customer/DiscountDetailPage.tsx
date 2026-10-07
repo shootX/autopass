@@ -217,7 +217,7 @@ export default function DiscountDetailPage() {
         <div className="discount-detail__loading-appbar">
           <button type="button" className="discount-detail__back" onClick={() => navigate(-1)}>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M15 18l-6-6 6-6" stroke="#183D69" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M15 18l-6-6 6-6" stroke="#14482F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </button>
           <div className="discount-detail__balance">
@@ -240,7 +240,7 @@ export default function DiscountDetailPage() {
         <div className="discount-detail__appbar">
           <button className="discount-detail__back" onClick={() => navigate(-1)}>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M15 18l-6-6 6-6" stroke="#183D69" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M15 18l-6-6 6-6" stroke="#14482F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </button>
           <div className="discount-detail__balance">
@@ -277,7 +277,7 @@ export default function DiscountDetailPage() {
               <button className="discount-detail__code-copy" onClick={handleCopy}>
                 {copied ? (
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                    <path d="M5 12l5 5L20 7" stroke="#183D69" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M5 12l5 5L20 7" stroke="#14482F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 ) : (
                   <img src={copyIcon} alt="copy" width="20" height="20" />
@@ -324,7 +324,7 @@ export default function DiscountDetailPage() {
           <div className="discount-detail__company-right">
             <span>Tbilisi</span>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M8 1.5C5.515 1.5 3.5 3.515 3.5 6c0 3.75 4.5 8.5 4.5 8.5S12.5 9.75 12.5 6c0-2.485-2.015-4.5-4.5-4.5Zm0 6.125A1.625 1.625 0 1 1 8 4.25a1.625 1.625 0 0 1 0 3.25Z" fill="#183D69"/>
+              <path d="M8 1.5C5.515 1.5 3.5 3.515 3.5 6c0 3.75 4.5 8.5 4.5 8.5S12.5 9.75 12.5 6c0-2.485-2.015-4.5-4.5-4.5Zm0 6.125A1.625 1.625 0 1 1 8 4.25a1.625 1.625 0 0 1 0 3.25Z" fill="#14482F"/>
             </svg>
           </div>
         </div>
@@ -369,8 +369,8 @@ export default function DiscountDetailPage() {
             {sheet === "not_enough" ? (
               <div className="discount-detail__sheet-notenough">
                 <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-                  <circle cx="24" cy="24" r="24" fill="#F7B233" fillOpacity="0.15"/>
-                  <path d="M24 14v14M24 32v2" stroke="#F7B233" strokeWidth="2.5" strokeLinecap="round"/>
+                  <circle cx="24" cy="24" r="24" fill="#B5DD3A" fillOpacity="0.15"/>
+                  <path d="M24 14v14M24 32v2" stroke="#B5DD3A" strokeWidth="2.5" strokeLinecap="round"/>
                 </svg>
                 <p className="discount-detail__sheet-notenough-title">{t("Discounts.detail.notEnoughTitle")}</p>
                 <p className="discount-detail__sheet-notenough-desc">{t("Discounts.detail.notEnoughDesc")}</p>

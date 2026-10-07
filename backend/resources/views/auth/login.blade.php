@@ -4,9 +4,8 @@
 <div class="umami-login">
     <div class="umami-login-card">
         <div class="umami-login-head">
-            <span class="umami-mark" aria-hidden="true">G</span>
+            <img src="/brand/logo-horizontal.svg" alt="autopass" style="height:28px;width:auto">
             <div>
-                <div class="umami-login-title">GeoCar</div>
                 <div class="umami-login-sub">{{ __('admin.login') }}</div>
             </div>
             <div class="umami-lang">

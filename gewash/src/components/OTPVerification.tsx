@@ -1,16 +1,24 @@
 import { useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "@/hooks/useTranslation";
+import { ArrowLeft } from "lucide-react";
+import { formatPhone } from "@/lib/format";
 
 export default function OTPVerification({
   onVerify,
+  phone,
+  step = "2 / 3",
 }: {
   onVerify: (code: string) => Promise<void>;
+  phone?: string;
+  step?: string;
 }) {
   const [otp, setOtp] = useState(Array(6).fill(""));
   const [errorCode, setErrorCode] = useState<"none" | "invalid">("none");
   const [isLoading, setIsLoading] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const t = useTranslation();
+  const navigate = useNavigate();
 
   const handleChange = (value: string, index: number) => {
     if (!/^\d?$/.test(value)) return;
@@ -47,45 +55,40 @@ export default function OTPVerification({
   const buttonIsActive = allDigitsFilled && !isLoading;
 
   return (
-    <div className="otp-wrapper">
-      <h2>{t("OTPVerification.title")}</h2>
-
-      {errorCode === "invalid" && (
-        <div className="incorrect-code-error">
-          <p>{t("OTPVerification.error.invalid")}</p>
-        </div>
-      )}
-
-      <div className="input-otp-group">
+    <div className="ap-otp">
+      <button type="button" className="ap-back" onClick={() => navigate(-1)} aria-label="უკან">
+        <ArrowLeft size={24} />
+      </button>
+      <div style={{ marginTop: 28 }}>
+        <div className="ap-step">{step}</div>
+        <h1 className="ap-title" style={{ marginTop: 6 }}>{t("Registration.stage.register.title")}</h1>
+        <p className="ap-sub">
+          {phone ? <><b style={{ color: "var(--ap-ink)" }}>{formatPhone(phone.startsWith("995") || phone.startsWith("+") ? phone : `995${phone}`)}</b>. </> : null}
+          {t("OTPVerification.title")}
+        </p>
+      </div>
+      {errorCode === "invalid" && <p className="ap-error" style={{ marginTop: 16 }}>{t("OTPVerification.error.invalid")}</p>}
+      <div className="ap-otp-boxes">
         {otp.map((digit, i) => (
           <input
             key={i}
             type="text"
             inputMode="numeric"
             maxLength={1}
-            ref={(el) => (inputRefs.current[i] = el)}
+            ref={(el) => { inputRefs.current[i] = el; }}
             value={digit}
             onChange={(e) => handleChange(e.target.value, i)}
             onKeyDown={(e) => handleKeyDown(e, i)}
-            placeholder="-"
-            className={`input-otp-slot ${digit ? "filled" : ""} ${errorCode === "invalid" ? "error" : ""}`}
           />
         ))}
       </div>
-
-      <button
-        onClick={handleVerify}
-        disabled={!buttonIsActive}
-        className={`send-button ${buttonIsActive ? "active" : ""}`}
-      >
+      <p style={{ marginTop: 24, fontSize: 15, color: "var(--ap-gray-600)" }}>
+        {t("OTPVerification.resend.text")}{" "}
+        <span className="ap-link">{t("OTPVerification.resend.link")}</span>
+      </p>
+      <button type="button" className="ap-btn" style={{ marginTop: 36 }} onClick={handleVerify} disabled={!buttonIsActive}>
         {isLoading ? <span className="spinner" /> : t("OTPVerification.button.send")}
       </button>
-
-      <div className="send-code-again">
-        <p>
-        {t("OTPVerification.resend.text")} <a href="#">{t("OTPVerification.resend.link")}</a>
-        </p>
-      </div>
     </div>
   );
 }

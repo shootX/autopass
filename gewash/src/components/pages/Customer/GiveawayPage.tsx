@@ -51,7 +51,7 @@ export default function GiveawayPage() {
       <header className="giveaway-header">
         <button className="giveaway-header__back" onClick={() => navigate(-1)}>
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path d="M15 18l-6-6 6-6" stroke="#183D69" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M15 18l-6-6 6-6" stroke="#14482F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </button>
         <span className="giveaway-header__title">{t("Giveaway.title")}</span>

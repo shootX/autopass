@@ -19,8 +19,8 @@ export function useLoadAppointmentsFromBackend() {
         const mapped = data.appointments.map((a: any) => ({
           id: a.id,
           branchId: a.car_wash_id,
-          branchName: "Test Branch",
-          branchAddress: "123 Main St",
+          branchName: a.washing?.name || a.car_wash?.name || "",
+          branchAddress: a.washing?.address || a.car_wash?.address || "",
           date: a.date,
           time: a.time.slice(0, 5), 
           type: a.services?.[0]?.name || "Unknown",

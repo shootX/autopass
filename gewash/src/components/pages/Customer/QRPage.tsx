@@ -2,12 +2,8 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useFetchCars } from '@/hooks/useFetchCars';
 import { customFetch } from '@/utils/customFetch';
-import Header from '@/components/Header';
-import '../../../styles/customer_styles/qr-page.scss';
 import { useMyPackages } from '@/hooks/useActivePackages';
 import { useTranslation } from '@/hooks/useTranslation';
-import { qrIcon } from '@/assets/staticUrls';
-const NO_API_URL = import.meta.env.VITE_NO_API_URL;
 import PageSkeleton from '@/components/Skeletons/PageSkeleton';
 
 export default function QRPage() {
@@ -22,17 +18,26 @@ export default function QRPage() {
 
   const { cars, loading: carsLoading, error: carsError } = useFetchCars();
 
-  const [activePlate, setActivePlate] = useState<string | null>(null);
+  const [carIndex, setCarIndex] = useState(0);
   const [activePackageId, setActivePackageId] = useState<number | null>(null);
   const [qrImageUrl, setQrImageUrl] = useState<string | null>(null);
 
   const carIdToPackage = Object.fromEntries(carPackages.map((p) => [p.car.id, p]));
 
-  const closeOverlay = () => {
-    setActivePlate(null);
-    setActivePackageId(null);
-    setQrImageUrl(null);
-  };
+  const selected = cars[carIndex] ?? null;
+  const pkg = selected ? carIdToPackage[selected.id] : null;
+  const remaining = pkg ? pkg.number_of_washes - pkg.used_washes : null;
+  const total = pkg?.number_of_washes ?? null;
+  const cells = total && remaining != null
+    ? Array.from({ length: Math.min(total, 10) }, (_, i) => i < Math.round((Math.max(0, remaining) / total) * Math.min(total, 10)))
+    : [];
+
+  useEffect(() => {
+    if (pkg?.id && pkg.id !== activePackageId) {
+      setQrImageUrl(null);
+      setActivePackageId(pkg.id);
+    }
+  }, [pkg?.id]);
 
   useEffect(() => {
     if (!activePackageId) return;
@@ -64,80 +69,56 @@ export default function QRPage() {
 
   if (carsError || packagesError) {
     return (
-      <div className="qr-page-wrapper">
-        <Header title={t('QRPage.header.title')} logoVariant="qr" />
-        <p className="error">{t('QRPage.error')}</p>
+      <div className="ap-qr">
+        <h1 className="ap-title">{t('QRPage.header.title')}</h1>
+        <p className="ap-error">{t('QRPage.error')}</p>
       </div>
     );
   }
 
+  const carTitle = selected ? [selected.brand, selected.model].filter((part) => part && part !== 'Unknown').join(' ') : '';
+
   return (
-    <div>
-      <Header title={t('QRPage.header.title')} logoVariant="qr" />
-      <div className="qr-page-wrapper">
-        {/* QR Overlay */}
-        {activePlate && (
-          <div className="qr-overlay">
-            <button className="close-btn" onClick={closeOverlay}>
-              {t('QRPage.overlay.close')}
-            </button>
-            <div className="qr-container">
-              <p className="plate-label">{activePlate}</p>
-              {qrImageUrl ? (
-                <img src={qrImageUrl} alt="QR Code" className="qr-image" />
-              ) : (
-                <p>{t('QRPage.overlay.loading')}</p>
-              )}
+    <div className="ap-qr">
+      <h1 className="ap-title">{t('QRPage.header.title')}</h1>
+      {selected && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 10 }}>
+          {selected.plate && <span className="ap-plate" style={{ height: 26, fontSize: 13 }}><b>GE</b><span>{selected.plate}</span></span>}
+          {carTitle && <span style={{ color: 'var(--ap-gray-600)' }}>{carTitle}</span>}
+        </div>
+      )}
+      {!selected && <p className="ap-sub">{t('QRPage.noCars')}</p>}
+      {selected && !pkg && (
+        <button type="button" className="ap-btn" style={{ marginTop: 24 }} onClick={() => navigate('/my-packages')}>
+          შეარჩიე პაკეტი
+        </button>
+      )}
+      {pkg && (
+        <div className="ap-qr-card" style={{ marginTop: 22 }}>
+          {qrImageUrl ? <img src={qrImageUrl} alt="QR" /> : <p>{t('QRPage.overlay.loading')}</p>}
+        </div>
+      )}
+      {cars.length > 1 && (
+        <div className="ap-dots">
+          {cars.map((car, index) => (
+            <button key={car.id} type="button" className={index === carIndex ? 'on' : ''} aria-label={car.plate} onClick={() => setCarIndex(index)} />
+          ))}
+        </div>
+      )}
+      {pkg && remaining != null && (
+        <div style={{ marginTop: 28 }}>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <span style={{ flex: 1, fontWeight: 700 }}>დარჩენილი რეცხვა</span>
+            <span style={{ fontWeight: 800 }}>{remaining}{total != null && <span style={{ color: 'var(--ap-gray-400)', fontWeight: 600 }}> / {total}</span>}</span>
+          </div>
+          {cells.length > 0 && (
+            <div className="ap-sq" style={{ marginTop: 12 }}>
+              {cells.map((on, i) => <i key={i} className={on ? 'on' : ''} />)}
             </div>
-          </div>
-        )}
-
-        {/* Машины */}
-        {cars.length === 0 ? (
-          <p className="no-cars">{t('QRPage.noCars')}</p>
-        ) : (
-          <div className="car-list">
-            {cars.map((car) => {
-              const pkg = carIdToPackage[car.id];
-              const canGenerateQR = pkg != null;
-
-              return (
-                <div
-                  key={car.id}
-                  className="car-card"
-                  onClick={() => {
-                    if (!canGenerateQR) {
-                      navigate('/my-packages');
-                      return;
-                    }
-                  }}
-                >
-                  <img src={`${NO_API_URL}${car.image}`} alt={car.type} />
-                  <p className="car-plate">{car.plate}</p>
-                  <p className="car-model">
-                    {t('QRPage.car.model')}: {car.brand} {car.model}
-                  </p>
-
-                  {canGenerateQR && (
-                    <button
-                      className="qr-btn"
-                      onClick={() => {
-                        setActivePackageId(pkg.id);
-                        setActivePlate(car.plate);
-                      }}
-                    >
-                      <img src={qrIcon} alt="" />
-                    </button>
-                  )}
-                  {canGenerateQR && (
-                    <span style={{ textAlign: 'end', color: '#4B6D95' }}>Generate QR</span>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
+          )}
+          <p style={{ marginTop: 22, textAlign: 'center', color: 'var(--ap-gray-600)', fontSize: 14 }}>აჩვენეთ კოდი ოპერატორს სკანირებისთვის</p>
+        </div>
+      )}
     </div>
   );
 }

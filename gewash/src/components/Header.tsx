@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import "../styles/header.scss";
 import Sidebar from '../components/ui/Sidebar';
 import { Link } from 'react-router-dom';
+import { Bell, Menu } from 'lucide-react';
+import { logoUrl } from '@/assets/staticUrls';
 
 type Props = {
   logoVariant?: "image" | "calendar " | "qr";
@@ -22,22 +24,19 @@ export default function Header({ logoVariant = "image", title, rightSlot }: Prop
   return (
     <>
       <header className='header-container'>
-  <img
-    className='cursor-pointer'
-    src="../../icons/b-menu.svg"
-    alt="burger-menu"
-    onClick={() => setIsSidebarOpen(true)}
-  />
+  <button type="button" onClick={() => setIsSidebarOpen(true)} aria-label="menu" style={{ border: 0, background: 'transparent', color: 'var(--ap-forest)', display: 'grid' }}>
+    <Menu size={24} />
+  </button>
 
   {title ? (
     <h2 className='header-title'>{title}</h2>
   ) : (
-    <span className="gewash-word">GEWASH</span>
+    <img src={logoUrl} alt="autopass" style={{ height: 26, width: 'auto' }} />
   )}
 
   {rightSlot ?? (
-    <Link to="/messages">
-      <img src="../../icons/bell_active_icon.svg" alt="notification-bell" />
+    <Link to="/messages" aria-label="messages" style={{ color: 'var(--ap-forest)', display: 'grid' }}>
+      <Bell size={22} />
     </Link>
   )}
 </header>

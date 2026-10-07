@@ -328,6 +328,8 @@
                     "facebookAlt": "facebook"
                 }
             },
+            "policy": "I agree",
+            "policyLink": "the privacy policy",
             "setPassword": {
                 "title": "Set your password",
                 "subtitle": "Choose a secure password to complete registration",
@@ -596,7 +598,7 @@
         }
     },
     "Sidebar": {
-        "logoAlt": "Geocar Logo",
+        "logoAlt": "autopass",
         "menu": {
             "myReviews": "My reviews",
             "myPackages": "My packages",

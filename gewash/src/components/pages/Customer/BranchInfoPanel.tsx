@@ -112,19 +112,13 @@ export function BranchInfoPanel({ branch, onGoToMap, onGoToCalendar }: Props) {
           <p className="branch-info-panel__text">{branch.address}</p>
         </div>
         <div>
-          <p
-            className="branch-info-panel__status"
-            style={{
-              backgroundColor: branch.isOpen ? '#17BA68' : '#BA1717',
-            }}
-          >
-            {branch.isOpen ? t('Branches.opened') : t('Branches.closed')}
-          </p>
+          {branch.isOpen === true && <p className="branch-info-panel__status" style={{ backgroundColor: '#1E9E5A' }}>{t('Branches.opened')}</p>}
+          {branch.isOpen === false && <p className="branch-info-panel__status" style={{ backgroundColor: '#D64541' }}>{t('Branches.closed')}</p>}
         </div>
       </div>
 
       <div className="branch-info-panel__actions">
-        <a href={`tel:+${branch.manager.phone}`}>
+        <a href={`tel:+${branch.manager?.phone ?? ''}`}>
           <button type="button" className="call-button">
             <CallIcon aria-hidden />
           </button>

@@ -1,102 +1,89 @@
-// Gray colors
-$color-gray-50: #d4d4d4;
-$color-gray-100: #c8c8c8;
-$color-gray-200: #afafaf;
-$color-gray-300: #979797;
-$color-gray-400: #7e7e7e;
-$color-gray-500: #666666;
-$color-gray-600: #565656;
-$color-gray-700: #454545;
-$color-gray-800: #353535;
-$color-gray-900: #252525;
+// autopass palette. Old token names stay so existing SCSS compiles,
+// but every value is the new brand (forest / lime / foam), not Geocar navy/gold.
 
-//Blue colors
-$color-blue-50: #EAF0F6;
-$color-blue-100: #C8D1DC;
-$color-blue-200: #879AB1;
-$color-blue-300: #627B99;
-$color-blue-400: #4B6D95;
-$color-blue-500: #183D69;
-$color-blue-600: #143358;
-$color-blue-700: #102947;
-$color-blue-800: #0C2037;
-$color-blue-900: #091626;
+$color-gray-50: #EDF0EC;
+$color-gray-100: #EDF0EC;
+$color-gray-200: #DCE1DB;
+$color-gray-300: #A2ABA4;
+$color-gray-400: #A2ABA4;
+$color-gray-500: #5E6A62;
+$color-gray-600: #5E6A62;
+$color-gray-700: #2B342E;
+$color-gray-800: #2B342E;
+$color-gray-900: #0E1712;
 
-//Yellow colors
-$color-yellow-50: #FFF9EE;
-$color-yellow-100: #FFE9C1; 
-$color-yellow-200: #FBD795;     
-$color-yellow-300: #FACB74;
-$color-yellow-400: #F8BE54;
-$color-yellow-500: #F7B233;
-$color-yellow-600: #CF962B;
-$color-yellow-800: #805D1B;
-$color-yellow-900: #4E370D;
+$color-blue-50: #EEF6E8;
+$color-blue-100: #EDF0EC;
+$color-blue-200: #DCE1DB;
+$color-blue-300: #A2ABA4;
+$color-blue-400: #2D7F50;
+$color-blue-500: #14482F;
+$color-blue-600: #0E1712;
+$color-blue-700: #0B2A1B;
+$color-blue-800: #0B2A1B;
+$color-blue-900: #0B2A1B;
 
-//Naturals colors
-$color-naturals-50: #FAFAFA;
-$color-naturals-100: #DAD8D8;
-$color-naturals-200: #AFAFAF;
-$color-naturals-300: #979797;
-$color-naturals-400: #7E7E7E;
-$color-naturals-500: #666666;
-$color-naturals-600: #565656;
-$color-naturals-700: #454545;
-$color-naturals-800: #353535;
-$color-naturals-900: #222;
+$color-yellow-50: #EEF6E8;
+$color-yellow-100: #DCEFD0;
+$color-yellow-200: #DCEFD0;
+$color-yellow-300: #B5DD3A;
+$color-yellow-400: #B5DD3A;
+$color-yellow-500: #B5DD3A;
+$color-yellow-600: #8DB523;
+$color-yellow-800: #8DB523;
+$color-yellow-900: #14482F;
 
-//Green colors
-$color-green-200: #d4f5d4;
-$color-green-500: #17BA68;
+$color-naturals-50: #F7F9F4;
+$color-naturals-100: #EDF0EC;
+$color-naturals-200: #DCE1DB;
+$color-naturals-300: #A2ABA4;
+$color-naturals-400: #A2ABA4;
+$color-naturals-500: #5E6A62;
+$color-naturals-600: #5E6A62;
+$color-naturals-700: #2B342E;
+$color-naturals-800: #2B342E;
+$color-naturals-900: #0E1712;
 
-//Named colors
-$bg: #FAFAFA;
-$blueMain: $color-blue-500;
-$textSecondary: $color-blue-400;
-$textPrimary: $color-blue-600; 
-$redMain: #BA1717;
-$yellowMain: $color-yellow-500;
-$dark: $color-naturals-900;
-$border: $color-blue-200;
-$divider: $color-blue-100;
+$color-green-200: #DCEFD0;
+$color-green-500: #1E9E5A;
 
-// Shop: header / balance / category tiles
-$shop-ui-shadow: 0px 0px 12px 0px rgba(24, 61, 105, 0.08);
-// Horizontal-scroll cards (voucher, ticket, shop-more, my-area lists)
-$shop-card-shadow: 0 2px 4px 2px rgba(0, 0, 0, 0.1);
+$bg: #F7F9F4;
+$blueMain: #14482F;
+$textSecondary: #5E6A62;
+$textPrimary: #0E1712;
+$redMain: #D64541;
+$yellowMain: #B5DD3A;
+$dark: #0E1712;
+$border: #DCE1DB;
+$divider: #EDF0EC;
 
-//Fonts
-$font-arvo: 'Arvo', serif;
-$font-nunito: 'Nunito', sans-serif;
-$font-roboto: 'Roboto', sans-serif;
+$shop-ui-shadow: 0 8px 24px -12px rgba(11, 42, 27, 0.18);
+$shop-card-shadow: 0 12px 32px -18px rgba(11, 42, 27, 0.18);
+
+$font-arvo: "Plus Jakarta Sans", "Noto Sans Georgian", sans-serif;
+$font-nunito: "Plus Jakarta Sans", "Noto Sans Georgian", sans-serif;
+$font-roboto: "Plus Jakarta Sans", "Noto Sans Georgian", sans-serif;
 
 @mixin font-roboto-regular-blue {
-    font-family: 'Roboto', sans-serif;
-    font-weight: 400;
-    font-style: Regular;
-    font-size: 16px;
-    line-height: 22px;
-    letter-spacing: 0%;
-    color: $blueMain;
+  font-family: "Plus Jakarta Sans", "Noto Sans Georgian", sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 22px;
+  color: $textPrimary;
 }
 
 @mixin font-roboto-regular-yellow {
-    font-family: 'Roboto', sans-serif;
-    font-weight: 400;
-    font-style: 'Regular';
-    font-size: 16px;
-    line-height: 22px;
-    letter-spacing: 0%;
-    color: $yellowMain;
+  font-family: "Plus Jakarta Sans", "Noto Sans Georgian", sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 22px;
+  color: $blueMain;
 }
 
 @mixin font-roboto-bold-blue {
-    font-family: 'Roboto', sans-serif;
-        font-weight: 700;
-        font-style: Bold;
-        font-size: 32px;
-        line-height: 100%;
-        letter-spacing: 0%;
-        color: $blueMain;
+  font-family: "Noto Sans Georgian", "Plus Jakarta Sans", sans-serif;
+  font-weight: 800;
+  font-size: 32px;
+  line-height: 1.18;
+  color: $textPrimary;
 }
-

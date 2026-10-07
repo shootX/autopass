@@ -3,10 +3,7 @@ import maplibregl from 'maplibre-gl';
 import MapView, { Marker } from '@vis.gl/react-maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { GEORGIA_BOUNDS, georgiaMapStyle, prepareGeorgiaMap } from './georgiaMap';
-import PinIcon from '../../public/images/branch-mark.png';
-import CallIcon from '@/assets/icons/ManagerOrder/call_icon.svg?react';
-import PathIcon from '@/assets/icons/path-icon.svg?react';
-import CalendarIconYellow from '@/assets/icons/calendar-icon-yellow.svg?react';
+import { Droplet, Phone, Route } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { Branch } from '@/hooks/useFetchBranches';
 import { Source, Layer } from '@vis.gl/react-maplibre';
@@ -16,6 +13,7 @@ type BranchMapProps = {
   branches: Branch[];
   selectedBranchId: number | null;
   onSelect: (id: number | null) => void;
+  variant?: 'full' | 'panel' | 'strip';
 };
 
 type MapMenuState = {
@@ -25,7 +23,7 @@ type MapMenuState = {
   lng: number | string | null;
 };
 
-export function BranchMap({ branches, selectedBranchId, onSelect }: BranchMapProps) {
+export function BranchMap({ branches, selectedBranchId, onSelect, variant = 'full' }: BranchMapProps) {
   const mapRef = useRef<any>(null);
   const navigate = useNavigate();
   const [mapReady, setMapReady] = useState(false);
@@ -176,7 +174,7 @@ export function BranchMap({ branches, selectedBranchId, onSelect }: BranchMapPro
         maxBounds={GEORGIA_BOUNDS}
         minZoom={6}
         maxZoom={16}
-        style={{ width: '100%', height: '85vh' }}
+        style={{ width: '100%', height: '100%' }}
         attributionControl={true}
         scrollZoom={{ around: 'center' }}
         dragPan={true}
@@ -188,10 +186,12 @@ export function BranchMap({ branches, selectedBranchId, onSelect }: BranchMapPro
             key={branch.id}
             longitude={branch.lng as number}
             latitude={branch.lat as number}
-            anchor="bottom"
+            anchor="center"
             onClick={() => handleMarkerClick(branch)}
           >
-            <img src={PinIcon} alt="marker" style={{ width: 52, height: 56, cursor: 'pointer' }} />
+            <span className={`ap-pin${Number(selectedBranchId) === branch.id ? ' sel' : ''}`} aria-hidden>
+              <Droplet size={Number(selectedBranchId) === branch.id ? 18 : 12} fill="currentColor" />
+            </span>
           </Marker>
         ))}
         {userLocation && (
@@ -212,7 +212,7 @@ export function BranchMap({ branches, selectedBranchId, onSelect }: BranchMapPro
               id="route-line"
               type="line"
               paint={{
-                'line-color': '#17BA68',
+                'line-color': '#2D7F50',
                 'line-width': 4,
               }}
             />
@@ -223,8 +223,8 @@ export function BranchMap({ branches, selectedBranchId, onSelect }: BranchMapPro
         <div className="branch-map-placeholder" />
       )}
 
-      {selectedBranch && (
-        <div className="branch-info-panel visible">
+      {selectedBranch && variant !== 'strip' && (
+        <div className="ap-branch-card">
           <button type="button" className="branch-locate-btn" onClick={handleLocateMe} aria-label="My location">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
               <circle cx="12" cy="12" r="3" fill="currentColor" />
@@ -232,39 +232,30 @@ export function BranchMap({ branches, selectedBranchId, onSelect }: BranchMapPro
               <path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
             </svg>
           </button>
-          <div className="branch-info-panel__content">
-            <div>
-              <h3 className="branch-info-panel__title">{selectedBranch.name}</h3>
-              <p className="branch-info-panel__text">{selectedBranch.address}</p>
-            </div>
-            <div>
-              <p
-                style={{
-                  backgroundColor: selectedBranch.isOpen ? '#17BA68' : '#BA1717',
-                }}
-                className="branch-info-panel__status"
-              >
-                {selectedBranch.isOpen ? t('Branches.opened') : t('Branches.closed')}
-              </p>
-            </div>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+            <button type="button" onClick={() => navigate(`/branches/${selectedBranch.id}`)} style={{ flex: 1, border: 0, background: 'transparent', textAlign: 'left', padding: 0, cursor: 'pointer' }}>
+              <h3>{selectedBranch.name}</h3>
+              <p>{selectedBranch.address}</p>
+            </button>
+            {selectedBranch.isOpen === true && <span className="ap-open">{t('BranchMap.panel.status.open')}</span>}
+            {selectedBranch.isOpen === false && <span className="ap-closed">{t('BranchInfoPanel.status.close')}</span>}
           </div>
-
           <button
             type="button"
-            className="pill-cta"
-            onClick={() => navigate('/wash-appointment', { state: { selectedBranchId: selectedBranch.id } })}
+            className="ap-btn"
+            style={{ marginTop: 18, height: 54 }}
+            onClick={() => navigate(`/branches/${selectedBranch.id}`)}
           >
-            ფილიალის არჩევა
-            <span className="arrow">→</span>
+            ჩაწერა
           </button>
-          <div className="branch-info-panel__actions">
-            <a href={`tel:+${selectedBranch.manager.phone}`}>
-              <button type="button">
-                <CallIcon aria-hidden />
-              </button>
-            </a>
-            <button type="button" onClick={handleRouteClick}>
-              <PathIcon aria-hidden />
+          <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+            {selectedBranch.phone && (
+              <a href={`tel:+${String(selectedBranch.phone).replace(/\D/g, '')}`} aria-label={t('Branches.call') || 'call'}>
+                <Phone size={18} />
+              </a>
+            )}
+            <button type="button" onClick={handleRouteClick} aria-label="route" style={{ border: 0, background: 'transparent', color: 'var(--ap-forest)', cursor: 'pointer' }}>
+              <Route size={18} />
             </button>
           </div>
         </div>

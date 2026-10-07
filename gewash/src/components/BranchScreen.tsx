@@ -6,6 +6,7 @@ import { useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import type { RootState } from '@/store';
 import { BranchFilterDropDown } from './ui/BranchFilterDropDown';
+import { Search, SlidersHorizontal } from 'lucide-react';
 import { fetchFilteredBranches, loadDefaultBranches, peekBranches } from '@/hooks/fetchFilteredBranches';
 import { useLoadAppointmentsFromBackend } from '@/hooks/useLoadAppointmentsFromBackend';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -16,13 +17,14 @@ export default function BranchScreen() {
   const [loading, setLoading] = useState(peekBranches() === null);
   const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'list' | 'map'>('map');
-  const [query, setQuery] = useState('');
-  const [selectedBranchId, setSelectedBranchId] = useState<number | null>(null);
   const location = useLocation();
   const locationState = location.state as {
     selectedBranchId?: number;
     viewMode?: 'map' | 'list';
+    query?: string;
   } | null;
+  const [query, setQuery] = useState(locationState?.query ?? '');
+  const [selectedBranchId, setSelectedBranchId] = useState<number | null>(null);
   const [filterOpen, setFilterOpen] = useState(false);
   const [selectedServices, setSelectedServices] = useState<number[]>([]);
   const [roundTheClockOnly, setRoundTheClockOnly] = useState(false);
@@ -82,52 +84,51 @@ export default function BranchScreen() {
   });
 
   return (
-    <div className="branch-screen-wrapper qbranch">
-      <div className="qhead">
-        <button type="button" onClick={() => window.history.back()} aria-label="უკან">←</button>
-        <h1>{t('Branches.title')}</h1>
-        <button type="button" aria-label="ფილტრი" onClick={() => setFilterOpen(true)}>⚙</button>
-      </div>
-      <input className="qsearch" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="მოძებნე ფილიალი" aria-label="მოძებნე ფილიალი" />
+    <div className="ap-branches">
+      {error && <p className="error" style={{ position: 'absolute', zIndex: 6, left: 20, top: 80 }}>{error}</p>}
+      <form className="ap-search" onSubmit={(e) => e.preventDefault()}>
+        <Search size={21} />
+        <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="მოძებნე ფილიალი" aria-label="მოძებნე ფილიალი" />
+        <button type="button" aria-label={viewMode === 'map' ? 'სია' : 'რუკა'} onClick={() => setViewMode(viewMode === 'map' ? 'list' : 'map')} style={{ fontSize: 13, fontWeight: 700, color: 'var(--ap-forest)' }}>
+          {viewMode === 'map' ? 'სია' : 'რუკა'}
+        </button>
+        <button type="button" aria-label="ფილტრი" onClick={() => setFilterOpen(true)}>
+          <SlidersHorizontal size={18} />
+        </button>
+      </form>
 
-      <div className="branch-screen">
-        {loading && <p>Loading branches...</p>}
-        {error && <p className="error">{error}</p>}
-
-        {viewMode === 'list' && (
-          <div className="branch-list">
-            {shown.map((branch) => (
-              <BranchCard
-                key={branch.id}
-                branch={branch}
-                isActive={activeBranchIds.includes(branch.id)}
-                onClick={() => setSelectedBranchId(branch.id)}
-              />
-            ))}
-          </div>
-        )}
-
-        {viewMode === 'map' && !loading && shown.length > 0 && (
-          <Suspense fallback={<PageSkeleton />}>
-            <BranchMap
-              branches={shown}
-              selectedBranchId={selectedBranchId}
-              onSelect={(id) => setSelectedBranchId(id)}
+      {viewMode === 'list' && (
+        <div className="branch-list" style={{ position: 'absolute', zIndex: 6, left: 16, right: 16, top: 84, bottom: 16, overflow: 'auto' }}>
+          {shown.map((branch) => (
+            <BranchCard
+              key={branch.id}
+              branch={branch}
+              isActive={activeBranchIds.includes(branch.id)}
+              onClick={() => {
+                setSelectedBranchId(branch.id);
+                setViewMode('map');
+              }}
             />
-          </Suspense>
-        )}
-        <BranchFilterDropDown
-          open={filterOpen}
-          setOpen={setFilterOpen}
-          selectedServices={selectedServices}
-          setSelectedServices={setSelectedServices}
-          roundTheClockOnly={roundTheClockOnly}
-          setRoundTheClockOnly={setRoundTheClockOnly}
-          onlyOpen={onlyOpen}
-          setOnlyOpen={setOnlyOpen}
-          onApplyFilters={handleApplyFilters}
-        />
-      </div>
+          ))}
+        </div>
+      )}
+
+      {viewMode === 'map' && shown.length > 0 && (
+        <Suspense fallback={<PageSkeleton />}>
+          <BranchMap branches={shown} selectedBranchId={selectedBranchId} onSelect={(id) => setSelectedBranchId(id)} />
+        </Suspense>
+      )}
+      <BranchFilterDropDown
+        open={filterOpen}
+        setOpen={setFilterOpen}
+        selectedServices={selectedServices}
+        setSelectedServices={setSelectedServices}
+        roundTheClockOnly={roundTheClockOnly}
+        setRoundTheClockOnly={setRoundTheClockOnly}
+        onlyOpen={onlyOpen}
+        setOnlyOpen={setOnlyOpen}
+        onApplyFilters={handleApplyFilters}
+      />
     </div>
   );
 }

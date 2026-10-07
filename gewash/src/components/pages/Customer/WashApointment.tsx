@@ -5,13 +5,13 @@ import { type RootState } from '@/store';
 import { useCreateAppointment } from '@/hooks/useCreateAppointment';
 import { useLoadAppointmentsFromBackend } from '@/hooks/useLoadAppointmentsFromBackend';
 import { useFetchBranches } from '@/hooks/useFetchBranches';
+import { formatKaMonth } from '@/lib/format';
 import { useFetchCars } from '@/hooks/useFetchCars';
 import { useTranslation } from '@/hooks/useTranslation';
 
 import { SingleCalendarMobileSheet } from '@/components/Calendars/SingleCalendarDropDownSheet';
 import { TimePickerMobileSheet } from '@/components/ui/TimePickerMobileSheet';
 import { TypeWashingDropDown } from '@/components/ui/TypeWashingDropDown';
-import { BranchInfoPanel } from './BranchInfoPanel';
 import {
   leftArrowUrl,
   branchSummaryCalendarUrl,
@@ -53,7 +53,23 @@ export default function WashAppointment() {
   const branchId = location.state?.selectedBranchId;
   const { branches, loading: branchesLoading } = useFetchBranches();
 
-  const branch = branches.find((b) => b.id === Number(branchId));
+  const branch = branches.find((b) => b.id === Number(branchId)) ?? branches[0];
+
+  useEffect(() => {
+    const state = location.state as { date?: string; time?: string; serviceId?: number } | null;
+    if (state?.date && /^\d{4}-\d{2}-\d{2}$/.test(state.date)) {
+      const [y, m, d] = state.date.split('-').map(Number);
+      setSelectedDate(new Date(y, m - 1, d));
+    }
+    if (state?.time) setPickedTime(state.time);
+  }, [location.state]);
+
+  useEffect(() => {
+    const serviceId = (location.state as { serviceId?: number } | null)?.serviceId;
+    if (!serviceId || !branch?.services?.length) return;
+    const found = branch.services.find((service) => service.id === Number(serviceId));
+    if (found) setSelectedService(found);
+  }, [branch, location.state]);
   const [carIndex, setCarIndex] = useState(0);
   const selectedCar = cars[carIndex] ?? firstCar;
 
@@ -122,29 +138,21 @@ export default function WashAppointment() {
     slot.setHours(h, m, 0, 0);
     return slot.getTime() < Date.now();
   };
-  const monthLabel = (selectedDate ?? weekStart).toLocaleDateString('ka-GE', { month: 'long', year: 'numeric' });
+  const monthLabel = formatKaMonth(selectedDate ?? weekStart);
 
   return (
-    <div className="qbook">
-      <div className="qhead">
-        <button type="button" onClick={() => navigate(-1)} aria-label="უკან">←</button>
-        <h1>{t('WashAppointment.header.title')}</h1>
-        <button type="button" aria-label="მეტი" onClick={() => setCalendarOpen(true)}>•</button>
+    <div className="ap-book">
+      <button type="button" className="ap-back" onClick={() => navigate(-1)} aria-label="უკან">←</button>
+      <h1 className="ap-title" style={{ marginTop: 12 }}>რეცხვის დაჯავშნა</h1>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 8, color: 'var(--ap-gray-600)' }}>
+        <span style={{ flex: 1 }}>{[branch?.name, selectedService?.name].filter(Boolean).join(' · ') || 'აირჩიე ფილიალი'}</span>
+        <button type="button" className="ap-link" style={{ border: 0, background: 'transparent', cursor: 'pointer' }} onClick={() => navigate('/branches')}>შეცვლა</button>
       </div>
-      <div className="qbook-car">
-        {selectedCar?.image && <img src={`${import.meta.env.VITE_NO_API_URL}${selectedCar.image}`} alt="" />}
-        <div>
-          <strong>{[selectedCar?.brand, selectedCar?.model].filter(Boolean).join(' ') || 'ავტომობილი'}</strong>
-          <div>{selectedCar?.plate}</div>
-        </div>
-        {cars.length > 1 && (
-          <button type="button" onClick={() => setCarIndex((i) => (i + 1) % cars.length)} aria-label="სხვა მანქანა">›</button>
-        )}
-      </div>
-      <button type="button" className="qrow" onClick={() => navigate('/branches')}>
-        <span className="grow"><small>ფილიალი</small><b>{branch?.name || 'აირჩიე ფილიალი'}</b></span>
-        <span>›</span>
-      </button>
+      {cars.length > 1 && (
+        <button type="button" className="ap-link" style={{ marginTop: 8, border: 0, background: 'transparent' }} onClick={() => setCarIndex((i) => (i + 1) % cars.length)}>
+          {selectedCar?.plate}
+        </button>
+      )}
       <div className="qhead">
         <button type="button" aria-label="წინა" onClick={() => setWeekStart(new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() - 1))}>‹</button>
         <h1 style={{ textTransform: 'capitalize' }}>{monthLabel}</h1>
@@ -182,9 +190,8 @@ export default function WashAppointment() {
       )}
       {success && <p>{t('WashAppointment.form.success')}</p>}
       {!success && error && <p>{error}</p>}
-      <button type="button" className="pill-cta" style={{ marginTop: 16 }} onClick={handleSubmit} disabled={!isFormValid || isSubmitting}>
+      <button type="button" className="ap-btn" style={{ marginTop: 16 }} onClick={handleSubmit} disabled={!isFormValid || isSubmitting}>
         {t('WashAppointment.form.submit.button')}
-        <span className="arrow">→</span>
       </button>
 
         <SingleCalendarMobileSheet

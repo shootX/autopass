@@ -1,5 +1,25 @@
 import { type Branch } from "@/hooks/useFetchBranches";
+import { branchIsOpen, formatHm } from "@/lib/format";
 import { customFetch } from "@/utils/customFetch";
+
+export function parseBranch(b: any): Branch {
+  const [latStr, lngStr] = String(b.location ?? "0,0").split(",");
+  const workStart = formatHm(b.work_start);
+  const workEnd = formatHm(b.work_end);
+  return {
+    id: b.id,
+    name: b.name,
+    address: b.address,
+    lat: parseFloat(latStr),
+    lng: parseFloat(lngStr),
+    phone: b.phone ?? b.manager?.phone ?? "",
+    workStart,
+    workEnd,
+    isOpen: branchIsOpen(workStart, workEnd),
+    manager: b.manager ?? null,
+    services: b.services ?? [],
+  };
+}
 
 export async function fetchFilteredBranches({
   selectedServices,
@@ -33,27 +53,7 @@ export async function fetchFilteredBranches({
 
   const data = await res.json();
 
-  const parsed = data.branches.map((b: any) => {
-    const [latStr, lngStr] = b.location.split(",");
-    return {
-      id: b.id,
-      name: b.name,
-      address: b.address,
-      lat: parseFloat(latStr),
-      lng: parseFloat(lngStr),
-      phone: b.phone,
-      isOpen: true, // hardcoded
-      openTime: "09:00",
-      closeTime: "18:00",
-      manager: {
-        id: b.manager.id,
-        name: b.manager.name,
-        surname: b.manager.surname,
-        email: b.manager.email,
-        phone: b.manager.phone,
-      },
-    };
-  });
+  const parsed = (data.branches ?? []).map(parseBranch);
 
   return parsed;
 }
