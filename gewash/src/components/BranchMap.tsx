@@ -12,6 +12,13 @@ import { DemoMap } from './DemoMap';
 import { branchPhoto, hourSpan, isRoundTheClock, kmBetween } from '@/lib/v4';
 import { Navigation } from 'lucide-react';
 
+function tilePhone(raw?: string | null): string {
+  const digits = String(raw ?? '').replace(/\D/g, '');
+  const local = digits.startsWith('995') ? digits.slice(3) : digits;
+  if (local.length === 9) return `${local.slice(0, 3)} ${local.slice(3, 6)} ${local.slice(6)}`;
+  return digits ? `+${digits}` : '';
+}
+
 const liveMap = import.meta.env.VITE_LIVE_MAP === 'true';
 
 type BranchMapProps = {
@@ -253,8 +260,8 @@ export function BranchMap({ branches, selectedBranchId, onSelect, variant = 'ful
               </div>
             )}
             {selectedBranch.phone && (
-              <a href={`tel:+${String(selectedBranch.phone).replace(/\D/g, '')}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                <b>{t('Branches.call') || 'ზარი'}</b>
+              <a href={`tel:+${String(selectedBranch.phone).replace(/\D/g, '')}`} aria-label={t('BranchMap.panel.actions.callAlt')}>
+                <b>{tilePhone(selectedBranch.phone)}</b>
                 <span><Phone size={12} /></span>
               </a>
             )}

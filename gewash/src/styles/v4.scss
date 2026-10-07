@@ -184,7 +184,29 @@
 }
 
 .ap-demo-map {
-  background: #e4e6e2 center / cover no-repeat;
+  background: #e4e6e2 center 22% / cover no-repeat;
+}
+
+.ap-demo-frame {
+  position: absolute;
+  left: 4%;
+  right: 4%;
+  top: 128px;
+  bottom: 448px;
+  z-index: 2;
+}
+
+.ap-demo-frame .ap-pin.sel {
+  z-index: 4;
+}
+
+.ap-demo-credit {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  font-size: 9px;
+  color: #8e958f;
+  z-index: 3;
 }
 
 .v4-map-search {
@@ -283,7 +305,8 @@
   margin-top: 12px;
 }
 
-.v4-branch-card .meta div {
+.v4-branch-card .meta div,
+.v4-branch-card .meta a {
   height: 50px;
   border-radius: 14px;
   background: #f3f5f2;
@@ -291,6 +314,15 @@
   flex-direction: column;
   justify-content: center;
   padding: 0 12px;
+  text-decoration: none;
+  color: inherit;
+  min-width: 0;
+}
+
+.v4-branch-card .meta a b {
+  font-size: 12px;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
 }
 
 .v4-branch-card .meta b {
@@ -1618,6 +1650,10 @@
 
   .v4-branch-card {
     bottom: 18px;
+  }
+
+  .ap-demo-frame {
+    bottom: 360px;
   }
 
   .ap-side a.item.active {
