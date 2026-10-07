@@ -1,0 +1,14 @@
+{
+  "name": "autopass",
+  "short_name": "autopass",
+  "lang": "ka",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#F7F9F4",
+  "theme_color": "#14482F",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/app-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
