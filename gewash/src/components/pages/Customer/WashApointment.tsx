@@ -41,9 +41,41 @@ export default function WashAppointment() {
     2: 'Deleted',
     3: 'Rescheduled',
   };
+  const slots = ['10:00', '11:00', '12:30', '14:30', '15:00', '16:30'];
+  const slotAt = (day: Date, time: string) => {
+    const [h, m] = time.split(':').map(Number);
+    const slot = new Date(day);
+    slot.setHours(h, m, 0, 0);
+    return slot;
+  };
+  const freeOn = (day: Date, now = new Date()) => slots.filter((time) => slotAt(day, time).getTime() >= now.getTime());
+  const defaultDay = (now = new Date()) => {
+    const today = new Date(now);
+    today.setHours(0, 0, 0, 0);
+    if (freeOn(today, now).length) return today;
+    return new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+  };
+  const weekStartFor = (day: Date) => {
+    const start = new Date(day);
+    start.setHours(0, 0, 0, 0);
+    const mondayOffset = (start.getDay() + 6) % 7;
+    if (mondayOffset <= 4) start.setDate(start.getDate() - mondayOffset);
+    return start;
+  };
+  const preset = location.state as { date?: string; time?: string } | null;
+  const presetDate = preset?.date && /^\d{4}-\d{2}-\d{2}$/.test(preset.date)
+    ? (() => {
+        const [y, m, d] = preset.date.split('-').map(Number);
+        return new Date(y, m - 1, d);
+      })()
+    : null;
+  const initialDate = presetDate ?? defaultDay();
+  const initialTime = preset?.time || freeOn(initialDate)[0] || slots[0];
+
   const [calendarOpen, setCalendarOpen] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>();
-  const [pickedTime, setPickedTime] = useState('');
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(initialDate);
+  const [pickedTime, setPickedTime] = useState(initialTime);
+  const [weekStart, setWeekStart] = useState(() => weekStartFor(initialDate));
   const [timePickerOpen, setTimePickerOpen] = useState(false);
   const [typeOpen, setTypeOpen] = useState(false);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
@@ -56,12 +88,15 @@ export default function WashAppointment() {
   const branch = branches.find((b) => b.id === Number(branchId)) ?? branches[0];
 
   useEffect(() => {
-    const state = location.state as { date?: string; time?: string; serviceId?: number } | null;
-    if (state?.date && /^\d{4}-\d{2}-\d{2}$/.test(state.date)) {
+    const state = location.state as { date?: string; time?: string } | null;
+    if (!state?.date && !state?.time) return;
+    if (state.date && /^\d{4}-\d{2}-\d{2}$/.test(state.date)) {
       const [y, m, d] = state.date.split('-').map(Number);
-      setSelectedDate(new Date(y, m - 1, d));
+      const date = new Date(y, m - 1, d);
+      setSelectedDate(date);
+      setWeekStart(weekStartFor(date));
     }
-    if (state?.time) setPickedTime(state.time);
+    if (state.time) setPickedTime(state.time);
   }, [location.state]);
 
   useEffect(() => {
@@ -74,15 +109,6 @@ export default function WashAppointment() {
   const selectedCar = cars[carIndex] ?? firstCar;
 
   const isFormValid = Boolean(selectedDate && pickedTime && selectedService && branch && selectedCar);
-
-  const [weekStart, setWeekStart] = useState(() => {
-    const now = new Date();
-    const day = (now.getDay() + 6) % 7;
-    now.setDate(now.getDate() - day);
-    now.setHours(0, 0, 0, 0);
-    return now;
-  });
-  const slots = ['10:00', '11:00', '12:30', '14:30', '15:00', '16:30'];
 
   const handleGoToMap = () => {
     if (branch) {
@@ -100,7 +126,7 @@ export default function WashAppointment() {
 
     setIsSubmitting(true);
 
-    const formattedDate = selectedDate.toISOString().split('T')[0];
+    const formattedDate = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`;
 
     await createAppointment({
       car_wash_id: branch.id,

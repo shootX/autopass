@@ -8,6 +8,9 @@ import { useNavigate } from 'react-router-dom';
 import type { Branch } from '@/hooks/useFetchBranches';
 import { Source, Layer } from '@vis.gl/react-maplibre';
 import { useTranslation } from '@/hooks/useTranslation';
+import { DemoMap } from './DemoMap';
+
+const liveMap = import.meta.env.VITE_LIVE_MAP === 'true';
 
 type BranchMapProps = {
   branches: Branch[];
@@ -139,6 +142,7 @@ export function BranchMap({ branches, selectedBranchId, onSelect, variant = 'ful
   };
 
   useEffect(() => {
+    if (!liveMap) return;
     let cancelled = false;
     prepareGeorgiaMap()
       .then(() => {
@@ -161,7 +165,7 @@ export function BranchMap({ branches, selectedBranchId, onSelect, variant = 'ful
 
   return (
     <div className="branch-map-wrapper">
-      {mapReady ? (
+      {liveMap && mapReady ? (
       <MapView
         ref={mapRef}
         mapLib={maplibregl}
@@ -176,6 +180,7 @@ export function BranchMap({ branches, selectedBranchId, onSelect, variant = 'ful
         maxZoom={16}
         style={{ width: '100%', height: '100%' }}
         attributionControl={true}
+        onLoad={() => mapRef.current?.resize()}
         scrollZoom={{ around: 'center' }}
         dragPan={true}
         touchZoomRotate={true}
@@ -219,8 +224,17 @@ export function BranchMap({ branches, selectedBranchId, onSelect, variant = 'ful
           </Source>
         )}
       </MapView>
-      ) : (
+      ) : liveMap ? (
         <div className="branch-map-placeholder" />
+      ) : (
+        <DemoMap
+          branches={branches}
+          selectedBranchId={selectedBranch?.id ?? null}
+          onSelect={(id) => {
+            const branch = branches.find((item) => item.id === id);
+            if (branch) handleMarkerClick(branch);
+          }}
+        />
       )}
 
       {selectedBranch && variant !== 'strip' && (

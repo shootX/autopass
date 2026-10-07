@@ -28,19 +28,26 @@ async function loadArchive(): Promise<ArrayBuffer> {
   const url = new URL(`/maps/${ARCHIVE_NAME}?v=3`, window.location.origin).href;
 
   if ("caches" in window) {
-    const cache = await caches.open(CACHE_NAME);
-    const cached = await cache.match(url);
-    if (cached) return cached.arrayBuffer();
-
-    const response = await fetch(url);
-    if (!response.ok) throw new Error("Georgia map failed to load");
-    await cache.put(url, response.clone());
-    return response.arrayBuffer();
+    try {
+      const cache = await caches.open(CACHE_NAME);
+      const cached = await cache.match(url);
+      if (cached) return cached.arrayBuffer();
+    } catch {
+      /* cache storage can reject; the archive is still fetched below */
+    }
   }
 
   const response = await fetch(url);
   if (!response.ok) throw new Error("Georgia map failed to load");
-  return response.arrayBuffer();
+  const buffer = await response.arrayBuffer();
+
+  if ("caches" in window) {
+    caches.open(CACHE_NAME)
+      .then((cache) => cache.put(url, new Response(buffer.slice(0))))
+      .catch(() => undefined);
+  }
+
+  return buffer;
 }
 
 export function prepareGeorgiaMap(): Promise<void> {
@@ -80,6 +87,7 @@ export const georgiaMapStyle: StyleSpecification = {
       type: "vector",
       url: `pmtiles://${ARCHIVE_NAME}`,
       attribution: "© OpenStreetMap",
+      maxzoom: 14,
     },
   },
   layers: [

@@ -140,7 +140,9 @@ function AppRoutes() {
       void loadShopBundle();
       void loadDefaultBranches();
       void import("./components/BranchMap");
-      void import("./components/georgiaMap").then((mod) => mod.prepareGeorgiaMap());
+      if (import.meta.env.VITE_LIVE_MAP === "true") {
+        void import("./components/georgiaMap").then((mod) => mod.prepareGeorgiaMap());
+      }
     };
     const idle = window.requestIdleCallback?.(run);
     const timer = window.setTimeout(run, 250);

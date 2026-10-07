@@ -102,7 +102,7 @@ html, body { background: var(--ap-foam, #F7F9F4); }
 .qbook-car button { margin-left: auto; border: 0; background: transparent; color: var(--c-text-muted); min-width: 44px; min-height: 44px; }
 .qweek { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 8px 0 4px; }
 .qweek button {
-  border: 0; background: transparent; border-radius: 16px; min-height: 58px;
+  border: 1px solid var(--ap-gray-100, #EDF0EC); background: #fff; border-radius: 16px; min-height: 58px;
   color: var(--c-text); font-weight: 700;
 }
 .qweek button small { display: block; font-size: 12px; font-weight: 600; color: var(--c-text-muted); }
