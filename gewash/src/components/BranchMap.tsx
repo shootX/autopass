@@ -9,6 +9,15 @@ import type { Branch } from '@/hooks/useFetchBranches';
 import { Source, Layer } from '@vis.gl/react-maplibre';
 import { useTranslation } from '@/hooks/useTranslation';
 import { DemoMap } from './DemoMap';
+import { branchPhoto, hourSpan, isRoundTheClock, kmBetween } from '@/lib/v4';
+import { Navigation } from 'lucide-react';
+
+function tilePhone(raw?: string | null): string {
+  const digits = String(raw ?? '').replace(/\D/g, '');
+  const local = digits.startsWith('995') ? digits.slice(3) : digits;
+  if (local.length === 9) return `${local.slice(0, 3)} ${local.slice(3, 6)} ${local.slice(6)}`;
+  return digits ? `+${digits}` : '';
+}
 
 const liveMap = import.meta.env.VITE_LIVE_MAP === 'true';
 
@@ -116,30 +125,14 @@ export function BranchMap({ branches, selectedBranchId, onSelect, variant = 'ful
     });
   };
 
-  const handleLocateMe = () => {
+  useEffect(() => {
     if (!navigator.geolocation) return;
-
-    navigator.geolocation.getCurrentPosition((position) => {
-      const lng = position.coords.longitude;
-      const lat = position.coords.latitude;
-      setUserLocation({ lng, lat });
-      mapRef.current?.flyTo({
-        center: [lng, lat],
-        zoom: 15,
-        essential: true,
-      });
-    });
-  };
-
-  const handleAppointmentClick = () => {
-    if (selectedBranch) {
-      navigate('/wash-appointment', {
-        state: {
-          selectedBranchId: selectedBranch.id,
-        },
-      });
-    }
-  };
+    navigator.geolocation.getCurrentPosition(
+      (position) => setUserLocation({ lng: position.coords.longitude, lat: position.coords.latitude }),
+      () => undefined,
+      { maximumAge: 60000, timeout: 4000 },
+    );
+  }, []);
 
   useEffect(() => {
     if (!liveMap) return;
@@ -237,15 +230,54 @@ export function BranchMap({ branches, selectedBranchId, onSelect, variant = 'ful
         />
       )}
 
-      {selectedBranch && variant !== 'strip' && (
-        <div className="ap-branch-card">
-          <button type="button" className="branch-locate-btn" onClick={handleLocateMe} aria-label="My location">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
-              <circle cx="12" cy="12" r="3" fill="currentColor" />
-              <circle cx="12" cy="12" r="7" stroke="currentColor" strokeWidth="2" />
-              <path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-            </svg>
+      {selectedBranch && variant === 'full' && (
+        <div className="ap-branch-card v4-branch-card">
+          <div className="ph" style={{ backgroundImage: `url(${branchPhoto(selectedBranch)})` }}>
+            {selectedBranch.isOpen === true && <span className="v4-chip ok" style={{ position: 'absolute', left: 10, top: 10, background: '#fff' }}>● {t('BranchInfoPanel.status.open')}</span>}
+            {selectedBranch.isOpen === false && <span className="v4-chip" style={{ position: 'absolute', left: 10, top: 10, background: '#fff', color: 'var(--ap-error)' }}>{t('BranchInfoPanel.status.close')}</span>}
+            {isRoundTheClock(selectedBranch.workStart, selectedBranch.workEnd) && <span className="v4-chip lime" style={{ position: 'absolute', left: 10, top: 10 }}>24/7</span>}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 12, padding: '0 4px' }}>
+            <button type="button" onClick={() => navigate(`/branches/${selectedBranch.id}`)} style={{ flex: 1, border: 0, background: 'transparent', textAlign: 'left', padding: 0, cursor: 'pointer' }}>
+              <h3>{selectedBranch.name}</h3>
+              <p>{selectedBranch.address}</p>
+            </button>
+            <button type="button" className="v4-ib" style={{ width: 40, height: 40, borderRadius: 12 }} onClick={handleRouteClick} aria-label="მარშრუტი">
+              <Navigation size={18} />
+            </button>
+          </div>
+          <div className="meta">
+            {userLocation && kmBetween(userLocation.lat, userLocation.lng, selectedBranch.lat, selectedBranch.lng) != null && (
+              <div>
+                <b>{kmBetween(userLocation.lat, userLocation.lng, selectedBranch.lat, selectedBranch.lng)!.toFixed(1)} კმ</b>
+                <span>მანძილი</span>
+              </div>
+            )}
+            {hourSpan(selectedBranch.workStart, selectedBranch.workEnd) && (
+              <div>
+                <b>{hourSpan(selectedBranch.workStart, selectedBranch.workEnd)}</b>
+                <span>საათები</span>
+              </div>
+            )}
+            {selectedBranch.phone && (
+              <a href={`tel:+${String(selectedBranch.phone).replace(/\D/g, '')}`} aria-label={t('BranchMap.panel.actions.callAlt')}>
+                <b>{tilePhone(selectedBranch.phone)}</b>
+                <span><Phone size={12} /></span>
+              </a>
+            )}
+          </div>
+          <button
+            type="button"
+            className="ap-btn"
+            style={{ marginTop: 12, height: 52 }}
+            onClick={() => navigate('/wash-appointment', { state: { selectedBranchId: selectedBranch.id } })}
+          >
+            სერვისზე ჩაწერა
           </button>
+        </div>
+      )}
+      {selectedBranch && variant === 'panel' && (
+        <div className="ap-branch-card">
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
             <button type="button" onClick={() => navigate(`/branches/${selectedBranch.id}`)} style={{ flex: 1, border: 0, background: 'transparent', textAlign: 'left', padding: 0, cursor: 'pointer' }}>
               <h3>{selectedBranch.name}</h3>
@@ -254,24 +286,12 @@ export function BranchMap({ branches, selectedBranchId, onSelect, variant = 'ful
             {selectedBranch.isOpen === true && <span className="ap-open">{t('BranchMap.panel.status.open')}</span>}
             {selectedBranch.isOpen === false && <span className="ap-closed">{t('BranchInfoPanel.status.close')}</span>}
           </div>
-          <button
-            type="button"
-            className="ap-btn"
-            style={{ marginTop: 18, height: 54 }}
-            onClick={() => navigate(`/branches/${selectedBranch.id}`)}
-          >
-            ჩაწერა
+          <button type="button" className="ap-btn" style={{ marginTop: 18, height: 52 }} onClick={() => navigate('/wash-appointment', { state: { selectedBranchId: selectedBranch.id } })}>
+            სერვისზე ჩაწერა
           </button>
-          <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
-            {selectedBranch.phone && (
-              <a href={`tel:+${String(selectedBranch.phone).replace(/\D/g, '')}`} aria-label={t('Branches.call') || 'call'}>
-                <Phone size={18} />
-              </a>
-            )}
-            <button type="button" onClick={handleRouteClick} aria-label="route" style={{ border: 0, background: 'transparent', color: 'var(--ap-forest)', cursor: 'pointer' }}>
-              <Route size={18} />
-            </button>
-          </div>
+          <button type="button" onClick={handleRouteClick} aria-label="route" style={{ marginTop: 10, border: 0, background: 'transparent', color: 'var(--ap-ink)', cursor: 'pointer' }}>
+            <Route size={18} />
+          </button>
         </div>
       )}
 

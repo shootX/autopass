@@ -1,4 +1,5 @@
 import { customFetch } from "@/utils/customFetch";
+import { savePendingPayment } from "@/lib/v4";
 
 type BuyPointsResponse = unknown;
 
@@ -54,6 +55,7 @@ export async function buyPointsAndRedirect(amount: number, returnTo: string): Pr
   const paymentUrl = extractPaymentUrl(json);
   if (!paymentUrl) throw new Error("Payment URL not found in response");
 
+  savePendingPayment({ kind: "points", points: amount, price: amount, at: new Date().toISOString() });
   window.location.href = paymentUrl;
 }
 

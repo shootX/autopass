@@ -6,7 +6,7 @@ export default function CustomerLayout() {
   const { pathname, state } = useLocation();
   const noFooterPaths = ["/register", "/auth", "/add-car"];
   const isAfterRegistration = state?.fromRegistration === true;
-  const hideForFlow = /^\/branches\/[^/]+$/.test(pathname) || pathname === "/wash-appointment";
+  const hideForFlow = /^\/branches\/[^/]+$/.test(pathname) || pathname === "/wash-appointment" || pathname === "/my-packages";
   const shouldShowNav =
     !hideForFlow && (!noFooterPaths.includes(pathname) || (pathname === "/add-car" && !isAfterRegistration));
   const bleed = pathname === "/branches" || /^\/branches\/[^/]+$/.test(pathname);

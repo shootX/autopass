@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Switch } from "./ui/switch";
-import { InfinityIcon } from "./ui/InfinityIcon";
 import type { PackageData } from "@/types";
 import { CarDropDown } from "./ui/CarDropDown";
 import type { Car } from "@/store/carSlice";
@@ -9,7 +8,8 @@ import { useMemo } from "react";
 import { useActivatePackage } from "@/hooks/useActivatePackage";
 import { useFetchPackagePricing } from "@/hooks/useFetchPackagePricing";
 import { useTranslation } from "@/hooks/useTranslation";
-import { leftArrowUrl } from "@/assets/staticUrls";
+import { bodyLabel, carParts, formatGel, savePendingPayment } from "@/lib/v4";
+import { Info, Repeat2 } from "lucide-react";
 
 type Props = {
   mode: "create" | "edit";
@@ -29,7 +29,6 @@ export function WashingPackageForm({
   initialPackage,
   onSubmit,
   onClose,
-  compact,
   activePackages,
 }: Props) {
   const t = useTranslation();
@@ -37,13 +36,14 @@ export function WashingPackageForm({
   const [selectedTerm, setSelectedTerm] = useState<number | null>(null);
   const [autoRenewal, setAutoRenewal] = useState(true);
   const [carDropOpen, setCarDropOpen] = useState(false);
-  const { activatePackage, loading, error, success } = useActivatePackage();
+  const { activatePackage, loading, error } = useActivatePackage();
   const [selectedCar, setSelectedCar] = useState<Car | null>(null);
   const carId = selectedCar?.id ?? null;
-  const { packages: pricingPackages } = useFetchPackagePricing(carId);  
-  const availableWashes = pricingPackages.map(pkg => pkg.washes);
-const availableTerms = pricingPackages[0]?.prices.map(p => p.month) ?? [];
-const [isSubmitting, setIsSubmitting] = useState(false);
+  const { packages: pricingPackages, loading: pricingLoading, error: pricingError } = useFetchPackagePricing(carId);  
+  const availableWashes = pricingPackages
+    .map((pkg) => pkg.washes)
+    .filter((count): count is number => typeof count === "number");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
 
   const availableCars: Car[] = useMemo(() => {
@@ -65,14 +65,30 @@ const [isSubmitting, setIsSubmitting] = useState(false);
   }, [mode, initialPackage, availableCars, isVisible]);
 
 
+  const pricedPackage = useMemo(() => {
+    if (selectedWashCount && selectedWashCount !== "infinity") {
+      return pricingPackages.find((pkg) => pkg.washes === selectedWashCount) ?? pricingPackages[0];
+    }
+    return pricingPackages[0];
+  }, [pricingPackages, selectedWashCount]);
+
+  const availableTerms = pricedPackage?.prices.map((p) => p.month) ?? [];
+
+  useEffect(() => {
+    if (mode !== "create" || selectedWashCount != null || !pricingPackages.length) return;
+    const best = [...pricingPackages].sort((a, b) => (b.prices?.length ?? 0) - (a.prices?.length ?? 0))[0];
+    if (typeof best?.washes === "number") setSelectedWashCount(best.washes);
+  }, [mode, pricingPackages, selectedWashCount]);
+
+  useEffect(() => {
+    if (selectedTerm != null || !availableTerms.length) return;
+    setSelectedTerm(availableTerms[Math.floor((availableTerms.length - 1) / 2)]);
+  }, [availableTerms, selectedTerm]);
+
   const price = useMemo(() => {
-    if (!selectedTerm) return null;
-  
-    const pkg = pricingPackages[0];
-    const priceObj = pkg?.prices.find(p => p.month === selectedTerm);
-  
-    return priceObj?.price ?? null;
-  }, [selectedTerm, pricingPackages]);
+    if (!selectedTerm || !pricedPackage) return null;
+    return pricedPackage.prices.find((p) => p.month === selectedTerm)?.price ?? null;
+  }, [selectedTerm, pricedPackage]);
   
 
   
@@ -81,8 +97,7 @@ const [isSubmitting, setIsSubmitting] = useState(false);
   
     setIsSubmitting(true);
   
-    const packageId =
-      mode === "edit" ? initialPackage?.id : pricingPackages[0]?.id;
+    const packageId = mode === "edit" ? initialPackage?.id : pricedPackage?.id;
   
     if (!packageId) {
       setIsSubmitting(false);
@@ -100,13 +115,20 @@ const [isSubmitting, setIsSubmitting] = useState(false);
       const response = await activatePackage(payload);
   
       if (response?.success && response.url) {
+        savePendingPayment({
+          kind: "package",
+          car: carParts(selectedCar).title || selectedCar.plate,
+          washes: typeof selectedWashCount === "number" ? selectedWashCount : undefined,
+          months: selectedTerm,
+          price: price ?? undefined,
+          renewal: autoRenewal,
+          at: new Date().toISOString(),
+        });
         window.location.href = response.url;
         return;
-      } else {
-        console.error("Failed to activate or missing payment URL");
       }
-  
-      await activatePackage(payload);
+
+      console.error("Failed to activate or missing payment URL");
   
       onSubmit({
         id: packageId,
@@ -131,121 +153,106 @@ const [isSubmitting, setIsSubmitting] = useState(false);
     <AnimatePresence>
       {isVisible && (
         <motion.div
-          className={`washing-package-block ${compact ? "compact" : ""}`}
+          className="v4-buy"
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: "auto" }}
           exit={{ opacity: 0, height: 0 }}
           transition={{ duration: 0.3 }}
         >
-          <h1>{mode === "edit" ? "Update package" : t("WashingPackageForm.title.create")}</h1>
-          <p className='package-warn'>
-            {t("WashingPackageForm.warning")}
-          </p>
-
-          {/* Vehicle selector */}
-          {mode === "create" && (
-            <div className='you-vehicle'>
-              <span>{t("WashingPackageForm.vehicle.label")}</span>
-              {availableCars.length === 1 ? (
-                <p className='vehicle-number-plate'>{availableCars[0].plate}</p>
-              ) : (
-                <div
-                  onClick={() => setCarDropOpen(true)}
-                  className='vehicle-dropdown'
-                >
-                  <button className='vehicle-selector'>
-                    {selectedCar?.plate}
-                  </button>
-                  <img
-                    src={leftArrowUrl}
-                    alt='arrow'
-                  />
-                </div>
-              )}
-            </div>
+          {selectedCar && (
+            <button
+              type="button"
+              className="v4-carcard v4-dk"
+              onClick={() => availableCars.length > 1 && setCarDropOpen(true)}
+              style={{ width: "100%", textAlign: "left", border: 0, cursor: availableCars.length > 1 ? "pointer" : "default" }}
+            >
+              <div className="v4-kicker" style={{ color: "#A7B1AA" }}>{t("WashingPackageForm.vehicle.label")}</div>
+              <h2>{carParts(selectedCar).title || selectedCar.plate}</h2>
+              <div style={{ display: "flex", gap: 8, marginTop: 10, alignItems: "center" }}>
+                <span className="ap-plate" style={{ borderColor: "#fff" }}><b>GE</b><span>{selectedCar.plate}</span></span>
+                {bodyLabel(carParts(selectedCar).type) && (
+                  <span className="v4-chip" style={{ background: "#26332B", color: "#D9E3DB" }}>{bodyLabel(carParts(selectedCar).type)}</span>
+                )}
+              </div>
+              <span className="v4-limeico" style={{ position: "absolute", right: 16, top: 16 }}>
+                <Repeat2 size={20} />
+              </span>
+              <div className="foot">
+                <Info size={16} />
+                <span>{t("WashingPackageForm.warning")}</span>
+              </div>
+            </button>
           )}
 
-          {/* Wash count */}
-          <div className='number-washers-select'>
-            <p>{t("WashingPackageForm.washes.label")}</p>
-            <div className='washers-select-options'>
+          <div style={{ marginTop: 18 }}>
+            <div className="v4-sec">{t("WashingPackageForm.washes.label")}</div>
+            {pricingLoading && <p className="v4-kicker" style={{ marginTop: 8 }}>{t("MyPackages.loading")}</p>}
+            {pricingError && <p className="ap-error" style={{ marginTop: 8 }}>{pricingError}</p>}
+            {!pricingLoading && availableWashes.length === 0 && (
+              <p className="v4-kicker" style={{ marginTop: 8 }}>{t("MyPackages.empty")}</p>
+            )}
+            <div className="v4-tiles" style={{ gridTemplateColumns: `repeat(${Math.min(Math.max(availableWashes.length, 1), 3)}, 1fr)` }}>
               {availableWashes.map((count) => (
-                <div
+                <button
                   key={count}
-                  className={selectedWashCount === count ? "active" : ""}
-                  onClick={() => setSelectedWashCount(count)}
+                  type="button"
+                  className={`v4-tile${selectedWashCount === count ? " on" : ""}`}
+                  onClick={() => {
+                    setSelectedWashCount(count);
+                    setSelectedTerm(null);
+                  }}
                 >
-                  {count}
-                </div>
+                  <b>{count}</b>
+                  რეცხვა
+                </button>
               ))}
-              {/* <div
-                className={selectedWashCount === "infinity" ? "active" : ""}
-                onClick={() => setSelectedWashCount("infinity")}
-              >
-                <InfinityIcon
-                  color={
-                    selectedWashCount === "infinity" ? "#B5DD3A" : "#14482F"
-                  }
-                />
-              </div> */}
             </div>
           </div>
 
-          {/* Term */}
-          <div className='number-washers-select'>
-            <p>{t("WashingPackageForm.term.label")}</p>
-            <div className='pheriod-select-options'>
-              {availableTerms.map((term) => (
-                <div
-                  key={term}
-                  className={selectedTerm === term ? "active" : ""}
-                  onClick={() => setSelectedTerm(term)}
-                >
-                  <span>{term}</span>
-                  <span
-                    style={{
-                      color: selectedTerm === term ? "#B5DD3A" : "#14482F",
-                    }}
+          <div style={{ marginTop: 18 }}>
+            <div className="v4-sec">{t("WashingPackageForm.term.label")}</div>
+            <div className="v4-radios">
+              {availableTerms.map((term) => {
+                const termPrice = pricedPackage?.prices.find((p) => p.month === term)?.price;
+                return (
+                  <button
+                    key={term}
+                    type="button"
+                    className={`v4-ro${selectedTerm === term ? " on" : ""}`}
+                    onClick={() => setSelectedTerm(term)}
                   >
-                    {t("WashingPackageForm.term.unit")}
-                  </span>
-                </div>
-              ))}
+                    <span className="rd" />
+                    <b>{term} {t("WashingPackageForm.term.unit")}</b>
+                    {termPrice != null && <span className="pr">{formatGel(termPrice)}</span>}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
-          {/* Renewal */}
-          <div className='renewal'>
-            <div>{t("WashingPackageForm.renewal.label")}</div>
-            <Switch
-              checked={autoRenewal}
-              onCheckedChange={(val) => setAutoRenewal(val)}
-            />
+          <div className="v4-renew">
+            <div style={{ flex: 1 }}>
+              <b>{t("WashingPackageForm.renewal.label")}</b>
+              <div className="v4-kicker">ვადის ბოლოს ბარათიდან ჩამოიჭრება</div>
+            </div>
+            <Switch checked={autoRenewal} onCheckedChange={(val) => setAutoRenewal(val)} />
           </div>
 
-          {/* Price */}
-          <div className='sub-price-block'>
-            <p>{t("WashingPackageForm.price.label")}</p>
-            <p className='price'>{price !== null ? `₾ ${price}` : "—"}</p>
-          </div>
+          {error && <p className="ap-error" style={{ marginTop: 8 }}>{error}</p>}
 
-          {/* Submit */}
           <button
-            className='activate-package-btn'
-            disabled={
-              !selectedCar ||
-              !selectedTerm ||
-              selectedWashCount === null ||
-              isSubmitting
-            }
+            className="ap-btn"
+            style={{ marginTop: 16 }}
+            disabled={!selectedCar || !selectedTerm || selectedWashCount === null || isSubmitting || loading}
             onClick={handleSubmit}
           >
-            {isSubmitting ? (
-              <span className='spinner' />
-            ) : mode === "edit" ? (
-            t("WashingPackageForm.button.edit")
+            {isSubmitting || loading ? (
+              <span className="spinner" />
             ) : (
-              t("WashingPackageForm.button.create")
+              <>
+                {mode === "edit" ? t("WashingPackageForm.button.edit") : t("WashingPackageForm.button.create")}
+                {price != null && <span> · {formatGel(price)}</span>}
+              </>
             )}
           </button>
         </motion.div>

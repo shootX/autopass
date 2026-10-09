@@ -26,6 +26,7 @@ export type Branch = {
       car_wash_id: number;
     };
   }[];
+  image?: string | null;
 };
 
 export function useFetchBranches() {

@@ -8,14 +8,9 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "@/hooks/useTranslation";
 import { customFetch } from "@/utils/customFetch";
 import { invalidatePackagesCache } from "@/hooks/useActivePackages";
-import {
-  dropIconUrl,
-  timeUrl,
-  trashIconUrl,
-  reloadIconUrl,
-  calendarIconYellowUrl,
-  qrIconYellowUrl,
-} from "@/assets/staticUrls";
+import { bodyLabel, carParts } from "@/lib/v4";
+import { WashRing } from "@/components/v4/WashRing";
+import { QrCode, Trash2 } from "lucide-react";
 
 type Props = {
   id: number;
@@ -29,6 +24,8 @@ type Props = {
   onEdit?: (updated: PackageData) => void;
   cars: Car[];
   onDelete?: (plate: string) => void;
+  totalWashes?: number;
+  endDate?: string;
 };
 
 export function ActivePackageCard({
@@ -43,6 +40,8 @@ export function ActivePackageCard({
   onEdit,
   onDelete,
   cars,
+  totalWashes,
+  endDate: endsOn,
 }: Props){
   const t = useTranslation();
   const [isEditing, setIsEditing] = useState(false);
@@ -71,12 +70,12 @@ export function ActivePackageCard({
   };
   
 
-  const endDate = new Date(startDate);
-  endDate.setMonth(endDate.getMonth() + period);
+  const computedEnd = endsOn ? new Date(endsOn) : new Date(startDate);
+  if (!endsOn) computedEnd.setMonth(computedEnd.getMonth() + period);
   const today = new Date();
-  const daysLeft = Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  const daysLeft = Math.ceil((computedEnd.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
-  const isExpired = endDate < today;
+  const isExpired = computedEnd < today;
   const isExpiringSoon = daysLeft <= 7 && !isExpired;
 
   const initialPackage: PackageData = {
@@ -88,98 +87,60 @@ export function ActivePackageCard({
     autoRenewal,
   };
 
+  const matched = cars.find((car) => car.plate === plate);
+  const parts = carParts(matched);
+  const remaining = washes === "infinity" ? null : washes;
+  const total = totalWashes ?? (typeof washes === "number" ? washes : 0);
+  const shownExpiry = computedEnd.toLocaleDateString("en-GB");
+
   return (
-    <div className='active-package-card'>
-      <div className='package-header'>
-        <h2>{t("ActivePackageCard.header")}</h2>
-        <span
-          className={`package-status ${
-            isExpired ? "expired" : isExpiringSoon ? "warning" : ""
-          }`}
-        >
-          {isExpired
-            ? t("ActivePackageCard.status.expired")
-            : t("ActivePackageCard.status.until").replace(
-                "{{date}}",
-                endDate.toLocaleDateString("en-GB")
-              )}
-        </span>
-      </div>
-
-      <div className='vehicle-info'>
-        <span>{t("ActivePackageCard.vehicle.label")}</span>
-        <p className='vehicle-plate'>
-          {plate} <span>({model})</span>
-        </p>
-      </div>
-
-      <div className='package-details'>
-        <div className='detail-block'>
-          <span className='detail-label'>
-            <img
-              src={dropIconUrl}
-              alt={t("ActivePackageCard.details.washes.iconAlt")}
-            />
-            {t("ActivePackageCard.details.washes.label")}
-          </span>
-          <span className='detail-value'>
-            {washes === "infinity"
-              ? t("ActivePackageCard.details.washes.infinity")
-              : washes}
-          </span>
-          <span className='deatil-name'>
-            {t("ActivePackageCard.details.washes.remaining")}
-          </span>
+    <div className="active-package-card" style={{ background: "transparent", boxShadow: "none", padding: 0 }}>
+      <div style={{ textAlign: "center" }}>
+        <div style={{ fontFamily: "Plus Jakarta Sans, sans-serif", fontWeight: 800, fontSize: 24 }}>
+          {parts.title || plate}
         </div>
-        <div className='detail-block'>
-          <span className='detail-label'>
-            <img
-              src={timeUrl}
-              alt={t("ActivePackageCard.details.period.iconAlt")}
-            />
-            {t("ActivePackageCard.details.period.label")}
-          </span>
-          <span className='detail-value'>{period}</span>
-          <span className='deatil-name'>
-            {t("ActivePackageCard.details.period.unit")}
-          </span>
+        <div className="v4-kicker" style={{ marginTop: 2 }}>
+          {[plate, bodyLabel(parts.type || model)].filter(Boolean).join(" · ")}
+        </div>
+        {(isExpired || isExpiringSoon) && (
+          <div className={isExpired ? "ap-closed" : "ap-open"} style={{ marginTop: 6 }}>
+            {isExpired
+              ? t("ActivePackageCard.status.expired")
+              : t("ActivePackageCard.status.until").replace("{{date}}", shownExpiry)}
+          </div>
+        )}
+      </div>
+
+      {remaining != null && total > 0 && <WashRing remaining={remaining} total={total} />}
+
+      <div className="v4-pkg-num">
+        <b>{remaining ?? t("ActivePackageCard.details.washes.infinity")}</b>
+        {remaining != null && total > 0 && <span> / {total}</span>}
+        <div className="v4-kicker">{t("ActivePackageCard.details.washes.remaining")}</div>
+      </div>
+
+      <div className="v4-pair">
+        <div>
+          <div className="v4-kicker">{t("ActivePackageCard.details.period.label")}</div>
+          <b>{period} {t("ActivePackageCard.details.period.unit")}</b>
+        </div>
+        <div>
+          <div className="v4-kicker">{t("Home.period.expiration")}</div>
+          <b>{shownExpiry}</b>
         </div>
       </div>
 
-      <div className='switch-block-active-package'>
-        <span>{t("ActivePackageCard.autoRenewal")}</span>
-        <Switch
-          onCheckedChange={(val) => setAutoRenewal(val)}
-          checked={autoRenewal}
-        />
+      <div className="v4-renew">
+        <span style={{ flex: 1, fontWeight: 800 }}>{t("ActivePackageCard.autoRenewal")}</span>
+        <Switch checked={autoRenewal} onCheckedChange={(val) => setAutoRenewal(val)} />
       </div>
 
-      <div className='package-actions'>
-        <button onClick={() => setShowDeletePopup(true)}>
-          <img
-            src={trashIconUrl}
-            alt={t("ActivePackageCard.actions.deleteAlt")}
-          />
-        </button>
-        {/* <button onClick={() => setIsEditing((prev) => !prev)}>
-          <img
-            src={reloadIconUrl}
-            alt={t("ActivePackageCard.actions.editAlt")}
-          />
-        </button> */}
-        <button onClick={() => navigate("/branches")}>
-          <img
-            src={calendarIconYellowUrl}
-            alt={t("ActivePackageCard.actions.calendarAlt")}
-          />
-        </button>
-        <button onClick={() => navigate("/customer-qr-page")}>
-          <img
-            src={qrIconYellowUrl}
-            alt={t("ActivePackageCard.actions.qrAlt")}
-          />
-        </button>
-      </div>
+      <button type="button" className="ap-btn" style={{ marginTop: 8 }} onClick={() => navigate("/customer-qr-page")}>
+        {t("QRPage.car.showQRAlt")} <QrCode size={20} />
+      </button>
+      <button type="button" className="v4-ib" style={{ marginTop: 10 }} onClick={() => setShowDeletePopup(true)} aria-label={t("ActivePackageCard.actions.deleteAlt")}>
+        <Trash2 size={18} />
+      </button>
 
       <AnimatePresence>
         {isEditing && (

@@ -106,14 +106,14 @@ html, body { background: var(--ap-foam, #F7F9F4); }
   color: var(--c-text); font-weight: 700;
 }
 .qweek button small { display: block; font-size: 12px; font-weight: 600; color: var(--c-text-muted); }
-.qweek button.on { background: var(--ap-forest, #14482F); color: #fff; }
-.qweek button.on small { color: #C9D8CD; }
+.qweek button.on { background: var(--ap-ink, #0E1712); color: #fff; }
+.qweek button.on small { color: #A7B1AA; }
 .qtimes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .qtimes button {
   min-height: 44px; border-radius: 14px; border: 0;
   background: var(--c-surface-2); color: var(--c-text); font-weight: 700;
 }
-.qtimes button.on { background: var(--ap-forest, #14482F); color: #fff; }
+.qtimes button.on { background: var(--ap-lime, #B5DD3A); color: var(--ap-ink, #0E1712); }
 .qtimes button:disabled { opacity: 1; color: var(--ap-gray-400, #A2ABA4); background: transparent; text-decoration: line-through; }
 .qhead {
   display: flex; align-items: center; justify-content: space-between;
