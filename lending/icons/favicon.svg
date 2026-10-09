@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16" role="img" aria-label="autopass">
+  <title>autopass</title>
+  <style>@media (prefers-color-scheme: dark){.d{fill:#2D7F50}}</style>
+  <path class="d" fill="#14482F" d="M1.5 0H5.5A1.5 1.5 0 0 1 7 1.5V5.5A1.5 1.5 0 0 1 5.5 7H1.5A1.5 1.5 0 0 1 0 5.5V1.5A1.5 1.5 0 0 1 1.5 0ZM1.5 9H5.5A1.5 1.5 0 0 1 7 10.5V14.5A1.5 1.5 0 0 1 5.5 16H1.5A1.5 1.5 0 0 1 0 14.5V10.5A1.5 1.5 0 0 1 1.5 9Z"/>
+  <path fill="#B5DD3A" d="M10.5 0H14.5A1.5 1.5 0 0 1 16 1.5V5.5A1.5 1.5 0 0 1 14.5 7H10.5A1.5 1.5 0 0 1 9 5.5V1.5A1.5 1.5 0 0 1 10.5 0Z"/>
+  <path class="d" fill="#14482F" fill-rule="evenodd" d="M10.5 9H14.5A1.5 1.5 0 0 1 16 10.5V14.5A1.5 1.5 0 0 1 14.5 16H10.5A1.5 1.5 0 0 1 9 14.5V10.5A1.5 1.5 0 0 1 10.5 9ZM12.5 9.77C13.4 10.74 14.45 11.81 14.45 13.02A1.95 1.95 0 0 1 10.55 13.02C10.55 11.81 11.6 10.74 12.5 9.77Z"/>
+</svg>
