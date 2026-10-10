@@ -4,36 +4,41 @@ namespace App\Services\Security;
 
 use App\Models\SmsTemp;
 use App\Models\User;
+use App\Services\Sms\IssuedSms;
+use App\Services\Sms\SmsDispatcher;
+use App\Services\Sms\SmsMessage;
+use App\Services\Sms\SmsStatus;
 use App\Support\Phone;
 use Illuminate\Support\Facades\DB;
 
 class SmsChallengeService
 {
     public function __construct(
-        private SmsSender $sender,
+        private SmsDispatcher $dispatcher,
         private ActionGrantService $grants
     ) {
     }
 
-    public function issue(User $user, string $type, array $context = [], ?int $userVoucherId = null, bool $limitResend = true, ?string $destination = null): string
+    public function issue(User $user, string $type, array $context = [], ?int $userVoucherId = null, bool $limitResend = true, ?string $destination = null): IssuedSms
     {
-        if ($limitResend) {
-            $latest = SmsTemp::query()
-                ->where('user_id', $user->id)
-                ->where('type', $type)
-                ->latest('id')
-                ->first();
-
-            $wait = (int) config('security.sms_resend_seconds');
-            if ($latest && $latest->created_at && $latest->created_at->gt(now()->subSeconds($wait))) {
-                throw new AuthChallengeException('resend', 422);
-            }
-        }
-
         $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
         $publicId = bin2hex(random_bytes(16));
 
-        DB::transaction(function () use ($user, $type, $context, $userVoucherId, $code, $publicId) {
+        DB::transaction(function () use ($user, $type, $context, $userVoucherId, $code, $publicId, $limitResend) {
+            if ($limitResend) {
+                $latest = SmsTemp::query()
+                    ->where('user_id', $user->id)
+                    ->where('type', $type)
+                    ->latest('id')
+                    ->lockForUpdate()
+                    ->first();
+
+                $wait = (int) config('security.sms_resend_seconds');
+                if ($latest && $latest->created_at && $latest->created_at->gt(now()->subSeconds($wait))) {
+                    throw new AuthChallengeException('resend', 422);
+                }
+            }
+
             SmsTemp::query()
                 ->where('user_id', $user->id)
                 ->where('type', $type)
@@ -54,14 +59,20 @@ class SmsChallengeService
             ]);
         });
 
-        try {
-            $this->sender->send(Phone::forSms($destination ?: $user->phone), $this->message($type, $code));
-        } catch (SmsDeliveryException $e) {
+        $destination = Phone::forSms($destination ?: $user->phone);
+        $result = $this->dispatcher->send(new SmsMessage(
+            $destination,
+            $this->message($type, $code),
+            $type,
+            substr($publicId, 0, 20),
+            now()->addMinutes((int) config('security.sms_ttl_minutes')),
+        ));
+
+        if ($result->status === SmsStatus::Failed) {
             SmsTemp::query()->where('public_id', $publicId)->update(['consumed_at' => now()]);
-            throw $e;
         }
 
-        return $publicId;
+        return new IssuedSms($publicId, $result);
     }
 
     public function verify(string $publicId, string $code, string $type): SmsTemp

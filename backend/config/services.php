@@ -40,11 +40,6 @@ return [
         'secret' => env('CARAPI_SECRET'),
     ],
 
-    'smsoffice' => [
-        'key' => env('SMSOFFICE_API_KEY'),
-        'sender' => env('SMSOFFICE_SENDER'),
-    ],
-
     'flitt' => [
         'merchant_id' => env('FLITT_PAY_NUMBER', '1549901'),
         'secret' => env('FLITT_PAYMENT_KEY', 'test'),

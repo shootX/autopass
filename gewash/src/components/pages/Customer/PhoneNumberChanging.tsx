@@ -12,6 +12,7 @@ export default function PhoneNumberChanging() {
   const [error, setError] = useState(false);
   const [stage, setStage] = useState<"change" | "verify">("change");
   const [tempCode, setTempCode] = useState<string | null>(null);
+  const [smsNotice, setSmsNotice] = useState<string | null>(null);
   const navigate = useNavigate();
   const t = useTranslation();
 
@@ -51,10 +52,15 @@ export default function PhoneNumberChanging() {
       const data = await response.json();
 
       if (!response.ok || !data.success) {
-        throw new Error(data.message || "Failed to initiate phone change");
+        if (!(data.temp_code && data.delivery === "unknown")) {
+          throw new Error(data.message || data.error || "Failed to initiate phone change");
+        }
       }
 
       setTempCode(data.temp_code);
+      setSmsNotice(data.delivery === "simulated"
+        ? "SMS-ის სატესტო რეჟიმია — შეტყობინება ტელეფონზე არ იგზავნება."
+        : null);
       setStage("verify");
 
       sessionStorage.setItem("temp_code", String(data.temp_code));
@@ -101,7 +107,7 @@ export default function PhoneNumberChanging() {
   const isValid = phoneDigits.replace(/\D/g, "").length === 9;
 
   if (stage === "verify" && tempCode !== null) {
-    return <OTPVerification onVerify={handleVerifyOTP} />;
+    return <OTPVerification onVerify={handleVerifyOTP} notice={smsNotice} />;
   }
 
   return (

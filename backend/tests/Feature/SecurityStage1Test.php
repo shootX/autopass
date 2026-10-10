@@ -18,7 +18,7 @@ use App\Models\UserVoucher;
 use App\Models\Voucher;
 use App\Models\VoucherCategory;
 use App\Services\Payments\FlittCheckout;
-use App\Services\Security\FakeSmsSender;
+use App\Services\Sms\MockSmsGateway;
 use App\Services\Security\RetireGuessablePasswords;
 use App\Support\Phone;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -619,9 +619,9 @@ class SecurityStage1Test extends TestCase
         $this->assertNotNull($corporate->credentials_retired_at);
     }
 
-    private function sms(): FakeSmsSender
+    private function sms(): MockSmsGateway
     {
-        return app(FakeSmsSender::class);
+        return app(MockSmsGateway::class);
     }
 
     private function customer(string $phone, string $password, int $role = User::ROLE_USER): User

@@ -65,6 +65,12 @@
                 <div class="sb-nav-link-icon"><i class="fa-solid fa-percent"></i></div>
                 {{ __('admin.promo_banner') }}
             </a>
+            @if(\App\Services\Sms\SmsInbox::enabled())
+            <a class="nav-link @if(Route::is('admin.sms_inbox')) active @endif" href="{{ route('admin.sms_inbox') }}">
+                <div class="sb-nav-link-icon"><i class="fa-solid fa-comment-sms"></i></div>
+                სატესტო SMS
+            </a>
+            @endif
 
 
 

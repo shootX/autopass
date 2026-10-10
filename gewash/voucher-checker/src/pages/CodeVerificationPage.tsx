@@ -51,6 +51,7 @@ export default function CodeVerificationPage({ onLogout }: Props) {
   const [smsCode, setSmsCode] = useState("");
   const [storedDiscountDisplay, setStoredDiscountDisplay] = useState("");
   const [tempCode, setTempCode] = useState<string | null>(null);
+  const [mockNotice, setMockNotice] = useState<string | null>(null);
   const [result, setResult] = useState<VoucherCheckResult>({ status: "idle" });
   const [resendBusy, setResendBusy] = useState(false);
   const [successBurst, setSuccessBurst] = useState(false);
@@ -91,6 +92,9 @@ export default function CodeVerificationPage({ onLogout }: Props) {
       if (ok && tc) {
         setStoredDiscountDisplay(formatCodeForDisplay(cleaned) || formatCodeForDisplay(code));
         setTempCode(tc);
+        setMockNotice(payload.delivery === "simulated"
+          ? "SMS-ის სატესტო რეჟიმია — შეტყობინება ტელეფონზე არ იგზავნება."
+          : null);
         setStep(2);
         setResult({ status: "idle" });
       } else {
@@ -285,6 +289,7 @@ export default function CodeVerificationPage({ onLogout }: Props) {
               className={`cv-form cv-form--step2${step2HasError ? " cv-form--error" : ""}`}
               onSubmit={(e) => e.preventDefault()}
             >
+              {mockNotice ? <div className="cv-error-banner" role="status">{mockNotice}</div> : null}
               {step2HasError && step2ErrorText ? (
                 <div className="cv-error-banner" role="alert">
                   {step2ErrorText}

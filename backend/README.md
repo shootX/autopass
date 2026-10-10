@@ -59,3 +59,18 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+## AutoPass SMS
+
+SMS გაგზავნა ერთ სერვისზეა: `SMS_DRIVER=mock` ან `SMS_DRIVER=smsoffice`.
+
+სატესტო რეჟიმი ტელეფონზე არაფერს აგზავნის. ადმინის Inbox ჩაირთვება მხოლოდ მაშინ, როცა `SMS_DRIVER=mock` და `SMS_MOCK_INBOX_ENABLED=true`. კოდი API პასუხში არ ბრუნდება.
+
+რეალურ რეჟიმზე გადასვლა:
+
+1. SMSOffice-ის პროფილში გაააქტიურე API.
+2. სერვერის გარემოში მიუთითე გასაღები (`SMSOFFICE_API_KEY`) და პროვაიდერთან რეგისტრირებული გამგზავნი (`SMSOFFICE_SENDER`). `AutoPass` მხოლოდ მაგალითია.
+3. დააყენე `SMS_DRIVER=smsoffice`.
+4. გამორთე სატესტო Inbox: `SMS_MOCK_INBOX_ENABLED=false`.
+5. განაახლე კონფიგურაცია პროექტის წესით (`config:cache`, თუ ის გამოიყენება) და არ ჩაწერო გასაღები Git-ში.
+

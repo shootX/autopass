@@ -7,11 +7,12 @@ use App\Models\User;
 use App\Services\Security\ActionGrantService;
 use App\Services\Security\AuthChallengeException;
 use App\Services\Security\SmsChallengeService;
-use App\Services\Security\SmsDeliveryException;
+use App\Services\Sms\IssuedSms;
+use App\Services\Sms\SmsStatus;
+use App\Services\Sms\SmsUserMessage;
 use App\Support\Phone;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Validator;
 use Tymon\JWTAuth\Facades\JWTAuth;
@@ -62,23 +63,12 @@ class AuthController extends Controller
         }
 
         try {
-            $publicId = $sms->issue($existing, 'verify');
+            $issued = $sms->issue($existing, 'verify');
         } catch (AuthChallengeException $e) {
             return $this->challengeError($e);
-        } catch (SmsDeliveryException $e) {
-            if ($createdNow) {
-                $existing->delete();
-            }
-            Log::warning('registration_sms_failed', ['exception' => $e::class]);
-
-            return response()->json(['success' => false, 'error' => 'SMS could not be sent'], 503);
         }
 
-        return response()->json([
-            'success' => true,
-            'temp_code' => $publicId,
-            'message' => 'SMS для подтверждения регистрации отправлено на Ваш номер.',
-        ]);
+        return $this->smsJson($issued, $createdNow, $existing);
     }
 
     public function verify(Request $request, SmsChallengeService $sms)
@@ -197,20 +187,12 @@ class AuthController extends Controller
         }
 
         try {
-            $publicId = $sms->issue(auth()->user(), 'change', ['phone' => $request->phone], null, true, $request->phone);
+            $issued = $sms->issue(auth()->user(), 'change', ['phone' => $request->phone], null, true, $request->phone);
         } catch (AuthChallengeException $e) {
             return $this->challengeError($e);
-        } catch (SmsDeliveryException $e) {
-            Log::warning('change_phone_sms_failed', ['exception' => $e::class]);
-
-            return response()->json(['success' => false, 'error' => 'SMS could not be sent'], 503);
         }
 
-        return response()->json([
-            'success' => true,
-            'temp_code' => $publicId,
-            'message' => 'SMS для подтверждения номера отправлено на Ваш новый номер.',
-        ]);
+        return $this->smsJson($issued);
     }
 
     public function changePhoneVerify(Request $request, SmsChallengeService $sms)
@@ -262,20 +244,12 @@ class AuthController extends Controller
         $user = User::query()->where('phone', $request->phone)->first();
 
         try {
-            $publicId = $sms->issue($user, 'reset');
+            $issued = $sms->issue($user, 'reset');
         } catch (AuthChallengeException $e) {
             return $this->challengeError($e);
-        } catch (SmsDeliveryException $e) {
-            Log::warning('reset_sms_failed', ['exception' => $e::class]);
-
-            return response()->json(['success' => false, 'error' => 'SMS could not be sent'], 503);
         }
 
-        return response()->json([
-            'success' => true,
-            'temp_code' => $publicId,
-            'message' => 'SMS для восстановления пароля отправлено на Ваш номер.',
-        ]);
+        return $this->smsJson($issued);
     }
 
     public function changePasswordVerify(Request $request, SmsChallengeService $sms)
@@ -367,6 +341,36 @@ class AuthController extends Controller
         $user->pushTokens()->create(['push_id' => $pushID]);
 
         return response()->json(['success' => true]);
+    }
+
+    private function smsJson(IssuedSms $issued, bool $rollbackNewUser = false, ?User $user = null): JsonResponse
+    {
+        $status = $issued->result->status;
+        if ($status === SmsStatus::Failed && $rollbackNewUser && $user) {
+            $user->delete();
+        }
+
+        if ($status === SmsStatus::Simulated || $status === SmsStatus::Accepted) {
+            return response()->json([
+                'success' => true,
+                'temp_code' => $issued->publicId,
+                'delivery' => $status->value,
+                'message' => $status === SmsStatus::Simulated
+                    ? 'კოდი შეიქმნა სატესტო რეჟიმში.'
+                    : 'მოთხოვნა მიღებულია. შეიყვანეთ კოდი, როცა შეტყობინება მოგივათ.',
+            ]);
+        }
+
+        $payload = [
+            'success' => false,
+            'delivery' => $status->value,
+            'error' => SmsUserMessage::forResult($issued->result),
+        ];
+        if ($status === SmsStatus::Unknown) {
+            $payload['temp_code'] = $issued->publicId;
+        }
+
+        return response()->json($payload, $status === SmsStatus::Unknown ? 503 : 422);
     }
 
     private function challengeError(AuthChallengeException $e): JsonResponse

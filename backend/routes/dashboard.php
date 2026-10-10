@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\CarBrandsController;
 use App\Http\Controllers\Admin\PackagesController;
 use App\Http\Controllers\Admin\PartnersController;
 use App\Http\Controllers\Admin\PromoController;
+use App\Http\Controllers\Admin\SmsInboxController;
 use App\Http\Controllers\Admin\TicketsController;
 use App\Http\Controllers\Admin\VouchersController;
 use App\Http\Middleware\AdminMiddleware;
@@ -30,6 +31,8 @@ Route::prefix('dashboard')
         })->name('admin.logout');
 
         Route::get('/', [DashboardController::class, 'index'])->name('admin.dashboard');
+        Route::get('/sms-inbox', [SmsInboxController::class, 'index'])->name('admin.sms_inbox');
+        Route::get('/sms-inbox/messages', [SmsInboxController::class, 'messages'])->name('admin.sms_inbox.messages');
         Route::get('/reports/washes', [ReportsController::class, 'washes'])->name('admin.reports.washes');
 
         Route::get('/search_managers', [WashingController::class, 'search'])->name('admin.search_managers');

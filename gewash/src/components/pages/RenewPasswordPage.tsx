@@ -20,6 +20,8 @@ export default function PasswordChangePage() {
   const [showPassword, setShowPassword] = useState(false);
   const [tempCode, setTempCode] = useState<string | null>(null);
   const [setupToken, setSetupToken] = useState<string | null>(null);
+  const [sending, setSending] = useState(false);
+  const [smsNotice, setSmsNotice] = useState<string | null>(null);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -37,6 +39,7 @@ export default function PasswordChangePage() {
     }
 
     try {
+      setSending(true);
       const res = await customFetch(`${API_URL}/change_password`, {
         method: "POST",
         headers: {
@@ -48,14 +51,19 @@ export default function PasswordChangePage() {
 
       const data = await res.json();
 
-      if (data.success) {
+      if (data.temp_code && (data.success || data.delivery === "unknown")) {
         setTempCode(data.temp_code);
+        setSmsNotice(data.delivery === "simulated"
+          ? "SMS-ის სატესტო რეჟიმია — შეტყობინება ტელეფონზე არ იგზავნება."
+          : null);
         setStage("verify");
       } else {
         setError({ phone: data.error });
       }
     } catch (err) {
       console.error("Ошибка запроса:", err);
+    } finally {
+      setSending(false);
     }
   };
 
@@ -124,7 +132,7 @@ export default function PasswordChangePage() {
   if (stage === "verify" && tempCode) {
     return (
       <>
-        <OTPVerification onVerify={handleVerifyCode} />
+        <OTPVerification onVerify={handleVerifyCode} notice={smsNotice} />
         {error.phone && (
           <div className="phone-number-error">
             <p>{typeof error.phone === "string" ? error.phone : "Ошибка подтверждения"}</p>
@@ -284,7 +292,7 @@ export default function PasswordChangePage() {
           </div>
         </div>
 
-        <button className="sign-in" onClick={handleRequestPasswordChange}>
+        <button className="sign-in" onClick={handleRequestPasswordChange} disabled={sending}>
           {t("PasswordChange.request.button")}
         </button>
       </div>

@@ -160,6 +160,8 @@ Route::middleware(['auth:api', CorsMiddleware::class, \App\Http\Middleware\Ensur
 
     Route::get('/testpay', [PaymentsController::class, 'testpay']);
 
+    Route::get('/admin/sms-inbox', [\App\Http\Controllers\Admin\SmsInboxController::class, 'messages']);
+
 });
 
 Route::get('/promo', function(){

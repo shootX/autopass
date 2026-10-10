@@ -60,6 +60,8 @@ export default function Registration() {
   const togglePassword = () => setShowPassword((prev) => !prev);
   const [tempCode, setTempCode] = useState<string | null>(null);
   const [setupToken, setSetupToken] = useState<string | null>(null);
+  const [sending, setSending] = useState(false);
+  const [smsNotice, setSmsNotice] = useState<string | null>(null);
   const navigate = useNavigate();
 
   // Запрос при открытии страницы (монтировании компонента)
@@ -113,6 +115,7 @@ export default function Registration() {
     }
 
     try {
+      setSending(true);
       const res = await fetch(`${API_URL}/register`, {
         method: "POST",
         headers: {
@@ -128,8 +131,11 @@ export default function Registration() {
 
       const data = await res.json();
 
-      if (data.success) {
+      if (data.temp_code && (data.success || data.delivery === "unknown")) {
         setTempCode(data.temp_code);
+        setSmsNotice(data.delivery === "simulated"
+          ? "SMS-ის სატესტო რეჟიმია — შეტყობინება ტელეფონზე არ იგზავნება."
+          : null);
         setStage("verify");
       } else {
         const serverPhoneError = data.error?.phone?.[0] || "";
@@ -144,6 +150,8 @@ export default function Registration() {
       }
     } catch (err) {
       console.error("Ошибка запроса:", err);
+    } finally {
+      setSending(false);
     }
   };
 
@@ -209,7 +217,7 @@ export default function Registration() {
 
 
   if (stage === "verify" && tempCode) {
-    return <OTPVerification onVerify={handleVerifyOTP} phone={phone} step="2 / 3" />;
+    return <OTPVerification onVerify={handleVerifyOTP} phone={phone} step="2 / 3" notice={smsNotice} />;
   }
 
   if (stage === "set-password") {
@@ -332,7 +340,7 @@ export default function Registration() {
           <label htmlFor='accept-policy'>{t("Registration.stage.policy")}</label> <Link className="ap-link" to='/privacy'>{t("Registration.stage.policyLink")}</Link>
         </div>
 
-        <button className='sign-in' onClick={handleRegister}>
+        <button className='sign-in' onClick={handleRegister} disabled={sending}>
           {t("Registration.stage.register.button")}
         </button>
       </div>

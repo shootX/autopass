@@ -9,6 +9,7 @@ export type VoucherCheckResponse = {
   data?: unknown;
   voucher?: unknown;
   temp_code?: number | string;
+  delivery?: string;
 };
 
 export type VoucherUseResponse = {

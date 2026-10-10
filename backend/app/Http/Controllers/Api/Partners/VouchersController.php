@@ -7,7 +7,8 @@ use App\Models\SmsTemp;
 use App\Models\UserVoucher;
 use App\Services\Security\AuthChallengeException;
 use App\Services\Security\SmsChallengeService;
-use App\Services\Security\SmsDeliveryException;
+use App\Services\Sms\SmsStatus;
+use App\Services\Sms\SmsUserMessage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -50,14 +51,7 @@ class VouchersController extends Controller
         }
 
         try {
-            $publicId = $sms->issue($voucher->user, 'use_voucher', [], $voucher->id, false);
-        } catch (SmsDeliveryException $e) {
-            Log::warning('voucher_sms_failed', ['exception' => $e::class]);
-
-            return response()->json([
-                'success' => false,
-                'message' => 'SMS could not be sent',
-            ], 503);
+            $issued = $sms->issue($voucher->user, 'use_voucher', [], $voucher->id, false);
         } catch (\Throwable $e) {
             Log::warning('voucher_check_failed', ['exception' => $e::class]);
 
@@ -67,9 +61,19 @@ class VouchersController extends Controller
             ], 500);
         }
 
+        if (! $issued->result->ok()) {
+            return response()->json([
+                'success' => false,
+                'delivery' => $issued->result->status->value,
+                'temp_code' => $issued->result->status === SmsStatus::Unknown ? $issued->publicId : null,
+                'message' => SmsUserMessage::forResult($issued->result),
+            ], $issued->result->status === SmsStatus::Unknown ? 503 : 422);
+        }
+
         return response()->json([
             'success' => true,
-            'temp_code' => $publicId,
+            'temp_code' => $issued->publicId,
+            'delivery' => $issued->result->status->value,
         ]);
     }
 

@@ -1,24 +1,22 @@
 <?php
 
-namespace App\Services\Security;
+namespace App\Services\Sms;
 
-class FakeSmsSender implements SmsSender
+class MockSmsGateway implements SmsGateway
 {
-    /** @var list<array{destination: string, content: string}> */
+    /** @var list<array{destination: string, content: string, purpose: string, reference: string}> */
     public array $messages = [];
 
-    public bool $fail = false;
-
-    public function send(string $destination, string $content): void
+    public function send(SmsMessage $message): SmsResult
     {
-        if ($this->fail) {
-            throw new SmsDeliveryException('SMS delivery failed');
-        }
-
         $this->messages[] = [
-            'destination' => $destination,
-            'content' => $content,
+            'destination' => $message->destination,
+            'content' => $message->content,
+            'purpose' => $message->purpose,
+            'reference' => $message->reference,
         ];
+
+        return new SmsResult(SmsStatus::Simulated, $message->reference);
     }
 
     public function latestCode(): ?string
@@ -38,6 +36,5 @@ class FakeSmsSender implements SmsSender
     public function reset(): void
     {
         $this->messages = [];
-        $this->fail = false;
     }
 }

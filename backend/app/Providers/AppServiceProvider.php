@@ -2,9 +2,10 @@
 
 namespace App\Providers;
 
-use App\Services\Security\FakeSmsSender;
-use App\Services\Security\HttpSmsSender;
-use App\Services\Security\SmsSender;
+use App\Services\Sms\MockSmsGateway;
+use App\Services\Sms\SmsConfigurationException;
+use App\Services\Sms\SmsGateway;
+use App\Services\Sms\SmsOfficeGateway;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
@@ -15,13 +16,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->singleton(FakeSmsSender::class);
-        $this->app->singleton(SmsSender::class, function ($app) {
-            if ($app->environment('testing')) {
-                return $app->make(FakeSmsSender::class);
-            }
-
-            return $app->make(HttpSmsSender::class);
+        $this->app->singleton(MockSmsGateway::class);
+        $this->app->singleton(SmsGateway::class, function ($app) {
+            return match ((string) config('sms.driver')) {
+                'mock' => $app->make(MockSmsGateway::class),
+                'smsoffice' => $app->make(SmsOfficeGateway::class),
+                default => throw new SmsConfigurationException('Unknown SMS driver'),
+            };
         });
     }
 
