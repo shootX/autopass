@@ -74,7 +74,7 @@ export default function PaymentSuccess() {
           {when && (
             <div className="rr"><span>თარიღი</span><b>{when}</b></div>
           )}
-          <div className="rr"><span>გადახდის სისტემა</span><b>Flitt</b></div>
+          <div className="rr"><span>გადახდის სისტემა</span><b>TBC</b></div>
           {orderId && (
             <div className="rr"><span>შეკვეთის №</span><b>{orderId}</b></div>
           )}

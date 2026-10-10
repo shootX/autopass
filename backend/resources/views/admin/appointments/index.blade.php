@@ -46,7 +46,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    @foreach($appointments as $appointment)
+                    @forelse($appointments as $appointment)
                         <tr>
                             <td scope="row">{{$appointment->id}}</td>
                             <td>{{$appointment->user->name}} {{$appointment->user->surname}}</td>
@@ -73,7 +73,9 @@
                                 </div>
                             </td>
                         </tr>
-                    @endforeach
+                    @empty
+                        <tr><td colspan="9">{{ __('admin.dash_empty') }}</td></tr>
+                    @endforelse
                     </tbody>
                 </table>
                 {{$appointments->links('pagination::bootstrap-5')}}

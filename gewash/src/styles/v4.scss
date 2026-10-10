@@ -482,37 +482,20 @@
   background: radial-gradient(closest-side, rgba(181, 221, 58, 0.3), rgba(181, 221, 58, 0));
 }
 
-.v4-splash .mark {
+.v4-splash .logo {
   position: absolute;
   left: 50%;
   top: 30%;
   transform: translateX(-50%);
-  width: 96px;
-  height: 96px;
-  border-radius: 30px;
-  background: var(--ap-ink);
-  display: grid;
-  place-items: center;
-  box-shadow: 0 22px 40px -18px rgba(14, 23, 18, 0.55);
-}
-
-.v4-splash .wm {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: calc(30% + 122px);
-  text-align: center;
-  font-family: "Plus Jakarta Sans", sans-serif;
-  font-weight: 800;
-  font-size: 34px;
-  letter-spacing: -0.02em;
+  height: 44px;
+  width: auto;
 }
 
 .v4-splash .tag {
   position: absolute;
   left: 0;
   right: 0;
-  top: calc(30% + 168px);
+  top: calc(30% + 64px);
   text-align: center;
   color: var(--ap-gray-600);
   font-family: "Noto Sans Georgian", sans-serif;
@@ -1622,6 +1605,17 @@
   color: var(--ap-gray-600);
   margin-top: 12px;
   font-family: "Noto Sans Georgian", sans-serif;
+}
+
+@media (min-width: 768px) {
+  .v4-splash,
+  .v4-onb,
+  .v4-auth {
+    width: 430px;
+    max-width: 100%;
+    margin-inline: auto;
+    box-shadow: 0 0 0 1px rgba(14, 23, 18, 0.06), 0 30px 60px -32px rgba(14, 23, 18, 0.35);
+  }
 }
 
 @media (min-width: 1024px) {

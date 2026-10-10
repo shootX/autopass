@@ -27,13 +27,13 @@
                     </tr>
                     </thead>
                     <tbody>
-                    @foreach($managers as $client)
+                    @forelse($managers as $client)
                         <tr>
                             <th scope="row">{{$client->id}}</th>
                             <td>{{$client->name}} {{$client->surname}}</td>
                             <td><a href="mailto:{{$client->email}}">{{$client->email}}</a></td>
                             <td><a href="tel:{{ \App\Support\Phone::digits($client->phone) }}">{{ \App\Support\Phone::format($client->phone) }}</a></td>
-                            <td>@if($client->sex == 'male') {{ __('admin.male') }} @else {{ __('admin.female') }} @endif</td>
+                            <td>{{ $client->sex === 'male' ? __('admin.male') : ($client->sex === 'female' ? __('admin.female') : '—') }}</td>
                             <td>{{$client->date_of_birth}}</td>
                             <td>{{$client->created_at}}</td>
                             <td>{{$client->washing?->name}}</td>
@@ -45,7 +45,9 @@
                                 </div>
                             </td>
                         </tr>
-                    @endforeach
+                    @empty
+                        <tr><td colspan="9">{{ __('admin.dash_empty') }}</td></tr>
+                    @endforelse
                     </tbody>
                 </table>
                 {{$managers->links('pagination::bootstrap-5')}}

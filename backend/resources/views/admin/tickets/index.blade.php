@@ -36,7 +36,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    @foreach($tickets as $ticket)
+                    @forelse($tickets as $ticket)
                         <tr>
                             <th scope="row">{{$ticket->id}}</th>
                             <td>{{$ticket->name}}</td>
@@ -66,7 +66,9 @@
                                 </div>
                             </td>
                         </tr>
-                    @endforeach
+                    @empty
+                        <tr><td colspan="9">{{ __('admin.dash_empty') }}</td></tr>
+                    @endforelse
                     </tbody>
                 </table>
                 {{$tickets->links('pagination::bootstrap-5')}}

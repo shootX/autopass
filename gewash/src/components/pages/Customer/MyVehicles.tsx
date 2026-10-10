@@ -37,7 +37,10 @@ export default function MyVehicles() {
           <div className='vehicles-flex'>
             <div className='vehicles-info'>
               <h4 className='auto-number'>{car.plate?.replace(/^([A-Z]{2})(\d{3})([A-Z]{2})$/, '$1-$2-$3') ?? ''}</h4>
-              <p className='car-type'>{car.type}</p>
+              <p className='car-type'>
+                {[car.brand, car.model].filter((part) => part && part !== 'Unknown').join(' ')}
+                {car.type && car.type !== 'Unknown' ? ` · ${car.type}` : ''}
+              </p>
             </div>
             <div>
               <button

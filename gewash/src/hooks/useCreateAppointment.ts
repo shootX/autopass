@@ -40,17 +40,6 @@ export function useCreateAppointment() {
     setError(null);
     setSuccess(false);
 
-    function normalizeDateWithOffset(dateStr: string): string {
-      const [year, month, day] = dateStr.split("-").map(Number);
-      const date = new Date(year, month - 1, day);
-      date.setDate(date.getDate() + 1); // ← жёсткий +1
-      return `${date.getFullYear()}-${(date.getMonth() + 1)
-        .toString()
-        .padStart(2, "0")}-${date.getDate().toString().padStart(2, "0")}`;
-    }
-    const formattedDate = normalizeDateWithOffset(payload.date);
-
-
     try {
       const token = localStorage.getItem("access_token");  
       const response = await customFetch(`${import.meta.env.VITE_API_URL}/appointments/add`, {
@@ -61,7 +50,7 @@ export function useCreateAppointment() {
         },
         body: JSON.stringify({
           car_wash_id: payload.car_wash_id,
-          date: formattedDate,
+          date: payload.date,
           time: payload.time,
           service_id: payload.service_id,
           car_id: payload.car_id,
@@ -69,7 +58,8 @@ export function useCreateAppointment() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to create appointment");
+        const body = await response.json().catch(() => null);
+        throw new Error(body?.error || "ჯავშანი ვერ შეიქმნა");
       }
 
       const data: CreateAppointmentResponse = await response.json();

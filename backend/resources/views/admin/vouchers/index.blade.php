@@ -38,7 +38,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                    @foreach($vouchers as $voucher)
+                    @forelse($vouchers as $voucher)
                         <tr @if($voucher->deleted) style="text-decoration: line-through;" class="text-muted" @endif>
                             <th scope="row">{{$voucher->id}}</th>
                             <td>{{$voucher->name}}</td>
@@ -75,7 +75,9 @@
                                 @endif
                             </td>
                         </tr>
-                    @endforeach
+                    @empty
+                        <tr><td colspan="11">{{ __('admin.dash_empty') }}</td></tr>
+                    @endforelse
                     </tbody>
                 </table>
                 {{$vouchers->links('pagination::bootstrap-5')}}

@@ -242,7 +242,8 @@
         },
         "loading": "Loading...",
         "error": "Error: {message}",
-        "empty": "No active packages"
+        "empty": "No active packages",
+        "emptyHistory": "No past packages"
     },
     "MyVehicles": {
         "title": "My vehicles",
@@ -331,17 +332,16 @@
             "policy": "I agree",
             "policyLink": "the privacy policy",
             "setPassword": {
-                "title": "Set your password",
-                "subtitle": "Choose a secure password to complete registration",
-                "finish": "Finish",
-                "label": "Password",
-                "placeholder": "Create your password",
-                "button": "Finish",
                 "title": {
                     "errors": {
                         "tooShort": "Password must be at least 6 characters"
                     }
                 },
+                "subtitle": "Choose a secure password to complete registration",
+                "finish": "Finish",
+                "label": "Password",
+                "placeholder": "Create your password",
+                "button": "Finish",
                 "errors": {
                     "tooShort": "Password must be at least 6 characters",
                     "serverError": "Server error. Please try again.",
@@ -782,8 +782,13 @@
         }
     },
     "Shop": {
-        "header": { "title": "Shop" },
-        "balance": { "label": "Balance", "unit": "Coins" },
+        "header": {
+            "title": "Shop"
+        },
+        "balance": {
+            "label": "Balance",
+            "unit": "points"
+        },
         "categories": {
             "discounts": "Discounts",
             "giveaway": "Giveaway"
@@ -857,21 +862,36 @@
         "takePartForBtn": "Take part for {price} points"
     },
     "MyPoints": {
-        "header": { "title": "My points" },
-        "balance": { "label": "Balance", "unit": "points" },
-        "referrals": { "label": "Referrals", "unit": "people" },
-        "notice": { "addedLine": "{count} points added" },
-        "history": { "title": "Transaction history", "empty": "No transactions" }
+        "header": {
+            "title": "My points"
+        },
+        "balance": {
+            "label": "Balance",
+            "unit": "points"
+        },
+        "referrals": {
+            "label": "Referrals",
+            "unit": "people"
+        },
+        "notice": {
+            "addedLine": "{count} points added"
+        },
+        "history": {
+            "title": "Transaction history",
+            "empty": "No transactions"
+        }
     },
     "PointsInfo": {
-        "header": { "title": "Points" },
+        "header": {
+            "title": "Points"
+        },
         "promo": {
-            "title": "GeoCar points",
+            "title": "autopass points",
             "desc": "This is a loyalty program that gives participants the opportunity to accumulate points and exchange them for gifts or discounts from partners.",
-            "btn": "Buy GeoCar points"
+            "btn": "Buy autopass points"
         },
         "sheet": {
-            "title": "Buy GeoCar points",
+            "title": "Buy autopass points",
             "placeholder": "Points amount",
             "amountLabel": "Amount to pay",
             "buyBtn": "Buy"
@@ -884,9 +904,11 @@
         }
     },
     "ReferralsInfo": {
-        "header": { "title": "Referrals" },
+        "header": {
+            "title": "Referrals"
+        },
         "promo": {
-            "title": "GeoCar referrals",
+            "title": "autopass referrals",
             "desc": "This is a loyalty program that gives participants the opportunity to accumulate points and exchange them for gifts or discounts from partners.",
             "btn": "Share Referral Link"
         },
@@ -900,6 +922,28 @@
             "title": "Share Referral Link",
             "yourLink": "Your link",
             "shareTo": "Sharet to:"
+        }
+    },
+    "Help": {
+        "title": "Help",
+        "backAlt": "Back",
+        "items": {
+            "services": {
+                "q": "What can I do in autopass?",
+                "a": "Choose a wash package, book a time at a nearby branch, and show your QR code at the car wash. The package, bookings, and remaining washes are all in the app."
+            },
+            "locations": {
+                "q": "Where are the branches?",
+                "a": "Open Branches. The map and the list show the address, distance, and working hours of each location."
+            },
+            "booking": {
+                "q": "Do I need to book?",
+                "a": "A booking is not required, but choosing a time lets you skip the queue. Use Book a wash on the home screen."
+            },
+            "duration": {
+                "q": "How long does a wash take?",
+                "a": "It depends on the package. The branch will tell you the exact time on site."
+            }
         }
     }
 }

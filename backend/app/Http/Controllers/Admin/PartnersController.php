@@ -25,8 +25,7 @@ class PartnersController extends Controller
                 'partners.xlsx'
             );
         }
-        $clients = Partner::paginate(10);
-        return view('admin.partners.index', compact('clients'));
+        return redirect()->route('admin.corporate');
     }
 
     public function delete(Request $request, Partner $client)
@@ -37,7 +36,7 @@ class PartnersController extends Controller
 
     public function addPage(Request $request)
     {
-        return view('admin.partners.add');
+        return redirect()->route('admin.corporate.add');
     }
 
     public function editPage(Request $request, Partner $client)

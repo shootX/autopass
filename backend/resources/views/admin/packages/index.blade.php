@@ -34,7 +34,7 @@
                         <th scope="col">{{ __('admin.price_12') }}</th>
                     </thead>
                     <tbody>
-                    @foreach($packages as $pack)
+                    @forelse($packages as $pack)
                         <tr>
                             <td>{{$pack->id}}</td>
                             <td>{{$pack->car_type}}</td>
@@ -50,7 +50,9 @@
                                 </div>
                             </td>
                         </tr>
-                    @endforeach
+                    @empty
+                        <tr><td colspan="8">{{ __('admin.dash_empty') }}</td></tr>
+                    @endforelse
                     </tbody>
                 </table>
                 {{$packages->links('pagination::bootstrap-5')}}

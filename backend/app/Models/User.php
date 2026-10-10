@@ -198,6 +198,40 @@ class User extends Authenticatable implements JWTSubject
         return $name !== '' ? $name : (string) $this->phone;
     }
 
+    public function titleName(): string
+    {
+        $name = trim(implode(' ', array_filter(
+            [$this->name, $this->surname],
+            fn ($part) => trim((string) $part) !== ''
+        )));
+
+        if ($name !== '') {
+            return $name;
+        }
+
+        return \App\Support\Phone::format($this->phone);
+    }
+
+    public function pickerLabel(): string
+    {
+        $name = trim(implode(' ', array_filter(
+            [$this->name, $this->surname],
+            fn ($part) => trim((string) $part) !== ''
+        )));
+        $contact = trim((string) $this->email);
+        if ($contact === '') {
+            $contact = \App\Support\Phone::format($this->phone);
+        }
+        if ($name === '') {
+            return $contact !== '' ? $contact : '#'.$this->id;
+        }
+        if ($contact === '' || $contact === $name) {
+            return $name;
+        }
+
+        return $name.' ('.$contact.')';
+    }
+
     public function sendPush($title = [], $body = [], $url = 'https://app.geocar.ge/messages') : void
     {
         $pushTokens = $this->pushTokens()->first();

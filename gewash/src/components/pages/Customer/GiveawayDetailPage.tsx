@@ -261,7 +261,7 @@ export default function GiveawayDetailPage() {
         <div className="giveaway-detail__terms">
           <p className="giveaway-detail__terms-heading">{t("Giveaway.termsTitle")}</p>
           <p className="giveaway-detail__terms-line">
-            Take part in the giveaway of prizes from <strong>GeoCar</strong>!
+            Take part in the giveaway of prizes from <strong>autopass</strong>!
           </p>
           <p className="giveaway-detail__terms-subheading">Prizes for participants:</p>
           <p className="giveaway-detail__terms-line">– 15 stylish hoodies</p>
@@ -277,10 +277,7 @@ export default function GiveawayDetailPage() {
         </div>
 
         <p className="giveaway-detail__results">
-          Results — by 20.12.2024 on the official page with details of the promotion and rules:{" "}
-          <a href="https://geocar.com/giveaways" className="giveaway-detail__results-link" target="_blank" rel="noreferrer">
-            geocar.com/giveaways
-          </a>
+          შედეგები გამოქვეყნდება ამ გვერდზე, გათამაშების დასრულების შემდეგ.
         </p>
 
         <div className="giveaway-detail__company">

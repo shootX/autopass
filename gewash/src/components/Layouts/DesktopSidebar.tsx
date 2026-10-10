@@ -6,7 +6,6 @@ import { logoDarkUrl } from "@/assets/staticUrls";
 import { initials, formatPhone } from "@/lib/format";
 import {
   Bell,
-  CalendarDays,
   House,
   LayoutGrid,
   LifeBuoy,
@@ -20,10 +19,9 @@ import {
 const main = [
   { to: "/", label: "მთავარი", icon: House, end: true },
   { to: "/branches", label: "ფილიალები", icon: MapPin },
-  { to: "/customer-calendar", label: "კალენდარი", icon: CalendarDays },
+  { to: "/shop", label: "მაღაზია", icon: ShoppingBag },
   { to: "/customer-qr-page", label: "QR კოდი", icon: QrCode },
   { to: "/my-packages", label: "ჩემი პაკეტები", icon: LayoutGrid },
-  { to: "/shop", label: "მაღაზია", icon: ShoppingBag },
   { to: "/my-points", label: "ჩემი ქულები", icon: Star },
   { to: "/messages", label: "შეტყობინებები", icon: Bell },
 ];

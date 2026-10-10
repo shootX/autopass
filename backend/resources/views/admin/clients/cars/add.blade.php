@@ -3,7 +3,8 @@
 @section('content')
     <div class="container-fluid px-4">
         <div class="card mt-4 mb-4">
-            <div class="card-header">{{ __('admin.add_car_for', ['name' => trim($client->name.' '.$client->surname)]) }}</div>
+            @php($who = $client->titleName())
+            <div class="card-header">{{ $who !== '' ? __('admin.add_car_for', ['name' => $who]) : __('admin.add_vehicle') }}</div>
             <div class="card-body table-responsive">
 
                 <form action="{{route('admin.clients.store_car', $client->id)}}" method="post">

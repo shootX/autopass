@@ -36,7 +36,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                    @foreach($clients as $client)
+                    @forelse($clients as $client)
                         <tr>
                             <th scope="row">{{$client->id}}</th>
                             <td>{{$client->name}}</td>
@@ -50,7 +50,9 @@
                                 </div>
                             </td>
                         </tr>
-                    @endforeach
+                    @empty
+                        <tr><td colspan="6">{{ __('admin.dash_empty') }}</td></tr>
+                    @endforelse
                     </tbody>
                 </table>
                 {{$clients->links('pagination::bootstrap-5')}}

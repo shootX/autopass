@@ -7,6 +7,7 @@ import {
   managerVectorIconUrl,
   managerCancelIconUrl,
 } from '@/assets/staticUrls'
+import { formatPhone } from '@/lib/format'
 
 type Status = 'Confirm' | 'Rescheduled' | 'Expired' | 'Deleted' | 'New'
 
@@ -143,7 +144,7 @@ export default function ManagerOrder({
 
         <div className='customer-order-info'>
           <p className='customer-order-name'>{customer.name}</p>
-          <p className='customer-order-phone-number'>{customer.phone}</p>
+          <p className='customer-order-phone-number'>{formatPhone(customer.phone)}</p>
         </div>
 
         <div className='order-controll-panel'>

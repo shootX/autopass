@@ -49,7 +49,16 @@ export async function buyPointsAndRedirect(amount: number, returnTo: string): Pr
     }),
   });
 
-  if (!res.ok) throw new Error(`Failed to buy points: ${res.status}`);
+  if (!res.ok) {
+    let message = `Failed to buy points: ${res.status}`;
+    try {
+      const body = (await res.json()) as { error?: unknown };
+      if (typeof body.error === "string" && body.error.trim()) message = body.error;
+    } catch {
+      /* response body is not JSON */
+    }
+    throw new Error(message);
+  }
 
   const json = (await res.json()) as unknown;
   const paymentUrl = extractPaymentUrl(json);

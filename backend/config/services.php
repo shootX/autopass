@@ -40,4 +40,16 @@ return [
         'secret' => env('CARAPI_SECRET'),
     ],
 
+    'flitt' => [
+        'merchant_id' => env('FLITT_PAY_NUMBER', '1549901'),
+        'secret' => env('FLITT_PAYMENT_KEY', 'test'),
+    ],
+
+    'tbc' => [
+        'base_url' => env('TBC_BASE_URL', 'https://test-api.tbcbank.ge'),
+        'api_key' => env('TBC_API_KEY'),
+        'client_id' => env('TBC_CLIENT_ID'),
+        'client_secret' => env('TBC_CLIENT_SECRET'),
+    ],
+
 ];

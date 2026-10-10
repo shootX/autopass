@@ -20,7 +20,7 @@
                 <div class="sb-nav-link-icon"><i class="fas fa-user"></i></div>
                 {{ __('admin.managers') }}
             </a>
-            <a class="nav-link @if(Route::is('admin.partners')) active @endif" href="{{route('admin.partners')}}">
+            <a class="nav-link @if(Route::is('admin.corporate*')) active @endif" href="{{ route('admin.corporate') }}">
                 <div class="sb-nav-link-icon"><i class="fa-regular fa-handshake"></i></div>
                 {{ __('admin.partners') }}
             </a>

@@ -43,7 +43,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    @foreach($washings as $wash)
+                    @forelse($washings as $wash)
                         <tr>
                             <td>{{$wash->id}}</td>
                             <td>{{$wash->name}}</td>
@@ -66,7 +66,9 @@
                                 </div>
                             </td>
                         </tr>
-                    @endforeach
+                    @empty
+                        <tr><td colspan="7">{{ __('admin.dash_empty') }}</td></tr>
+                    @endforelse
                     </tbody>
                 </table>
                 {{$washings->links('pagination::bootstrap-5')}}

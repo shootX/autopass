@@ -37,7 +37,7 @@
                         <th scope="col">{{ __('admin.actions') }}</th>
                     </thead>
                     <tbody>
-                    @foreach($types as $type)
+                    @forelse($types as $type)
                         <tr>
                             <td>{{ $type->id }}</td>
                             <td>
@@ -53,7 +53,9 @@
                                 </div>
                             </td>
                         </tr>
-                    @endforeach
+                    @empty
+                        <tr><td colspan="4">{{ __('admin.dash_empty') }}</td></tr>
+                    @endforelse
                     </tbody>
                 </table>
                 {{ $types->links('pagination::bootstrap-5') }}

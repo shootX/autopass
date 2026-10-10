@@ -166,6 +166,11 @@ $shadow: 0 0 12px 0 rgba(24, 61, 105, 0.08);
     font-weight: 600;
     color: $blueMain;
     line-height: 1.2;
+    overflow-wrap: anywhere;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 
   &__days {

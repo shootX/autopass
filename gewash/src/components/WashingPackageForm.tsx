@@ -27,8 +27,6 @@ export function WashingPackageForm({
   isVisible,
   cars,
   initialPackage,
-  onSubmit,
-  onClose,
   activePackages,
 }: Props) {
   const t = useTranslation();
@@ -128,20 +126,7 @@ export function WashingPackageForm({
         return;
       }
 
-      console.error("Failed to activate or missing payment URL");
-  
-      onSubmit({
-        id: packageId,
-        car_id: payload.car_id,
-        plate: selectedCar.plate,
-        washes: selectedWashCount,
-        model: "",
-        period: selectedTerm,
-        startDate: initialPackage?.startDate ?? new Date(),
-        autoRenewal,
-      });
-  
-      onClose();
+      throw new Error("გადახდა ვერ დაიწყო");
     } catch (err) {
       console.error("Submit error:", err);
     } finally {

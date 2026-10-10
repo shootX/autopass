@@ -35,7 +35,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    @foreach($reviews as $review)
+                    @forelse($reviews as $review)
                         <tr>
                             <td>{{$review->id}}</td>
                             <td>{{$review->user->name}} {{$review->user->surname}}</td>
@@ -61,7 +61,9 @@
                                 </div>
                             </td>
                         </tr>
-                    @endforeach
+                    @empty
+                        <tr><td colspan="5">{{ __('admin.dash_empty') }}</td></tr>
+                    @endforelse
                     </tbody>
                 </table>
                 {{$reviews->links('pagination::bootstrap-5')}}

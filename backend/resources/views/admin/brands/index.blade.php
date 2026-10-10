@@ -30,7 +30,7 @@
                     <th scope="col">{{ __('admin.models') }}</th>
                     </thead>
                     <tbody>
-                    @foreach($brands as $brand)
+                    @forelse($brands as $brand)
                         <tr class="brand-row" data-id="{{$brand->id}}" data-name="{{$brand->name}}" style="cursor: pointer;">
                             <td>{{$brand->id}}</td>
                             <td>{{$brand->name}}</td>
@@ -44,7 +44,9 @@
                                 </div>
                             </td>
                         </tr>
-                    @endforeach
+                    @empty
+                        <tr><td colspan="4">{{ __('admin.dash_empty') }}</td></tr>
+                    @endforelse
                     </tbody>
                 </table>
                 {{$brands->links('pagination::bootstrap-5')}}

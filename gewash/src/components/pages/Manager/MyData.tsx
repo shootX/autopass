@@ -5,6 +5,7 @@ import { useUserRole } from '../.././../hooks/useUserRole';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { customFetch } from '@/utils/customFetch';
+import { formatPhone } from '@/lib/format';
 
 export default function MyData() {
   const user = useSelector((state: RootState) => state.user.data);
@@ -68,7 +69,7 @@ export default function MyData() {
         </div>
         <div className="phone-number">
           <p>{t('MyData.info.phone')}</p>
-          <p className="bold">{user.phone}</p>
+          <p className="bold">{formatPhone(user.phone)}</p>
         </div>
         <div className="type">
           <p>{t('MyData.info.role')}</p>

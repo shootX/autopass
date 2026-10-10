@@ -24,6 +24,10 @@ class AuthController extends Controller
             Phone::prepare($request);
             $validator = Validator::make($request->all(), [
                 'phone' => ['required', 'regex:'.Phone::RULE, 'unique:users,phone'],
+            ], [
+                'phone.unique' => 'Номер уже существует',
+                'phone.regex' => 'Неверный формат',
+                'phone.required' => 'Неверный формат',
             ]);
 
             if ($validator->fails()) {

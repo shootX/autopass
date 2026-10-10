@@ -9,8 +9,8 @@ use App\Models\UserPackage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
-use Flitt\Checkout;
-use Flitt\Configuration;
+use App\Models\TbcPayment;
+use App\Services\Payments\FlittCheckout;
 use Illuminate\Support\Str;
 use PHPUnit\Exception;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
@@ -33,14 +33,14 @@ class PackagesController extends Controller
 
             $userCar = $user->cars()->where('id', $request->carid)->first();
             if(!$userCar) {
-                return response()->json(['success' => false, 'error' => 'Машина не найдена']);
+                return response()->json(['success' => false, 'error' => 'ავტომობილი ვერ მოიძებნა']);
             }
 
             $carType = $userCar->model->type;
 
             $packages = Package::where('car_type', $carType)->get();
             if($packages->isEmpty()) {
-                return response()->json(['success' => false, 'error' => 'Пакеты не найдены']);
+                return response()->json(['success' => false, 'error' => 'პაკეტი ვერ მოიძებნა']);
             }
 
             $packages = $packages->map(function ($package) {
@@ -76,7 +76,7 @@ class PackagesController extends Controller
 
             $userCar = $user->cars()->where('id', $request->car_id)->first();
             if(!$userCar) {
-                return response()->json(['success' => false, 'error' => 'Машина не найдена']);
+                return response()->json(['success' => false, 'error' => 'ავტომობილი ვერ მოიძებნა']);
             }
 
             $carType = $userCar->model->type;
@@ -86,7 +86,7 @@ class PackagesController extends Controller
                 ->first();
 
             if(!$package) {
-                return response()->json(['success' => false, 'error' => 'Пакеты не найдены']);
+                return response()->json(['success' => false, 'error' => 'პაკეტი ვერ მოიძებნა']);
             }
 
             $price = $package
@@ -95,7 +95,7 @@ class PackagesController extends Controller
                 ->first();
 
             if(!$price) {
-                return response()->json(['success' => false, 'error' => 'Цена не найдена']);
+                return response()->json(['success' => false, 'error' => 'ფასი ვერ მოიძებნა']);
             }
 
             $checkMyPackage = $user->packages()
@@ -104,70 +104,25 @@ class PackagesController extends Controller
                 ->first();
 
             if($checkMyPackage) {
-                return response()->json(['success' => false, 'error' => 'У вас уже есть такой пакет']);
+                return response()->json(['success' => false, 'error' => 'ამ ავტომობილზე ასეთი პაკეტი უკვე გაქვთ']);
             }
 
-            $merchantId = env('FLITT_PAY_NUMBER');
-            $secretKey = env('FLITT_PAYMENT_KEY');
-
-            if (! filled($merchantId) || ! filled($secretKey)) {
-                if (! app()->environment('local')) {
-                    return response()->json(['success' => false, 'error' => 'Payment provider is not configured'], 500);
-                }
-
-                UserPackage::create([
-                    'user_id' => $user->id,
-                    'user_car_id' => $userCar->id,
+            $payment = TbcPayment::create([
+                'merchant_payment_id' => 'P'.strtoupper(Str::random(16)),
+                'user_id' => $user->id,
+                'type' => 'package',
+                'amount' => round((float) $price->price, 2),
+                'currency' => 'GEL',
+                'status' => 'pending',
+                'payload' => [
+                    'car_id' => $userCar->id,
                     'package_id' => $package->id,
                     'price_id' => $price->id,
-                    'start_date' => now(),
-                    'end_date' => now()->addMonths((int) $price->month),
-                    'number_of_washes' => $package->count_washes,
-                    'used_washes' => 0,
-                    'qr_code' => Str::random(16),
-                ]);
+                    'month' => (int) $price->month,
+                ],
+            ]);
 
-                $origin = rtrim((string) $request->headers->get('Origin', 'http://localhost:5173'), '/');
-
-                return response()->json([
-                    'success' => true,
-                    'url' => $origin.'/my-packages',
-                ]);
-            }
-
-            Configuration::setMerchantId($merchantId);
-            Configuration::setSecretKey($secretKey);
-
-            $merchantData = [
-                'type' => 'package',
-                'user_id' => auth()->user()->id,
-                'car_id' => $userCar->id,
-                'package_id' => $package->id,
-                'month' => $price->month,
-                'price_id' => $price->id
-            ];
-
-            $needToken = 'N';
-            if($request->renewal) {
-                $needToken = 'Y';
-            }
-
-            $merchantData = implode(',', $merchantData);
-            $checkoutData = [
-                'order_id' => time(),
-                'order_desc' => 'Оплата пакета услуг',
-                'response_url' => route('payment.return'),
-                'server_callback_url' => route('callback.flitt.payment'),
-                //'server_callback_url' => 'https://b240d3b64f52.ngrok-free.app/callback/flitt/payment',
-                'currency' => 'GEL',
-                'sender_email' => auth()->user()->email ?: 'test@geocar.ge',
-                'merchant_data' => $merchantData,
-                'amount' => $price->price * 100,
-                'required_rectoken' => $needToken,
-            ];
-
-            $data = Checkout::url($checkoutData);
-            $url = $data->getUrl();
+            $url = app(FlittCheckout::class)->checkoutUrl($payment, 'Autopass package');
 
             return response()->json(['success' => true, 'url' => $url]);
 
@@ -183,7 +138,7 @@ class PackagesController extends Controller
             $packages = $user->packages()->with(['package', 'car'])->get();
 
 //            if($packages->isEmpty()) {
-//                return response()->json(['success' => false, 'error' => 'Пакеты не найдены']);
+//                return response()->json(['success' => false, 'error' => 'პაკეტი ვერ მოიძებნა']);
 //            }
 
             $packages = $packages->map(function ($package) {

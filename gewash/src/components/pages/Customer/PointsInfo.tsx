@@ -15,6 +15,7 @@ export default function PointsInfo() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [amount, setAmount] = useState("");
   const [buyLoading, setBuyLoading] = useState(false);
+  const [buyError, setBuyError] = useState("");
 
   const price = Number(amount) || 0;
 
@@ -107,17 +108,15 @@ export default function PointsInfo() {
 
                 try {
                   setBuyLoading(true);
-                  // Save pending info for MyPoints after redirect back.
+                  setBuyError("");
                   sessionStorage.setItem(
                     "pending_points_buy_amount",
                     String(price)
                   );
                   const returnTo = window.location.pathname + window.location.search;
-
-                  setSheetOpen(false);
                   await buyPointsAndRedirect(price, returnTo);
                 } catch (err) {
-                  console.error(err);
+                  setBuyError(err instanceof Error ? err.message : "შეცდომა");
                 } finally {
                   setBuyLoading(false);
                 }
@@ -125,6 +124,9 @@ export default function PointsInfo() {
             >
               {buyLoading ? "Loading..." : t("PointsInfo.sheet.buyBtn")}
             </button>
+            {buyError && (
+              <p className="buy-points-sheet__label" style={{ color: "var(--ap-error, #c44536)" }}>{buyError}</p>
+            )}
           </motion.div>
         </>
       )}

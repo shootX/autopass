@@ -1,0 +1,9 @@
+{
+    "Showing": "ნაჩვენებია",
+    "to": "–",
+    "of": "/",
+    "results": "ჩანაწერი",
+    "These credentials do not match our records.": "ელფოსტა ან პაროლი არასწორია.",
+    "The provided password is incorrect.": "პაროლი არასწორია.",
+    "Too many login attempts. Please try again in :seconds seconds.": "ძალიან ბევრი მცდელობაა. სცადეთ :seconds წამში."
+}

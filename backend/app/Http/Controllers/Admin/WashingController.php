@@ -31,18 +31,24 @@ class WashingController extends Controller
 
     public function search(Request $request)
     {
-        $query = $request->input('q');
-        $users = User::where('name', 'like', '%' . $query . '%')
-            ->orWhere('surname', 'like', '%' . $query . '%')
+        $query = trim((string) $request->input('q'));
+        $users = User::query()
+            ->where(function ($builder) use ($query) {
+                $builder->where('name', 'like', '%'.$query.'%')
+                    ->orWhere('surname', 'like', '%'.$query.'%')
+                    ->orWhere('phone', 'like', '%'.$query.'%')
+                    ->orWhere('email', 'like', '%'.$query.'%');
+            })
+            ->orderBy('id')
             ->limit(10)
             ->get();
 
-        $users = $users->map(function ($user) {
+        $users = $users->unique('id')->map(function ($user) {
             return [
                 'id' => $user->id,
-                'text' => $user->name . ' ' . $user->surname . ' (' . $user->email . ')',
+                'text' => $user->pickerLabel(),
             ];
-        });
+        })->values();
         return response()->json(['items' =>$users]);
     }
 

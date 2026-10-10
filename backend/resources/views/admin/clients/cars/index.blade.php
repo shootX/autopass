@@ -11,7 +11,8 @@
 
         <div class="card mt-4 mb-4">
             <div class="card-header" style="display: flex;justify-content: space-between;align-items: baseline;">
-                <div>{{ __('admin.client_cars', ['name' => trim($client->name.' '.$client->surname)]) }}</div>
+                @php($who = $client->titleName())
+                <div>{{ $who !== '' ? __('admin.client_cars', ['name' => $who]) : __('admin.vehicles') }}</div>
                 <a href="{{route('admin.сlients.add_car', $client->id)}}" class="btn btn-primary"><i class="fa fa-plus"></i> {{ __('admin.add') }}</a>
             </div>
             <div class="card-body table-responsive">
@@ -27,7 +28,7 @@
                     <th scope="col">{{ __('admin.actions') }}</th>
                     </thead>
                     <tbody>
-                    @foreach($userCars as $car)
+                    @forelse($userCars as $car)
                         <tr>
                             <td>{{$car->id}}</td>
                             <td>{{$car->model->brand->name}}</td>
@@ -52,7 +53,9 @@
                                 </div>
                             </td>
                         </tr>
-                    @endforeach
+                    @empty
+                        <tr><td colspan="8">{{ __('admin.dash_empty') }}</td></tr>
+                    @endforelse
                     </tbody>
                 </table>
                 {{$userCars->links('pagination::bootstrap-5')}}

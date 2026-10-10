@@ -6,6 +6,20 @@
     el.href = base + path;
   });
 
+  var stores = { ios: window.AUTOPASS_IOS_URL || "", android: window.AUTOPASS_ANDROID_URL || "" };
+  document.querySelectorAll("a.store").forEach(function (el) {
+    var url = stores[el.getAttribute("data-store")] || "";
+    if (url) {
+      el.href = url;
+      return;
+    }
+    el.addEventListener("click", function (event) { event.preventDefault(); });
+    el.removeAttribute("href");
+    el.setAttribute("aria-disabled", "true");
+    var small = el.querySelector("small");
+    if (small) small.textContent = "მალე";
+  });
+
   var burger = document.querySelector(".burger");
   var panel = document.getElementById("nav-panel");
   if (burger && panel) {

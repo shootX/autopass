@@ -8,7 +8,7 @@ export default function PrivacyPage() {
 
             <h1>Privacy Policy<span className="cite">[cite: 1]</span></h1>
 
-            <p>GEOCAR.GE ("we," "our," or "us") respects your privacy and is committed to protecting it through our compliance with this Privacy Policy<span className="cite">[cite: 1]</span>. This document explains how we collect, use, disclose, and safeguard your information when you use the GeoCar.ge mobile application (the "App")<span className="cite">[cite: 1]</span>.</p>
+            <p>autopass ("we," "our," or "us") respects your privacy and is committed to protecting it through our compliance with this Privacy Policy<span className="cite">[cite: 1]</span>. This document explains how we collect, use, disclose, and safeguard your information when you use the autopass mobile application (the "App")<span className="cite">[cite: 1]</span>.</p>
 
             <p>Please read this Privacy Policy carefully<span className="cite">[cite: 1]</span>. If you do not agree with the terms of this Privacy Policy, please do not access the App<span className="cite">[cite: 1]</span>.</p>
 
@@ -31,7 +31,7 @@ export default function PrivacyPage() {
             </ul>
 
             <h4>C. Location Data<span className="cite">[cite: 1]</span></h4>
-            <p>With your explicit permission, we may collect and use your precise or approximate location data to show you the nearest GeoCar branches on our interactive map and build navigation routes<span className="cite">[cite: 1]</span>. You can enable or disable location services at any time through your device settings<span className="cite">[cite: 1]</span>.</p>
+            <p>With your explicit permission, we may collect and use your precise or approximate location data to show you the nearest autopass branches on our interactive map and build navigation routes<span className="cite">[cite: 1]</span>. You can enable or disable location services at any time through your device settings<span className="cite">[cite: 1]</span>.</p>
 
             <h4>D. Financial Data<span className="cite">[cite: 1]</span></h4>
             <p>When you purchase a subscription plan, your payment is processed by third-party payment processors (such as Apple Pay, Google Pay, or other local payment gateways)<span className="cite">[cite: 1]</span>. We do not store or process your full credit card numbers or raw banking details on our servers<span className="cite">[cite: 1]</span>.</p>

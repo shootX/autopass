@@ -128,6 +128,31 @@ class WashReportQuery
         return $query->orderByDesc('date')->orderByDesc('time')->orderByDesc('id');
     }
 
+    public static function forPlates(array $filters, array $plates): Builder
+    {
+        $query = self::make($filters);
+        $normalized = [];
+        foreach ($plates as $plate) {
+            $plate = FleetCars::plate((string) $plate);
+            if ($plate !== '') {
+                $normalized[$plate] = $plate;
+            }
+        }
+        $normalized = array_values($normalized);
+
+        if ($normalized === []) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        return $query->whereHas('car', function (Builder $car) use ($normalized) {
+            $marks = implode(',', array_fill(0, count($normalized), '?'));
+            $car->whereRaw(
+                "upper(regexp_replace(plate, '\\s+', '', 'g')) in ($marks)",
+                $normalized
+            );
+        });
+    }
+
     public static function statusLabel(mixed $approved): string
     {
         if ($approved === true || $approved === 1 || $approved === '1' || $approved === 't') {

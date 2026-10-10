@@ -26,7 +26,7 @@
 <link rel="manifest" href="site.webmanifest">
 <link rel="preload" href="fonts/NotoSansGeorgian.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/PlusJakartaSans.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="styles.css?v=20261009">
 <script src="config.js" defer></script>
 <script src="site.js" defer></script>
 </head>
@@ -93,8 +93,8 @@
         <a class="btn btn-ghost btn-lg" href="#how">როგორ მუშაობს</a>
       </div>
       <div class="stores">
-        <a class="store" data-app="/register" href="https://wash.socialsave.cc/register"><svg class="apple" aria-hidden="true"><use href="#apple"/></svg><span><small>ჩამოტვირთე</small>App Store</span></a>
-        <a class="store" data-app="/register" href="https://wash.socialsave.cc/register"><svg class="gp" aria-hidden="true"><use href="#gplay"/></svg><span><small>ჩამოტვირთე</small>Google Play</span></a>
+        <a class="store" data-store="ios"><svg class="apple" aria-hidden="true"><use href="#apple"/></svg><span><small>ჩამოტვირთე</small>App Store</span></a>
+        <a class="store" data-store="android"><svg class="gp" aria-hidden="true"><use href="#gplay"/></svg><span><small>ჩამოტვირთე</small>Google Play</span></a>
       </div>
     </div>
 
@@ -226,8 +226,8 @@
         <h2>ჩამოტვირთე autopass <br>უფასოდ</h2>
         <p>დაჯავშნე რეცხვა, მართე პაკეტი და შენი QR ყოველთვის ხელთ გქონდეს.</p>
         <div class="stores dark">
-          <a class="store" data-app="/register" href="https://wash.socialsave.cc/register"><svg class="apple" aria-hidden="true"><use href="#apple"/></svg><span><small>ჩამოტვირთე</small>App Store</span></a>
-          <a class="store" data-app="/register" href="https://wash.socialsave.cc/register"><svg class="gp" aria-hidden="true"><use href="#gplay"/></svg><span><small>ჩამოტვირთე</small>Google Play</span></a>
+          <a class="store" data-store="ios"><svg class="apple" aria-hidden="true"><use href="#apple"/></svg><span><small>ჩამოტვირთე</small>App Store</span></a>
+          <a class="store" data-store="android"><svg class="gp" aria-hidden="true"><use href="#gplay"/></svg><span><small>ჩამოტვირთე</small>Google Play</span></a>
         </div>
       </div>
       <div class="phone">
@@ -250,19 +250,19 @@
     <div class="fcols">
       <div class="fcol">
         <h5>სერვისები</h5>
-        <a href="#">რეცხვის პაკეტები</a><a href="#">ონლაინ ჯავშანი</a><a href="#">QR აბონემენტი</a><a href="#">სასაჩუქრე ვაუჩერი</a><a href="#">კორპორაციული</a>
+        <a href="#packages">რეცხვის პაკეტები</a><a href="#how">ონლაინ ჯავშანი</a><a href="#packages">QR აბონემენტი</a><a href="#services">სასაჩუქრე ვაუჩერი</a><a href="https://wash.socialsave.cc/partner/login">კორპორაციული</a>
       </div>
       <div class="fcol">
         <h5>autopass</h5>
-        <a href="#">ჩვენ შესახებ</a><a href="#">ფილიალები</a><a href="#">პარტნიორობა</a><a href="#">კარიერა</a>
+        <a href="#top">ჩვენ შესახებ</a><a href="#branches">ფილიალები</a><a href="https://wash.socialsave.cc/partner/login">პარტნიორობა</a><a href="#contact">კარიერა</a>
       </div>
       <div class="fcol">
         <h5>დახმარება</h5>
-        <a href="#">ხშირი კითხვები</a><a href="#">კონტაქტი</a><a href="#">წესები და პირობები</a><a href="#">კონფიდენციალურობა</a>
+        <a href="https://wash.socialsave.cc/help">ხშირი კითხვები</a><a href="#contact">კონტაქტი</a><a href="https://wash.socialsave.cc/privacy">წესები და პირობები</a><a href="https://wash.socialsave.cc/privacy">კონფიდენციალურობა</a>
       </div>
       <div class="fcol">
         <h5>ანგარიში</h5>
-        <a data-app="/auth" href="https://wash.socialsave.cc/auth">შესვლა</a><a data-app="/register" href="https://wash.socialsave.cc/register">რეგისტრაცია</a><a href="#">ჩემი პაკეტი</a><a href="#">ჯავშნები</a>
+        <a data-app="/auth" href="https://wash.socialsave.cc/auth">შესვლა</a><a data-app="/register" href="https://wash.socialsave.cc/register">რეგისტრაცია</a><a data-app="/my-packages" href="https://wash.socialsave.cc/my-packages">ჩემი პაკეტი</a><a data-app="/" href="https://wash.socialsave.cc/">ჯავშნები</a>
       </div>
       <div class="fcol news">
         <h5>სიახლეები</h5>
@@ -283,9 +283,9 @@
         <a href="#contact">კონტაქტი</a>
       </nav>
       <div class="social">
-        <a href="#" aria-label="Facebook"><svg class="ic" aria-hidden="true"><use href="#i-fb"/></svg></a>
-        <a href="#" aria-label="Instagram"><svg class="ic" aria-hidden="true"><use href="#i-ig"/></svg></a>
-        <a href="#" aria-label="YouTube"><svg class="ic" aria-hidden="true"><use href="#i-yt"/></svg></a>
+        <span aria-hidden="true"><svg class="ic"><use href="#i-fb"/></svg></span>
+        <span aria-hidden="true"><svg class="ic"><use href="#i-ig"/></svg></span>
+        <span aria-hidden="true"><svg class="ic"><use href="#i-yt"/></svg></span>
       </div>
     </div>
     <p class="copy">© 2026 autopass. ყველა უფლება დაცულია.</p>

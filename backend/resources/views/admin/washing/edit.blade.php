@@ -37,7 +37,7 @@
                     <div class="form-group">
                         <label for="selectManager">{{ __('admin.choose_manager') }}</label>
                         <select class="form-control" id="selectManager" name="manager_id">
-                            <option value="{{old('manager_id') ?? $washing->manager_id}}" selected>{{$washing->manager->name}} {{$washing->manager->surname}} ({{$washing->manager->email}})</option>
+                            <option value="{{old('manager_id') ?? $washing->manager_id}}" selected>{{ $washing->manager->pickerLabel() }}</option>
                         </select>
                     </div>
                     <div class="form-group mt-4">

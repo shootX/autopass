@@ -23,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             '/payment/return',
             '/callback/flitt/payment',
+            '/callback/tbc/payment',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

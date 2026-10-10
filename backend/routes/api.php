@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AppointmentsController;
+use App\Http\Controllers\Api\CorporateFleetController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CarsController;
 use App\Http\Controllers\Api\FaqController;
@@ -141,7 +142,7 @@ Route::middleware(['auth:api', CorsMiddleware::class])->group(function () {
     });
 
     Route::prefix('referrals')->group(function () {
-        Route::post('/list', [ReferralsController::class, 'list']);
+        Route::match(['get', 'post'], '/list', [ReferralsController::class, 'list']);
     });
 
     Route::prefix('points')->group(function () {
@@ -164,6 +165,12 @@ Route::middleware(['auth:api', CorsMiddleware::class])->group(function () {
 Route::get('/promo', function(){
     $promo = \App\Models\Promo::query()->first();
     return response()->json(['success' => true, 'promo' => $promo]);
+});
+
+Route::prefix('/corporate')->group(function () {
+    Route::get('/vehicles', [CorporateFleetController::class, 'index']);
+    Route::post('/vehicles', [CorporateFleetController::class, 'store']);
+    Route::delete('/vehicles/{plate}', [CorporateFleetController::class, 'destroy']);
 });
 
 Route::prefix('/partner')->group(function(){

@@ -5,6 +5,7 @@ import { useCheckQr } from "@/hooks/useCheckQr";
 import { differenceInMonths, format } from "date-fns";
 import { customFetch } from "@/utils/customFetch";
 import { closeIconUrl, whashesUrl, timeUrl } from "@/assets/staticUrls";
+import { formatPhone } from "@/lib/format";
 
 export default function ManagerScanner(): React.JSX.Element {
   const [scannedCode, setScannedCode] = useState<string | null>(null);
@@ -223,7 +224,7 @@ export default function ManagerScanner(): React.JSX.Element {
               <p className='qr-client-name'>
                 {user.name} {user.surname}
               </p>
-              <p className='qr-client-phone'>+{user.phone}</p>
+              <p className='qr-client-phone'>{formatPhone(user.phone)}</p>
               <img
                 src={closeIconUrl}
                 alt='close'

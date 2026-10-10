@@ -31,7 +31,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    @foreach($categories as $categorie)
+                    @forelse($categories as $categorie)
                         <tr>
                             <th scope="row">{{$categorie->id}}</th>
                             <td>{{$categorie->name}}</td>
@@ -43,7 +43,9 @@
                                 </div>
                             </td>
                         </tr>
-                    @endforeach
+                    @empty
+                        <tr><td colspan="4">{{ __('admin.dash_empty') }}</td></tr>
+                    @endforelse
                     </tbody>
                 </table>
                 {{$categories->links('pagination::bootstrap-5')}}

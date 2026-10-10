@@ -47,7 +47,6 @@ const DiscountsPage = lazy(() => import("./components/pages/Customer/DiscountsPa
 const DiscountDetailPage = lazy(() => import("./components/pages/Customer/DiscountDetailPage"));
 const GiveawayPage = lazy(() => import("./components/pages/Customer/GiveawayPage"));
 const GiveawayDetailPage = lazy(() => import("./components/pages/Customer/GiveawayDetailPage"));
-const CustomerCalendar = lazy(() => import("./components/Calendars/CustomerCalendar"));
 const QRPage = lazy(() => import("./components/pages/Customer/QRPage"));
 const ManagerScanner = lazy(() => import("./components/pages/Manager/ManagerScanner"));
 const Messages = lazy(() => import("./components/pages/Messages"));
@@ -186,7 +185,9 @@ function AppRoutes() {
 
       {/* Secure routes */}
       <Route element={<ProtectedRoute />}>
-  <Route path="/add-car" element={<AddCar showHeader={true} />} /> {/* access always */}
+  <Route element={<CustomerLayout />}>
+    <Route path="/add-car" element={<AddCar showHeader />} />
+  </Route>
 
   <Route element={<CarCheckRoute />}>
     {role === "manager" ? (
@@ -223,7 +224,7 @@ function AppRoutes() {
         <Route path="/shop/discounts/:id" element={<DiscountDetailPage />} />
         <Route path="/shop/giveaway" element={<GiveawayPage />} />
         <Route path="/shop/giveaway/:id" element={<GiveawayDetailPage />} />
-        <Route path="/customer-calendar" element={<CustomerCalendar />} />
+        <Route path="/customer-calendar" element={<Navigate to="/shop" replace />} />
         <Route path="/customer-qr-page" element={<QRPage />} />
         <Route path="/messages" element={<Messages />} />
         <Route path="/contacts" element={<Contacts />} />

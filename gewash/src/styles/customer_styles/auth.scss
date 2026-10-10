@@ -5,6 +5,13 @@
     margin: 16px;
     border-radius: 16px;
     box-shadow: 0 2px 4px 2px rgba(0, 0, 0, 0.1);
+    background: #fff;
+
+    @media (min-width: 768px) {
+      max-width: 430px;
+      margin: 48px auto;
+      padding: 40px 28px 32px;
+    }
     // height: 100vh;
     .auth-logo-block {
         display: flex;
@@ -192,6 +199,26 @@
     margin-bottom: 8px;
     p {
       color: $redMain;
+    }
+  }
+
+  .auth-accept-policy {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 14px;
+    line-height: 1.45;
+
+    input {
+      width: 18px;
+      height: 18px;
+      margin-top: 2px;
+      flex: none;
+      accent-color: $blueMain;
+    }
+
+    label {
+      text-align: left;
     }
   }
 

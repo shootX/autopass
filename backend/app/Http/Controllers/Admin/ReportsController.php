@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Exports\WashReportExport;
 use App\Http\Controllers\Controller;
+use App\Models\BodyType;
 use App\Models\CarBrand;
-use App\Models\CarModel;
 use App\Models\CarWash;
 use App\Models\CarWashService;
 use App\Models\Package;
@@ -60,7 +60,7 @@ class ReportsController extends Controller
             'managers' => User::query()->where('role', User::ROLE_MANAGER)->orderBy('name')->get(['id', 'name', 'surname']),
             'services' => CarWashService::query()->orderBy('name')->get(['id', 'name']),
             'brands' => CarBrand::query()->orderBy('name')->get(['id', 'name']),
-            'carTypes' => CarModel::query()->distinct()->orderBy('type')->pluck('type'),
+            'carTypes' => BodyType::query()->orderBy('name')->pluck('name'),
             'packageTypes' => Package::query()->distinct()->orderBy('car_type')->pluck('car_type'),
             'washCounts' => Package::query()->distinct()->orderBy('count_washes')->pluck('count_washes'),
         ]);

@@ -12,7 +12,8 @@ function readStoredLang(): LangState["currentLang"] {
     return "ka";
   }
   if (stored === "ru") return "ru";
-  return "en";
+  if (stored === "en") return "en";
+  return "ka";
 }
 
 const initialState: LangState = {
@@ -96,7 +97,7 @@ const initialState: LangState = {
     ReferralsInfo: {
       header: { title: "Referrals" },
       promo: {
-        title: "GeoCar referrals",
+        title: "autopass referrals",
         desc: "This is a loyalty program that gives participants the opportunity to accumulate points and exchange them for gifts or discounts from partners.",
         btn: "Share Referral Link",
       },
@@ -115,12 +116,12 @@ const initialState: LangState = {
     PointsInfo: {
       header: { title: "Points" },
       promo: {
-        title: "GeoCar points",
+        title: "autopass points",
         desc: "This is a loyalty program that gives participants the opportunity to accumulate points and exchange them for gifts or discounts from partners.",
-        btn: "Buy GeoCar points",
+        btn: "Buy autopass points",
       },
       sheet: {
-        title: "Buy GeoCar points",
+        title: "Buy autopass points",
         placeholder: "Points amount",
         amountLabel: "Amount to pay",
         buyBtn: "Buy",

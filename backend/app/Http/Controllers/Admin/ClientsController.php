@@ -34,18 +34,20 @@ class ClientsController extends Controller
                 ->withInput();
         }
 
-        $clients = User::query();
+        $clients = User::query()->where('role', User::ROLE_USER);
 
         if($request->search){
-            $clients->where('name', 'like', '%'.$request->search.'%')
-                ->orWhere('surname', 'like', '%'.$request->search.'%')
-                ->orWhere('email', 'like', '%'.$request->search.'%')
-                ->orWhere('phone', 'like', '%'.$request->search.'%');
-            if ($formattedPhone = Phone::normalize($request->search)) {
-                $clients->orWhere('phone', $formattedPhone);
-            }
+            $search = $request->search;
+            $clients->where(function ($query) use ($search) {
+                $query->where('name', 'like', '%'.$search.'%')
+                    ->orWhere('surname', 'like', '%'.$search.'%')
+                    ->orWhere('email', 'like', '%'.$search.'%')
+                    ->orWhere('phone', 'like', '%'.$search.'%');
+                if ($formattedPhone = Phone::normalize($search)) {
+                    $query->orWhere('phone', $formattedPhone);
+                }
+            });
         }
-        $clients = $clients->where('role', User::ROLE_USER);
 
         if($request->has('export'))
         {
@@ -55,7 +57,13 @@ class ClientsController extends Controller
             );
         }
 
-        $clients = $clients->paginate(10);
+        $sort = $request->query('sort', 'id');
+        $dir = $request->query('dir') === 'asc' ? 'asc' : 'desc';
+        if (! in_array($sort, ['id', 'created_at'], true)) {
+            $sort = 'id';
+        }
+
+        $clients = $clients->orderBy($sort, $dir)->paginate(10)->withQueryString();
         return view('admin.clients.index', compact('clients'));
     }
 

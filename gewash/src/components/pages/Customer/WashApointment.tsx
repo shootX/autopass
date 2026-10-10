@@ -80,10 +80,10 @@ export default function WashAppointment() {
   }, [location.state]);
 
   useEffect(() => {
+    if (!branch?.services?.length) return;
     const serviceId = (location.state as { serviceId?: number } | null)?.serviceId;
-    if (!serviceId || !branch?.services?.length) return;
-    const found = branch.services.find((service) => service.id === Number(serviceId));
-    if (found) setSelectedService(found);
+    const found = serviceId ? branch.services.find((service) => service.id === Number(serviceId)) : null;
+    setSelectedService((current) => found ?? current ?? branch.services[0]);
   }, [branch, location.state]);
   const [carIndex, setCarIndex] = useState(0);
   const selectedCar = cars[carIndex] ?? firstCar;

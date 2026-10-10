@@ -153,7 +153,7 @@ export default function SettingsPage() {
         <div className="modal-backdrop">
           <div className="modal-window">
             <h2>{t('Settings.logout')}?</h2>
-            <h3>{t('Settings.sure_logout')}?</h3>
+            <h3>{t('Settings.sure_logout')}</h3>
             <div className="modal-actions">
               <button onClick={() => setLogoutModalOpen(false)}>{t('Settings.cancel')}</button>
               <button onClick={handleLogout}>{t('Settings.confirmLogout')}</button>

@@ -26,7 +26,7 @@ export default function AddCar({ showHeader }: { showHeader?: boolean }) {
   const [error, setError] = useState("");
   const [addedCar, setAddedCar] = useState<Car | null>(null);
   const location = useLocation();
-  const shouldShowHeader = location.state?.fromRegistration === false;
+  const shouldShowHeader = showHeader !== false && location.state?.fromRegistration !== true;
   const [models, setModels] = useState<Model[]>([]);
   const { brands, loading } = useCarBrands();
   const normalizedPlate = numberPlate.replace(/[\s-]/g, "");
@@ -138,9 +138,9 @@ export default function AddCar({ showHeader }: { showHeader?: boolean }) {
     <div className='add-car-screen'>
       {shouldShowHeader && (
         <header>
-          <img src={leftArrowUrl} alt='Back' />
+          <img src={leftArrowUrl} alt={t("AddCar.header.backAlt")} onClick={() => navigate(-1)} style={{ cursor: "pointer" }} />
           <h3>{t("AddCar.header.title")}</h3>
-          <img src={closeIconUrl} alt='Close' />
+          <img src={closeIconUrl} alt={t("AddCar.header.closeAlt")} onClick={() => navigate("/")} style={{ cursor: "pointer" }} />
         </header>
       )}
       <div className='add-car-content'>

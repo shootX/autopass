@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\BodyTypesController;
+use App\Http\Controllers\Admin\CorporateController;
 use App\Http\Controllers\Admin\CarBrandsController;
 use App\Http\Controllers\Admin\PackagesController;
 use App\Http\Controllers\Admin\PartnersController;
@@ -165,6 +166,21 @@ Route::prefix('dashboard')
 
             Route::get('/{ticket}/export', [TicketsController::class, 'export'])->name('admin.tickets.export');
 
+        });
+
+        Route::prefix('/corporate')->group(function () {
+            Route::get('/', [CorporateController::class, 'index'])->name('admin.corporate');
+            Route::get('/add', [CorporateController::class, 'addPage'])->name('admin.corporate.add');
+            Route::post('/store', [CorporateController::class, 'store'])->name('admin.corporate.store');
+            Route::get('/template', [CorporateController::class, 'template'])->name('admin.corporate.template');
+            Route::get('/{corporate}/edit', [CorporateController::class, 'editPage'])->name('admin.corporate.edit');
+            Route::post('/{corporate}/save', [CorporateController::class, 'save'])->name('admin.corporate.save');
+            Route::get('/{corporate}/delete', [CorporateController::class, 'delete'])->name('admin.corporate.delete');
+            Route::get('/{corporate}', [CorporateController::class, 'show'])->name('admin.corporate.show');
+            Route::post('/{corporate}/cars', [CorporateController::class, 'storeCar'])->name('admin.corporate.cars.store');
+            Route::get('/{corporate}/cars/{car}/delete', [CorporateController::class, 'deleteCar'])->name('admin.corporate.cars.delete');
+            Route::post('/{corporate}/import', [CorporateController::class, 'import'])->name('admin.corporate.import');
+            Route::post('/{corporate}/token', [CorporateController::class, 'token'])->name('admin.corporate.token');
         });
 
         Route::prefix('/partners')->group(function () {

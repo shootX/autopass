@@ -116,7 +116,7 @@ export default function MyPackages() {
           />
         ) : tab === 'history' ? (
           historyRaw.length === 0 ? (
-            <p className="v4-empty">{t('MyPackages.empty')}</p>
+            <p className="v4-empty">{t('MyPackages.emptyHistory')}</p>
           ) : (
             historyRaw.map((pkg) => (
               <div key={pkg.id} className="v4-ro" style={{ marginBottom: 10, cursor: 'default' }}>

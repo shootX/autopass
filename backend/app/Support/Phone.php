@@ -33,7 +33,36 @@ class Phone
 
     public static function format(?string $value): string
     {
-        return self::normalize($value) ?? trim((string) $value);
+        $normalized = self::normalize($value);
+
+        return $normalized !== null ? '+995 '.$normalized : trim((string) $value);
+    }
+
+    public static function publicAddress(?string $address): string
+    {
+        $address = trim((string) $address);
+        if ($address === '') {
+            return '';
+        }
+
+        $parts = preg_split('/\s*[·|]\s*/u', $address) ?: [];
+        $kept = [];
+        foreach ($parts as $part) {
+            $part = trim($part);
+            if ($part === '') {
+                continue;
+            }
+            $digits = preg_replace('/\D+/', '', $part) ?? '';
+            $phoneOnly = (bool) preg_match('/^\+?\d[\d\s\-]+$/u', $part) && strlen($digits) >= 9 && strlen($digits) <= 12;
+            if ($phoneOnly || str_contains($part, 'ობიექტის მენეჯერი')) {
+                $part = trim((string) preg_replace('/\+?\d[\d\s\-]{6,}\d\s*(ობიექტის მენეჯერი)?/u', '', $part));
+            }
+            if ($part !== '') {
+                $kept[] = $part;
+            }
+        }
+
+        return implode(', ', $kept);
     }
 
     public static function forSms(?string $value): string

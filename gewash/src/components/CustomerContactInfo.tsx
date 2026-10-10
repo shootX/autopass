@@ -5,6 +5,7 @@ import { useSelector } from "react-redux";
 import type { RootState } from "@/store";
 import { useTranslation } from "@/hooks/useTranslation";
 import { editNoteIconUrl } from "@/assets/staticUrls";
+import { formatPhone } from "@/lib/format";
 
 export default function CustomerContactInfo() {
   const user = useSelector((state: RootState) => state.user.data);
@@ -30,7 +31,7 @@ export default function CustomerContactInfo() {
                 <p>{t("CustomerContactInfo.phone.label")}</p>
                 <p>
                   {/* <span className='dot-status'></span> */}
-                  +{user.phone}
+                  {formatPhone(user.phone)}
                 </p>
               </div>
               <div>

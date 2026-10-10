@@ -23,25 +23,35 @@
             <div class="card-body table-responsive">
                 <table class="table table-hover">
                     <thead>
-                        <th scope="col">ID</th>
+                        @php
+                            $sort = request('sort', 'id');
+                            $dir = request('dir', 'desc');
+                            $sortUrl = function (string $column) use ($sort, $dir) {
+                                return request()->fullUrlWithQuery([
+                                    'sort' => $column,
+                                    'dir' => $sort === $column && $dir === 'desc' ? 'asc' : 'desc',
+                                ]);
+                            };
+                        @endphp
+                        <th scope="col"><a href="{{ $sortUrl('id') }}">ID</a></th>
                         <th scope="col">{{ __('admin.full_name') }}</th>
                         <th scope="col">Email</th>
                         <th scope="col">{{ __('admin.phone') }}</th>
                         <th scope="col">{{ __('admin.sex') }}</th>
                         <th scope="col">{{ __('admin.birth_date') }}</th>
-                        <th scope="col">{{ __('admin.registered_at') }}</th>
+                        <th scope="col"><a href="{{ $sortUrl('created_at') }}">{{ __('admin.registered_at') }}</a></th>
                         <th scope="col">{{ __('admin.cars_count') }}</th>
                         <th scope="col">{{ __('admin.active_packages') }}</th>
                         <th scope="col">{{ __('admin.actions') }}</th>
                     </thead>
                     <tbody>
-                    @foreach($clients as $client)
+                    @forelse($clients as $client)
                         <tr @if($client->ban) class="table-danger" @endif >
                             <td>{{$client->id}}</td>
                             <td>{{$client->name}} {{$client->surname}}</td>
                             <td><a href="mailto:{{$client->email}}">{{$client->email}}</a></td>
                             <td><a href="tel:{{ \App\Support\Phone::digits($client->phone) }}">{{ \App\Support\Phone::format($client->phone) }}</a></td>
-                            <td>{{ $client->sex == 'male' ? __('admin.male') : __('admin.female') }}</td>
+                            <td>{{ $client->sex === 'male' ? __('admin.male') : ($client->sex === 'female' ? __('admin.female') : '—') }}</td>
                             <td>{{$client->date_of_birth}}</td>
                             <td>{{$client->created_at}}</td>
                             <td>
@@ -64,7 +74,9 @@
                                 </div>
                             </td>
                         </tr>
-                    @endforeach
+                    @empty
+                        <tr><td colspan="10">{{ __('admin.dash_empty') }}</td></tr>
+                    @endforelse
                     </tbody>
                 </table>
                 {{$clients->links('pagination::bootstrap-5')}}

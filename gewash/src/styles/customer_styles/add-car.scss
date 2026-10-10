@@ -111,8 +111,12 @@
     background-color: $border;
     width: 100%;
     border-radius: 16px;
-    color: #DCE1DB;
+    color: #3E4A43;
     margin-top: 24px;
+    &:disabled {
+      color: #3E4A43;
+      opacity: 1;
+    }
     &.active {
       background-color: $blueMain;
       cursor: pointer;

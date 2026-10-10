@@ -327,7 +327,7 @@ export default function Registration() {
             type='checkbox'
             id='accept-policy'
           />
-          <label style={{ textAlign: "center" }} htmlFor='accept-policy'> {t("Registration.stage.policy")}</label> <Link className="ap-link" to='/privacy'>{t("Registration.stage.policyLink")}</Link>
+          <label htmlFor='accept-policy'>{t("Registration.stage.policy")}</label> <Link className="ap-link" to='/privacy'>{t("Registration.stage.policyLink")}</Link>
         </div>
 
         <button className='sign-in' onClick={handleRegister}>

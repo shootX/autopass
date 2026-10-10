@@ -34,12 +34,12 @@ export function useActivatePackage() {
         }
       );
 
-      if (!response.ok) {
-        throw new Error("Failed to buy package");
+      const data = await response.json().catch(() => null);
+      if (!response.ok || !data?.success || !data?.url) {
+        throw new Error(data?.error || "გადახდა ვერ დაიწყო");
       }
 
-      const data = await response.json();
-      return data; // { success: true, url: "..." }
+      return data;
     } catch (err: any) {
       setError(err.message || "Unknown error");
       return null;

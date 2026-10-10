@@ -116,7 +116,7 @@ class AppointmentsController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'error' => 'Валидация не прошла'
+                'error' => 'მონაცემები არასრულია'
             ], 400);
         }
 
@@ -125,7 +125,7 @@ class AppointmentsController extends Controller
         if ($dateTime->isPast()) {
             return response()->json([
                 'success' => false,
-                'error' => 'Дата и время не могут быть в прошлом.'
+                'error' => 'წარსული დრო ვერ შეირჩევა.'
             ], 422);
         }
 
@@ -137,7 +137,7 @@ class AppointmentsController extends Controller
         if (count($appointments) > 0) {
             return response()->json([
                 'success' => false,
-                'error' => 'Нет свободных мест на эту дату и время'
+                'error' => 'ამ დროს თავისუფალი ადგილი არ არის'
             ], 400);
         }
 
@@ -236,17 +236,17 @@ class AppointmentsController extends Controller
                 return [
                     'id' => $branch->id,
                     'name' => $branch->name,
-                    'address' => $branch->address,
+                    'address' => \App\Support\Phone::publicAddress($branch->address),
                     'work_start' => $branch->work_time_start,
                     'work_end' => $branch->work_time_end,
-                    'phone' => $manager?->phone,
+                    'phone' => \App\Support\Phone::format($manager?->phone),
                     'location' => $branch->location,
                     'manager' => $manager ? [
                         'id' => $manager->id,
                         'name' => $manager->name,
                         'surname' => $manager->surname,
                         'email' => $manager->email,
-                        'phone' => $manager->phone,
+                        'phone' => \App\Support\Phone::format($manager->phone),
                     ] : null,
                     'services' => $branch->services->map(fn ($service) => [
                         'id' => $service->id,
