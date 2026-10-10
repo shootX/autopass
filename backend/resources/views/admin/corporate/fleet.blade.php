@@ -135,7 +135,7 @@ X-Api-Key: {{ $corporate->api_token }}
                 type: 'red',
                 buttons: {
                     yes: { text: I18N.yes, btnClass: 'btn-red', action: function () {
-                        window.location.href = @json($deleteBase) + '/' + id + '/delete';
+                        postAction(@json($deleteBase) + '/' + id + '/delete');
                     }},
                     no: { text: I18N.no }
                 }

@@ -61,7 +61,7 @@ Route::post('/change_password', [AuthController::class, 'changePassword']);
 Route::post('/change_password/verify', [AuthController::class, 'changePasswordVerify']);
 Route::post('/change_password/verify_submit', [AuthController::class, 'changePasswordVerifySubmit']);
 
-Route::middleware(['auth:api', CorsMiddleware::class])->group(function () {
+Route::middleware(['auth:api', CorsMiddleware::class, \App\Http\Middleware\EnsureApiSession::class])->group(function () {
 
     Route::post('/device/push', [AuthController::class, 'setDevicePushId']);
 
@@ -173,10 +173,15 @@ Route::prefix('/corporate')->group(function () {
     Route::delete('/vehicles/{plate}', [CorporateFleetController::class, 'destroy']);
 });
 
-Route::prefix('/partner')->group(function(){
+Route::prefix('/partner')->group(function () {
+    Route::post('/login', [\App\Http\Controllers\Api\Partners\AuthController::class, 'login'])
+        ->middleware('throttle:10,1')
+        ->name('partner.api.login');
 
-    Route::post('/login', [\App\Http\Controllers\Api\Partners\AuthController::class, 'login']);
-
-    Route::post('/voucher/check', [\App\Http\Controllers\Api\Partners\VouchersController::class, 'checkVoucher']);
-    Route::post('/voucher/use', [\App\Http\Controllers\Api\Partners\VouchersController::class, 'useVoucher']);
-})->middleware(['auth:partners', CorsMiddleware::class]);
+    Route::middleware(['auth:partners', CorsMiddleware::class, \App\Http\Middleware\EnsurePartnerReady::class])->group(function () {
+        Route::post('/logout', [\App\Http\Controllers\Api\Partners\AuthController::class, 'logout'])->name('partner.api.logout');
+        Route::post('/password', [\App\Http\Controllers\Api\Partners\AuthController::class, 'password'])->name('partner.api.password');
+        Route::post('/voucher/check', [\App\Http\Controllers\Api\Partners\VouchersController::class, 'checkVoucher'])->name('partner.api.voucher.check');
+        Route::post('/voucher/use', [\App\Http\Controllers\Api\Partners\VouchersController::class, 'useVoucher'])->name('partner.api.voucher.use');
+    });
+});

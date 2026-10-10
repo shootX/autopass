@@ -35,14 +35,25 @@ class PartnerPanelController extends Controller
         ]);
 
         $client = CorporateClient::query()->where('username', $data['username'])->first();
-        if (!$client || !Hash::check($data['password'], (string) $client->password)) {
+        if (! $client || ! Hash::check($data['password'], (string) $client->password)) {
             return back()->withInput($request->only('username'))->withErrors([
                 'username' => __('admin.partner_login_failed'),
             ]);
         }
 
+        if ($client->password_must_change && $client->temp_password_expires_at && $client->temp_password_expires_at->isPast()) {
+            return back()->withInput($request->only('username'))->withErrors([
+                'username' => __('admin.temp_password_expired'),
+            ]);
+        }
+
         $request->session()->regenerate();
         $request->session()->put('corporate_client_id', $client->id);
+        $request->session()->put('corporate_session_version', (int) $client->session_version);
+
+        if ($client->password_must_change) {
+            return redirect()->route('partner.password');
+        }
 
         return redirect()->route('partner.home');
     }
@@ -175,12 +186,42 @@ class PartnerPanelController extends Controller
 
         $corporate->username = $data['username'];
         if (!empty($data['password'])) {
-            $corporate->password = Hash::make($data['password']);
+            $corporate->password = $data['password'];
+            $corporate->password_must_change = false;
+            $corporate->temp_password_expires_at = null;
+            $corporate->session_version = (int) $corporate->session_version + 1;
+            $request->session()->put('corporate_session_version', (int) $corporate->session_version);
         }
         $corporate->credentials_custom = true;
         $corporate->save();
 
         return redirect()->route('partner.account')->with('message', __('admin.partner_account_saved'));
+    }
+
+    public function password(Request $request)
+    {
+        return view('partner.password', ['corporate' => $this->client($request)]);
+    }
+
+    public function savePassword(Request $request)
+    {
+        $corporate = $this->client($request);
+        $data = $request->validate([
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ]);
+
+        $corporate->password = $data['password'];
+        $corporate->password_must_change = false;
+        $corporate->temp_password_expires_at = null;
+        $corporate->credentials_custom = true;
+        $corporate->session_version = (int) $corporate->session_version + 1;
+        $corporate->save();
+
+        $request->session()->regenerate();
+        $request->session()->put('corporate_client_id', $corporate->id);
+        $request->session()->put('corporate_session_version', (int) $corporate->session_version);
+
+        return redirect()->route('partner.home')->with('message', __('admin.password_changed'));
     }
 
     public function storeCar(Request $request)

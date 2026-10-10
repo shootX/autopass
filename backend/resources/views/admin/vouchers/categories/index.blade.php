@@ -69,7 +69,7 @@
                         yes: { text: I18N.yes,
                             btnClass: 'btn-red',
                             action: function () {
-                                window.location.href = '/dashboard/vouchers/categories/'+id+'/delete';
+                                postAction('/dashboard/vouchers/categories/'+id+'/delete');
                             }
                         },
                         no: { text: I18N.no,

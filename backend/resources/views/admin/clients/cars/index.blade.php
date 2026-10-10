@@ -79,7 +79,7 @@
                         yes: { text: I18N.yes,
                             btnClass: 'btn-red',
                             action: function () {
-                                window.location.href = '/dashboard/clients/{{$client->id}}/cars/'+id+'/delete';
+                                postAction('/dashboard/clients/{{$client->id}}/cars/'+id+'/delete');
                             }
                         },
                         no: { text: I18N.no,

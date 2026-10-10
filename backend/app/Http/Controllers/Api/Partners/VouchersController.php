@@ -5,118 +5,117 @@ namespace App\Http\Controllers\Api\Partners;
 use App\Http\Controllers\Controller;
 use App\Models\SmsTemp;
 use App\Models\UserVoucher;
-use App\Support\Phone;
+use App\Services\Security\AuthChallengeException;
+use App\Services\Security\SmsChallengeService;
+use App\Services\Security\SmsDeliveryException;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class VouchersController extends Controller
 {
-    public function checkVoucher(Request $request)
+    public function checkVoucher(Request $request, SmsChallengeService $sms)
     {
         $validate = Validator::make($request->all(), [
-            'code' => 'required|min:8|max:8|exists:user_vouchers,code'
+            'code' => 'required|min:8|max:8|exists:user_vouchers,code',
         ]);
 
-        if($validate->fails()){
+        if ($validate->fails()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Incorrect code'
+                'message' => 'Incorrect code',
+            ]);
+        }
+
+        $voucher = UserVoucher::query()->where('code', $request->code)->first();
+        if (! $voucher || ! $voucher->user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Incorrect code',
+            ]);
+        }
+
+        $sent = SmsTemp::query()
+            ->where('type', 'use_voucher')
+            ->where('user_voucher_id', $voucher->id)
+            ->where('created_at', '>', now()->subMinutes(10))
+            ->count();
+
+        if ($sent >= 2) {
+            return response()->json([
+                'success' => false,
+                'message' => 'SMS limit exceeded. Wait 10 minutes.',
             ]);
         }
 
         try {
+            $publicId = $sms->issue($voucher->user, 'use_voucher', [], $voucher->id, false);
+        } catch (SmsDeliveryException $e) {
+            Log::warning('voucher_sms_failed', ['exception' => $e::class]);
 
-            $voucher = UserVoucher::where('code', $request->code)->first();
-
-            $checkSms = SmsTemp::where('type', 'use_voucher')
-                ->where('user_id', $voucher->user_id)
-                ->where('created_at', '>', now()->subMinutes(10))
-                ->count();
-
-            if($checkSms >= 2)
-            {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'SMS limit exceeded. Wait 10 minutes.'
-                ]);
-            }
-
-            $code = rand(100000, 999999);
-
-            $sms = SmsTemp::create([
-                'type' => 'use_voucher',
-                'user_id' => $voucher->user_id,
-                'code' => $code,
-                'user_voucher_id' => $voucher->id
-            ]);
-
-            //Тут отправляем смс
-            Http::get('https://smsoffice.ge/api/v2/send/', [
-                'key' => env('SMSOFFICE_API_KEY'),
-                'destination' => Phone::forSms($voucher->user->phone),
-                'sender' => env('SMSOFFICE_SENDER'),
-                'content' => 'Voucher use code: ' . $code,
-            ]);
-
-            return response()->json([
-                'success' => true,
-                'temp_code' => $sms->id
-            ]);
-        } catch (\Exception $ex)
-        {
             return response()->json([
                 'success' => false,
-                'message' => 'Some error'
-            ]);
+                'message' => 'SMS could not be sent',
+            ], 503);
+        } catch (\Throwable $e) {
+            Log::warning('voucher_check_failed', ['exception' => $e::class]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Some error',
+            ], 500);
         }
+
+        return response()->json([
+            'success' => true,
+            'temp_code' => $publicId,
+        ]);
     }
 
-    public function useVoucher(Request $request)
+    public function useVoucher(Request $request, SmsChallengeService $sms)
     {
         $validate = Validator::make($request->all(), [
-            'temp_code' => 'required|exists:sms_temps,id',
-            'code' => 'required|digits:6'
+            'temp_code' => 'required|string',
+            'code' => 'required|digits:6',
         ]);
 
-        if($validate->fails()){
+        if ($validate->fails()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Incorrect code'
+                'message' => 'Incorrect code',
             ]);
         }
 
-        try{
-        $sms = SmsTemp::where('id', (int)$request->temp_code)
-            ->where('type', 'use_voucher')
-            ->where('code', $request->code)
-            ->first();
+        try {
+            $row = $sms->verify((string) $request->temp_code, (string) $request->code, 'use_voucher');
+        } catch (AuthChallengeException) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Incorrect SMS code',
+            ], 422);
+        }
 
-        if($sms)
-        {
-            $voucher = UserVoucher::find($sms->user_voucher_id);
-
+        $deleted = DB::transaction(function () use ($row) {
+            $voucher = UserVoucher::query()->lockForUpdate()->find($row->user_voucher_id);
+            if (! $voucher) {
+                return false;
+            }
             $voucher->delete();
-            $sms->delete();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'You successfully used voucher'
-            ]);
+            return true;
+        });
 
-        } else {
+        if (! $deleted) {
             return response()->json([
                 'success' => false,
-                'message' => 'Incorrect SMS code'
-            ]);
+                'message' => 'Incorrect SMS code',
+            ], 422);
         }
 
-        } catch (\Exception $ex)
-        {
-            return response()->json([
-                'success' => false,
-                'message' => 'Some error'
-            ]);
-        }
+        return response()->json([
+            'success' => true,
+            'message' => 'You successfully used voucher',
+        ]);
     }
 }

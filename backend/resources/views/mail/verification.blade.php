@@ -166,7 +166,7 @@
                         ">
                             Код действителен в течение
                             <strong style="color:#14482F;">
-                                10 минут
+                                {{ (int) config('security.sms_ttl_minutes') }} минут
                             </strong>
                         </div>
 

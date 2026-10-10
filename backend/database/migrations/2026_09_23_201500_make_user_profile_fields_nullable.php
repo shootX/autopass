@@ -9,6 +9,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (DB::getDriverName() === 'sqlite') {
+            return;
+        }
+
         DB::statement('ALTER TABLE users ALTER COLUMN surname DROP NOT NULL');
         DB::statement('ALTER TABLE users ALTER COLUMN date_of_birth DROP NOT NULL');
         DB::statement('ALTER TABLE users ALTER COLUMN sex DROP NOT NULL');

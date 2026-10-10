@@ -39,7 +39,8 @@ class User extends Authenticatable implements JWTSubject
         'enable_push_renewal_subscription',
         'enable_push_special_promotions',
         'referral_id',
-        'ref_code'
+        'ref_code',
+        'phone_verified_at',
     ];
 
     public const ROLE_USER = 0; //Пользователь мойки
@@ -54,7 +55,8 @@ class User extends Authenticatable implements JWTSubject
     protected $hidden = [
         'password',
         'remember_token',
-        'referral_id'
+        'referral_id',
+        'token_version',
     ];
 
     protected $appends = [
@@ -70,6 +72,7 @@ class User extends Authenticatable implements JWTSubject
     {
         return [
             'email_verified_at' => 'datetime',
+            'phone_verified_at' => 'datetime',
             'password' => 'hashed',
             'points' => 'integer',
             'enable_push_special_promotions' => 'boolean',
@@ -88,7 +91,9 @@ class User extends Authenticatable implements JWTSubject
 
     public function getJWTCustomClaims()
     {
-        return [];
+        return [
+            'tv' => (int) $this->token_version,
+        ];
     }
 
     public function referral() : BelongsTo

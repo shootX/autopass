@@ -7,6 +7,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { logoUrl } from "@/assets/staticUrls";
 import { CAR_SEDAN } from "@/lib/v4";
 import { Eye, EyeOff } from "lucide-react";
+import { georgianLocalDigits } from "@/lib/format";
 export default function Authentication() {
   const [showPassword, setShowPassword] = useState(false);
   const [password, setPassword] = useState("");
@@ -20,15 +21,7 @@ export default function Authentication() {
   const togglePassword = () => setShowPassword((prev) => !prev);
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    let raw = e.target.value;
-
-    raw = raw.replace(/[^\d+]/g, "");
-
-    if (raw.includes("+")) {
-      raw = "+" + raw.replace(/\+/g, "").slice(0, 12);
-    }
-
-    setPhone(raw);
+    setPhone(georgianLocalDigits(e.target.value));
     if (error.phone) setError((prev) => ({ ...prev, phone: undefined }));
   };
 
@@ -44,7 +37,7 @@ export default function Authentication() {
 
   const handleLogin = async () => {
     const trimmedPassword = password.trim();
-    const fullPhone = "995" + phone.trim();
+    const fullPhone = phone;
 
     const newError: { phone?: string; password?: string } = {};
     if (!phone) newError.phone = t("Authentication.errors.phoneRequired");
@@ -64,7 +57,7 @@ export default function Authentication() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          phone: fullPhone.replace("+", ""), // сервер ожидает без "+"
+          phone: fullPhone,
           password: trimmedPassword,
         }),
       });
@@ -123,7 +116,7 @@ export default function Authentication() {
               inputMode="numeric"
               value={phone}
               onChange={handlePhoneChange}
-              maxLength={9}
+              maxLength={18}
               placeholder={t("Authentication.placeholders.phone")}
             />
           </div>

@@ -4,7 +4,7 @@ import Spinner from "../components/Spinner";
 import { login as loginRequest } from "../lib/authApi";
 
 type Props = {
-  onLoggedIn: (token: string) => void;
+  onLoggedIn: (token: string, mustChange: boolean) => void;
 };
 
 export default function LoginPage({ onLoggedIn }: Props) {
@@ -27,8 +27,8 @@ export default function LoginPage({ onLoggedIn }: Props) {
     setError(null);
     setBusy(true);
     try {
-      const { token } = await loginRequest(loginValue, password);
-      onLoggedIn(token);
+      const { token, payload } = await loginRequest(loginValue, password);
+      onLoggedIn(token, Boolean(payload.must_change_password));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Sign in failed");
     } finally {

@@ -7,6 +7,7 @@ import { useDispatch } from "react-redux";
 const API_URL = import.meta.env.VITE_API_URL;
 import { useTranslation } from "@/hooks/useTranslation";
 import { logoUrl, googleServiceIconUrl, facebookUrl } from "@/assets/staticUrls";
+import { georgianLocalDigits } from "@/lib/format";
 
 async function generateHash(string: string) {
   const msgUint8 = new TextEncoder().encode(string);
@@ -57,7 +58,8 @@ export default function Registration() {
   const dispatch = useDispatch();
 
   const togglePassword = () => setShowPassword((prev) => !prev);
-  const [tempCode, setTempCode] = useState<number | null>(null);
+  const [tempCode, setTempCode] = useState<string | null>(null);
+  const [setupToken, setSetupToken] = useState<string | null>(null);
   const navigate = useNavigate();
 
   // Запрос при открытии страницы (монтировании компонента)
@@ -91,13 +93,12 @@ export default function Registration() {
   }, []);
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    let raw = e.target.value.replace(/[^\d]/g, "").slice(0, 9);
-    setPhone(raw);
+    setPhone(georgianLocalDigits(e.target.value));
     if (error.phone) setError((prev) => ({ ...prev, phone: undefined }));
   };
 
   const handleRegister = async () => {
-    const fullPhone = "995" + phone;
+    const fullPhone = phone;
 
     if (!phone) {
       setError({ phone: "empty" });
@@ -160,8 +161,8 @@ export default function Registration() {
 
       const data = await res.json();
 
-      if (data.success && data.access_token) {
-        localStorage.setItem("access_token", data.access_token);
+      if (data.success && data.setup_token) {
+        setSetupToken(data.setup_token);
         handleOTPVerified();
       } else {
         throw new Error("Invalid code");
@@ -188,12 +189,13 @@ export default function Registration() {
         },
         body: JSON.stringify({
           password,
-          temp_code: tempCode,
+          setup_token: setupToken,
         }),
       });
 
       const data = await res.json();
-      if (data.success) {
+      if (data.success && data.access_token) {
+        localStorage.setItem("access_token", data.access_token);
         await fetchUserData(dispatch);
         navigate("/add-car");
       } else {
@@ -313,7 +315,7 @@ export default function Registration() {
               inputMode='numeric'
               value={phone}
               onChange={handlePhoneChange}
-              maxLength={9}
+              maxLength={18}
               placeholder='555112233'
               className='custom-input'
             />

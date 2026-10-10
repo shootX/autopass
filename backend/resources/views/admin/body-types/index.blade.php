@@ -78,7 +78,7 @@
                             text: I18N.yes,
                             btnClass: 'btn-red',
                             action: function () {
-                                window.location.href = '/dashboard/body-types/' + removeID + '/delete';
+                                postAction('/dashboard/body-types/' + removeID + '/delete');
                             }
                         },
                         no: {

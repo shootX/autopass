@@ -3,15 +3,20 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\TemporaryPasswordMail;
 use App\Models\CarBrand;
 use App\Models\CarModel;
 use App\Models\CorporateClient;
 use App\Models\FleetCar;
 use App\Services\FleetCars;
+use App\Services\Security\TemporaryPassword;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use Throwable;
 
 class CorporateController extends Controller
 {
@@ -47,13 +52,36 @@ class CorporateController extends Controller
             return back()->withInput()->withErrors(['identification_code' => __('admin.identification_taken')]);
         }
 
-        $data['username'] = $data['identification_code'];
-        $data['password'] = Hash::make($data['identification_code']);
-        $data['credentials_custom'] = false;
-        $data['api_token'] = CorporateClient::makeToken();
-        $client = CorporateClient::query()->create($data);
+        $plain = TemporaryPassword::generate();
+        $hours = (int) config('security.temp_password_hours');
 
-        return redirect()->route('admin.corporate.show', $client)->with('message', __('admin.corporate_created'));
+        try {
+            $client = DB::transaction(function () use ($data, $plain, $hours) {
+                $data['username'] = $data['identification_code'];
+                $data['password'] = $plain;
+                $data['credentials_custom'] = false;
+                $data['password_must_change'] = true;
+                $data['temp_password_expires_at'] = now()->addHours($hours);
+                $data['session_version'] = 1;
+                $data['api_token'] = CorporateClient::makeToken();
+                $client = CorporateClient::query()->create($data);
+
+                Mail::to($client->email)->send(new TemporaryPasswordMail(
+                    $client->name,
+                    (string) $client->username,
+                    $plain,
+                    $hours
+                ));
+
+                return $client;
+            });
+        } catch (Throwable $e) {
+            Log::warning('corporate_temp_password_failed', ['exception' => $e::class]);
+
+            return back()->withInput()->withErrors(['email' => __('admin.temp_password_email_failed')]);
+        }
+
+        return redirect()->route('admin.corporate.show', $client)->with('message', __('admin.temp_password_sent'));
     }
 
     public function editPage(CorporateClient $corporate)
@@ -73,7 +101,6 @@ class CorporateController extends Controller
                 return back()->withInput()->withErrors(['identification_code' => __('admin.identification_taken')]);
             }
             $corporate->username = $corporate->identification_code;
-            $corporate->password = Hash::make($corporate->identification_code);
         }
         $corporate->save();
 
@@ -149,6 +176,48 @@ class CorporateController extends Controller
         $corporate->update(['api_token' => CorporateClient::makeToken()]);
 
         return redirect()->route('admin.corporate.show', $corporate)->with('message', __('admin.corporate_token_reset'));
+    }
+
+    public function temporaryPassword(CorporateClient $corporate)
+    {
+        if (! filter_var((string) $corporate->email, FILTER_VALIDATE_EMAIL)) {
+            return back()->withErrors(['email' => __('admin.temp_password_email_failed')]);
+        }
+
+        $plain = TemporaryPassword::generate();
+        $hours = (int) config('security.temp_password_hours');
+        $previous = $corporate->only([
+            'password',
+            'password_must_change',
+            'temp_password_expires_at',
+            'session_version',
+            'credentials_retired_at',
+        ]);
+
+        try {
+            DB::transaction(function () use ($corporate, $plain, $hours) {
+                $corporate->password = $plain;
+                $corporate->password_must_change = true;
+                $corporate->temp_password_expires_at = now()->addHours($hours);
+                $corporate->session_version = (int) $corporate->session_version + 1;
+                $corporate->credentials_retired_at = null;
+                $corporate->save();
+
+                Mail::to($corporate->email)->send(new TemporaryPasswordMail(
+                    $corporate->name,
+                    (string) $corporate->username,
+                    $plain,
+                    $hours
+                ));
+            });
+        } catch (Throwable $e) {
+            $corporate->forceFill($previous)->save();
+            Log::warning('corporate_temp_password_failed', ['exception' => $e::class]);
+
+            return back()->withErrors(['email' => __('admin.temp_password_email_failed')]);
+        }
+
+        return redirect()->route('admin.corporate.show', $corporate)->with('message', __('admin.temp_password_sent'));
     }
 
     private function carFields(Request $request): array|\Illuminate\Http\RedirectResponse

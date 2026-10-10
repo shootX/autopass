@@ -53,9 +53,15 @@
                             <td>
                                 <div class="btn-group">
                                     @if($review->status)
-                                        <a href="{{route('admin.washings.reviews.toggle', [$washing->id, $review->id])}}"><button class="btn btn-sm btn-dark"><i class="fa-solid fa-eye"></i> {{ __('admin.hide') }}</button></a>
+                                        <form action="{{ route('admin.washings.reviews.toggle', [$washing->id, $review->id]) }}" method="post" class="d-inline">
+                                            @csrf
+                                            <button class="btn btn-sm btn-dark" type="submit"><i class="fa-solid fa-eye"></i> {{ __('admin.hide') }}</button>
+                                        </form>
                                     @else
-                                        <a href="{{route('admin.washings.reviews.toggle', [$washing->id, $review->id])}}"><button class="btn btn-sm btn-dark"><i class="fa-solid fa-eye"></i> {{ __('admin.show') }}</button></a>
+                                        <form action="{{ route('admin.washings.reviews.toggle', [$washing->id, $review->id]) }}" method="post" class="d-inline">
+                                            @csrf
+                                            <button class="btn btn-sm btn-dark" type="submit"><i class="fa-solid fa-eye"></i> {{ __('admin.show') }}</button>
+                                        </form>
                                     @endif
                                     <a data-id="{{$review->id}}" class="btn btn-sm btn-danger remove"><i class="fas fa-trash"></i></a>
                                 </div>
@@ -87,7 +93,7 @@
                         yes: { text: I18N.yes,
                             btnClass: 'btn-red',
                             action: function() {
-                                window.location.href = '/dashboard/washings/{{$washing->id}}/reviews/'+removeID+'/delete';
+                                postAction('/dashboard/washings/{{$washing->id}}/reviews/'+removeID+'/delete');
                             }
                         },
                         no: { text: I18N.no,

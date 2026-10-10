@@ -24,6 +24,10 @@
                 <div>{{ __('admin.vat_payer') }}: {{ $corporate->vat_payer ? __('admin.vat_yes') : __('admin.vat_no') }}</div>
                 <div class="mt-2">{{ __('admin.partner_login_user') }}: {{ $corporate->username }}</div>
                 <div><a href="{{ route('partner.login') }}">{{ url('/partner/login') }}</a></div>
+                <form class="mt-3" action="{{ route('admin.corporate.temporary_password', $corporate) }}" method="post">
+                    @csrf
+                    <button class="btn btn-outline-secondary btn-sm" type="submit">{{ __('admin.temp_password_sent') }}</button>
+                </form>
             </div>
         </div>
 

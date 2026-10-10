@@ -24,7 +24,7 @@
                     <x-form-input required type="textarea" rows="5" title="{{ __('admin.description') }}" name="description"/>
 
                     <x-form-input required type="text" title="{{ __('admin.login_name') }}" name="login"/>
-                    <x-form-input required type="password" title="{{ __('admin.password') }}" name="password"/>
+                    <x-form-input required type="email" title="{{ __('admin.email') }}" name="email"/>
 
                     <button type="submit" class="btn btn-primary mt-4">{{ __('admin.save') }}</button>
 

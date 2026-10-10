@@ -261,9 +261,11 @@ class AppointmentsController extends Controller
             ]);
 
         } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::warning('appointment_request_failed', ['exception' => $e::class]);
+
             return response()->json([
                 'success' => false,
-                'error' => $e->getMessage(),
+                'error' => 'Request failed',
             ], 400);
         }
     }
@@ -309,7 +311,8 @@ class AppointmentsController extends Controller
             $appointment->delete();
             return response()->json(['success' => true, 'message' => 'Запись успешно удалена']);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'error' => $e->getMessage()], 400);
+            \Illuminate\Support\Facades\Log::warning('appointment_request_failed', ['exception' => $e::class]);
+            return response()->json(['success' => false, 'error' => 'Request failed'], 400);
         }
     }
 
@@ -322,14 +325,40 @@ class AppointmentsController extends Controller
 
         try {
             $userPackage = UserPackage::where('qr_code', $qr)
-                ->with('user')
-                ->with('car')
-                ->with('package')
+                ->with(['user', 'car', 'package'])
                 ->first();
 
-            return response()->json(['success' => true, 'package' => $userPackage]);
+            if (! $userPackage) {
+                return response()->json(['success' => false, 'error' => 'Not found'], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'package' => [
+                    'id' => $userPackage->id,
+                    'start_date' => $userPackage->start_date,
+                    'end_date' => $userPackage->end_date,
+                    'created_at' => $userPackage->created_at,
+                    'used_washes' => (int) $userPackage->used_washes,
+                    'number_of_washes' => (int) $userPackage->number_of_washes,
+                    'user' => [
+                        'name' => $userPackage->user?->name,
+                        'surname' => $userPackage->user?->surname,
+                        'phone' => $userPackage->user?->phone,
+                    ],
+                    'package' => [
+                        'count_washes' => (int) ($userPackage->package->count_washes ?? 0),
+                        'car_type' => $userPackage->package->car_type ?? null,
+                    ],
+                    'car' => [
+                        'plate' => $userPackage->car?->plate,
+                    ],
+                ],
+            ]);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'error' => $e->getMessage()], 400);
+            \Illuminate\Support\Facades\Log::warning('qr_check_failed', ['exception' => $e::class]);
+
+            return response()->json(['success' => false, 'error' => 'Request failed'], 400);
         }
     }
 
@@ -350,7 +379,8 @@ class AppointmentsController extends Controller
                 return response()->json(['success' => false, 'error' => 'Нет доступа'], 400);
             }
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'error' => $e->getMessage()], 400);
+            \Illuminate\Support\Facades\Log::warning('appointment_request_failed', ['exception' => $e::class]);
+            return response()->json(['success' => false, 'error' => 'Request failed'], 400);
         }
     }
 

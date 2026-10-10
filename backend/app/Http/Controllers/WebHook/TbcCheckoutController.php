@@ -32,7 +32,7 @@ class TbcCheckoutController extends Controller
 
     public function sandbox(Request $request)
     {
-        $payment = $this->findOrder((string) $request->query('order', ''));
+        $payment = $this->authorizedTestPayment($request->query('order'), $request->query('access'));
         if (! $payment) {
             return redirect($this->resultUrl(null, false));
         }
@@ -40,12 +40,15 @@ class TbcCheckoutController extends Controller
             return redirect($this->resultUrl($payment, true));
         }
 
-        return view('payments.sandbox', ['payment' => $payment]);
+        return view('payments.sandbox', [
+            'payment' => $payment,
+            'access' => (string) $request->query('access'),
+        ]);
     }
 
     public function sandboxConfirm(Request $request, SettleTbcPayment $settle)
     {
-        $payment = $this->findOrder((string) $request->input('order', ''));
+        $payment = $this->authorizedTestPayment($request->input('order'), $request->input('access'));
         if (! $payment) {
             return redirect($this->resultUrl(null, false));
         }
@@ -63,6 +66,7 @@ class TbcCheckoutController extends Controller
         if (! in_array($method, ['card', 'apple', 'google'], true) || ($method === 'card' && ! preg_match('/^\d{4}$/', $last4))) {
             return view('payments.sandbox', [
                 'payment' => $payment,
+                'access' => (string) $request->input('access'),
                 'error' => 'ბარათის მონაცემები არასწორია',
             ]);
         }
@@ -105,6 +109,30 @@ class TbcCheckoutController extends Controller
         }
 
         return redirect($this->resultUrl($payment, $payment && $payment->status === 'succeeded'));
+    }
+
+    private function authorizedTestPayment(mixed $order, mixed $access): ?TbcPayment
+    {
+        $order = trim((string) $order);
+        $access = trim((string) $access);
+        if ($order === '' || $access === '') {
+            return null;
+        }
+
+        $payment = TbcPayment::query()->where('merchant_payment_id', $order)->first();
+        if (! $payment || ! $payment->test_mode || ! is_string($payment->access_hash)) {
+            return null;
+        }
+
+        if (! $payment->access_expires_at || $payment->access_expires_at->isPast()) {
+            return null;
+        }
+
+        if (! hash_equals($payment->access_hash, hash('sha256', $access))) {
+            return null;
+        }
+
+        return $payment;
     }
 
     private function findOrder(string $order): ?TbcPayment

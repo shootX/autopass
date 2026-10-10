@@ -6,6 +6,7 @@ import { fetchUserData } from "@/lib/fetchUserData";
 import { useDispatch } from "react-redux";
 import { useTranslation } from "@/hooks/useTranslation";
 import { logoUrl } from "@/assets/staticUrls";
+import { georgianLocalDigits } from "@/lib/format";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -17,22 +18,19 @@ export default function PasswordChangePage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");  
   const [showPassword, setShowPassword] = useState(false);
-  const [tempCode, setTempCode] = useState<number | null>(null);
+  const [tempCode, setTempCode] = useState<string | null>(null);
+  const [setupToken, setSetupToken] = useState<string | null>(null);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [smsCode, setSmsCode] = useState<string>("");
 
   const togglePassword = () => setShowPassword((prev) => !prev);
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const raw = e.target.value.replace(/[^\d]/g, "").slice(0, 9);
-    setPhone(raw);
+    setPhone(georgianLocalDigits(e.target.value));
     if (error.phone) setError((prev) => ({ ...prev, phone: undefined }));
   };
 
   const handleRequestPasswordChange = async () => {
-    const fullPhone = "995" + phone;
-
     if (!phone) {
       setError({ phone: "empty" });
       return;
@@ -45,7 +43,7 @@ export default function PasswordChangePage() {
           "Content-Type": "application/json",
           "Accept": "application/json",
         },
-        body: JSON.stringify({ phone: fullPhone }),
+        body: JSON.stringify({ phone }),
       });
 
       const data = await res.json();
@@ -71,9 +69,8 @@ export default function PasswordChangePage() {
   
       const data = await res.json();
   
-      if (data.success && data.verify_code) {
-        localStorage.setItem("access_token", data.access_token);
-        setSmsCode(code); 
+      if (data.success && data.setup_token) {
+        setSetupToken(data.setup_token);
         setStage("set-password");
       } else {
         setError({ phone: data.error || "invalid-code" }); // сохраняем текст ошибки
@@ -104,7 +101,7 @@ export default function PasswordChangePage() {
         },
         body: JSON.stringify({
           password,
-          verify_code: smsCode,
+          setup_token: setupToken,
         }),
       });
   
@@ -280,7 +277,7 @@ export default function PasswordChangePage() {
               inputMode="numeric"
               value={phone}
               onChange={handlePhoneChange}
-              maxLength={9}
+              maxLength={18}
               placeholder="706500505"
               className="custom-input"
             />

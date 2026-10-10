@@ -20,6 +20,8 @@ Route::prefix('partner')->group(function () {
     Route::post('/login', [PartnerPanelController::class, 'login'])->middleware('throttle:10,1')->name('partner.login.submit');
 
     Route::middleware(CorporatePanel::class)->group(function () {
+        Route::get('/password', [PartnerPanelController::class, 'password'])->name('partner.password');
+        Route::post('/password', [PartnerPanelController::class, 'savePassword'])->name('partner.password.save');
         Route::get('/', [PartnerPanelController::class, 'dashboard'])->name('partner.home');
         Route::get('/fleet', [PartnerPanelController::class, 'home'])->name('partner.fleet');
         Route::get('/reports', [PartnerPanelController::class, 'reports'])->name('partner.reports');
@@ -27,7 +29,7 @@ Route::prefix('partner')->group(function () {
         Route::get('/account', [PartnerPanelController::class, 'account'])->name('partner.account');
         Route::post('/account', [PartnerPanelController::class, 'saveAccount'])->name('partner.account.save');
         Route::post('/cars', [PartnerPanelController::class, 'storeCar'])->name('partner.cars.store');
-        Route::get('/cars/{car}/delete', [PartnerPanelController::class, 'deleteCar'])->name('partner.cars.delete');
+        Route::post('/cars/{car}/delete', [PartnerPanelController::class, 'deleteCar'])->name('partner.cars.delete');
         Route::post('/import', [PartnerPanelController::class, 'import'])->name('partner.import');
         Route::get('/template', [PartnerPanelController::class, 'template'])->name('partner.template');
         Route::post('/token', [PartnerPanelController::class, 'token'])->name('partner.token');

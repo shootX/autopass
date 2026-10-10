@@ -70,7 +70,7 @@
                 type: 'red',
                 buttons: {
                     yes: { text: I18N.yes, btnClass: 'btn-red', action: function () {
-                        window.location.href = '/dashboard/corporate/' + id + '/delete';
+                        postAction('/dashboard/corporate/' + id + '/delete');
                     }},
                     no: { text: I18N.no }
                 }

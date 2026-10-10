@@ -27,6 +27,10 @@ class CorporateClient extends Model
         'credentials_custom',
         'note',
         'api_token',
+        'password_must_change',
+        'temp_password_expires_at',
+        'session_version',
+        'credentials_retired_at',
     ];
 
     protected $hidden = [
@@ -36,6 +40,10 @@ class CorporateClient extends Model
     protected $casts = [
         'vat_payer' => 'boolean',
         'credentials_custom' => 'boolean',
+        'password' => 'hashed',
+        'password_must_change' => 'boolean',
+        'temp_password_expires_at' => 'datetime',
+        'credentials_retired_at' => 'datetime',
     ];
 
     public function cars(): HasMany

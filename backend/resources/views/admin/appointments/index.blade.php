@@ -97,7 +97,7 @@
                         yes: { text: I18N.yes,
                             btnClass: 'btn-red',
                             action: function() {
-                                window.location.href = '/dashboard/appointments/'+removeID+'/delete';
+                                postAction('/dashboard/appointments/'+removeID+'/delete');
                             }
                         },
                         no: { text: I18N.no,

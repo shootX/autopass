@@ -245,6 +245,7 @@ class ClientsController extends Controller
 
     public function packageDelete(Request $request, User $client, UserPackage $pack)
     {
+        abort_unless((int) $pack->user_id === (int) $client->id, 404);
         $pack->delete();
         return redirect()->route('admin.clients.packages', ['client' => $client->id])
             ->with('message', __('admin.user_package_deleted'));

@@ -125,7 +125,7 @@
                         yes: { text: I18N.yes,
                             btnClass: 'btn-red',
                             action: function () {
-                                window.location.href = '/dashboard/brands/' + brandId + '/models/' + removeID + '/delete';
+                                postAction('/dashboard/brands/' + brandId + '/models/' + removeID + '/delete');
                             }
                         },
                         no: { text: I18N.no,
@@ -145,7 +145,7 @@
                         yes: { text: I18N.yes,
                             btnClass: 'btn-red',
                             action: function() {
-                                window.location.href = '/dashboard/brands/'+removeID+'/delete';
+                                postAction('/dashboard/brands/'+removeID+'/delete');
                             }
                         },
                         no: { text: I18N.no,

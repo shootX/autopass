@@ -165,7 +165,7 @@
                         yes: { text: I18N.yes,
                             btnClass: 'btn-red',
                             action: function() {
-                                window.location.href = '/dashboard/washings/'+removeID+'/delete';
+                                postAction('/dashboard/washings/'+removeID+'/delete');
                             }
                         },
                         no: { text: I18N.no,

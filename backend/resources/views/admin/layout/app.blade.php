@@ -72,6 +72,20 @@
     setTimeout(function(){
         $(".alert.alert-success").slideUp();
     }, 3000);
+
+    window.postAction = function (url) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = url;
+        const token = document.querySelector('meta[name="csrf-token"]');
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = '_token';
+        input.value = token ? token.getAttribute('content') : '';
+        form.appendChild(input);
+        document.body.appendChild(form);
+        form.submit();
+    };
 </script>
 @stack('js')
 </body>

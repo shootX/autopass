@@ -68,7 +68,7 @@
                         yes: { text: I18N.yes,
                             btnClass: 'btn-red',
                             action: function() {
-                                window.location.href = '/dashboard/brands/{{$brand->id}}/models/'+removeID+'/delete';
+                                postAction('/dashboard/brands/{{$brand->id}}/models/'+removeID+'/delete');
                             }
                         },
                         no: { text: I18N.no,
