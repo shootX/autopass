@@ -74,5 +74,6 @@
     }, 3000);
 </script>
 @stack('js')
+@include('components.delete-request')
 </body>
 </html>
