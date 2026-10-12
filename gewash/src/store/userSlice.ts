@@ -3,6 +3,9 @@ import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 export type UserRole = "manager" | "customer";
 
+/** anonymous: no token. pending: GET /me in flight. ready: role is known. */
+export type SessionPhase = "anonymous" | "pending" | "ready" | "unauthorized" | "error";
+
 export interface User {
   id: number;
   firstName: string;
@@ -25,11 +28,24 @@ export interface User {
 interface UserState {
   role: UserRole | null;
   data: User | null;
+  session: SessionPhase;
+}
+
+function readInitialSession(): SessionPhase {
+  try {
+    if (typeof localStorage !== "undefined" && localStorage.getItem("access_token")) {
+      return "pending";
+    }
+  } catch {
+    /* private mode */
+  }
+  return "anonymous";
 }
 
 const initialState: UserState = {
   role: null,
   data: null,
+  session: readInitialSession(),
 };
 
 export const userSlice = createSlice({
@@ -42,8 +58,21 @@ export const userSlice = createSlice({
     setUser: (state, action: PayloadAction<User>) => {
       state.data = action.payload;
     },
+    setSession: (state, action: PayloadAction<SessionPhase>) => {
+      state.session = action.payload;
+    },
+    resetSession: (state) => {
+      state.role = null;
+      state.data = null;
+      state.session = "anonymous";
+    },
+    rejectSession: (state) => {
+      state.role = null;
+      state.data = null;
+      state.session = "unauthorized";
+    },
   },
 });
 
-export const { setRole, setUser } = userSlice.actions;
+export const { setRole, setUser, setSession, resetSession, rejectSession } = userSlice.actions;
 export default userSlice.reducer;

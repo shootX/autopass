@@ -116,6 +116,10 @@ autopass `main`-ზეა. კლიენტის აპი (`gewash`) forest/
 - JWT TTL default is 30 days (43200 min) in `config/jwt.php` and `.env.example`.
 - Voucher `partner_id` backfill can't be automated: there is no voucher→partner/company relation in the data (no company_id, creator or category link). Shota/admin must assign it manually (runbook §5).
 
+## 2026-10-12 — FE-11 / MOB-10
+
+მენეჯერის როლი ცნობილია მხოლოდ `GET /api/me`-ის შემდეგ (`users.role`: `1` მენეჯერი, `0` მომხმარებელი). ტოკენის არსებობისას სესია იწყება `pending`-ით და `AppRoutes` არ ხატავს მარშრუტებს — splash ჩანს, სანამ `/me` არ დასრულდება. მენეჯერის გვერდები `CarCheckRoute`-ის გარეთაა; მანქანის გარეშე მომხმარებელი კვლავ მიდის `/add-car`. ლოგინის შემდეგ მენეჯერი მიდის `/manager-qr-page`. `401` შლის `access_token`-ს და ხსნის `/auth`. ქსელის სხვა შეცდომა მარშრუტს არ ირჩევს (`session = error`).
+
 ## 2026-10-12
 
 UX-10. `splashShouldBlock` აბრუნებს false-ს, როცა ენა და როლი მზადაა, ან როცა გასულია 1500 მს. App.tsx ტაიმერი მხოლოდ ამ ზღვარს რთავს; მონაცემების ადრე მოსვლისას სპლეში მაშინვე ქრება.
