@@ -143,7 +143,8 @@ h2{font-size:38px;line-height:1.3}
 .ban-copy p{color:#2b4a1c;font-size:16px;margin:14px 0 26px;max-width:420px}
 .phone{position:absolute;right:120px;top:-110px;width:290px;height:600px;border-radius:48px;background:#0e1712;padding:11px;box-shadow:0 40px 70px -24px rgba(11,42,27,.55),inset 0 0 0 2px #2b342e;z-index:3}
 .phone-screen{width:100%;height:100%;border-radius:38px;overflow:hidden;background:var(--foam)}
-.phone-screen img{width:100%;height:auto;display:block}
+.phone-screen picture{display:block;width:100%;height:100%}
+.phone-screen img{width:100%;height:100%;object-fit:cover;object-position:top;display:block}
 .phone-island{position:absolute;top:22px;left:50%;transform:translateX(-50%);width:86px;height:24px;border-radius:14px;background:#0e1712}
 
 /* footer */
@@ -317,7 +318,7 @@ h2{font-size:38px;line-height:1.3}
   .burger[aria-expanded="true"] .burger-close{display:block}
 }
 
-picture{display:contents}
+.hero-art > picture,.benefit-art > picture,.exp-car > picture{position:absolute;inset:0;display:block;pointer-events:none}
 .skip{position:absolute;left:16px;top:-48px;z-index:50;background:var(--forest);color:#fff;padding:10px 14px;border-radius:12px;font-weight:700}
 .skip:focus{top:12px}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
