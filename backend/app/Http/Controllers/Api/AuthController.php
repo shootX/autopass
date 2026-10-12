@@ -113,10 +113,11 @@ class AuthController extends Controller
 
             return response()->json([
                 'success' => false,
-                'error' => 'SMS service error: ' . (is_array($responseData) ? ($responseData['Message'] ?? 'unknown') : 'invalid response'),
+                'error' => 'SMS service error',
             ], 400);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'error' => $e->getMessage() . ' ' . $e->getLine()], 400);
+            report($e);
+            return response()->json(['success' => false, 'error' => 'Произошла ошибка. Попробуйте позже.'], 400);
         }
     }
 
@@ -153,7 +154,8 @@ class AuthController extends Controller
             ], 201);
 
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'error' => $e->getMessage()], 400);
+            report($e);
+            return response()->json(['success' => false, 'error' => 'Произошла ошибка. Попробуйте позже.'], 400);
         }
     }
 
@@ -188,7 +190,8 @@ class AuthController extends Controller
 
             return response()->json(['success' => true, 'message' => 'Пароль успешно установлен'], 200);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'error' => $e->getMessage()], 400);
+            report($e);
+            return response()->json(['success' => false, 'error' => 'Произошла ошибка. Попробуйте позже.'], 400);
         }
     }
 
@@ -223,7 +226,8 @@ class AuthController extends Controller
             ], 200);
 
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'error' => $e->getMessage()], 400);
+            report($e);
+            return response()->json(['success' => false, 'error' => 'Произошла ошибка. Попробуйте позже.'], 400);
         }
     }
 

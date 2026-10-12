@@ -9,16 +9,6 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
-function makeUser(string $phone): User
-{
-    return User::create([
-        'phone' => $phone,
-        'password' => Hash::make(Str::random(20)),
-        'role' => User::ROLE_USER,
-        'ref_code' => substr(md5($phone), 0, 5),
-    ]);
-}
-
 // BE-01
 it('rejects unauthenticated partner voucher calls', function () {
     $this->postJson('/api/partner/voucher/check', ['code' => 'ABCDEFGH'])->assertUnauthorized();

@@ -6,6 +6,7 @@ use App\Exports\CreatedTicketsExport;
 use App\Exports\CreatedVouchersCategoryExport;
 use App\Exports\CreatedVouchersExport;
 use App\Http\Controllers\Controller;
+use App\Models\Partner;
 use App\Models\Voucher;
 use App\Models\VoucherCategory;
 use Illuminate\Http\Request;
@@ -30,13 +31,15 @@ class VouchersController extends Controller
     public function addPage(Request $request)
     {
         $categories = VoucherCategory::all();
-        return view('admin.vouchers.add', compact('categories'));
+        $partners = Partner::query()->orderBy('name')->get(['id', 'name']);
+        return view('admin.vouchers.add', compact('categories', 'partners'));
     }
 
     public function store(Request $request)
     {
         $validate = Validator::make($request->all(), [
             'category_id' => 'required|exists:voucher_categories,id',
+            'partner_id' => 'nullable|exists:partners,id',
             'name' => 'required|string|min:3',
             'voucher_type' => 'required|in:1,2',
             'description' => 'required|min:5',
@@ -149,13 +152,15 @@ class VouchersController extends Controller
     public function editPageVoucher(Request $request, Voucher $voucher)
     {
         $categories = VoucherCategory::all();
-        return view('admin.vouchers.edit', compact('voucher', 'categories'));
+        $partners = Partner::query()->orderBy('name')->get(['id', 'name']);
+        return view('admin.vouchers.edit', compact('voucher', 'categories', 'partners'));
     }
 
     public function saveVoucher(Request $request, Voucher $voucher)
     {
         $validate = Validator::make($request->all(), [
             'category_id' => 'required|exists:voucher_categories,id',
+            'partner_id' => 'nullable|exists:partners,id',
             'name' => 'required|string|min:3',
             'voucher_type' => 'required|in:1,2',
             'description' => 'required|min:5',
