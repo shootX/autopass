@@ -132,6 +132,30 @@ FE-04: რეფერალის IP არის `{VITE_API_URL}/ref/ip` (`GET
 
 `origin/main`-ზე (PR #7 შერწყმულია) `set_password` ვალიდაცია არის `temp_code` required integer, `code` required digits:6, `password` required. Frontend-ის სხეული იგივე ველებს აგზავნის.
 
+## 2026-10-12 — FE-06, FE-07, FE-08, FE-09, FE-10
+
+FE-06: `docs/gewash-frontend-coverage.md` აღწერს `gewash/src/quiet/`-ს, რომელიც რეპოში არ არის. დაემატა მხოლოდ ის alias-ები, რომელთა კომპონენტი უკვე არსებობს: `/home`, `/qr`, `/reviews`, `/referrals`, `/calendar`, `/customer-calendar` (აღარ მიდის `/shop`-ზე), `/profile/cars`, `/profile/cars/new`, `/profile/cars/:id/edit`, მენეჯერის `/manager/calendar|bookings|scanner|statistics|profile|contacts|help|settings|reschedule/:id`. `/profile` კვლავ ProfilePage-ია (ჰაბი), არა CustomerMyData — გადაფარვა არსებულ ეკრანს წაშლიდა. Catch-all აღარ არის redirect; არის `NotFound`.
+
+არ გაკეთდა, რადგან ეკრანი ან API არ არის: `/reset-password`, `/verify-email`, `/terms`, `/bookings*`, `/packages*`, `/my-points/history`, ვაუჩერის/ბილეთის დეტალი, `/shop/:id/checkout`, `/orders*`, `/reviews/new`, `/messages/:id`, `/notifications`, `/help/:slug`, `/support`, settings-ის ქვეგვერდები, `/session-expired`, `/403`, `/500`, `/maintenance`, `/offline`.
+
+FE-07: `editMyCar` / `removeMyCar` `success: false`-ზე შეცდომას აჩვენებს და აღარ გადადის შენახულად. BE-10 (წარმატების ცრუ `success: true`, როცა სტრიქონი არ იცვლება) backend-ია და აქ არ შეცვლილა.
+
+FE-08: `expires_in` ინახება `access_token_expires_at`-ში. `dropExpiredAccessToken` იძახება `main.tsx`-იდან რენდერამდე. ტოკენი კვლავ `localStorage`-შია, რომ განახლებამ სესია არ მოკლას. main-ის `JWT_TTL` ნაგულისხმევი ახლა 43200 წუთია (30 დღე). კლიენტი ამ რიცხვს არ იგონებს — იყენებს პასუხის `expires_in`-ს.
+
+FE-09 / UX-12-ის ნაწილი: `lending/` `/`-ზე, თუ `access_token` არის, ხდება `location.replace` `{APP_BASE}/home`-ზე. ეს მუშაობს მხოლოდ მაშინ, თუ ვებ-სერვერი `/home`-ს gewash-ის `index.html`-ზე უშვებს ისე, როგორც `/auth`-ს. nginx root = marketing ამ რეპოში არ იცვლება. სერვერს არ შევხებივარ.
+
+FE-10: `CustomerMyData` hash `#vehicles`-ზე იძახებს `scrollIntoView`. `#vehicles` არის `MyVehicles`-ის wrapper-ზე.
+
+## 2026-10-12 — MOB-01, MOB-02, MOB-03, MOB-04, MOB-05, MOB-06, MOB-09, MOB-11
+
+MOB-10 არ შეხებია (PR #6). MOB-07 და MOB-08 აუდიტში არ არის.
+
+Onboarding ჩანს მხოლოდ გამოუსვლელ მომხმარებელზე, რომელიც პირდაპირ ავტორიზაციის მისამართზე არ მოსულა. `/privacy` და `/payment-success` იგივე სიაშია, რომ თანხმობის ბმულმა და გადახდის დაბრუნებამ კარუსელი არ გახსნას.
+
+სკანერი: `html5-qrcode`-ის `start` ერთ ეფექტშია. დახურვისას `releaseScanner` იძახებს `stop` და `clear`. კამერის უარზე ჩანს „კამერაზე წვდომა საჭიროა“ და ღილაკი „თავიდან ცდა“.
+
+ვიუპორტი აღარ კეტავს მასშტაბს. lending-ის `.nl input` არის 16px. ქვედა ნავის სიმაღლე არის `88px + env(safe-area-inset-bottom)`. v4 ნავი საკუთარ padding-ს ინარჩუნებს.
+
 ## 2026-10-12 — PWA და მკვდარი დამოკიდებულებები
 
 ხატები გენერირდება `gewash/public/brand/app-icon.svg`-დან: `public/icons/icon-192.png`, `icon-512.png`, `icon-maskable-192.png`, `icon-maskable-512.png`. maskable სავსეა `#14482F`-ით და ნიშანი ცენტრის 80%-შია.

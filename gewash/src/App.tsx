@@ -1,4 +1,7 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { shouldShowOnboarding } from "./lib/onboardingGate";
+import NotFound from "./components/NotFound";
+import { customerAliasPaths, managerAliasPaths } from "./lib/coverageRoutes";
 import { Provider, useDispatch, useSelector } from "react-redux";
 import type { RootState } from "./store";
 import { store } from "./store";
@@ -22,6 +25,7 @@ import Onboarding from "./components/v4/Onboarding";
 import PaymentSuccess from "./components/v4/PaymentSuccess";
 
 const Home = lazy(() => import("./components/pages/Home"));
+const CustomerCalendar = lazy(() => import("./components/Calendars/CustomerCalendar"));
 const ManagerCalendar = lazy(() => import("./components/Calendars/ManagerCalendar"));
 const ManagerCarwashStatistics = lazy(() => import("./components/pages/Manager/ManagerCarwashStatistics"));
 const Booking = lazy(() => import("./components/pages/Manager/Booking"));
@@ -86,6 +90,7 @@ function AppRoutes() {
   const currentLang = useSelector((s: RootState) => s.lang.currentLang);
   const [langLoading, setLangLoading] = useState(() => readLangCache(currentLang) === null);
   const [onboarded, setOnboarded] = useState(() => localStorage.getItem("autopass.onboarding.v4") === "1");
+  const { pathname } = useLocation();
   useUser();
   useRefreshUserOnBfcacheRestore();
 
@@ -186,7 +191,7 @@ function AppRoutes() {
   }
 
   const loggedOut = !localStorage.getItem("access_token") && import.meta.env.VITE_BYPASS_AUTH !== "true";
-  if (loggedOut && !onboarded) {
+  if (shouldShowOnboarding(loggedOut, onboarded, pathname)) {
     return (
       <Onboarding
         onDone={() => {
@@ -207,44 +212,62 @@ function AppRoutes() {
         {decision === "manager" ? (
           <Route element={<ManagerLayout />}>
             <Route path="/" element={<ManagerCalendar />} />
+            <Route path={managerAliasPaths.home} element={<Navigate to="/" replace />} />
+            <Route path={managerAliasPaths.calendar} element={<ManagerCalendar />} />
             <Route path="/profile" element={<MyData />} />
+            <Route path={managerAliasPaths.profile} element={<MyData />} />
             <Route path="/carwash-statistics" element={<ManagerCarwashStatistics />} />
+            <Route path={managerAliasPaths.statistics} element={<ManagerCarwashStatistics />} />
             <Route path="/booking" element={<Booking />} />
+            <Route path={managerAliasPaths.bookings} element={<Booking />} />
             <Route path="/reschedule/:id" element={<ReschudelingOrder />} />
+            <Route path={managerAliasPaths.reschedule} element={<ReschudelingOrder />} />
             <Route path="/manager-qr-page" element={<ManagerScanner />} />
+            <Route path={managerAliasPaths.scanner} element={<ManagerScanner />} />
             <Route path="/contacts" element={<Contacts />} />
+            <Route path={managerAliasPaths.contacts} element={<Contacts />} />
             <Route path="/help" element={<Help />} />
+            <Route path={managerAliasPaths.help} element={<Help />} />
             <Route path="/settings" element={<SettingsPage />} />
+            <Route path={managerAliasPaths.settings} element={<SettingsPage />} />
           </Route>
         ) : (
           <>
             <Route element={<CustomerLayout />}>
               <Route path="/add-car" element={<AddCar showHeader />} />
+              <Route path={customerAliasPaths.profileCarsNew} element={<AddCar showHeader />} />
             </Route>
             <Route element={<CarCheckRoute />}>
               <Route element={<CustomerLayout />}>
                 <Route path="/" element={<Home />} />
+                <Route path={customerAliasPaths.home} element={<Home />} />
                 <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/customer-my-data" element={<CustomerMyData />} />
                 <Route path="/change-phone" element={<PhoneNumberChanging />} />
                 <Route path="/change-email" element={<EmailChanging />} />
                 <Route path="/edit-car/:carid" element={<EditCar />} />
+                <Route path={customerAliasPaths.profileCarEdit} element={<EditCar />} />
                 <Route path="/branches/:id" element={<BranchDetail />} />
                 <Route path="/branches" element={<BranchScreen />} />
                 <Route path="/wash-appointment" element={<WashAppointment />} />
                 <Route path="/my-reviews" element={<MyReviews />} />
+                <Route path={customerAliasPaths.reviews} element={<MyReviews />} />
                 <Route path="/my-packages" element={<MyPackages />} />
                 <Route path="/my-points" element={<MyPoints />} />
                 <Route path="/my-area" element={<MyAreaPage />} />
                 <Route path="/my-points/info" element={<PointsInfo />} />
                 <Route path="/my-points/referrals" element={<ReferralsInfo />} />
+                <Route path={customerAliasPaths.referrals} element={<ReferralsInfo />} />
                 <Route path="/shop" element={<ShopPage />} />
                 <Route path="/shop/discounts" element={<DiscountsPage />} />
                 <Route path="/shop/discounts/:id" element={<DiscountDetailPage />} />
                 <Route path="/shop/giveaway" element={<GiveawayPage />} />
                 <Route path="/shop/giveaway/:id" element={<GiveawayDetailPage />} />
-                <Route path="/customer-calendar" element={<Navigate to="/shop" replace />} />
+                <Route path={customerAliasPaths.customerCalendar} element={<CustomerCalendar />} />
+                <Route path={customerAliasPaths.calendar} element={<CustomerCalendar />} />
                 <Route path="/customer-qr-page" element={<QRPage />} />
+                <Route path={customerAliasPaths.qr} element={<QRPage />} />
+                <Route path={customerAliasPaths.profileCars} element={<Navigate to="/customer-my-data#vehicles" replace />} />
                 <Route path="/messages" element={<Messages />} />
                 <Route path="/contacts" element={<Contacts />} />
                 <Route path="/help" element={<Help />} />
@@ -255,7 +278,7 @@ function AppRoutes() {
         )}
       </Route>
 
-      <Route path="*" element={<Navigate to={role === "manager" ? "/manager-qr-page" : "/customer-my-data"} replace />} />
+      <Route path="*" element={<NotFound />} />
     </Routes>
     </Suspense>
   );

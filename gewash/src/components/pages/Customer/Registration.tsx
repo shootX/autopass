@@ -10,6 +10,7 @@ import type { AppDispatch } from "@/store";
 const API_URL = import.meta.env.VITE_API_URL;
 import { useTranslation } from "@/hooks/useTranslation";
 import { logoUrl, googleServiceIconUrl, facebookUrl } from "@/assets/staticUrls";
+import { saveAccessToken } from "@/lib/accessToken";
 
 async function generateHash(string: string) {
   const msgUint8 = new TextEncoder().encode(string);
@@ -162,7 +163,7 @@ export default function Registration() {
       const data = await res.json();
 
       if (data.success && data.access_token) {
-        localStorage.setItem("access_token", data.access_token);
+        saveAccessToken(data.access_token, typeof data.expires_in === "number" ? data.expires_in : undefined);
         setVerifyCode(code);
         handleOTPVerified();
       } else {
@@ -257,6 +258,8 @@ export default function Registration() {
             <div className="input-with-icon">
               <input
                 type={showPassword ? "text" : "password"}
+                name="password"
+                autoComplete="new-password"
                 value={password}
                 onChange={(e) => {
                   setPassword(e.target.value);
@@ -333,6 +336,8 @@ export default function Registration() {
             <span className='phone-prefix'>+995</span>
             <input
               type='tel'
+              name='phone'
+              autoComplete='tel'
               inputMode='numeric'
               value={phone}
               onChange={handlePhoneChange}
