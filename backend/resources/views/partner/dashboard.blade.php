@@ -28,6 +28,9 @@
                 <div class="umami-legend">
                     <span><i class="umami-dot"></i>{{ __('admin.appointments') }}</span>
                 </div>
+                @if($trend->sum('total') === 0)
+                    <div class="umami-empty">{{ __('admin.dash_empty') }}</div>
+                @else
                 <div class="umami-bars">
                     @foreach($trend as $day)
                         <div class="umami-bar-col">
@@ -38,6 +41,7 @@
                         </div>
                     @endforeach
                 </div>
+                @endif
             </div>
         </div>
 

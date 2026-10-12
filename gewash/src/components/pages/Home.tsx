@@ -8,7 +8,8 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { customFetch } from "@/utils/customFetch";
 import { loadDefaultBranches } from "@/hooks/fetchFilteredBranches";
 import type { Branch } from "@/hooks/useFetchBranches";
-import { formatKaDate, initials } from "@/lib/format";
+import { formatKaDate } from "@/lib/format";
+import { avatarLabel, greetingName } from "@/lib/greetingName";
 import { bodyLabel, carParts, carPhoto, washCells } from "@/lib/v4";
 import PageSkeleton from "@/components/Skeletons/PageSkeleton";
 import { ArrowRight, Bell, CalendarCheck, CalendarDays, Car, CarFront, ChevronRight, Clock3, MapPin, Plus, QrCode, Search, Star } from "lucide-react";
@@ -41,7 +42,7 @@ export default function Home() {
   const cells = washCells(total, remaining);
   const selectedParts = carParts(selectedCar);
   const carTitle = selectedParts.title;
-  const name = user?.firstName || "";
+  const name = greetingName(user?.firstName, user?.phone);
 
   useEffect(() => {
     const token = localStorage.getItem("access_token");
@@ -114,11 +115,11 @@ export default function Home() {
       <section className="v4-screen ap-home-m" style={{ paddingTop: 12 }}>
         <div className="v4-hello">
           <button type="button" className="av" onClick={() => navigate("/profile")} aria-label="პროფილი">
-            {initials(user?.firstName, user?.lastName)}
+            {avatarLabel(user?.firstName, user?.lastName, user?.phone)}
           </button>
           <div style={{ flex: 1 }}>
             <div className="v4-kicker">{t("Home.greeting")}</div>
-            <b>{name || t("Home.washes.title")}</b>
+            <b>{name || t("Home.greeting")}</b>
           </div>
           <button type="button" className="v4-ib" aria-label="შეტყობინებები" onClick={() => navigate("/messages")}>
             <Bell size={20} />

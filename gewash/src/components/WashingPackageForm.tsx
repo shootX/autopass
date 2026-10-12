@@ -8,6 +8,7 @@ import { useMemo } from "react";
 import { useActivatePackage } from "@/hooks/useActivatePackage";
 import { useFetchPackagePricing } from "@/hooks/useFetchPackagePricing";
 import { useTranslation } from "@/hooks/useTranslation";
+import { AUTO_RENEWAL_DEFAULT } from "@/lib/packageForm";
 import { bodyLabel, carParts, formatGel, savePendingPayment } from "@/lib/v4";
 import { Info, Repeat2 } from "lucide-react";
 
@@ -32,7 +33,7 @@ export function WashingPackageForm({
   const t = useTranslation();
   const [selectedWashCount, setSelectedWashCount] = useState<number | "infinity" | null>(null);
   const [selectedTerm, setSelectedTerm] = useState<number | null>(null);
-  const [autoRenewal, setAutoRenewal] = useState(true);
+  const [autoRenewal, setAutoRenewal] = useState(AUTO_RENEWAL_DEFAULT);
   const [carDropOpen, setCarDropOpen] = useState(false);
   const { activatePackage, loading, error } = useActivatePackage();
   const [selectedCar, setSelectedCar] = useState<Car | null>(null);
@@ -218,7 +219,7 @@ export function WashingPackageForm({
           <div className="v4-renew">
             <div style={{ flex: 1 }}>
               <b>{t("WashingPackageForm.renewal.label")}</b>
-              <div className="v4-kicker">ვადის ბოლოს ბარათიდან ჩამოიჭრება</div>
+              <div className="v4-kicker">{t("WashingPackageForm.renewal.hint")}</div>
             </div>
             <Switch checked={autoRenewal} onCheckedChange={(val) => setAutoRenewal(val)} />
           </div>

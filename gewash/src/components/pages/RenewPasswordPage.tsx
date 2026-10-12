@@ -7,6 +7,7 @@ import { useDispatch } from "react-redux";
 import type { AppDispatch } from "@/store";
 import { useTranslation } from "@/hooks/useTranslation";
 import { logoUrl } from "@/assets/staticUrls";
+import { saveAccessToken } from "@/lib/accessToken";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -73,7 +74,7 @@ export default function PasswordChangePage() {
       const data = await res.json();
   
       if (data.success && data.verify_code) {
-        localStorage.setItem("access_token", data.access_token);
+        saveAccessToken(data.access_token, typeof data.expires_in === "number" ? data.expires_in : undefined);
         setSmsCode(code); 
         setStage("set-password");
       } else {
@@ -112,7 +113,7 @@ export default function PasswordChangePage() {
       const data = await res.json();
   
       if (data.success) {
-        localStorage.setItem("access_token", data.access_token);
+        saveAccessToken(data.access_token, typeof data.expires_in === "number" ? data.expires_in : undefined);
         await fetchUserData(dispatch);
         navigate("/auth");
       } else {
@@ -184,13 +185,15 @@ export default function PasswordChangePage() {
             <div className='input-with-icon'>
               <input
                 type={showPassword ? "text" : "password"}
+                name="password"
+                autoComplete="new-password"
                 value={password}
                 onChange={(e) => {
                   setPassword(e.target.value);
                   if (error.password)
                     setError((prev) => ({ ...prev, password: undefined }));
                 }}
-                placeholder='Create your new password'
+                placeholder={t("PasswordChange.setPassword.placeholder")}
                 className='custom-input'
               />
               <svg
@@ -217,13 +220,15 @@ export default function PasswordChangePage() {
             <div className='input-with-icon'>
               <input
                 type={showPassword ? "text" : "password"}
+                name="confirm-password"
+                autoComplete="new-password"
                 value={confirmPassword}
                 onChange={(e) => {
                   setConfirmPassword(e.target.value);
                   if (error.password === "mismatch")
                     setError((prev) => ({ ...prev, password: undefined }));
                 }}
-                placeholder='Repeat your password'
+                placeholder={t("PasswordChange.setPassword.repeat")}
                 className='custom-input'
               />
               <svg
@@ -278,11 +283,13 @@ export default function PasswordChangePage() {
             <span className="phone-prefix">+995</span>
             <input
               type="tel"
+              name="phone"
+              autoComplete="tel"
               inputMode="numeric"
               value={phone}
               onChange={handlePhoneChange}
               maxLength={9}
-              placeholder="706500505"
+              placeholder={t("Authentication.placeholders.phone")}
               className="custom-input"
             />
           </div>

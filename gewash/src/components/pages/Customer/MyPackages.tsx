@@ -12,6 +12,7 @@ import { useMyPackages } from '@/hooks/useActivePackages';
 import { useTranslation } from '@/hooks/useTranslation';
 import { ArrowLeft, Pencil } from 'lucide-react';
 import Header from '@/components/Header';
+import { shouldShowPackageForm } from '@/lib/packageForm';
 
 export default function MyPackages() {
   const navigate = useNavigate();
@@ -66,7 +67,7 @@ export default function MyPackages() {
 
   const transformedPackages = activeRaw.map(toData);
   const availableCars = cars.filter((car) => !packages.some((pkg) => pkg.car.plate === car.plate && (pkg.end_date ?? '') >= today));
-  const showForm = Boolean(editingPackage) || buying || (transformedPackages.length === 0 && availableCars.length > 0);
+  const showForm = shouldShowPackageForm(Boolean(editingPackage), buying);
 
   return (
     <div className="v4-screen">
@@ -132,7 +133,14 @@ export default function MyPackages() {
             ))
           )
         ) : transformedPackages.length === 0 ? (
-          <p className="v4-empty">{t('MyPackages.empty')}</p>
+          <>
+            <p className="v4-empty">{t('MyPackages.empty')}</p>
+            {availableCars.length > 0 && (
+              <button type="button" className="ap-btn" style={{ marginTop: 16 }} onClick={() => setBuying(true)}>
+                {t('WashingPackageForm.button.create')}
+              </button>
+            )}
+          </>
         ) : (
           <>
             {activeRaw.map((pkg) => (

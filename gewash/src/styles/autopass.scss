@@ -111,8 +111,8 @@
   transform: none;
   width: 100%;
   max-width: none;
-  height: 88px;
-  padding: 8px 18px 0;
+  height: calc(88px + env(safe-area-inset-bottom));
+  padding: 8px 18px env(safe-area-inset-bottom);
   background: #fff;
   border-top: 1px solid var(--ap-gray-100);
   z-index: 40;
@@ -130,6 +130,12 @@
   display: flex;
   justify-content: space-around;
   align-items: flex-start;
+}
+
+.nav-bar-container > a,
+.nav-bar-container a.ap-tab {
+  min-width: 44px;
+  min-height: 44px;
 }
 
 .nav-bar-container a.ap-tab {
@@ -725,6 +731,8 @@
     position: sticky;
     top: 0;
     height: 100dvh;
+    overflow-x: hidden;
+    overflow-y: auto;
   }
 
   .ap-side .lg {
@@ -781,6 +789,7 @@
 
   .ap-side .promo {
     margin-top: auto;
+    flex: none;
     background: linear-gradient(150deg, #1d6040, #14482f);
     border-radius: 22px;
     padding: 18px;
@@ -818,6 +827,7 @@
     align-items: center;
     gap: 12px;
     margin-top: 16px;
+    flex: none;
     padding: 10px;
     border-radius: 16px;
     background: rgba(255, 255, 255, 0.05);

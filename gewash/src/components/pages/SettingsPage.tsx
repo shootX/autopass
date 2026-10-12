@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import type { RootState, AppDispatch } from '@/store';
 import { setLanguage } from '@/store/langSlice';
 import { useTranslation } from '@/hooks/useTranslation';
+import { languageNativeName } from '@/lib/languageLabel';
 import {
   leftArrowUrl,
   langSettingIconUrl,
@@ -32,8 +33,7 @@ export default function SettingsPage() {
     }
   }, [dropdownOpen, currentLang]);
 
-  const languageLabel =
-    currentLang === 'en' ? 'English' : currentLang === 'ru' ? 'Russian' : 'Georgian';
+  const languageLabel = languageNativeName(currentLang);
 
   const handleSaveLanguage = () => {
     dispatch(setLanguage(selectedLang));

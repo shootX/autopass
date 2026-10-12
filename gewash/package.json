@@ -25,7 +25,6 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
-    "expo-camera": "~55.0.20",
     "framer-motion": "^12.23.11",
     "html5-qrcode": "^2.3.8",
     "input-otp": "^1.4.2",

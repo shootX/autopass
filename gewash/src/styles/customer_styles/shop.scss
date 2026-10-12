@@ -37,6 +37,17 @@
   }
 }
 
+@media (min-width: 1024px) {
+  .shop-header {
+    justify-content: center;
+  }
+
+  .shop-header__burger,
+  .shop-header__spacer {
+    display: none;
+  }
+}
+
 .shop-wrapper {
   display: flex;
   flex-direction: column;
