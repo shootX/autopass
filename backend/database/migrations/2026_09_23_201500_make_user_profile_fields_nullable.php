@@ -9,6 +9,11 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // Postgres-only syntax; on SQLite (tests) the columns are already nullable.
+        if (DB::getDriverName() === 'sqlite') {
+            return;
+        }
+
         DB::statement('ALTER TABLE users ALTER COLUMN surname DROP NOT NULL');
         DB::statement('ALTER TABLE users ALTER COLUMN date_of_birth DROP NOT NULL');
         DB::statement('ALTER TABLE users ALTER COLUMN sex DROP NOT NULL');
@@ -16,6 +21,11 @@ return new class extends Migration
 
     public function down(): void
     {
+        // Postgres-only syntax; on SQLite (tests) the columns are already nullable.
+        if (DB::getDriverName() === 'sqlite') {
+            return;
+        }
+
         DB::statement('ALTER TABLE users ALTER COLUMN surname SET NOT NULL');
         DB::statement('ALTER TABLE users ALTER COLUMN date_of_birth SET NOT NULL');
         DB::statement('ALTER TABLE users ALTER COLUMN sex SET NOT NULL');

@@ -158,7 +158,9 @@ Route::middleware(['auth:api', CorsMiddleware::class])->group(function () {
     Route::get('/allrecords', [AppointmentsController::class, 'allRecords']);
 
 
-    Route::get('/testpay', [PaymentsController::class, 'testpay']);
+    if (! app()->environment('production')) {
+        Route::get('/testpay', [PaymentsController::class, 'testpay']);
+    }
 
 });
 
@@ -173,10 +175,12 @@ Route::prefix('/corporate')->group(function () {
     Route::delete('/vehicles/{plate}', [CorporateFleetController::class, 'destroy']);
 });
 
-Route::prefix('/partner')->group(function(){
+Route::prefix('/partner')->middleware([CorsMiddleware::class])->group(function () {
 
     Route::post('/login', [\App\Http\Controllers\Api\Partners\AuthController::class, 'login']);
 
-    Route::post('/voucher/check', [\App\Http\Controllers\Api\Partners\VouchersController::class, 'checkVoucher']);
-    Route::post('/voucher/use', [\App\Http\Controllers\Api\Partners\VouchersController::class, 'useVoucher']);
-})->middleware(['auth:partners', CorsMiddleware::class]);
+    Route::middleware('auth:partners')->group(function () {
+        Route::post('/voucher/check', [\App\Http\Controllers\Api\Partners\VouchersController::class, 'checkVoucher']);
+        Route::post('/voucher/use', [\App\Http\Controllers\Api\Partners\VouchersController::class, 'useVoucher']);
+    });
+});

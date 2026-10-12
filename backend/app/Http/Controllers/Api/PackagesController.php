@@ -184,6 +184,10 @@ class PackagesController extends Controller
 
     public function removePackage(Request $request, UserPackage $userPackage)
     {
+        if ((int) $userPackage->user_id !== (int) Auth::id()) {
+            return response()->json(['success' => false, 'error' => 'Forbidden'], 403);
+        }
+
         try{
             $userPackage->delete();
             return response()->json(['success' => true, 'msg' => 'Пакет успешно удалён.']);
