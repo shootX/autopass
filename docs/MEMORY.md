@@ -116,9 +116,13 @@ autopass `main`-ზეა. კლიენტის აპი (`gewash`) forest/
 - JWT TTL default is 30 days (43200 min) in `config/jwt.php` and `.env.example`.
 - Voucher `partner_id` backfill can't be automated: there is no voucher→partner/company relation in the data (no company_id, creator or category link). Shota/admin must assign it manually (runbook §5).
 
+## 2026-10-12 — FE-11 / MOB-10
+
+მენეჯერის როლი ცნობილია მხოლოდ `GET /api/me`-ის შემდეგ (`users.role`: `1` მენეჯერი, `0` მომხმარებელი). ტოკენის არსებობისას სესია იწყება `pending`-ით და `AppRoutes` არ ხატავს მარშრუტებს — splash ჩანს, სანამ `/me` არ დასრულდება. მენეჯერის გვერდები `CarCheckRoute`-ის გარეთაა; მანქანის გარეშე მომხმარებელი კვლავ მიდის `/add-car`. ლოგინის შემდეგ მენეჯერი მიდის `/manager-qr-page`. `401` შლის `access_token`-ს და ხსნის `/auth`. ქსელის სხვა შეცდომა მარშრუტს არ ირჩევს (`session = error`).
+
 ## 2026-10-12
 
-UX პრ (`cursor/ux-audit-fixes-fc25`) main-ისგან დამოუკიდებელია. vitest ამ ტოტზეც დაემატა, რადგან main-ზე ტესტის კონფიგი არ არის.
+UX პრ (`cursor/ux-audit-fixes-fc25`) main-ისგან დამოუკიდებელია. ტესტები main-ის vitest ^5.0.3 და jsdom ^29.1.1 ვერსიებზეა.
 
 ავტოგანახლების საწყისი მნიშვნელობაა `AUTO_RENEWAL_DEFAULT = false`. სია პირველია: ფორმა იხსნება მხოლოდ ყიდვის ან რედაქტირების დროს.
 
