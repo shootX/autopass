@@ -344,6 +344,7 @@
                 "button": "Finish",
                 "errors": {
                     "tooShort": "Password must be at least 6 characters",
+                    "codeMissing": "The code is missing. Verify your phone again.",
                     "serverError": "Server error. Please try again.",
                     "network": "Network error. Please check your connection."
                 }
