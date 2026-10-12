@@ -169,7 +169,21 @@ class CarsController extends Controller
                 return response()->json(['success' => false, 'error' => $validator->errors()->first()], 422);
             }
 
-            $user->cars()->where('id', $carid)->update($request->all());
+            $car = $user->cars()->where('id', $carid)->first();
+            if (! $car) {
+                return response()->json(['success' => false, 'error' => 'Машина не найдена'], 404);
+            }
+
+            // Only whitelisted fields; never mass-assign user_id etc.
+            $data = $request->only(['plate']);
+            if ($request->filled('model_id') || ($request->filled('brand_name') && $request->filled('model_name'))) {
+                $modelId = $this->localModelId($request);
+                if ($modelId === null) {
+                    return response()->json(['success' => false, 'error' => 'Модель не найдена'], 422);
+                }
+                $data['model_id'] = $modelId;
+            }
+            $car->update($data);
 
             return response()->json([
                 'success' => true,
@@ -187,7 +201,10 @@ class CarsController extends Controller
     {
         try {
             $user = auth()->user();
-            $user->cars()->where('id', $carid)->delete();
+            $deleted = $user->cars()->where('id', $carid)->delete();
+            if ($deleted === 0) {
+                return response()->json(['success' => false, 'error' => 'Машина не найдена'], 404);
+            }
 
             return response()->json([
                 'success' => true,
