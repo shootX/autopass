@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { customFetch } from "@/utils/customFetch";
 import { fetchUserData } from "@/lib/fetchUserData";
 import { useDispatch } from "react-redux";
+import type { AppDispatch } from "@/store";
 import { useTranslation } from "@/hooks/useTranslation";
 import { logoUrl } from "@/assets/staticUrls";
 
@@ -18,7 +19,7 @@ export default function PasswordChangePage() {
   const [confirmPassword, setConfirmPassword] = useState("");  
   const [showPassword, setShowPassword] = useState(false);
   const [tempCode, setTempCode] = useState<number | null>(null);
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const [smsCode, setSmsCode] = useState<string>("");
 

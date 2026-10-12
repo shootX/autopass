@@ -1,6 +1,8 @@
 import { fetchUserData } from "@/lib/fetchUserData";
+import { postLoginPath } from "@/lib/sessionRouting";
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
+import type { AppDispatch } from "@/store";
 import { Link, useNavigate } from "react-router-dom";
 const API_URL = import.meta.env.VITE_API_URL;
 import { useTranslation } from "@/hooks/useTranslation";
@@ -14,7 +16,7 @@ export default function Authentication() {
   const [error, setError] = useState<{ phone?: string; password?: string }>({});
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const t = useTranslation();
 
   const togglePassword = () => setShowPassword((prev) => !prev);
@@ -75,8 +77,9 @@ export default function Authentication() {
       if (res.ok && data.access_token) {
         localStorage.setItem("access_token", data.access_token);
         handleLoginSuccess(data.access_token);
-        await fetchUserData(dispatch);
-        navigate("/");
+        const role = await fetchUserData(dispatch);
+        const next = postLoginPath(role);
+        if (next) navigate(next);
       } else {
         const serverError = data?.error || "Login failed";
         setError({ password: "incorrect" });
