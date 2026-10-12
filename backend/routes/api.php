@@ -52,14 +52,14 @@ Route::post('/ref/check-hash', [ReferralsController::class, 'checkHash']);
 
 Route::post('/device/register', [AuthController::class, 'registerDevice']);
 
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/register/verify', [AuthController::class, 'verify']);
-Route::post('/register/set_password', [AuthController::class, 'set_password']);
-Route::post('/login', [AuthController::class, 'login']);
+Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:otp');
+Route::post('/register/verify', [AuthController::class, 'verify'])->middleware('throttle:otp');
+Route::post('/register/set_password', [AuthController::class, 'set_password'])->middleware('throttle:otp');
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:login');
 
-Route::post('/change_password', [AuthController::class, 'changePassword']);
-Route::post('/change_password/verify', [AuthController::class, 'changePasswordVerify']);
-Route::post('/change_password/verify_submit', [AuthController::class, 'changePasswordVerifySubmit']);
+Route::post('/change_password', [AuthController::class, 'changePassword'])->middleware('throttle:otp');
+Route::post('/change_password/verify', [AuthController::class, 'changePasswordVerify'])->middleware('throttle:otp');
+Route::post('/change_password/verify_submit', [AuthController::class, 'changePasswordVerifySubmit'])->middleware('throttle:otp');
 
 Route::middleware(['auth:api', CorsMiddleware::class])->group(function () {
 
@@ -67,11 +67,11 @@ Route::middleware(['auth:api', CorsMiddleware::class])->group(function () {
 
     Route::post('/account/delete', [AuthController::class, 'deleteAccount']);
 
-    Route::post('/change_phone', [AuthController::class, 'changePhone']);
-    Route::post('/change_phone/verify', [AuthController::class, 'changePhoneVerify']);
+    Route::post('/change_phone', [AuthController::class, 'changePhone'])->middleware('throttle:otp');
+    Route::post('/change_phone/verify', [AuthController::class, 'changePhoneVerify'])->middleware('throttle:otp');
 
-    Route::post('/email/set', [UserController::class, 'emailSet']);
-    Route::post('/email/verify', [UserController::class, 'emailVerify']);
+    Route::post('/email/set', [UserController::class, 'emailSet'])->middleware('throttle:otp');
+    Route::post('/email/verify', [UserController::class, 'emailVerify'])->middleware('throttle:otp');
 
     Route::post('/push_settings', [UserController::class, 'pushSettings']);
 
@@ -106,7 +106,7 @@ Route::middleware(['auth:api', CorsMiddleware::class])->group(function () {
     Route::prefix('/vouchers')->group(function () {
         Route::get('/', [VouchersController::class, 'getVouchers']);
         Route::get('/categories', [VouchersController::class, 'getCategories']);
-        Route::post('/buy', [VouchersController::class, 'buyVoucher']);
+        Route::post('/buy', [VouchersController::class, 'buyVoucher'])->middleware('throttle:voucher');
         Route::get('/my', [VouchersController::class, 'myVouchers']);
     });
 
@@ -158,12 +158,15 @@ Route::middleware(['auth:api', CorsMiddleware::class])->group(function () {
     Route::get('/allrecords', [AppointmentsController::class, 'allRecords']);
 
 
-    Route::get('/testpay', [PaymentsController::class, 'testpay']);
+    if (! app()->environment('production')) {
+        Route::get('/testpay', [PaymentsController::class, 'testpay']);
+    }
 
 });
 
-Route::get('/promo', function(){
-    $promo = \App\Models\Promo::query()->first();
+Route::middleware('throttle:public')->get('/promo', function(){
+    // Public sidebar banner: expose only the display fields.
+    $promo = \App\Models\Promo::query()->select(['title', 'description', 'url'])->first();
     return response()->json(['success' => true, 'promo' => $promo]);
 });
 
@@ -173,10 +176,12 @@ Route::prefix('/corporate')->group(function () {
     Route::delete('/vehicles/{plate}', [CorporateFleetController::class, 'destroy']);
 });
 
-Route::prefix('/partner')->group(function(){
+Route::prefix('/partner')->middleware([CorsMiddleware::class])->group(function () {
 
-    Route::post('/login', [\App\Http\Controllers\Api\Partners\AuthController::class, 'login']);
+    Route::post('/login', [\App\Http\Controllers\Api\Partners\AuthController::class, 'login'])->middleware('throttle:login');
 
-    Route::post('/voucher/check', [\App\Http\Controllers\Api\Partners\VouchersController::class, 'checkVoucher']);
-    Route::post('/voucher/use', [\App\Http\Controllers\Api\Partners\VouchersController::class, 'useVoucher']);
-})->middleware(['auth:partners', CorsMiddleware::class]);
+    Route::middleware(['auth:partners', 'throttle:voucher'])->group(function () {
+        Route::post('/voucher/check', [\App\Http\Controllers\Api\Partners\VouchersController::class, 'checkVoucher']);
+        Route::post('/voucher/use', [\App\Http\Controllers\Api\Partners\VouchersController::class, 'useVoucher']);
+    });
+});
