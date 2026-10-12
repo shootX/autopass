@@ -27,7 +27,7 @@ Route::prefix('partner')->group(function () {
         Route::get('/account', [PartnerPanelController::class, 'account'])->name('partner.account');
         Route::post('/account', [PartnerPanelController::class, 'saveAccount'])->name('partner.account.save');
         Route::post('/cars', [PartnerPanelController::class, 'storeCar'])->name('partner.cars.store');
-        Route::get('/cars/{car}/delete', [PartnerPanelController::class, 'deleteCar'])->name('partner.cars.delete');
+        Route::delete('/cars/{car}/delete', [PartnerPanelController::class, 'deleteCar'])->name('partner.cars.delete');
         Route::post('/import', [PartnerPanelController::class, 'import'])->name('partner.import');
         Route::get('/template', [PartnerPanelController::class, 'template'])->name('partner.template');
         Route::post('/token', [PartnerPanelController::class, 'token'])->name('partner.token');
@@ -36,10 +36,12 @@ Route::prefix('partner')->group(function () {
 
 Route::get('/ref/{code}', [ReferralsController::class, 'handleRef'])->name('referral.link');
 
-Route::get('/payment/sandbox', [TbcCheckoutController::class, 'sandbox'])
-    ->name('payment.sandbox');
-Route::post('/payment/sandbox', [TbcCheckoutController::class, 'sandboxConfirm'])
-    ->name('payment.sandbox.confirm');
+if (! app()->environment('production')) {
+    Route::get('/payment/sandbox', [TbcCheckoutController::class, 'sandbox'])
+        ->name('payment.sandbox');
+    Route::post('/payment/sandbox', [TbcCheckoutController::class, 'sandboxConfirm'])
+        ->name('payment.sandbox.confirm');
+}
 
 Route::any('/payment/return', [TbcCheckoutController::class, 'returned'])
     ->name('payment.return');
