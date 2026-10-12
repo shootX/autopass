@@ -1,0 +1,16 @@
+# Example only. Nothing in this repository installs or reloads nginx.
+# Point root at the SPA build (gewash/dist), not at lending/.
+# /home, /auth, /register, /renew-password and the other client routes
+# have no file on disk. try_files sends them to the SPA index.
+
+server {
+    listen 80;
+    server_name app.example.com;
+
+    root /var/www/autopass/spa;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
