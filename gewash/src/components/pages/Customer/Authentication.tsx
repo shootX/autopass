@@ -8,6 +8,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 import { useTranslation } from "@/hooks/useTranslation";
 import { logoUrl } from "@/assets/staticUrls";
 import { CAR_SEDAN } from "@/lib/v4";
+import { saveAccessToken } from "@/lib/accessToken";
 import { Eye, EyeOff } from "lucide-react";
 import { LOGIN_PHONE_MAX_LENGTH, localLoginPhone } from "@/lib/loginPhone";
 export default function Authentication() {
@@ -68,7 +69,7 @@ export default function Authentication() {
       console.log("Response:", data);
 
       if (res.ok && data.access_token) {
-        localStorage.setItem("access_token", data.access_token);
+        saveAccessToken(data.access_token, typeof data.expires_in === "number" ? data.expires_in : undefined);
         handleLoginSuccess(data.access_token);
         const role = await fetchUserData(dispatch);
         const next = postLoginPath(role);
@@ -106,8 +107,6 @@ export default function Authentication() {
       <div className="panel v4-dk">
         <h1>{t("Authentication.greeting.title")}</h1>
         <p className="sub">{t("Authentication.greeting.subtitle")}</p>
-        {phoneError && <p className="ap-error" style={{ marginTop: 16 }}>{phoneError}</p>}
-        {passwordError && <p className="ap-error">{passwordError}</p>}
 
         <div style={{ marginTop: 24 }}>
           <label>{t("Authentication.labels.phone")}</label>
@@ -116,6 +115,8 @@ export default function Authentication() {
             <span className="bar" />
             <input
               type="tel"
+              name="phone"
+              autoComplete="tel"
               inputMode="numeric"
               value={phone}
               onChange={handlePhoneChange}
@@ -123,6 +124,7 @@ export default function Authentication() {
               placeholder={t("Authentication.placeholders.phone")}
             />
           </div>
+          {phoneError && <p className="ap-error" style={{ marginTop: 8 }}>{phoneError}</p>}
         </div>
 
         <div style={{ marginTop: 16 }}>
@@ -130,6 +132,8 @@ export default function Authentication() {
           <div className="v4-dinput">
             <input
               type={showPassword ? "text" : "password"}
+              name="password"
+              autoComplete="current-password"
               value={password}
               onChange={(e) => {
                 setPassword(e.target.value);
@@ -141,6 +145,7 @@ export default function Authentication() {
               {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
             </button>
           </div>
+          {passwordError && <p className="ap-error" style={{ marginTop: 8 }}>{passwordError}</p>}
         </div>
 
         <div style={{ textAlign: "right", marginTop: 12 }}>
@@ -153,7 +158,7 @@ export default function Authentication() {
           {isLoading ? <span className="spinner" /> : t("Authentication.buttons.signIn")}
         </button>
 
-        <p style={{ marginTop: 22, textAlign: "center", color: "#97A29A", fontSize: 14.5 }}>
+        <p className="v4-auth-switch" style={{ marginTop: 22, textAlign: "center", fontSize: 14.5 }}>
           {t("Authentication.signupPrompt")}{" "}
           <Link to="/register" style={{ color: "#fff", fontWeight: 800, textDecoration: "none" }}>
             {t("Authentication.buttons.signUp")}

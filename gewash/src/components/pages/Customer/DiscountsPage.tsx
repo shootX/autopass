@@ -8,7 +8,7 @@ import discountImg from "@/assets/images/discounts/discount_img.png";
 import ShopAsyncLoader from "@/components/ui/ShopAsyncLoader";
 import { fetchVouchers, type ShopVoucher } from "@/lib/shopApi";
 
-const CATEGORIES = ["All", "Auto", "Health", "Food", "Rest", "Booking"];
+import { VOUCHER_CATEGORY_KEYS, voucherCategoryLabelKey } from "@/lib/voucherCategories";
 const PER_PAGE = 6;
 
 function chunkList<T>(items: T[], size: number): T[][] {
@@ -184,7 +184,7 @@ export default function DiscountsPage() {
 
         {/* Category tabs */}
         <div className="discounts-tabs">
-          {CATEGORIES.map((cat) => (
+          {VOUCHER_CATEGORY_KEYS.map((cat) => (
             <button
               key={cat}
               type="button"
@@ -192,7 +192,7 @@ export default function DiscountsPage() {
               onClick={() => setActiveTab(cat)}
               disabled={loading || error}
             >
-              {cat}
+              {t(voucherCategoryLabelKey(cat))}
             </button>
           ))}
         </div>
@@ -207,7 +207,7 @@ export default function DiscountsPage() {
             if (sectionCards.length === 0) return null;
             return (
               <section key={cat} className="discounts-section">
-                <h2 className="discounts-section__title">{cat}</h2>
+                <h2 className="discounts-section__title">{t(voucherCategoryLabelKey(cat))}</h2>
                 <DiscountRail
                   key={`${cat}-${search}`}
                   cards={sectionCards}

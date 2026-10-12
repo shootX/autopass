@@ -212,7 +212,10 @@ export default function WashAppointment() {
           </button>
         ))}
       </div>
-      <div className="v4-sec" style={{ marginTop: 16 }}>სერვისი</div>
+      <div className="v4-sec" style={{ marginTop: 16 }}>{t("WashAppointment.form.service.label")}</div>
+      {(branch?.services ?? []).length === 0 ? (
+        <p className="v4-empty">{t("WashAppointment.form.service.empty")}</p>
+      ) : (
       <div className="v4-sv">
         {(branch?.services ?? []).map((service) => {
           const name = service.name.toLowerCase();
@@ -225,6 +228,7 @@ export default function WashAppointment() {
           );
         })}
       </div>
+      )}
       {remaining != null && remaining > 0 && (
         <div className="v4-passnote">
           <span className="v4-limeico" style={{ background: '#F3F5F2' }}><Ticket size={19} /></span>
