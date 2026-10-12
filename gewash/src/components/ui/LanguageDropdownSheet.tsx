@@ -3,6 +3,7 @@ import enFlag from "@/assets/icons/en_flag.svg";
 import geFlag from "@/assets/icons/ge_flag.svg";
 import ruFlag from "@/assets/icons/ru_flag.svg";
 import { useTranslation } from "@/hooks/useTranslation";
+import { NATIVE_LANGUAGE_LABELS } from "@/lib/languageLabel";
 
 export function LanguageDropdownSheet({
   open,
@@ -22,9 +23,9 @@ export function LanguageDropdownSheet({
   if (!open) return null;
 
   const LANGUAGES = [
-    { code: "en", label: "English" },
-    { code: "ka", label: "Georgian" },
-    { code: "ru", label: "Russian" },
+    { code: "en", label: NATIVE_LANGUAGE_LABELS.en },
+    { code: "ka", label: NATIVE_LANGUAGE_LABELS.ka },
+    { code: "ru", label: NATIVE_LANGUAGE_LABELS.ru },
   ];
   const FLAG_MAP: Record<string, string> = { en: enFlag, ka: geFlag, ru: ruFlag };
   

@@ -11,6 +11,8 @@ import { customFetch } from '@/utils/customFetch';
 import { useMyPackages } from '@/hooks/useActivePackages';
 import { useTranslation } from '@/hooks/useTranslation';
 import { ArrowLeft, Pencil } from 'lucide-react';
+import Header from '@/components/Header';
+import { shouldShowPackageForm } from '@/lib/packageForm';
 
 export default function MyPackages() {
   const navigate = useNavigate();
@@ -65,26 +67,31 @@ export default function MyPackages() {
 
   const transformedPackages = activeRaw.map(toData);
   const availableCars = cars.filter((car) => !packages.some((pkg) => pkg.car.plate === car.plate && (pkg.end_date ?? '') >= today));
-  const showForm = Boolean(editingPackage) || buying || (transformedPackages.length === 0 && availableCars.length > 0);
+  const showForm = shouldShowPackageForm(Boolean(editingPackage), buying);
 
   return (
     <div className="v4-screen">
-      <div className="v4-hd">
-        <button type="button" className="v4-ib" onClick={() => (showForm && transformedPackages.length ? setBuying(false) : navigate(-1))} aria-label={t('MyPackages.header.backAlt')}>
-          <ArrowLeft size={21} />
-        </button>
-        <h1>{showForm && !editingPackage ? t('WashingPackageForm.title.create') : t('MyPackages.header.title')}</h1>
-        <button
-          type="button"
-          className="v4-ib"
-          aria-label={t('ActivePackageCard.actions.editAlt')}
-          onClick={() => {
-            if (transformedPackages[0]) setEditingPackage(transformedPackages[0]);
-          }}
-        >
-          <Pencil size={19} />
-        </button>
-      </div>
+      <Header
+        variant="v4"
+        title={showForm && !editingPackage ? t('WashingPackageForm.title.create') : t('MyPackages.header.title')}
+        left={
+          <button type="button" className="v4-ib" onClick={() => (showForm && transformedPackages.length ? setBuying(false) : navigate(-1))} aria-label={t('MyPackages.header.backAlt')}>
+            <ArrowLeft size={21} />
+          </button>
+        }
+        right={
+          <button
+            type="button"
+            className="v4-ib"
+            aria-label={t('ActivePackageCard.actions.editAlt')}
+            onClick={() => {
+              if (transformedPackages[0]) setEditingPackage(transformedPackages[0]);
+            }}
+          >
+            <Pencil size={19} />
+          </button>
+        }
+      />
 
       {!showForm && (
         <div className="v4-seg">
@@ -126,7 +133,14 @@ export default function MyPackages() {
             ))
           )
         ) : transformedPackages.length === 0 ? (
-          <p className="v4-empty">{t('MyPackages.empty')}</p>
+          <>
+            <p className="v4-empty">{t('MyPackages.empty')}</p>
+            {availableCars.length > 0 && (
+              <button type="button" className="ap-btn" style={{ marginTop: 16 }} onClick={() => setBuying(true)}>
+                {t('WashingPackageForm.button.create')}
+              </button>
+            )}
+          </>
         ) : (
           <>
             {activeRaw.map((pkg) => (

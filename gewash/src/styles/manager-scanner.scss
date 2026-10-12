@@ -16,6 +16,29 @@
   display: none !important;
 }
 
+.scanner-camera-error {
+  margin-top: 16px;
+  text-align: center;
+  color: $textPrimary;
+
+  p {
+    margin: 0 0 12px;
+    font-weight: 700;
+  }
+
+  button {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0 18px;
+    border: 0;
+    border-radius: 14px;
+    background: $yellowMain;
+    color: $textPrimary;
+    font-weight: 700;
+    cursor: pointer;
+  }
+}
+
 .scanner-wrapper {
   display: flex;
   flex-direction: column;

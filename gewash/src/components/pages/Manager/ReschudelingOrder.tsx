@@ -6,6 +6,7 @@ import { TimePickerMobileSheet } from "../../ui/TimePickerMobileSheet"
 import { updateAppointmentStatus } from "@/lib/utils"
 import { useTranslation } from "@/hooks/useTranslation"
 import { leftArrowUrl, managerVectorIconUrl } from "@/assets/staticUrls"
+import Header from "@/components/Header"
 
 
 export default function ReschudelingOrder() {
@@ -65,12 +66,18 @@ export default function ReschudelingOrder() {
 
   return (
     <div>
-      <header className='rescheduling-header'>
-        <button className='rescheduling-back-btn' onClick={() => navigate(-1)}>
-          <img src={leftArrowUrl} alt='Back' />
-        </button>
-        <h2 className='rescheduling-title'>{t("ReschudelingOrder.header.title")}</h2>
-      </header>
+      <Header
+        variant="labeled"
+        className="rescheduling-header"
+        title={t("ReschudelingOrder.header.title")}
+        titleAs="h2"
+        titleClassName="rescheduling-title"
+        left={
+          <button className="rescheduling-back-btn" onClick={() => navigate(-1)}>
+            <img src={leftArrowUrl} alt="Back" />
+          </button>
+        }
+      />
       <div className='rescheduling-order-container'>
         <div className='rescheduling-customer-info'>
           <div>

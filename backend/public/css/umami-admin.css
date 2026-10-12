@@ -782,6 +782,34 @@ a.umami-metric:hover {
   background: #0E1712;
   border-color: #0E1712;
   color: #F7F9F4;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sb-sidenav .sb-sidenav-menu {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.sb-sidenav .sb-sidenav-footer {
+  flex: none;
+}
+
+#fleet_model option[hidden] {
+  display: none;
+}
+
+@media (min-width: 992px) {
+  .sb-nav-fixed #layoutSidenav #layoutSidenav_nav {
+    width: var(--side-width);
+  }
+
+  .sb-nav-fixed #layoutSidenav #layoutSidenav_content {
+    margin-left: 0;
+    padding-left: var(--side-width);
+  }
 }
 
 body.sb-nav-fixed .umami-side-brand a,

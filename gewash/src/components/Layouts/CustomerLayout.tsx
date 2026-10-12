@@ -1,9 +1,14 @@
+import { useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import CustomerNavBar from "../pages/Customer/CustomerNavBar";
 import DesktopSidebar from "./DesktopSidebar";
+import { scrollForLocation } from "@/lib/scrollForLocation";
 
 export default function CustomerLayout() {
-  const { pathname, state } = useLocation();
+  const { pathname, hash, state } = useLocation();
+  useEffect(() => {
+    scrollForLocation(hash);
+  }, [pathname, hash]);
   const noFooterPaths = ["/register", "/auth", "/add-car"];
   const isAfterRegistration = state?.fromRegistration === true;
   const hideForFlow = /^\/branches\/[^/]+$/.test(pathname) || pathname === "/wash-appointment" || pathname === "/my-packages";

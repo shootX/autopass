@@ -132,6 +132,66 @@ FE-04: რეფერალის IP არის `{VITE_API_URL}/ref/ip` (`GET
 
 `origin/main`-ზე (PR #7 შერწყმულია) `set_password` ვალიდაცია არის `temp_code` required integer, `code` required digits:6, `password` required. Frontend-ის სხეული იგივე ველებს აგზავნის.
 
+## 2026-10-12 — FE-06, FE-07, FE-08, FE-09, FE-10
+
+FE-06: `docs/gewash-frontend-coverage.md` აღწერს `gewash/src/quiet/`-ს, რომელიც რეპოში არ არის. დაემატა მხოლოდ ის alias-ები, რომელთა კომპონენტი უკვე არსებობს: `/home`, `/qr`, `/reviews`, `/referrals`, `/calendar`, `/customer-calendar` (აღარ მიდის `/shop`-ზე), `/profile/cars`, `/profile/cars/new`, `/profile/cars/:id/edit`, მენეჯერის `/manager/calendar|bookings|scanner|statistics|profile|contacts|help|settings|reschedule/:id`. `/profile` კვლავ ProfilePage-ია (ჰაბი), არა CustomerMyData — გადაფარვა არსებულ ეკრანს წაშლიდა. Catch-all აღარ არის redirect; არის `NotFound`.
+
+არ გაკეთდა, რადგან ეკრანი ან API არ არის: `/reset-password`, `/verify-email`, `/terms`, `/bookings*`, `/packages*`, `/my-points/history`, ვაუჩერის/ბილეთის დეტალი, `/shop/:id/checkout`, `/orders*`, `/reviews/new`, `/messages/:id`, `/notifications`, `/help/:slug`, `/support`, settings-ის ქვეგვერდები, `/session-expired`, `/403`, `/500`, `/maintenance`, `/offline`.
+
+FE-07: `editMyCar` / `removeMyCar` `success: false`-ზე შეცდომას აჩვენებს და აღარ გადადის შენახულად. BE-10 (წარმატების ცრუ `success: true`, როცა სტრიქონი არ იცვლება) backend-ია და აქ არ შეცვლილა.
+
+FE-08: `expires_in` ინახება `access_token_expires_at`-ში. `dropExpiredAccessToken` იძახება `main.tsx`-იდან რენდერამდე. ტოკენი კვლავ `localStorage`-შია, რომ განახლებამ სესია არ მოკლას. main-ის `JWT_TTL` ნაგულისხმევი ახლა 43200 წუთია (30 დღე). კლიენტი ამ რიცხვს არ იგონებს — იყენებს პასუხის `expires_in`-ს.
+
+FE-09 / UX-12-ის ნაწილი: `lending/` `/`-ზე, თუ `access_token` არის, ხდება `location.replace` `{APP_BASE}/home`-ზე. ეს მუშაობს მხოლოდ მაშინ, თუ ვებ-სერვერი `/home`-ს gewash-ის `index.html`-ზე უშვებს ისე, როგორც `/auth`-ს. nginx root = marketing ამ რეპოში არ იცვლება. სერვერს არ შევხებივარ.
+
+FE-10: `CustomerMyData` hash `#vehicles`-ზე იძახებს `scrollIntoView`. `#vehicles` არის `MyVehicles`-ის wrapper-ზე.
+
+## 2026-10-12 — MOB-01, MOB-02, MOB-03, MOB-04, MOB-05, MOB-06, MOB-09, MOB-11
+
+MOB-10 არ შეხებია (PR #6). MOB-07 და MOB-08 აუდიტში არ არის.
+
+Onboarding ჩანს მხოლოდ გამოუსვლელ მომხმარებელზე, რომელიც პირდაპირ ავტორიზაციის მისამართზე არ მოსულა. `/privacy` და `/payment-success` იგივე სიაშია, რომ თანხმობის ბმულმა და გადახდის დაბრუნებამ კარუსელი არ გახსნას.
+
+სკანერი: `html5-qrcode`-ის `start` ერთ ეფექტშია. დახურვისას `releaseScanner` იძახებს `stop` და `clear`. კამერის უარზე ჩანს „კამერაზე წვდომა საჭიროა“ და ღილაკი „თავიდან ცდა“.
+
+ვიუპორტი აღარ კეტავს მასშტაბს. lending-ის `.nl input` არის 16px. ქვედა ნავის სიმაღლე არის `88px + env(safe-area-inset-bottom)`. v4 ნავი საკუთარ padding-ს ინარჩუნებს.
+
+## 2026-10-12 — PWA და მკვდარი დამოკიდებულებები
+
+ხატები გენერირდება `gewash/public/brand/app-icon.svg`-დან: `public/icons/icon-192.png`, `icon-512.png`, `icon-maskable-192.png`, `icon-maskable-512.png`. maskable სავსეა `#14482F`-ით და ნიშანი ცენტრის 80%-შია.
+
+სერვის-ვორქერი არის `gewash/public/sw.js`. ქსელი პირველია, ქეში მხოლოდ წარუმატებლობისას. `/api` არ ინახება. `navigator.serviceWorker.register` იძახება მხოლოდ `import.meta.env.PROD`-ზე, რომ dev სერვერი არ დაიქეშოს.
+
+`expo-camera` კოდში არ გამოიყენებოდა (სკანერი არის `html5-qrcode`). `gewash/app.json` მხოლოდ EAS `projectId`-ს ინახავდა.
+
+## 2026-10-12
+
+UX პრ (`cursor/ux-audit-fixes-fc25`) main-ისგან დამოუკიდებელია. ტესტები main-ის vitest ^5.0.3 და jsdom ^29.1.1 ვერსიებზეა.
+
+ავტოგანახლების საწყისი მნიშვნელობაა `AUTO_RENEWAL_DEFAULT = false`. სია პირველია: ფორმა იხსნება მხოლოდ ყიდვის ან რედაქტირების დროს.
+
+`ჭკკვიანი` წყაროში არ მოიძებნა. პრომო ტექსტი API-დანაა. სპლეშს ტაიმერი არ აქვს. ჰედერები განზრახ არ გაერთიანდა.
+
+ლენდინგის გადამისამართება `lending/logged-in-redirect.js`-შია. მუშაობს მხოლოდ მაშინ, თუ სერვერი `/home`-ს SPA-ზე აბრუნებს.
+
+პარტნიორის API გასაღები გვერდზე ნიღბიანად ჩანს. სრული მნიშვნელობა მაინც HTML ატრიბუტშია, რადგან მფლობელმა უნდა ნახოს. მიმდინარე პაროლი ანგარიშის შენახვაზე არასავალდებულოა. სერვერი ითხოვს მას მხოლოდ მაშინ, როცა ახალი პაროლი იწერება.
+
+## 2026-10-12
+
+FE-12 ცხოვრობს `gewash/src/lib/loginPhone.ts`-ში. 9 ციფრი, რომელიც თავად იწყება `995`-ით, ქვეყნის კოდად არ იჭრება. პრეფიქსი იჭრება მხოლოდ მაშინ, როცა ციფრები 9-ზე მეტია.
+
+## 2026-10-12
+
+UX-10. `splashShouldBlock` აბრუნებს false-ს, როცა ენა და როლი მზადაა, ან როცა გასულია 1500 მს. App.tsx ტაიმერი მხოლოდ ამ ზღვარს რთავს; მონაცემების ადრე მოსვლისას სპლეში მაშინვე ქრება.
+
+UX-11. `Header` იღებს `left` / `right` კვანძებს, რომ გვერდის უნიკალური ღილაკები შენარჩუნდეს. `bar` და `labeled` რენდერდება `<header>`-ად, `v4` — `div.v4-hd`-ად, `shell` — არსებული ბურგერის ჰედერი (CustomerCalendar).
+
+## 2026-10-12
+
+UX-05. ფუნქციების სექცია იყენებს `lending/img/top-car-840`-ს, აპის მაკეტი `lending/img/app-home-780`-ს. სურათები უკვე ამ ფაილებზე იყო მიბმული. გლობალური `picture{display:contents}` ზოგ ბრაუზერში ჩანაცვლებულ სურათს არ ხატავდა, ამიტომ ჩარჩო ცარიელი ჩანდა. ახლა picture ბლოკია, მაკეტის სურათი ჩარჩოს ავსებს (`object-fit: cover`, ზემოდან).
+
+UX-09. 1024px-იდან `.ap-side` არის `overflow-y: auto`. `.promo` და `.usr` არის `flex: none`, რომ გრძელი პრომო პროფილს არ დაადოს. ტექსტური შეცდომა SPA-ში არ დევს; main-ზე ის `promos` ცხრილშია და მიგრაცია `2026_10_12_000004_fix_promo_typo` ასწორებს.
+
 ## 2026-10-12
 
 UX-12. მაგალითში `root` არის SPA-ის ბილდი, არა `lending/`. `try_files $uri $uri/ /index.html` აბრუნებს `/home`-ს და დანარჩენ კლიენტის მისამართებს SPA-ის ინდექსზე. ფაილი ნიმუშია და არც ერთ სერვერზე არ არის ჩართული.

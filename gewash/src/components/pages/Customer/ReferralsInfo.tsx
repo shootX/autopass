@@ -13,6 +13,7 @@ import viberIcon from "@/assets/icons/viber_referal.svg";
 import whatsappIcon from "@/assets/icons/whatsapp_referal.svg";
 import facebookIcon from "@/assets/icons/facebook_referal.svg";
 import { leftArrowUrl } from "@/assets/staticUrls";
+import Header from "@/components/Header";
 
 const MOCK_REFERRAL_LINK = "https://geocar.com/rnu2345681";
 
@@ -144,15 +145,12 @@ export default function ReferralsInfo() {
 
   return (
     <div className="referrals-info-page">
-      <header>
-        <img
-          onClick={() => navigate(-1)}
-          src={leftArrowUrl}
-          alt="Back"
-        />
-        {t("ReferralsInfo.header.title")}
-        <span />
-      </header>
+      <Header
+        variant="bar"
+        title={t("ReferralsInfo.header.title")}
+        endSpacer
+        left={<img onClick={() => navigate(-1)} src={leftArrowUrl} alt="Back" />}
+      />
 
       <div className="referrals-info-wrapper">
         <div className="referrals-info-promo">

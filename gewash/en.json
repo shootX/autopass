@@ -146,7 +146,8 @@
             },
             "placeholders": {
                 "text": "---",
-                "date": "--/--/----"
+                "date": "--/--/----",
+                "sex": "Choose"
             },
             "calendarAlt": "calendar",
             "sexAlt": "select",
@@ -373,6 +374,8 @@
             "title": "Set a new password",
             "subtitle": "Choose a secure password for your account",
             "label": "Password",
+            "placeholder": "New password",
+            "repeat": "Repeat password",
             "finish": "Save",
             "errors": {
                 "tooShort": "Password must be at least 6 characters"
@@ -413,7 +416,8 @@
             "service": {
                 "label": "Service",
                 "placeholder": "-",
-                "arrowAlt": "Arrow"
+                "arrowAlt": "Arrow",
+                "empty": "This branch has no services yet"
             },
             "submit": {
                 "button": "Book a service",
@@ -769,7 +773,8 @@
             "unit": "month"
         },
         "renewal": {
-            "label": "Auto-renewal"
+            "label": "Auto-renewal",
+            "hint": "Optional. If on, the card is charged when the term ends"
         },
         "price": {
             "label": "Subscription price",
@@ -811,6 +816,14 @@
     },
     "Discounts": {
         "title": "Discounts",
+        "categories": {
+            "All": "All",
+            "Auto": "Auto",
+            "Health": "Health",
+            "Food": "Food",
+            "Rest": "Rest",
+            "Booking": "Booking"
+        },
         "searchPlaceholder": "Search for a partner company",
         "loading": "Loading…",
         "empty": "No discounts found.",
@@ -925,6 +938,10 @@
             "shareTo": "Sharet to:"
         }
     },
+    "Scanner": {
+        "cameraRequired": "Camera access is required",
+        "retry": "Try again"
+    },
     "Help": {
         "title": "Help",
         "backAlt": "Back",
@@ -946,5 +963,9 @@
                 "a": "It depends on the package. The branch will tell you the exact time on site."
             }
         }
+    },
+    "NotFound": {
+        "title": "Page not found",
+        "home": "Back to home"
     }
 }

@@ -11,6 +11,7 @@ import giveaway2 from "@/assets/images/giveaway/giveaway_2.png";
 import giveaway3 from "@/assets/images/giveaway/giveaway_3.png";
 import ShopAsyncLoader from "@/components/ui/ShopAsyncLoader";
 import { fetchTickets, type ShopTicket } from "@/lib/shopApi";
+import Header, { HeaderBackChevron } from "@/components/Header";
 
 export type GiveawayItem = ShopTicket;
 
@@ -48,18 +49,24 @@ export default function GiveawayPage() {
 
   return (
     <div className="giveaway-page">
-      <header className="giveaway-header">
-        <button className="giveaway-header__back" onClick={() => navigate(-1)}>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path d="M15 18l-6-6 6-6" stroke="#14482F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </button>
-        <span className="giveaway-header__title">{t("Giveaway.title")}</span>
-        <div className="giveaway-header__balance">
-          <img src={geocoinIcon} alt="coin" />
-          <span>{typeof points === "number" ? points.toLocaleString() : "—"}</span>
-        </div>
-      </header>
+      <Header
+        variant="labeled"
+        className="giveaway-header"
+        title={t("Giveaway.title")}
+        titleAs="span"
+        titleClassName="giveaway-header__title"
+        left={
+          <button className="giveaway-header__back" onClick={() => navigate(-1)}>
+            <HeaderBackChevron />
+          </button>
+        }
+        right={
+          <div className="giveaway-header__balance">
+            <img src={geocoinIcon} alt="coin" />
+            <span>{typeof points === "number" ? points.toLocaleString() : "—"}</span>
+          </div>
+        }
+      />
 
       <div className="giveaway-wrapper">
         <h2 className="giveaway-section-title">{t("Giveaway.activeOffers")}</h2>

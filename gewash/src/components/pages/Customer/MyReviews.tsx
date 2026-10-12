@@ -2,21 +2,19 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { leftArrowUrl } from "@/assets/staticUrls";
 import { useTranslation } from "@/hooks/useTranslation";
+import Header from "@/components/Header";
 import "../../../styles/customer_styles/reviews.scss"
 export default function MyReviews() {
   const navigate = useNavigate();
   const t = useTranslation();
   return (
     <div>
-      <header>
-        <img
-          onClick={() => navigate(-1)}
-          src={leftArrowUrl}
-          alt=''
-        />
-        {t("MyReviews.title")}
-        <span></span>
-      </header>
+      <Header
+        variant="bar"
+        title={t("MyReviews.title")}
+        endSpacer
+        left={<img onClick={() => navigate(-1)} src={leftArrowUrl} alt="" />}
+      />
       <p style={{ textAlign: "center", marginTop: "20px" }}>{t("MyReviews.empty")}</p>
       {/* <div className='review-item'>
         <div className="flexible-reviws">
