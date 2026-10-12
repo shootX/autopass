@@ -8,14 +8,17 @@ use App\Models\UserVoucher;
 use App\Support\Phone;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Validator;
 
 class VouchersController extends Controller
 {
+    private const MAX_CODE_ATTEMPTS = 5;
+
     public function checkVoucher(Request $request)
     {
         $validate = Validator::make($request->all(), [
-            'code' => 'required|min:8|max:8|exists:user_vouchers,code'
+            'code' => 'required|min:8|max:8'
         ]);
 
         if($validate->fails()){
@@ -27,7 +30,11 @@ class VouchersController extends Controller
 
         try {
 
-            $voucher = UserVoucher::where('code', $request->code)->first();
+            $voucher = UserVoucher::where('code', $request->code)->whereNull('used_at')->first();
+
+            if (! $voucher) {
+                return response()->json(['success' => false, 'message' => 'Incorrect code']);
+            }
 
             if (! $this->ownedByPartner($voucher)) {
                 return response()->json(['success' => false, 'message' => 'Incorrect code'], 403);
@@ -79,7 +86,7 @@ class VouchersController extends Controller
     public function useVoucher(Request $request)
     {
         $validate = Validator::make($request->all(), [
-            'temp_code' => 'required|exists:sms_temps,id',
+            'temp_code' => 'required|integer',
             'code' => 'required|digits:6'
         ]);
 
@@ -90,41 +97,45 @@ class VouchersController extends Controller
             ]);
         }
 
-        try{
-        $sms = SmsTemp::where('id', (int)$request->temp_code)
-            ->where('type', 'use_voucher')
-            ->where('code', $request->code)
-            ->first();
+        $tempId = (int) $request->temp_code;
+        $lockKey = 'voucher-use:'.$tempId;
 
-        if($sms)
-        {
+        // BE-18: 5 wrong codes burn the SMS code; the partner has to request a new one.
+        if (RateLimiter::tooManyAttempts($lockKey, self::MAX_CODE_ATTEMPTS)) {
+            SmsTemp::whereKey($tempId)->where('type', 'use_voucher')->delete();
+            return response()->json(['success' => false, 'message' => 'Too many attempts. Request a new code.'], 429);
+        }
+
+        try {
+            $sms = SmsTemp::where('id', $tempId)
+                ->where('type', 'use_voucher')
+                ->where('created_at', '>', now()->subMinutes(10))
+                ->first();
+
+            if (! $sms || ! hash_equals((string) $sms->code, (string) $request->code)) {
+                RateLimiter::hit($lockKey, 600);
+                return response()->json(['success' => false, 'message' => 'Incorrect SMS code']);
+            }
+
             $voucher = UserVoucher::find($sms->user_voucher_id);
 
             if (! $this->ownedByPartner($voucher)) {
                 return response()->json(['success' => false, 'message' => 'Incorrect SMS code'], 403);
             }
 
-            $voucher->delete();
+            if ($voucher->used_at !== null) {
+                return response()->json(['success' => false, 'message' => 'Voucher already used'], 422);
+            }
+
+            // BE-19: keep the record, mark it used.
+            $voucher->update(['used_at' => now(), 'used_by_partner_id' => auth('partners')->id()]);
             $sms->delete();
+            RateLimiter::clear($lockKey);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'You successfully used voucher'
-            ]);
-
-        } else {
-            return response()->json([
-                'success' => false,
-                'message' => 'Incorrect SMS code'
-            ]);
-        }
-
-        } catch (\Exception $ex)
-        {
-            return response()->json([
-                'success' => false,
-                'message' => 'Some error'
-            ]);
+            return response()->json(['success' => true, 'message' => 'You successfully used voucher']);
+        } catch (\Exception $ex) {
+            report($ex);
+            return response()->json(['success' => false, 'message' => 'Some error']);
         }
     }
 

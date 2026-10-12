@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Package;
 use App\Models\User;
 use App\Models\Appointment;
+use App\Models\PackageWash;
+use Illuminate\Support\Facades\DB;
 use App\Models\UserPackage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -215,14 +217,15 @@ class PackagesController extends Controller
             return response()->json(['success' => false, 'error' => 'Not found'], 404);
         }
 
-        // Branch check: the car must have an appointment at this manager's branch today.
-        $hasAppointmentHere = Appointment::query()
-            ->where('car_wash_id', $washId)
+        // Branch check. Walk-ins (no booking today) are allowed and recorded on this branch;
+        // a booking for this car today at another branch only can't be approved here.
+        $todays = Appointment::query()
             ->where('car_id', $userPackage->user_car_id)
             ->whereDate('date', now()->toDateString())
-            ->exists();
-        if (! $hasAppointmentHere) {
-            return response()->json(['success' => false, 'error' => 'No appointment at your branch today'], 403);
+            ->get(['id', 'car_wash_id']);
+        $hereAppointment = $todays->firstWhere('car_wash_id', $washId);
+        if (! $hereAppointment && $todays->isNotEmpty()) {
+            return response()->json(['success' => false, 'error' => 'Appointment belongs to another branch'], 403);
         }
 
         if ($userPackage->end_date && now()->greaterThan($userPackage->end_date)) {
@@ -232,7 +235,16 @@ class PackagesController extends Controller
             return response()->json(['success' => false, 'error' => 'No washes left'], 422);
         }
 
-        $userPackage->increment('used_washes');
+        DB::transaction(function () use ($userPackage, $washId, $user, $hereAppointment) {
+            $userPackage->increment('used_washes');
+            PackageWash::create([
+                'user_package_id' => $userPackage->id,
+                'car_wash_id' => $washId,
+                'manager_id' => $user->id,
+                'appointment_id' => $hereAppointment?->id,
+                'walk_in' => $hereAppointment === null,
+            ]);
+        });
 
         $userPackage->user->sendPush([
             'en' => 'The wash has begun',

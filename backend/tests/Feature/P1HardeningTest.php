@@ -73,7 +73,7 @@ it('returns 403 to non-managers on package approve', function () {
     $this->withToken(JWTAuth::fromUser($u))->postJson('/api/package/1/approve')->assertForbidden();
 });
 
-it('blocks approving a package without an appointment at the manager branch', function () {
+it('blocks approving against another branch appointment and records the wash on the own branch', function () {
     $mgr1 = makeUser('+995555100003', User::ROLE_MANAGER);
     $mgr2 = makeUser('+995555100004', User::ROLE_MANAGER);
     $client = makeUser('+995555100005');
@@ -89,6 +89,19 @@ it('blocks approving a package without an appointment at the manager branch', fu
     freshAuth();
     $this->withToken(JWTAuth::fromUser($mgr1))->postJson("/api/package/{$pkg}/approve")->assertOk();
     expect(DB::table('user_packages')->find($pkg)->used_washes)->toBe(1);
+    $wash = DB::table('package_washes')->first();
+    expect((int) $wash->car_wash_id)->toBe($wash1)->and((bool) $wash->walk_in)->toBeFalse();
+});
+
+it('allows walk-in approval without a booking and records it on the manager branch', function () {
+    $mgr = makeUser('+995555100020', User::ROLE_MANAGER);
+    $client = makeUser('+995555100021');
+    $wash = washFor($mgr);
+    $car = row('user_cars', ['user_id' => $client->id, 'model_id' => 1, 'plate' => 'AA555AA']);
+    $pkg = userPackage($client->id, $car);
+    $this->withToken(JWTAuth::fromUser($mgr))->postJson("/api/package/{$pkg}/approve")->assertOk();
+    $rec = DB::table('package_washes')->where('user_package_id', $pkg)->first();
+    expect((int) $rec->car_wash_id)->toBe($wash)->and((bool) $rec->walk_in)->toBeTrue()->and((int) $rec->manager_id)->toBe($mgr->id);
 });
 
 it('refuses approving an exhausted package', function () {
@@ -193,5 +206,46 @@ it('lets only the owning partner check and use a voucher', function () {
     expect(DB::table('user_vouchers')->where('id', $uv)->exists())->toBeTrue();
     freshAuth();
     $this->withToken($t1)->postJson('/api/partner/voucher/use', ['temp_code' => $sms->id, 'code' => $sms->code])->assertOk()->assertJson(['success' => true]);
-    expect(DB::table('user_vouchers')->where('id', $uv)->exists())->toBeFalse();
+    $row = DB::table('user_vouchers')->find($uv);
+    expect($row->used_at)->not->toBeNull()->and((int) $row->used_by_partner_id)->toBe($p1);
+});
+
+// Admin ban (decision d)
+it('bans clients only via POST', function () {
+    $this->get('/dashboard/clients/1/ban')->assertStatus(405);
+    $admin = makeUser('+995555100030', User::ROLE_ADMIN);
+    $client = makeUser('+995555100031');
+    $this->actingAs($admin)->post("/dashboard/clients/{$client->id}/ban")->assertRedirect();
+    expect((bool) $client->fresh()->ban)->toBeTrue();
+});
+
+it('ships the CORS origin default in .env.example', function () {
+    expect(file_get_contents(base_path('.env.example')))->toContain('CORS_ALLOWED_ORIGINS=https://wash.socialsave.cc');
+});
+
+// BE-18
+it('burns the voucher SMS code after 5 wrong attempts', function () {
+    [$p1, $t1] = partnerToken('partner-bf');
+    $client = makeUser('+995555100032');
+    $cat = row('voucher_categories', ['name' => 'c']);
+    $v = row('vouchers', ['name' => 'v', 'description' => 'd', 'photo' => 'p', 'category_id' => $cat, 'price' => 1, 'partner_id' => $p1]);
+    $uv = row('user_vouchers', ['user_id' => $client->id, 'voucher_id' => $v, 'code' => 'CODEBF01']);
+    $sms = \App\Models\SmsTemp::create(['type' => 'use_voucher', 'user_id' => $client->id, 'code' => '424242', 'user_voucher_id' => $uv]);
+    foreach (range(1, 5) as $i) {
+        $this->withToken($t1)->postJson('/api/partner/voucher/use', ['temp_code' => $sms->id, 'code' => '000000'])->assertJson(['success' => false]);
+    }
+    $this->withToken($t1)->postJson('/api/partner/voucher/use', ['temp_code' => $sms->id, 'code' => '424242'])->assertStatus(429);
+    expect(\App\Models\SmsTemp::find($sms->id))->toBeNull();
+    expect(DB::table('user_vouchers')->find($uv)->used_at)->toBeNull();
+});
+
+// BE-19
+it('hides used vouchers from the client and refuses re-checking them', function () {
+    [$p1, $t1] = partnerToken('partner-used');
+    $client = makeUser('+995555100033');
+    $cat = row('voucher_categories', ['name' => 'c']);
+    $v = row('vouchers', ['name' => 'v', 'description' => 'd', 'photo' => 'p', 'category_id' => $cat, 'price' => 1, 'partner_id' => $p1]);
+    row('user_vouchers', ['user_id' => $client->id, 'voucher_id' => $v, 'code' => 'USED0001', 'used_at' => now()]);
+    expect($client->vouchers()->count())->toBe(0);
+    $this->withToken($t1)->postJson('/api/partner/voucher/check', ['code' => 'USED0001'])->assertJson(['success' => false]);
 });

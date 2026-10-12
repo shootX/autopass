@@ -47,7 +47,7 @@ Route::prefix('dashboard')
             Route::get('/', [ClientsController::class, 'index'])->name('admin.clients');
 
             Route::prefix('/{client}')->group(function () {
-                Route::get('/ban', [ClientsController::class, 'ban'])->name('admin.clients.ban');
+                Route::post('/ban', [ClientsController::class, 'ban'])->name('admin.clients.ban');
                 Route::get('/edit', [ClientsController::class, 'edit'])->name('admin.clients.edit');
                 Route::post('/edit_save', [ClientsController::class, 'edit_save'])->name('admin.clients.edit_save');
                 Route::delete('/delete', [ClientsController::class, 'delete'])->name('admin.clients.delete');

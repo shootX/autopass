@@ -167,7 +167,8 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->belongsToMany(Voucher::class, 'user_vouchers')
             ->with('category')
-            ->withPivot('code');
+            ->withPivot('code')
+            ->wherePivotNull('used_at');
     }
 
     public function pushTokens() : HasMany
