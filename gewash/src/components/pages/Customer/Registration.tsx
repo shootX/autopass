@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from "react"; // Добавили useEffect
+import { useState, useEffect, type ChangeEvent } from "react";
 import OTPVerification from "../../OTPVerification";
 import { Link, useNavigate } from "react-router-dom";
 import { customFetch } from "@/utils/customFetch";
 import { fetchUserData } from "@/lib/fetchUserData";
+import { buildSetPasswordBody, tempCodeFromRegister } from "@/lib/registerPassword";
+import { referralIpUrl } from "@/lib/referralIp";
 import { useDispatch } from "react-redux";
 const API_URL = import.meta.env.VITE_API_URL;
 import { useTranslation } from "@/hooks/useTranslation";
@@ -10,20 +12,18 @@ import { logoUrl, googleServiceIconUrl, facebookUrl } from "@/assets/staticUrls"
 
 async function generateHash(string: string) {
   const msgUint8 = new TextEncoder().encode(string);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", msgUint8);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
-  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  return hashHex;
+  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
 const getHash = async (): Promise<string> => {
   try {
-    // 1. Получаем IP
-    const response = await fetch('https://back.geocar.ge/api/ref/ip');
+    const response = await fetch(referralIpUrl(API_URL));
     const data = await response.json();
     const myIp = data.ip;
+    const nav = navigator as Navigator & { deviceMemory?: number };
 
-    // 2. Собираем системные метрики (fingerprint)
     const fingerprintData = [
       myIp,
       navigator.language,
@@ -32,17 +32,14 @@ const getHash = async (): Promise<string> => {
       screen.colorDepth,
       window.devicePixelRatio,
       navigator.maxTouchPoints,
-      navigator.hardwareConcurrency ?? '',
-      (navigator as any).deviceMemory ?? '' // кастим к any, так как в стандартных типах TS deviceMemory может отсутствовать
-    ].join('|');
+      navigator.hardwareConcurrency ?? "",
+      nav.deviceMemory ?? "",
+    ].join("|");
 
-    // 3. Генерируем и возвращаем хэш
-    const hash = await generateHash(fingerprintData);
-    return hash;
-
+    return await generateHash(fingerprintData);
   } catch (error) {
-    console.error("Ошибка при генерации хэша:", error);
-    return ""; // Возвращаем пустую строку в случае падения
+    console.error("Referral hash failed:", error);
+    return "";
   }
 };
 
@@ -58,6 +55,7 @@ export default function Registration() {
 
   const togglePassword = () => setShowPassword((prev) => !prev);
   const [tempCode, setTempCode] = useState<number | null>(null);
+  const [verifyCode, setVerifyCode] = useState<string | null>(null);
   const navigate = useNavigate();
 
   // Запрос при открытии страницы (монтировании компонента)
@@ -90,8 +88,8 @@ export default function Registration() {
     checkHash();
   }, []);
 
-  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    let raw = e.target.value.replace(/[^\d]/g, "").slice(0, 9);
+  const handlePhoneChange = (e: ChangeEvent<HTMLInputElement>): void => {
+    const raw = e.target.value.replace(/[^\d]/g, "").slice(0, 9);
     setPhone(raw);
     if (error.phone) setError((prev) => ({ ...prev, phone: undefined }));
   };
@@ -126,9 +124,11 @@ export default function Registration() {
       });
 
       const data = await res.json();
+      const ticket = tempCodeFromRegister(data);
 
-      if (data.success) {
-        setTempCode(data.temp_code);
+      if (ticket != null) {
+        setTempCode(ticket);
+        setVerifyCode(null);
         setStage("verify");
       } else {
         const serverPhoneError = data.error?.phone?.[0] || "";
@@ -162,6 +162,7 @@ export default function Registration() {
 
       if (data.success && data.access_token) {
         localStorage.setItem("access_token", data.access_token);
+        setVerifyCode(code);
         handleOTPVerified();
       } else {
         throw new Error("Invalid code");
@@ -178,6 +179,11 @@ export default function Registration() {
       return;
     }
 
+    if (tempCode == null || !verifyCode) {
+      setError({ password: "code-missing" });
+      return;
+    }
+
     try {
       const res = await customFetch(`${API_URL}/register/set_password`, {
         method: "POST",
@@ -186,10 +192,11 @@ export default function Registration() {
           "Accept": "application/json",
           "Authorization": `Bearer ${localStorage.getItem("access_token")}`,
         },
-        body: JSON.stringify({
+        body: JSON.stringify(buildSetPasswordBody({
           password,
-          temp_code: tempCode,
-        }),
+          tempCode,
+          code: verifyCode,
+        })),
       });
 
       const data = await res.json();
@@ -224,7 +231,22 @@ export default function Registration() {
 
         {error.password === "too-short" && (
           <div className="incorrect-password-error">
-            <p>{t("Registration.stage.setPassword.title.errors.tooShort")}</p>
+            <p>{t("Registration.stage.setPassword.errors.tooShort")}</p>
+          </div>
+        )}
+        {error.password === "code-missing" && (
+          <div className="incorrect-password-error">
+            <p>{t("Registration.stage.setPassword.errors.codeMissing")}</p>
+          </div>
+        )}
+        {error.password === "server-error" && (
+          <div className="incorrect-password-error">
+            <p>{t("Registration.stage.setPassword.errors.serverError")}</p>
+          </div>
+        )}
+        {error.password === "network" && (
+          <div className="incorrect-password-error">
+            <p>{t("Registration.stage.setPassword.errors.network")}</p>
           </div>
         )}
 
