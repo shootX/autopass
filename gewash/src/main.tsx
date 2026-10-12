@@ -3,6 +3,12 @@ import App from './App.tsx'
 import "./index.css"
 import "./styles/global.scss";
 
+if (import.meta.env.PROD && "serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    void navigator.serviceWorker.register("/sw.js");
+  });
+}
+
 if (import.meta.env.VITE_BYPASS_AUTH === "true") {
   const { installPreviewFetch } = await import("./dev/previewFixtures");
   installPreviewFetch();
