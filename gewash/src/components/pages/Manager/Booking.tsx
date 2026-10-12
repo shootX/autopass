@@ -4,6 +4,7 @@ import ManagerOrdersList from "./ManagerOrdersList";
 import { useManagerActions } from "@/hooks/useManagerActions";
 import { useAllRecords } from "@/hooks/useAllRecords";
 import { useTranslation } from "@/hooks/useTranslation";
+import Header from "@/components/Header";
 
 type Filter = "New" | "Confirmed" | "Sheduled" | "All";
 const filters: Filter[] = ["New", "Confirmed", "Sheduled", "All"];
@@ -34,9 +35,7 @@ export default function Booking() {
 
   return (
     <div>
-      <header style={{ textAlign: "center", justifyContent: "center" }}>
-        {t("Booking.header")}
-      </header>
+      <Header variant="bar" title={t("Booking.header")} style={{ textAlign: "center", justifyContent: "center" }} />
 
       <div className='reservation-staus-bar'>
         <ul>

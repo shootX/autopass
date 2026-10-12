@@ -1,6 +1,8 @@
 @use "../variables" as *;
 
 .auth-wrapper {
+    box-sizing: border-box;
+    max-width: calc(100vw - 32px);
     padding: 32px 16px;
     margin: 16px;
     border-radius: 16px;
@@ -205,20 +207,30 @@
   .auth-accept-policy {
     display: flex;
     align-items: flex-start;
+    flex-wrap: wrap;
     gap: 10px;
+    max-width: 100%;
     font-size: 14px;
     line-height: 1.45;
 
+    a {
+      overflow-wrap: anywhere;
+    }
+
     input {
-      width: 18px;
-      height: 18px;
-      margin-top: 2px;
+      width: 22px;
+      height: 22px;
       flex: none;
       accent-color: $blueMain;
     }
 
-    label {
+    label,
+    a {
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
       text-align: left;
+      overflow-wrap: anywhere;
     }
   }
 
@@ -226,10 +238,13 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-wrap: wrap;
     @include font-roboto-regular-blue;
     margin-top: 16px;
     a {
-        color: $yellowMain;
+        color: $blueMain;
+        text-decoration: underline;
+        text-underline-offset: 3px;
     }
   }
 

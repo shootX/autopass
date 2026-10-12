@@ -3,7 +3,8 @@ import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store";
 import { logoDarkUrl } from "@/assets/staticUrls";
-import { initials, formatPhone } from "@/lib/format";
+import { formatPhone } from "@/lib/format";
+import { avatarLabel } from "@/lib/greetingName";
 import {
   Bell,
   House,
@@ -79,7 +80,7 @@ export default function DesktopSidebar() {
         </a>
       )}
       <NavLink to="/profile" className="usr">
-        <span className="av">{initials(user?.firstName, user?.lastName)}</span>
+        <span className="av">{avatarLabel(user?.firstName, user?.lastName, user?.phone)}</span>
         <span className="grow">
           <b style={{ display: "block", fontSize: 14 }}>{[user?.firstName, user?.lastName].filter(Boolean).join(" ") || "პროფილი"}</b>
           <small style={{ color: "#8E9A92", fontSize: 12 }}>{formatPhone(user?.phone)}</small>

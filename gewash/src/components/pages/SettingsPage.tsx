@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import type { RootState, AppDispatch } from '@/store';
 import { setLanguage } from '@/store/langSlice';
 import { useTranslation } from '@/hooks/useTranslation';
+import { languageNativeName } from '@/lib/languageLabel';
 import {
   leftArrowUrl,
   langSettingIconUrl,
@@ -13,6 +14,7 @@ import {
   leaveSettingsIconUrl,
   deleteSettingsIconUrl,
 } from '@/assets/staticUrls';
+import Header from '@/components/Header';
 
 export default function SettingsPage() {
   const navigate = useNavigate();
@@ -31,8 +33,7 @@ export default function SettingsPage() {
     }
   }, [dropdownOpen, currentLang]);
 
-  const languageLabel =
-    currentLang === 'en' ? 'English' : currentLang === 'ru' ? 'Russian' : 'Georgian';
+  const languageLabel = languageNativeName(currentLang);
 
   const handleSaveLanguage = () => {
     dispatch(setLanguage(selectedLang));
@@ -48,11 +49,13 @@ export default function SettingsPage() {
 
   return (
     <div>
-      <header>
-        <img onClick={() => navigate(-1)} src={leftArrowUrl} alt="" />
-        <p>{t('Sidebar.menu.settings')}</p>
-        <span></span>
-      </header>
+      <Header
+        variant="bar"
+        title={t('Sidebar.menu.settings')}
+        titleAs="p"
+        endSpacer
+        left={<img onClick={() => navigate(-1)} src={leftArrowUrl} alt="" />}
+      />
       <div
         style={{
           margin: '16px',

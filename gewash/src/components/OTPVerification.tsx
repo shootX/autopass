@@ -74,6 +74,8 @@ export default function OTPVerification({
             key={i}
             type="text"
             inputMode="numeric"
+            autoComplete={i === 0 ? "one-time-code" : "off"}
+            name={i === 0 ? "one-time-code" : undefined}
             maxLength={1}
             ref={(el) => { inputRefs.current[i] = el; }}
             value={digit}

@@ -10,6 +10,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { branchPhoto, carParts, carPhoto } from '@/lib/v4';
 import { ArrowLeft, ChevronLeft, ChevronRight, Droplets, Sparkles, Ticket, Zap } from 'lucide-react';
 import PageSkeleton from '@/components/Skeletons/PageSkeleton';
+import Header from '@/components/Header';
 
 type Service = {
   id: number;
@@ -142,11 +143,12 @@ export default function WashAppointment() {
 
   return (
     <div className="v4-screen ap-book">
-      <div className="v4-hd">
-        <button type="button" className="v4-ib" onClick={() => navigate(-1)} aria-label="უკან"><ArrowLeft size={21} /></button>
-        <h1>რეცხვის დაჯავშნა</h1>
-        <span className="spacer" />
-      </div>
+      <Header
+        variant="v4"
+        title="რეცხვის დაჯავშნა"
+        left={<button type="button" className="v4-ib" onClick={() => navigate(-1)} aria-label="უკან"><ArrowLeft size={21} /></button>}
+        right={<span className="spacer" />}
+      />
       <div className="v4-branch">
         {branch && <span className="ph" style={{ backgroundImage: `url(${branchPhoto(branch)})` }} />}
         <div style={{ flex: 1 }}>
@@ -212,7 +214,10 @@ export default function WashAppointment() {
           </button>
         ))}
       </div>
-      <div className="v4-sec" style={{ marginTop: 16 }}>სერვისი</div>
+      <div className="v4-sec" style={{ marginTop: 16 }}>{t("WashAppointment.form.service.label")}</div>
+      {(branch?.services ?? []).length === 0 ? (
+        <p className="v4-empty">{t("WashAppointment.form.service.empty")}</p>
+      ) : (
       <div className="v4-sv">
         {(branch?.services ?? []).map((service) => {
           const name = service.name.toLowerCase();
@@ -225,6 +230,7 @@ export default function WashAppointment() {
           );
         })}
       </div>
+      )}
       {remaining != null && remaining > 0 && (
         <div className="v4-passnote">
           <span className="v4-limeico" style={{ background: '#F3F5F2' }}><Ticket size={19} /></span>

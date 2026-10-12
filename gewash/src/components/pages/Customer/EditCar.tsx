@@ -5,6 +5,8 @@ import { invalidateCarsCache } from '@/hooks/useFetchCars';
 import leftArrow from '@/assets/icons/left-arrow.svg';
 import closeIcon from '@/assets/icons/close-icon.svg';
 import { useTranslation } from '@/hooks/useTranslation';
+import Header from '@/components/Header';
+import { apiErrorMessage, type ApiBody } from '@/lib/apiResult';
 
 export default function EditCar() {
   const navigate = useNavigate();
@@ -71,7 +73,7 @@ export default function EditCar() {
     const token = localStorage.getItem('access_token');
 
     try {
-      let sendPlate = numberPlate.replace(/[^a-zA-Z0-9]/g, '');
+      const sendPlate = numberPlate.replace(/[^a-zA-Z0-9]/g, '');
 
       console.log(brand, model, sendPlate);
       const response = await customFetch(`${import.meta.env.VITE_API_URL}/mycars/${carId}/edit`, {
@@ -87,21 +89,17 @@ export default function EditCar() {
           plate: sendPlate,
         }),
       });
-      let resData: any = null;
+      let resData: ApiBody | null = null;
       try {
-        resData = await response.json();
-      } catch (e) {
-        resData = await response.text();
+        resData = (await response.json()) as ApiBody;
+      } catch {
+        resData = null;
       }
 
-      if (!response.ok) {
+      const failure = apiErrorMessage(response.ok, resData, t('EditCar.errors.saveFailed'));
+      if (failure) {
         console.error('Update car error [Status ' + response.status + ']:', resData);
-
-        const errorMessage =
-          resData?.message ||
-          (resData?.errors ? JSON.stringify(resData.errors) : 'Failed to update car');
-
-        throw new Error(errorMessage);
+        throw new Error(failure);
       }
 
       invalidateCarsCache();
@@ -117,12 +115,24 @@ export default function EditCar() {
     const token = localStorage.getItem('access_token');
 
     try {
-      await customFetch(`${import.meta.env.VITE_API_URL}/mycars/${carId}/remove`, {
+      const response = await customFetch(`${import.meta.env.VITE_API_URL}/mycars/${carId}/remove`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
+      let resData: ApiBody | null = null;
+      try {
+        resData = (await response.json()) as ApiBody;
+      } catch {
+        resData = null;
+      }
+      const failure = apiErrorMessage(response.ok, resData, t('EditCar.errors.deleteFailed'));
+      if (failure) {
+        setError(failure);
+        setIsClosing(false);
+        return;
+      }
       invalidateCarsCache();
 
       setTimeout(() => {
@@ -139,11 +149,13 @@ export default function EditCar() {
 
   return (
     <div className="edit-car-screen">
-      <header>
-        <img src={leftArrow} alt="Back" onClick={() => navigate(-1)} />
-        <h3>{t('EditCar.header.title')}</h3>
-        <img src={closeIcon} alt="Close" />
-      </header>
+      <Header
+        variant="bar"
+        title={t('EditCar.header.title')}
+        titleAs="h3"
+        left={<img src={leftArrow} alt="Back" onClick={() => navigate(-1)} />}
+        right={<img src={closeIcon} alt="Close" />}
+      />
 
       <div className="edit-car-content">
         <p className="edit-car-title-info">{t('EditCar.titleInfo')}</p>

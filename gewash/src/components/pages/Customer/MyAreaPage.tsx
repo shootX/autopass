@@ -4,6 +4,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store";
 import leftArrow from "@/assets/icons/left-arrow.svg";
+import Header from "@/components/Header";
 
 import discountIcon from "@/assets/icons/discount_icon.svg";
 import geocoinIcon from "@/assets/images/shop/geocoin_icon.png";
@@ -135,22 +136,30 @@ export default function MyAreaPage() {
 
   return (
     <div className="my-area-page">
-      <header className="my-area-topbar">
-        <button className="my-area-topbar__back" onClick={() => navigate(-1)} aria-label="Back">
-          <img src={leftArrow} alt="Back" />
-        </button>
-        <span className="my-area-topbar__title">My Area</span>
-        <div className="my-area-topbar__balance">
-          <div className="my-area-topbar__coin">
-            <img src={geocoinIcon} alt="coin" />
+      <Header
+        variant="labeled"
+        className="my-area-topbar"
+        title="My Area"
+        titleAs="span"
+        titleClassName="my-area-topbar__title"
+        left={
+          <button className="my-area-topbar__back" onClick={() => navigate(-1)} aria-label="Back">
+            <img src={leftArrow} alt="Back" />
+          </button>
+        }
+        right={
+          <div className="my-area-topbar__balance">
+            <div className="my-area-topbar__coin">
+              <img src={geocoinIcon} alt="coin" />
+            </div>
+            <div className="my-area-topbar__balance-text">
+              <span className="my-area-topbar__amount">
+                {typeof points === "number" ? points.toLocaleString() : "—"}
+              </span>
+            </div>
           </div>
-          <div className="my-area-topbar__balance-text">
-            <span className="my-area-topbar__amount">
-              {typeof points === "number" ? points.toLocaleString() : "—"}
-            </span>
-          </div>
-        </div>
-      </header>
+        }
+      />
 
       <div className="my-area-wrapper">
         <div className="my-area-tabs">

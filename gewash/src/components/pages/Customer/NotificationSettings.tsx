@@ -24,18 +24,18 @@ export default function NotificationSettings({
         {t("NotificationSettings.title")}
       </h1>
 
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "16px" }}>
-        <p style={{ fontSize: "15px", color: "#14482F", fontWeight: 500 }}>{t("NotificationSettings.options.wash")}</p>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: "16px" }}>
+        <p style={{ margin: 0, fontSize: "15px", color: "#14482F", fontWeight: 500 }}>{t("NotificationSettings.options.wash")}</p>
         <Switch checked={wash} onCheckedChange={setWash} />
       </div>
 
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "16px" }}>
-        <p style={{ fontSize: "15px", color: "#14482F", fontWeight: 500 }}>{t("NotificationSettings.options.subscription")}</p>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: "16px" }}>
+        <p style={{ margin: 0, fontSize: "15px", color: "#14482F", fontWeight: 500 }}>{t("NotificationSettings.options.subscription")}</p>
         <Switch checked={subscription} onCheckedChange={setSubscription} />
       </div>
 
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <p style={{ fontSize: "15px", color: "#14482F", fontWeight: 500 }}>{t("NotificationSettings.options.promo")}</p>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
+        <p style={{ margin: 0, fontSize: "15px", color: "#14482F", fontWeight: 500 }}>{t("NotificationSettings.options.promo")}</p>
         <Switch checked={promo} onCheckedChange={setPromo} />
       </div>
     </div>

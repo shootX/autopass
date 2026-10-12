@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { scrollToHash } from '@/lib/scrollForLocation';
+import { scrollToElementId } from '@/lib/scrollToId';
 import { SingleCalendarMobileSheet } from '@/components/Calendars/SingleCalendarDropDownSheet';
 import { SexDropDown } from '@/components/ui/SexDropDown';
 import CustomerContactInfo from '@/components/CustomerContactInfo';
@@ -11,10 +13,12 @@ import type { RootState } from '@/store';
 import { useTranslation } from '@/hooks/useTranslation';
 import { customFetch } from '@/utils/customFetch';
 import { leftArrowUrl, calendarIconUrl, dangerUrl } from '@/assets/staticUrls';
+import Header from '@/components/Header';
 import { refreshCurrentUser } from '@/hooks/useUser';
 
 export default function CustomerMyData() {
   const navigate = useNavigate();
+  const { hash } = useLocation();
   const user = useSelector((state: RootState) => state.user.data);
   const { editUser } = useEditUser();
 
@@ -33,6 +37,23 @@ export default function CustomerMyData() {
   const dispatch = useDispatch();
 
   const t = useTranslation();
+
+  useEffect(() => {
+    if (hash !== '#vehicles') return;
+    scrollToHash(hash);
+    scrollToElementId('vehicles');
+    const frame = window.requestAnimationFrame(() => {
+      scrollToHash(hash);
+      scrollToElementId('vehicles');
+    });
+    const timer = window.setTimeout(() => {
+      scrollToElementId('vehicles');
+    }, 0);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.clearTimeout(timer);
+    };
+  }, [hash]);
 
   const isFormFilled = firstName.trim() && secondName.trim() && selectedDate && selectedSex !== '';
 
@@ -116,21 +137,24 @@ export default function CustomerMyData() {
 
   return (
     <div className="customer-data-container">
-      <header className="header">
-        <img src={leftArrowUrl} alt="back" onClick={() => navigate(-1)} />
-        <h2>{t('CustomerMyData.header.title')}</h2>
-        
-
-        <button
-          type="button"
-          style={{ width: 'auto', fontSize: saved ? 20 : undefined }}
-          className="points-info-promo__btn"
-          onClick={handleSave}
-        >
-          {saved ? t('CustomerMyData.header.saved') : t('ReschudelingOrder.form.save.button')}
-        </button>
-
-        {/* <svg
+      <Header
+        variant="bar"
+        className="header"
+        title={t('CustomerMyData.header.title')}
+        titleAs="h2"
+        left={<img src={leftArrowUrl} alt="back" onClick={() => navigate(-1)} />}
+        right={
+          <button
+            type="button"
+            style={{ width: 'auto', fontSize: saved ? 20 : undefined }}
+            className="points-info-promo__btn"
+            onClick={handleSave}
+          >
+            {saved ? t('CustomerMyData.header.saved') : t('ReschudelingOrder.form.save.button')}
+          </button>
+        }
+      />
+      {/* <svg
           width="18"
           height="18"
           viewBox="0 0 24 24"
@@ -147,7 +171,6 @@ export default function CustomerMyData() {
           <path d="M17 21v-8H7v8" />
           <path d="M7 3v5h8" />
         </svg> */}
-      </header>
 
       <div className="customer-data-wrapper">
         <h1>{t('CustomerMyData.form.title')}</h1>
@@ -217,7 +240,7 @@ export default function CustomerMyData() {
             >
               <input
                 type="text"
-                placeholder="---"
+                placeholder={t('CustomerMyData.form.placeholders.sex')}
                 value={selectedSex ? selectedSex[0].toUpperCase() + selectedSex.slice(1) : ''}
                 readOnly
               />

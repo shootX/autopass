@@ -6,13 +6,22 @@ import { differenceInMonths, format } from "date-fns";
 import { customFetch } from "@/utils/customFetch";
 import { closeIconUrl, whashesUrl, timeUrl } from "@/assets/staticUrls";
 import { formatPhone } from "@/lib/format";
+import Header from "@/components/Header";
+import { releaseScanner } from "@/lib/releaseScanner";
+import { useTranslation } from "@/hooks/useTranslation";
+
+const SCAN_CONFIG = {
+  fps: 10,
+  qrbox: { width: 250, height: 250 },
+  aspectRatio: 1.0,
+  disableFlip: false,
+};
 
 export default function ManagerScanner(): React.JSX.Element {
   const [scannedCode, setScannedCode] = useState<string | null>(null);
-  const [scanner, setScanner] = useState<Html5Qrcode | null>(null);
-  const [isCameraReady, setIsCameraReady] = useState(false);
   const [showScannerUI, setShowScannerUI] = useState(true);
-  const [isScannerRunning, setIsScannerRunning] = useState(false);
+  const [cameraAttempt, setCameraAttempt] = useState(0);
+  const [cameraError, setCameraError] = useState(false);
   const [isApproved, setIsApproved] = useState(false);
   const [approvalSuccess, setApprovalSuccess] = useState(false);
   const [showResultCard, setShowResultCard] = useState(true);
@@ -21,66 +30,41 @@ export default function ManagerScanner(): React.JSX.Element {
 
   const qrRef = useRef<HTMLDivElement>(null);
   const { result, loading, error } = useCheckQr(scannedCode);
+  const t = useTranslation();
 
   useEffect(() => {
-    if (scanner || !showScannerUI || !qrRef.current) return;
+    if (!showScannerUI || !qrRef.current) return;
 
+    let active = true;
     const html5QrCode = new Html5Qrcode("qr-reader");
-    setScanner(html5QrCode);
+    setCameraError(false);
 
     html5QrCode
       .start(
         { facingMode: "environment" },
-        {
-          fps: 10,
-          qrbox: { width: 250, height: 250 },
-          aspectRatio: 1.0,
-          disableFlip: false,
-        },
+        SCAN_CONFIG,
         (decodedText: string) => {
-          console.log("QR scanned:", decodedText);
+          if (!active) return;
           setScannedCode(decodedText);
-
-          html5QrCode
-            .stop()
-            .then(() => {
-              html5QrCode.clear().then(() => {
-                if (qrRef.current) qrRef.current.innerHTML = "";
-                setIsScannerRunning(false);
-                setScanner(null);
-                setShowScannerUI(false);
-              });
-            })
-            .catch((err) => {
-              console.warn("Stop error after scan:", err);
-              setIsScannerRunning(false);
-              setScanner(null);
-              setShowScannerUI(false);
-            });
+          void releaseScanner(html5QrCode).finally(() => {
+            if (!active) return;
+            if (qrRef.current) qrRef.current.innerHTML = "";
+            setShowScannerUI(false);
+          });
         },
         () => { }
       )
-      .then(() => {
-        setIsCameraReady(true);
-        setIsScannerRunning(true);
-      })
-      .catch((err) => console.error("Start error:", err));
-  }, [showScannerUI]);
+      .catch(() => {
+        if (!active) return;
+        setCameraError(true);
+      });
 
+    return () => {
+      active = false;
+      void releaseScanner(html5QrCode);
+    };
+  }, [showScannerUI, cameraAttempt]);
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file || !scanner) return;
-
-    try {
-      const result = await scanner.scanFile(file, true);
-      console.log("Scanned from image:", result);
-      setScannedCode(result);
-      setShowScannerUI(false);
-    } catch (err) {
-      console.error("Image scan error:", err);
-    }
-  };
 
   const handleCloseCard = () => {
     setApprovalSuccess(false);
@@ -128,55 +112,10 @@ export default function ManagerScanner(): React.JSX.Element {
     setApprovalSuccess(false);
     setIsApproved(false);
     setApprovedOffset(0);
-
+    setCameraError(false);
     if (qrRef.current) qrRef.current.innerHTML = "";
-
-    const html5QrCode = new Html5Qrcode("qr-reader");
-    setScanner(html5QrCode);
-
-    html5QrCode
-      .start(
-        { facingMode: "environment" },
-        {
-          fps: 10,
-          qrbox: (viewfinderWidth, viewfinderHeight) => {
-            const size = Math.min(viewfinderWidth, viewfinderHeight) * 0.8;
-            return {
-              width: size,
-              height: size,
-            };
-          },
-          aspectRatio: 1.0,
-          disableFlip: false,
-        },
-        (decodedText: string) => {
-          console.log("QR scanned:", decodedText);
-          setScannedCode(decodedText);
-
-          html5QrCode
-            .stop()
-            .then(() => {
-              html5QrCode.clear().then(() => {
-                if (qrRef.current) qrRef.current.innerHTML = "";
-                setIsScannerRunning(false);
-                setScanner(null);
-                setShowScannerUI(false);
-              });
-            })
-            .catch((err) => {
-              console.warn("Stop error after scan:", err);
-              setIsScannerRunning(false);
-              setScanner(null);
-              setShowScannerUI(false);
-            });
-        },
-        () => { }
-      )
-      .then(() => {
-        setIsCameraReady(true);
-        setIsScannerRunning(true);
-      })
-      .catch((err) => console.error("Start error:", err));
+    setShowScannerUI(true);
+    setCameraAttempt((attempt) => attempt + 1);
   };
 
 
@@ -196,11 +135,15 @@ export default function ManagerScanner(): React.JSX.Element {
 
   return (
     <div>
-      <header style={{ textAlign: "center", justifyContent: "center" }}>
-        Scanner
-      </header>
+      <Header variant="bar" title="Scanner" style={{ textAlign: "center", justifyContent: "center" }} />
       <div className='scanner-wrapper'>
         <div id='qr-reader' ref={qrRef} className='scanner-box' />
+        {cameraError && (
+          <div className="scanner-camera-error">
+            <p>{t("Scanner.cameraRequired")}</p>
+            <button type="button" onClick={scanAgain}>{t("Scanner.retry")}</button>
+          </div>
+        )}
         {showScannerUI && (
           <div className='image-upload'>
             {/* <label htmlFor='qr-image'>
