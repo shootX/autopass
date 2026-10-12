@@ -24,6 +24,7 @@ use App\Models\Voucher;
 use App\Models\VoucherCategory;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class DatabaseSeeder extends Seeder
 {
@@ -35,7 +36,7 @@ class DatabaseSeeder extends Seeder
                 'name' => 'ადმინი',
                 'surname' => 'გეოვოში',
                 'phone' => '555000000',
-                'password' => 'admin123',
+                'password' => env('SEED_ADMIN_PASSWORD') ?: Str::random(24),
                 'role' => User::ROLE_ADMIN,
                 'sex' => 'male',
                 'ref_code' => 'ADMN1',
@@ -49,7 +50,7 @@ class DatabaseSeeder extends Seeder
                 'name' => 'ნინო',
                 'surname' => 'ბერიძე',
                 'phone' => '555111222',
-                'password' => 'manager123',
+                'password' => env('SEED_MANAGER_PASSWORD') ?: Str::random(24),
                 'role' => User::ROLE_MANAGER,
                 'sex' => 'female',
                 'ref_code' => 'MNGR1',
@@ -66,7 +67,7 @@ class DatabaseSeeder extends Seeder
         foreach ($clients as $client) {
             $users[] = User::query()->updateOrCreate(
                 ['email' => $client['email']],
-                $client + ['password' => 'client123', 'role' => User::ROLE_USER],
+                $client + ['password' => env('SEED_CLIENT_PASSWORD') ?: Str::random(24), 'role' => User::ROLE_USER],
             );
         }
 
@@ -229,7 +230,7 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'კაფე ვაკე',
                 'description' => 'პარტნიორი კაფე',
-                'password' => Hash::make('partner123'),
+                'password' => Hash::make(env('SEED_PARTNER_PASSWORD') ?: Str::random(24)),
             ],
         );
 

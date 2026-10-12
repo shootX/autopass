@@ -94,5 +94,6 @@
     .umami-user-meta button:hover { color: var(--text-primary); }
 </style>
 @stack('js')
+@include('components.delete-request')
 </body>
 </html>
