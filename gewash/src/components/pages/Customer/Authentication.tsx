@@ -124,6 +124,8 @@ export default function Authentication() {
             <span className="bar" />
             <input
               type="tel"
+              name="phone"
+              autoComplete="tel"
               inputMode="numeric"
               value={phone}
               onChange={handlePhoneChange}
@@ -138,6 +140,8 @@ export default function Authentication() {
           <div className="v4-dinput">
             <input
               type={showPassword ? "text" : "password"}
+              name="password"
+              autoComplete="current-password"
               value={password}
               onChange={(e) => {
                 setPassword(e.target.value);
