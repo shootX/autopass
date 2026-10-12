@@ -4,6 +4,7 @@ import OTPVerification from "../../OTPVerification";
 import { customFetch } from "@/utils/customFetch";
 import { useTranslation } from "@/hooks/useTranslation";
 import { leftArrowUrl } from "@/assets/staticUrls";
+import Header from "@/components/Header";
 
 export default function PhoneNumberChanging() {
   const [phoneDigits, setPhoneDigits] = useState("");
@@ -105,13 +106,19 @@ export default function PhoneNumberChanging() {
 
   return (
     <div>
-      <header style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <img
-          src={leftArrowUrl}
-          alt={t("PhoneNumberChanging.header.backAlt")}
-          onClick={() => navigate(-1)}
-        />
-        <h2>{t("PhoneNumberChanging.header.title")}</h2>
+      <Header
+        variant="bar"
+        title={t("PhoneNumberChanging.header.title")}
+        titleAs="h2"
+        style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}
+        left={
+          <img
+            src={leftArrowUrl}
+            alt={t("PhoneNumberChanging.header.backAlt")}
+            onClick={() => navigate(-1)}
+          />
+        }
+        right={
         <svg
           width="16"
           height="16"
@@ -127,7 +134,8 @@ export default function PhoneNumberChanging() {
             fill="#14482F"
           />
         </svg>
-      </header>
+        }
+      />
 
       <div
         className='auth-input-block'

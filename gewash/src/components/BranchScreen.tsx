@@ -8,6 +8,7 @@ import { branchPhoto, hourSpan, isRoundTheClock, kmBetween } from '@/lib/v4';
 import { fetchFilteredBranches, loadDefaultBranches, peekBranches } from '@/hooks/fetchFilteredBranches';
 import { useTranslation } from '@/hooks/useTranslation';
 import PageSkeleton from '@/components/Skeletons/PageSkeleton';
+import Header from '@/components/Header';
 
 export default function BranchScreen() {
   const [branches, setBranches] = useState<Branch[]>(peekBranches() ?? []);
@@ -91,12 +92,18 @@ export default function BranchScreen() {
       {error && <p className="ap-error">{error}</p>}
       {viewMode === 'list' ? (
         <>
-          <div className="v4-hd" style={{ padding: 0 }}>
-            <h1 className="ap-title" style={{ flex: 1, textAlign: 'left', fontSize: 28 }}>ფილიალები</h1>
-            <button type="button" className="v4-ib" style={{ background: 'var(--ap-ink)', color: 'var(--ap-lime)' }} aria-label="ფილტრი" onClick={() => setFilterOpen(true)}>
-              <SlidersHorizontal size={20} />
-            </button>
-          </div>
+          <Header
+            variant="v4"
+            style={{ padding: 0 }}
+            title="ფილიალები"
+            titleClassName="ap-title"
+            titleStyle={{ flex: 1, textAlign: 'left', fontSize: 28 }}
+            right={
+              <button type="button" className="v4-ib" style={{ background: 'var(--ap-ink)', color: 'var(--ap-lime)' }} aria-label="ფილტრი" onClick={() => setFilterOpen(true)}>
+                <SlidersHorizontal size={20} />
+              </button>
+            }
+          />
           <form className="v4-list-search" onSubmit={(e) => e.preventDefault()}>
             <Search size={20} />
             <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="მოძებნე ფილიალი" aria-label="მოძებნე ფილიალი" />

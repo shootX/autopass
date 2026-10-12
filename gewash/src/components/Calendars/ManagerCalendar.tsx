@@ -15,6 +15,7 @@ import DeleteReasonPopup from '../DeleteReasonPopup';
 import { useAllRecords } from '@/hooks/useAllRecords';
 import { useManagerActions } from '@/hooks/useManagerActions';
 import { useTranslation } from '@/hooks/useTranslation';
+import Header from '@/components/Header';
 import PageSkeleton from '@/components/Skeletons/PageSkeleton';
 
 type Status = 'Confirm' | 'Rescheduled' | 'Expired' | 'Deleted' | 'New';
@@ -102,7 +103,7 @@ export default function ManagerCalendarGrid() {
 
   return (
     <div>
-      <header style={{ justifyContent: 'center' }}>{t('ManagerCalendarGrid.header')}</header>
+      <Header variant="bar" title={t('ManagerCalendarGrid.header')} style={{ justifyContent: 'center' }} />
 
       {/* Навигация */}
       <div className="calendar-header">

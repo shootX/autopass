@@ -13,6 +13,7 @@ import type { RootState } from '@/store';
 import { useTranslation } from '@/hooks/useTranslation';
 import { customFetch } from '@/utils/customFetch';
 import { leftArrowUrl, calendarIconUrl, dangerUrl } from '@/assets/staticUrls';
+import Header from '@/components/Header';
 import { refreshCurrentUser } from '@/hooks/useUser';
 
 export default function CustomerMyData() {
@@ -136,21 +137,24 @@ export default function CustomerMyData() {
 
   return (
     <div className="customer-data-container">
-      <header className="header">
-        <img src={leftArrowUrl} alt="back" onClick={() => navigate(-1)} />
-        <h2>{t('CustomerMyData.header.title')}</h2>
-        
-
-        <button
-          type="button"
-          style={{ width: 'auto', fontSize: saved ? 20 : undefined }}
-          className="points-info-promo__btn"
-          onClick={handleSave}
-        >
-          {saved ? t('CustomerMyData.header.saved') : t('ReschudelingOrder.form.save.button')}
-        </button>
-
-        {/* <svg
+      <Header
+        variant="bar"
+        className="header"
+        title={t('CustomerMyData.header.title')}
+        titleAs="h2"
+        left={<img src={leftArrowUrl} alt="back" onClick={() => navigate(-1)} />}
+        right={
+          <button
+            type="button"
+            style={{ width: 'auto', fontSize: saved ? 20 : undefined }}
+            className="points-info-promo__btn"
+            onClick={handleSave}
+          >
+            {saved ? t('CustomerMyData.header.saved') : t('ReschudelingOrder.form.save.button')}
+          </button>
+        }
+      />
+      {/* <svg
           width="18"
           height="18"
           viewBox="0 0 24 24"
@@ -167,7 +171,6 @@ export default function CustomerMyData() {
           <path d="M17 21v-8H7v8" />
           <path d="M7 3v5h8" />
         </svg> */}
-      </header>
 
       <div className="customer-data-wrapper">
         <h1>{t('CustomerMyData.form.title')}</h1>

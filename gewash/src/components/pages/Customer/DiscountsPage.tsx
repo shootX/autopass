@@ -7,6 +7,7 @@ import geocoinIcon from "@/assets/images/shop/geocoin_icon.png";
 import discountImg from "@/assets/images/discounts/discount_img.png";
 import ShopAsyncLoader from "@/components/ui/ShopAsyncLoader";
 import { fetchVouchers, type ShopVoucher } from "@/lib/shopApi";
+import Header, { HeaderBackChevron } from "@/components/Header";
 
 import { VOUCHER_CATEGORY_KEYS, voucherCategoryLabelKey } from "@/lib/voucherCategories";
 const PER_PAGE = 6;
@@ -151,20 +152,26 @@ export default function DiscountsPage() {
   return (
     <div className="discounts-page">
       {/* Header */}
-      <header className="discounts-header">
-        <button className="discounts-header__back" onClick={() => navigate(-1)}>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path d="M15 18l-6-6 6-6" stroke="#14482F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </button>
-        <span className="discounts-header__title">{t("Discounts.title")}</span>
-        <div className="discounts-header__balance">
-          <img src={geocoinIcon} alt="coin" className="discounts-header__coin" />
-          <span className="discounts-header__amount">
-            {typeof points === "number" ? points.toLocaleString() : "—"}
-          </span>
-        </div>
-      </header>
+      <Header
+        variant="labeled"
+        className="discounts-header"
+        title={t("Discounts.title")}
+        titleAs="span"
+        titleClassName="discounts-header__title"
+        left={
+          <button className="discounts-header__back" onClick={() => navigate(-1)}>
+            <HeaderBackChevron />
+          </button>
+        }
+        right={
+          <div className="discounts-header__balance">
+            <img src={geocoinIcon} alt="coin" className="discounts-header__coin" />
+            <span className="discounts-header__amount">
+              {typeof points === "number" ? points.toLocaleString() : "—"}
+            </span>
+          </div>
+        }
+      />
 
       <div className="discounts-wrapper">
         {/* Search */}

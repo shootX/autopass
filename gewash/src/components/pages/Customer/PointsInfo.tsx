@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { useTranslation } from "@/hooks/useTranslation";
 import { buyPointsAndRedirect } from "@/lib/buyPoints";
 import { leftArrowUrl } from "@/assets/staticUrls";
+import Header from "@/components/Header";
 import cardIconYellow from "@/assets/icons/card_icon_yellow.svg";
 import cardIconBlue from "@/assets/icons/card_icon_blue.svg";
 import ticketIcon from "@/assets/icons/ticket_icon.svg";
@@ -27,15 +28,12 @@ export default function PointsInfo() {
 
   return (
     <div className="points-info-page">
-      <header>
-        <img
-          onClick={() => navigate(-1)}
-          src={leftArrowUrl}
-          alt="Back"
-        />
-        {t("PointsInfo.header.title")}
-        <span />
-      </header>
+      <Header
+        variant="bar"
+        title={t("PointsInfo.header.title")}
+        endSpacer
+        left={<img onClick={() => navigate(-1)} src={leftArrowUrl} alt="Back" />}
+      />
 
       <div className="points-info-wrapper">
         <div className="points-info-promo">

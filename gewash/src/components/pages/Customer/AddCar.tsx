@@ -11,6 +11,7 @@ import { useCarBrands } from "@/hooks/useCarBrands";
 import type { Brand, Model, Car } from "@/store/carSlice";
 import { useTranslation } from "@/hooks/useTranslation";
 import { leftArrowUrl, closeIconUrl } from "@/assets/staticUrls";
+import Header from "@/components/Header";
 
 export default function AddCar({ showHeader }: { showHeader?: boolean }) {
   const dispatch = useAppDispatch();
@@ -137,11 +138,13 @@ export default function AddCar({ showHeader }: { showHeader?: boolean }) {
   return (
     <div className='add-car-screen'>
       {shouldShowHeader && (
-        <header>
-          <img src={leftArrowUrl} alt={t("AddCar.header.backAlt")} onClick={() => navigate(-1)} style={{ cursor: "pointer" }} />
-          <h3>{t("AddCar.header.title")}</h3>
-          <img src={closeIconUrl} alt={t("AddCar.header.closeAlt")} onClick={() => navigate("/")} style={{ cursor: "pointer" }} />
-        </header>
+        <Header
+          variant="bar"
+          title={t("AddCar.header.title")}
+          titleAs="h3"
+          left={<img src={leftArrowUrl} alt={t("AddCar.header.backAlt")} onClick={() => navigate(-1)} style={{ cursor: "pointer" }} />}
+          right={<img src={closeIconUrl} alt={t("AddCar.header.closeAlt")} onClick={() => navigate("/")} style={{ cursor: "pointer" }} />}
+        />
       )}
       <div className='add-car-content'>
         {!shouldShowHeader && <h1>{t("AddCar.title")}</h1>}

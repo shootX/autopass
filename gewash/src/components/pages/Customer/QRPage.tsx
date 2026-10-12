@@ -7,6 +7,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { carParts, washCells } from '@/lib/v4';
 import PageSkeleton from '@/components/Skeletons/PageSkeleton';
 import { Car, CarFront, Sun } from 'lucide-react';
+import Header from '@/components/Header';
 
 export default function QRPage() {
   const t = useTranslation();
@@ -81,12 +82,18 @@ export default function QRPage() {
 
   return (
     <div className="v4-screen ap-qr" style={bright ? { background: '#fff' } : undefined}>
-      <div className="v4-hd" style={{ padding: 0 }}>
-        <h1 className="ap-title" style={{ flex: 1, textAlign: 'left', fontSize: 28 }}>{t('CustomerNavBar.routes.qr')}</h1>
-        <button type="button" className="v4-ib" aria-pressed={bright} aria-label="სიკაშკაშე" onClick={() => setBright((v) => !v)}>
-          <Sun size={20} />
-        </button>
-      </div>
+      <Header
+        variant="v4"
+        style={{ padding: 0 }}
+        title={t('CustomerNavBar.routes.qr')}
+        titleClassName="ap-title"
+        titleStyle={{ flex: 1, textAlign: 'left', fontSize: 28 }}
+        right={
+          <button type="button" className="v4-ib" aria-pressed={bright} aria-label="სიკაშკაშე" onClick={() => setBright((v) => !v)}>
+            <Sun size={20} />
+          </button>
+        }
+      />
       {cars.length > 0 && (
         <div className="v4-chips">
           {cars.map((car, index) => {

@@ -14,6 +14,7 @@ import {
   leaveSettingsIconUrl,
   deleteSettingsIconUrl,
 } from '@/assets/staticUrls';
+import Header from '@/components/Header';
 
 export default function SettingsPage() {
   const navigate = useNavigate();
@@ -48,11 +49,13 @@ export default function SettingsPage() {
 
   return (
     <div>
-      <header>
-        <img onClick={() => navigate(-1)} src={leftArrowUrl} alt="" />
-        <p>{t('Sidebar.menu.settings')}</p>
-        <span></span>
-      </header>
+      <Header
+        variant="bar"
+        title={t('Sidebar.menu.settings')}
+        titleAs="p"
+        endSpacer
+        left={<img onClick={() => navigate(-1)} src={leftArrowUrl} alt="" />}
+      />
       <div
         style={{
           margin: '16px',
