@@ -321,15 +321,19 @@ class AppointmentsController extends Controller
         }
 
         try {
+            // Managers only need who/what to wash: no phone, email, dob, points, ref code.
             $userPackage = UserPackage::where('qr_code', $qr)
-                ->with('user')
-                ->with('car')
-                ->with('package')
+                ->with(['user:id,name,surname', 'car', 'package'])
                 ->first();
+
+            if (! $userPackage) {
+                return response()->json(['success' => false, 'error' => 'Not found'], 404);
+            }
 
             return response()->json(['success' => true, 'package' => $userPackage]);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'error' => $e->getMessage()], 400);
+            report($e);
+            return response()->json(['success' => false, 'error' => 'Error'], 400);
         }
     }
 

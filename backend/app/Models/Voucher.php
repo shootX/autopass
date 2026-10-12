@@ -8,8 +8,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Voucher extends Model
 {
     //
-    protected $hidden = ['category_id', 'created_at', 'updated_at', 'pivot'];
+    protected $hidden = ['category_id', 'partner_id', 'created_at', 'updated_at', 'pivot'];
     protected $guarded = [];
+
+    public function partner() : BelongsTo
+    {
+        return $this->belongsTo(Partner::class);
+    }
 
     public function category() : BelongsTo
     {

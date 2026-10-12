@@ -58,7 +58,6 @@
                                 </td>
                                 <td>
                                     <div class="btn-group">
-                                        <a class="btn btn-sm btn-primary" href="{{route('admin.clients.packages.delete', [$client->id, $pack->id])}}"><i class="fas fa-edit"></i></a>
                                         <a class="btn btn-sm btn-danger remove" data-id="{{$pack->id}}"><i class="fas fa-trash"></i></a>
                                     </div>
                                 </td>
@@ -116,7 +115,7 @@
                         yes: { text: I18N.yes,
                             btnClass: 'btn-red',
                             action: function () {
-                                window.location.href = '/dashboard/clients/{{$client->id}}/packages/'+id+'/delete';
+                                window.deleteRequest('/dashboard/clients/{{$client->id}}/packages/'+id+'/delete');
                             }
                         },
                         no: { text: I18N.no,
