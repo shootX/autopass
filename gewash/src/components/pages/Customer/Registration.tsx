@@ -7,6 +7,7 @@ import { useDispatch } from "react-redux";
 const API_URL = import.meta.env.VITE_API_URL;
 import { useTranslation } from "@/hooks/useTranslation";
 import { logoUrl, googleServiceIconUrl, facebookUrl } from "@/assets/staticUrls";
+import { saveAccessToken } from "@/lib/accessToken";
 
 async function generateHash(string: string) {
   const msgUint8 = new TextEncoder().encode(string);
@@ -161,7 +162,7 @@ export default function Registration() {
       const data = await res.json();
 
       if (data.success && data.access_token) {
-        localStorage.setItem("access_token", data.access_token);
+        saveAccessToken(data.access_token, typeof data.expires_in === "number" ? data.expires_in : undefined);
         handleOTPVerified();
       } else {
         throw new Error("Invalid code");

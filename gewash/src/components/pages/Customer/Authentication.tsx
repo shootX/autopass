@@ -6,6 +6,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 import { useTranslation } from "@/hooks/useTranslation";
 import { logoUrl } from "@/assets/staticUrls";
 import { CAR_SEDAN } from "@/lib/v4";
+import { saveAccessToken } from "@/lib/accessToken";
 import { Eye, EyeOff } from "lucide-react";
 export default function Authentication() {
   const [showPassword, setShowPassword] = useState(false);
@@ -73,7 +74,7 @@ export default function Authentication() {
       console.log("Response:", data);
 
       if (res.ok && data.access_token) {
-        localStorage.setItem("access_token", data.access_token);
+        saveAccessToken(data.access_token, typeof data.expires_in === "number" ? data.expires_in : undefined);
         handleLoginSuccess(data.access_token);
         await fetchUserData(dispatch);
         navigate("/");
