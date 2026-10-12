@@ -3,6 +3,7 @@ import "../styles/Contacts.scss";
 import { useNavigate } from "react-router-dom";
 import { useFetchContacts } from "@/hooks/useFetchContacts";
 import { leftArrowUrl } from "@/assets/staticUrls";
+import Header from "@/components/Header";
 
 export default function Contacts() {
   const navigate = useNavigate();
@@ -10,11 +11,12 @@ export default function Contacts() {
 
   return (
     <div>
-      <header>
-        <img onClick={() => navigate(-1)} src={leftArrowUrl} alt="" />
-        Contacts
-        <span></span>
-      </header>
+      <Header
+        variant="bar"
+        title="Contacts"
+        endSpacer
+        left={<img onClick={() => navigate(-1)} src={leftArrowUrl} alt="" />}
+      />
 
       <div className="contacts-wrapper">
         <h4>Our main office</h4>

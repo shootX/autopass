@@ -3,6 +3,7 @@ import "../../styles/help.scss";
 import { leftArrowUrl } from "@/assets/staticUrls";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "@/hooks/useTranslation";
+import Header from "@/components/Header";
 
 const KEYS = ["services", "locations", "booking", "duration"] as const;
 
@@ -13,11 +14,12 @@ export default function Help() {
 
   return (
     <div>
-      <header>
-        <img onClick={() => navigate(-1)} src={leftArrowUrl} alt={t("Help.backAlt")} />
-        {t("Help.title")}
-        <span></span>
-      </header>
+      <Header
+        variant="bar"
+        title={t("Help.title")}
+        endSpacer
+        left={<img onClick={() => navigate(-1)} src={leftArrowUrl} alt={t("Help.backAlt")} />}
+      />
 
       <div className="help-wrapper">
         {KEYS.map((key, index) => {

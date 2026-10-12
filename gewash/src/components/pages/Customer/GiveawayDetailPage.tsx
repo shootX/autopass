@@ -15,6 +15,7 @@ import giveaway2 from "@/assets/images/giveaway/giveaway_2.png";
 import giveaway3 from "@/assets/images/giveaway/giveaway_3.png";
 import { buyTicket, fetchMyTickets, fetchTickets } from "@/lib/shopApi";
 import { refreshCurrentUser } from "@/hooks/useUser";
+import Header, { HeaderBackChevron } from "@/components/Header";
 
 const G_FALLBACK = [giveaway2, giveaway1, giveaway3];
 
@@ -157,18 +158,24 @@ export default function GiveawayDetailPage() {
   if (detailStatus === "loading" && !passed) {
     return (
       <div className="giveaway-page">
-        <header className="giveaway-header">
-          <button className="giveaway-header__back" onClick={() => navigate(-1)}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M15 18l-6-6 6-6" stroke="#14482F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </button>
-          <span className="giveaway-header__title">{t("Giveaway.title")}</span>
-          <div className="giveaway-header__balance">
-            <img src={geocoinIcon} alt="coin" />
-            <span>{typeof userPoints === "number" ? userPoints.toLocaleString() : "—"}</span>
-          </div>
-        </header>
+        <Header
+          variant="labeled"
+          className="giveaway-header"
+          title={t("Giveaway.title")}
+          titleAs="span"
+          titleClassName="giveaway-header__title"
+          left={
+            <button className="giveaway-header__back" onClick={() => navigate(-1)}>
+              <HeaderBackChevron />
+            </button>
+          }
+          right={
+            <div className="giveaway-header__balance">
+              <img src={geocoinIcon} alt="coin" />
+              <span>{typeof userPoints === "number" ? userPoints.toLocaleString() : "—"}</span>
+            </div>
+          }
+        />
         <ShopAsyncLoader />
       </div>
     );
@@ -177,18 +184,24 @@ export default function GiveawayDetailPage() {
   if (!item) {
     return (
       <div className="giveaway-page">
-        <header className="giveaway-header">
-          <button className="giveaway-header__back" onClick={() => navigate(-1)}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M15 18l-6-6 6-6" stroke="#14482F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </button>
-          <span className="giveaway-header__title">{t("Giveaway.title")}</span>
-          <div className="giveaway-header__balance">
-            <img src={geocoinIcon} alt="coin" />
-            <span>{typeof userPoints === "number" ? userPoints.toLocaleString() : "—"}</span>
-          </div>
-        </header>
+        <Header
+          variant="labeled"
+          className="giveaway-header"
+          title={t("Giveaway.title")}
+          titleAs="span"
+          titleClassName="giveaway-header__title"
+          left={
+            <button className="giveaway-header__back" onClick={() => navigate(-1)}>
+              <HeaderBackChevron />
+            </button>
+          }
+          right={
+            <div className="giveaway-header__balance">
+              <img src={geocoinIcon} alt="coin" />
+              <span>{typeof userPoints === "number" ? userPoints.toLocaleString() : "—"}</span>
+            </div>
+          }
+        />
         <p className="shop-async-empty" style={{ padding: "24px 16px" }}>
           {t("Giveaway.notFound")}
         </p>

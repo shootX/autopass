@@ -3,6 +3,7 @@ import PercentBar from '../../PercentBar';
 import { MobileDropdownSheet } from '../../ui/MobileDropdown';
 import { CalendarMobileSheet } from '../../Calendars/CalendarDropDownSheet';
 import { useTranslation } from '@/hooks/useTranslation';
+import Header from '@/components/Header';
 import { format } from 'date-fns';
 import { customFetch } from '@/utils/customFetch';
 import { WorkloadGraph } from '@/components/WorkloadGraph';
@@ -165,9 +166,7 @@ export default function CarwashStatistics() {
   }
   return (
     <div>
-      <header style={{ justifyContent: 'center' }}>
-        {t('ManagerCarwashStatistics.header.title')}
-      </header>
+      <Header variant="bar" title={t('ManagerCarwashStatistics.header.title')} style={{ justifyContent: 'center' }} />
       <div className="branch-block">
         <h4>{t('ManagerCarwashStatistics.branch.title')}</h4>
         <div className="branch-info">

@@ -10,6 +10,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { branchPhoto, carParts, carPhoto } from '@/lib/v4';
 import { ArrowLeft, ChevronLeft, ChevronRight, Droplets, Sparkles, Ticket, Zap } from 'lucide-react';
 import PageSkeleton from '@/components/Skeletons/PageSkeleton';
+import Header from '@/components/Header';
 
 type Service = {
   id: number;
@@ -142,11 +143,12 @@ export default function WashAppointment() {
 
   return (
     <div className="v4-screen ap-book">
-      <div className="v4-hd">
-        <button type="button" className="v4-ib" onClick={() => navigate(-1)} aria-label="უკან"><ArrowLeft size={21} /></button>
-        <h1>რეცხვის დაჯავშნა</h1>
-        <span className="spacer" />
-      </div>
+      <Header
+        variant="v4"
+        title="რეცხვის დაჯავშნა"
+        left={<button type="button" className="v4-ib" onClick={() => navigate(-1)} aria-label="უკან"><ArrowLeft size={21} /></button>}
+        right={<span className="spacer" />}
+      />
       <div className="v4-branch">
         {branch && <span className="ph" style={{ backgroundImage: `url(${branchPhoto(branch)})` }} />}
         <div style={{ flex: 1 }}>

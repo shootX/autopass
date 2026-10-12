@@ -4,6 +4,7 @@ import { useSelector } from "react-redux";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { RootState } from "@/store";
 import Sidebar from "@/components/ui/Sidebar";
+import Header from "@/components/Header";
 import ShopAsyncLoader from "@/components/ui/ShopAsyncLoader";
 import burgerIcon from "/icons/b-menu.svg";
 import discountIcon from "@/assets/icons/discount_icon.svg";
@@ -219,13 +220,19 @@ export default function ShopPage() {
   return (
     <div className="shop-page">
       {sidebarOpen && <Sidebar onClose={() => setSidebarOpen(false)} />}
-      <header className="shop-header">
-        <button className="shop-header__burger" onClick={() => setSidebarOpen(true)}>
-          <img src={burgerIcon} alt="menu" width="20" height="18" />
-        </button>
-        <span className="shop-header__title">{t("Shop.header.title")}</span>
-        <span className="shop-header__spacer" />
-      </header>
+      <Header
+        variant="labeled"
+        className="shop-header"
+        title={t("Shop.header.title")}
+        titleAs="span"
+        titleClassName="shop-header__title"
+        left={
+          <button className="shop-header__burger" onClick={() => setSidebarOpen(true)}>
+            <img src={burgerIcon} alt="menu" width="20" height="18" />
+          </button>
+        }
+        right={<span className="shop-header__spacer" />}
+      />
 
       <div className="shop-wrapper">
         {/* Balance Card */}

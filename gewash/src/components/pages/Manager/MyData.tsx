@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { customFetch } from '@/utils/customFetch';
 import { formatPhone } from '@/lib/format';
+import Header from '@/components/Header';
 
 export default function MyData() {
   const user = useSelector((state: RootState) => state.user.data);
@@ -36,23 +37,26 @@ export default function MyData() {
 
   return (
     <div className="my-data-container">
-      <header>
-        {t('MyData.header')}
-        <Link to="/settings">
-          <button
-            style={{
-              backgroundColor: '#14482F',
-              color: '#B5DD3A',
-              padding: '12px',
-              borderRadius: '12px',
-              fontSize: '14px',
-            }}
-            type="button"
-          >
-            {t('Sidebar.menu.settings')}
-          </button>
-        </Link>
-      </header>
+      <Header
+        variant="bar"
+        title={t('MyData.header')}
+        right={
+          <Link to="/settings">
+            <button
+              style={{
+                backgroundColor: '#14482F',
+                color: '#B5DD3A',
+                padding: '12px',
+                borderRadius: '12px',
+                fontSize: '14px',
+              }}
+              type="button"
+            >
+              {t('Sidebar.menu.settings')}
+            </button>
+          </Link>
+        }
+      />
 
       <div className="my-info">
         <h2>{t('MyData.info.title')}</h2>

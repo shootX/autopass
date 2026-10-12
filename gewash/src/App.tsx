@@ -17,6 +17,7 @@ import { customFetch } from "./utils/customFetch";
 import { loadShopBundle } from "./lib/shopApi";
 import { loadDefaultBranches } from "./hooks/fetchFilteredBranches";
 import SplashScreen from "./components/v4/SplashScreen";
+import { SPLASH_MAX_MS, splashShouldBlock } from "./lib/splashGate";
 import Onboarding from "./components/v4/Onboarding";
 import PaymentSuccess from "./components/v4/PaymentSuccess";
 
@@ -70,9 +71,18 @@ function AppRoutes() {
   const dispatch = useDispatch();
   const currentLang = useSelector((s: RootState) => s.lang.currentLang);
   const [langLoading, setLangLoading] = useState(() => readLangCache(currentLang) === null);
+  const [splashStarted] = useState(() => Date.now());
+  const [splashNow, setSplashNow] = useState(() => Date.now());
   const [onboarded, setOnboarded] = useState(() => localStorage.getItem("autopass.onboarding.v4") === "1");
   const { loading: userLoading } = useUser();
   useRefreshUserOnBfcacheRestore();
+
+  useEffect(() => {
+    const left = SPLASH_MAX_MS - (Date.now() - splashStarted);
+    if (left <= 0) return;
+    const timer = window.setTimeout(() => setSplashNow(Date.now()), left);
+    return () => window.clearTimeout(timer);
+  }, [splashStarted]);
 
   useEffect(() => {
     if (import.meta.env.VITE_BYPASS_AUTH !== "true") return;
@@ -155,9 +165,16 @@ function AppRoutes() {
     };
   }, [langLoading]);
 
+  useEffect(() => {
+    const remaining = SPLASH_MAX_MS - (Date.now() - splashStarted);
+    if (remaining <= 0) return;
+    const timer = window.setTimeout(() => setSplashNow(Date.now()), remaining);
+    return () => window.clearTimeout(timer);
+  }, [splashStarted]);
+
   const waitingForRole = Boolean(localStorage.getItem("access_token")) && userLoading;
 
-  if (langLoading || waitingForRole) {
+  if (splashShouldBlock({ langLoading, waitingForRole, elapsedMs: splashNow - splashStarted })) {
     return <SplashScreen />;
   }
 

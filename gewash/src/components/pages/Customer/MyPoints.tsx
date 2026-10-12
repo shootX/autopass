@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store";
 import { refreshCurrentUser } from "@/hooks/useUser";
 import { leftArrowUrl } from "@/assets/staticUrls";
+import Header from "@/components/Header";
 import balanceIcon from "@/assets/icons/balance_icon.svg";
 import referralsIcon from "@/assets/icons/referals_icon.svg";
 import rightArrow from "@/assets/icons/right-arrow.svg";
@@ -184,15 +185,12 @@ export default function MyPoints() {
 
   return (
     <div className="my-points-page">
-      <header>
-        <img
-          onClick={() => navigate(-1)}
-          src={leftArrowUrl}
-          alt="Back"
-        />
-        {t("MyPoints.header.title")}
-        <span />
-      </header>
+      <Header
+        variant="bar"
+        title={t("MyPoints.header.title")}
+        endSpacer
+        left={<img onClick={() => navigate(-1)} src={leftArrowUrl} alt="Back" />}
+      />
 
       <div className="my-points-wrapper">
         {/* Balance */}

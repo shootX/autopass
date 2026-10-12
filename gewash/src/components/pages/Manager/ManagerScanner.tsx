@@ -6,6 +6,7 @@ import { differenceInMonths, format } from "date-fns";
 import { customFetch } from "@/utils/customFetch";
 import { closeIconUrl, whashesUrl, timeUrl } from "@/assets/staticUrls";
 import { formatPhone } from "@/lib/format";
+import Header from "@/components/Header";
 
 export default function ManagerScanner(): React.JSX.Element {
   const [scannedCode, setScannedCode] = useState<string | null>(null);
@@ -196,9 +197,7 @@ export default function ManagerScanner(): React.JSX.Element {
 
   return (
     <div>
-      <header style={{ textAlign: "center", justifyContent: "center" }}>
-        Scanner
-      </header>
+      <Header variant="bar" title="Scanner" style={{ textAlign: "center", justifyContent: "center" }} />
       <div className='scanner-wrapper'>
         <div id='qr-reader' ref={qrRef} className='scanner-box' />
         {showScannerUI && (

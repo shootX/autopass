@@ -5,6 +5,7 @@ import { invalidateCarsCache } from '@/hooks/useFetchCars';
 import leftArrow from '@/assets/icons/left-arrow.svg';
 import closeIcon from '@/assets/icons/close-icon.svg';
 import { useTranslation } from '@/hooks/useTranslation';
+import Header from '@/components/Header';
 
 export default function EditCar() {
   const navigate = useNavigate();
@@ -139,11 +140,13 @@ export default function EditCar() {
 
   return (
     <div className="edit-car-screen">
-      <header>
-        <img src={leftArrow} alt="Back" onClick={() => navigate(-1)} />
-        <h3>{t('EditCar.header.title')}</h3>
-        <img src={closeIcon} alt="Close" />
-      </header>
+      <Header
+        variant="bar"
+        title={t('EditCar.header.title')}
+        titleAs="h3"
+        left={<img src={leftArrow} alt="Back" onClick={() => navigate(-1)} />}
+        right={<img src={closeIcon} alt="Close" />}
+      />
 
       <div className="edit-car-content">
         <p className="edit-car-title-info">{t('EditCar.titleInfo')}</p>

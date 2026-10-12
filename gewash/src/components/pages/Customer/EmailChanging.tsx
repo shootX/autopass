@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { leftArrowUrl } from '@/assets/staticUrls';
 import { customFetch } from '@/utils/customFetch';
 import { useTranslation } from '@/hooks/useTranslation';
+import Header from '@/components/Header';
 
 type Step = 'EMAIL' | 'VERIFY';
 
@@ -104,13 +105,20 @@ export default function EmailChanging() {
 
   return (
     <div>
-      <header
+      <Header
+        variant="bar"
+        titleAs="h2"
+        title={
+          step === 'EMAIL'
+            ? t('EmailChanging.header.title')
+            : t('EmailChanging.verification.title') || 'Verify Email'
+        }
         style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
         }}
-      >
+        left={
         <img
           src={leftArrowUrl}
           alt={t('EmailChanging.header.backAlt')}
@@ -124,11 +132,8 @@ export default function EmailChanging() {
             }
           }}
         />
-        <h2>
-          {step === 'EMAIL'
-            ? t('EmailChanging.header.title')
-            : t('EmailChanging.verification.title') || 'Verify Email'}
-        </h2>
+        }
+        right={
         <svg
           width="16"
           height="16"
@@ -146,7 +151,8 @@ export default function EmailChanging() {
             fill="#14482F"
           />
         </svg>
-      </header>
+        }
+      />
 
       <div
         className="auth-input-block"
