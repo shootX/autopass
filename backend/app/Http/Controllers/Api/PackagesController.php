@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Package;
 use App\Models\User;
+use App\Models\Appointment;
 use App\Models\UserPackage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -198,25 +199,51 @@ class PackagesController extends Controller
 
     public function managerApprove(Request $request, $id)
     {
-
         $user = Auth::user();
 
-        if($user->role == User::ROLE_MANAGER) {
-            $userPackage = UserPackage::where('id', $id)->first();
-            $userPackage->used_washes += 1;
-            $userPackage->update();
-
-            $userPackage->user->sendPush([
-                'en' => 'The wash has begun',
-                'ru' => 'Мойка началась',
-                'ka' => 'სარეცხი დაიწყო',
-            ], [
-                'en' => 'The washing process has begun',
-                'ru' => 'Процесс мойки начат',
-                'ka' => 'სარეცხი პროცესი დაიწყო'
-            ]);
-
-            return response()->json(['success' => true, 'package' => $userPackage]);
+        if ((int) $user->role !== User::ROLE_MANAGER) {
+            return response()->json(['success' => false, 'error' => 'Forbidden'], 403);
         }
+
+        $washId = $user->washing?->id;
+        if (! $washId) {
+            return response()->json(['success' => false, 'error' => 'Manager has no branch'], 403);
+        }
+
+        $userPackage = UserPackage::find($id);
+        if (! $userPackage) {
+            return response()->json(['success' => false, 'error' => 'Not found'], 404);
+        }
+
+        // Branch check: the car must have an appointment at this manager's branch today.
+        $hasAppointmentHere = Appointment::query()
+            ->where('car_wash_id', $washId)
+            ->where('car_id', $userPackage->user_car_id)
+            ->whereDate('date', now()->toDateString())
+            ->exists();
+        if (! $hasAppointmentHere) {
+            return response()->json(['success' => false, 'error' => 'No appointment at your branch today'], 403);
+        }
+
+        if ($userPackage->end_date && now()->greaterThan($userPackage->end_date)) {
+            return response()->json(['success' => false, 'error' => 'Package expired'], 422);
+        }
+        if ((int) $userPackage->used_washes >= (int) $userPackage->number_of_washes) {
+            return response()->json(['success' => false, 'error' => 'No washes left'], 422);
+        }
+
+        $userPackage->increment('used_washes');
+
+        $userPackage->user->sendPush([
+            'en' => 'The wash has begun',
+            'ru' => 'Мойка началась',
+            'ka' => 'სარეცხი დაიწყო',
+        ], [
+            'en' => 'The washing process has begun',
+            'ru' => 'Процесс мойки начат',
+            'ka' => 'სარეცხი პროცესი დაიწყო'
+        ]);
+
+        return response()->json(['success' => true, 'package' => $userPackage->fresh()]);
     }
 }

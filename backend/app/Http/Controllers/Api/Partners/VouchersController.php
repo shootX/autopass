@@ -29,6 +29,10 @@ class VouchersController extends Controller
 
             $voucher = UserVoucher::where('code', $request->code)->first();
 
+            if (! $this->ownedByPartner($voucher)) {
+                return response()->json(['success' => false, 'message' => 'Incorrect code'], 403);
+            }
+
             $checkSms = SmsTemp::where('type', 'use_voucher')
                 ->where('user_id', $voucher->user_id)
                 ->where('created_at', '>', now()->subMinutes(10))
@@ -96,6 +100,10 @@ class VouchersController extends Controller
         {
             $voucher = UserVoucher::find($sms->user_voucher_id);
 
+            if (! $this->ownedByPartner($voucher)) {
+                return response()->json(['success' => false, 'message' => 'Incorrect SMS code'], 403);
+            }
+
             $voucher->delete();
             $sms->delete();
 
@@ -118,5 +126,14 @@ class VouchersController extends Controller
                 'message' => 'Some error'
             ]);
         }
+    }
+
+    /** Only the partner the voucher belongs to may check or redeem it. */
+    private function ownedByPartner(?UserVoucher $userVoucher): bool
+    {
+        $partnerId = auth('partners')->id();
+        $ownerId = $userVoucher?->voucher?->partner_id;
+
+        return $partnerId !== null && $ownerId !== null && (int) $ownerId === (int) $partnerId;
     }
 }
