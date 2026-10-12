@@ -100,3 +100,6 @@ Source: autopass-audit-report-2026-10-10.pdf
 - [x] MOB-09: ქვედა ნავი ითვალისწინებს `safe-area-inset-bottom`-ს.
 - [x] MOB-11: სკანერის კამერის შეცდომა ჩანს („კამერაზე წვდომა საჭიროა“ + თავიდან ცდა), `useEffect` აჩერებს კამერას, სტარტი ერთია.
 - [x] viewport: `maximum-scale=1` და `user-scalable=no` მოშორებულია.
+
+- [x] PWA: manifest-ში PNG 192 და 512, maskable 192 და 512. `public/sw.js` ქეშავს გარსს და `/api`-ს არ ეხება. რეგისტრაცია მხოლოდ production build-შია.
+- [x] მკვდარი დამოკიდებულება: `expo-camera` წაშლილია. EAS-ის `gewash/app.json` წაშლილია.

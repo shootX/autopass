@@ -6,6 +6,12 @@ import { dropExpiredAccessToken } from "./lib/accessToken";
 
 dropExpiredAccessToken();
 
+if (import.meta.env.PROD && "serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    void navigator.serviceWorker.register("/sw.js");
+  });
+}
+
 if (import.meta.env.VITE_BYPASS_AUTH === "true") {
   const { installPreviewFetch } = await import("./dev/previewFixtures");
   installPreviewFetch();
