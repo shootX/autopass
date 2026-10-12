@@ -27,3 +27,7 @@
 - Promo text lives in the DB; content fixes are done with idempotent data migrations, never by editing the server by hand.
 - Corporate panel `saveAccount`: `current_password` is `required_with:password`.
 - Merge order and deploy steps: `docs/DEPLOY_RUNBOOK.md`. Frontend PRs #9–#12 conflict with #6 on `gewash/package.json` (vitest) and `App.tsx`, so rebase each one after the previous merge.
+
+## 2026-10-12 (merge prep)
+- JWT TTL default is 30 days (43200 min) in `config/jwt.php` and `.env.example`.
+- Voucher `partner_id` backfill can't be automated: there is no voucher→partner/company relation in the data (no company_id, creator or category link). Shota/admin must assign it manually (runbook §5).

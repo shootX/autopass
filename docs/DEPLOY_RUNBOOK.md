@@ -39,7 +39,7 @@ cp backend/.env /root/autopass-env-$(date +%F).bak
 | `APP_DEBUG` | `false` | BE-02: no stack traces |
 | `LOG_LEVEL` | `error` | |
 | `CORS_ALLOWED_ORIGINS` | `https://wash.socialsave.cc` (comma-separated if there are more) | #8: if empty, browsers block the SPA's API calls |
-| `JWT_TTL` | minutes; currently defaults to `129600` (90 days, FE-08) | Decision pending. Suggested `43200` (30 days) |
+| `JWT_TTL` | `43200` (30 days; code default since 2026-10-12, FE-08) | Set explicitly or leave unset to use the default |
 | `JWT_SECRET`, `APP_KEY` | must be set (unchanged) | |
 | `SEED_ADMIN_PASSWORD`, `SEED_MANAGER_PASSWORD`, `SEED_CLIENT_PASSWORD`, `SEED_PARTNER_PASSWORD` | leave empty in production (random) | BE-13. Never run seeders on production |
 | `FLITT_PAYMENT_KEY`, `TBC_*` | live values, no `test` | |
@@ -80,6 +80,8 @@ php artisan storage:link   # only if public/storage is missing
 Do not run artisan as root after this. Use `sudo -u www php artisan ...`, or files created in `storage/` will be root-owned again.
 
 ## 5. Voucher partner backfill (#8, BE-19)
+
+No automatic backfill: the schema has no voucher→partner relation (vouchers only have a category; partners have no voucher or category link), so it can't be derived. Assign manually as below.
 
 After #8, vouchers with `partner_id IS NULL` **cannot be redeemed** (fail closed).
 ```sql
