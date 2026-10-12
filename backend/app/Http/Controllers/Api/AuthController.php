@@ -18,6 +18,8 @@ use Illuminate\Support\Facades\Http;
 
 class AuthController extends Controller
 {
+    private const OTP_TTL_MINUTES = 15;
+
     public function register(Request $request)
     {
         try {
@@ -52,7 +54,7 @@ class AuthController extends Controller
                 'surname' => null,
                 'email' => null,
                 'phone' => $request->phone,
-                'password' => Hash::make('34rbb45i43jnv8493uh'),
+                'password' => Hash::make(Str::random(40)),
                 'date_of_birth' => null,
                 'role' => User::ROLE_USER,
                 'referral_id' => $referral_id,
@@ -87,8 +89,7 @@ class AuthController extends Controller
                 return response()->json([
                     'success' => true,
                     'temp_code' => $created->id,
-                    'sms_code' => (string) $sms_code,
-                    'message' => 'SMS provider is not configured. Use sms_code to verify.',
+                    'message' => 'SMS provider is not configured. Check the application log for the code.',
                 ], 200);
             }
 
@@ -112,10 +113,11 @@ class AuthController extends Controller
 
             return response()->json([
                 'success' => false,
-                'error' => 'SMS service error: ' . (is_array($responseData) ? ($responseData['Message'] ?? 'unknown') : 'invalid response'),
+                'error' => 'SMS service error',
             ], 400);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'error' => $e->getMessage() . ' ' . $e->getLine()], 400);
+            report($e);
+            return response()->json(['success' => false, 'error' => 'Произошла ошибка. Попробуйте позже.'], 400);
         }
     }
 
@@ -131,8 +133,11 @@ class AuthController extends Controller
                 return response()->json(['success' => false, 'error' => 'Неверные данные либо код из смс. Повторите попытку позже.'], 422);
             }
 
-            $code = SmsTemp::where('id', $request->temp_code)->first();
-            if ($code->code != $request->code) {
+            $code = SmsTemp::where('id', $request->temp_code)
+                ->where('type', 'verify')
+                ->where('created_at', '>', Carbon::now()->subMinutes(self::OTP_TTL_MINUTES))
+                ->first();
+            if (! $code || ! hash_equals((string) $code->code, (string) $request->code)) {
                 return response()->json(['success' => false, 'error' => 'Неверные данные либо код из смс. Повторите попытку позже.'], 422);
             }
 
@@ -149,7 +154,8 @@ class AuthController extends Controller
             ], 201);
 
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'error' => $e->getMessage()], 400);
+            report($e);
+            return response()->json(['success' => false, 'error' => 'Произошла ошибка. Попробуйте позже.'], 400);
         }
     }
 
@@ -157,7 +163,8 @@ class AuthController extends Controller
     {
         try {
             $validate = Validator::make($request->all(), [
-                'temp_code' => 'required|exists:sms_temps,id',
+                'temp_code' => 'required|integer',
+                'code' => 'required|digits:6',
                 'password' => 'required|string|min:6',
             ]);
 
@@ -165,16 +172,26 @@ class AuthController extends Controller
                 return response()->json(['success' => false, 'error' => 'Пароль должен быть не менее 6 символов'], 422);
             }
 
-            $code = SmsTemp::where('id', $request->temp_code)->first();
+            $code = SmsTemp::where('id', (int) $request->temp_code)
+                ->where('type', 'verify')
+                ->where('created_at', '>', Carbon::now()->subMinutes(self::OTP_TTL_MINUTES))
+                ->first();
+
+            if (! $code || ! hash_equals((string) $code->code, (string) $request->code)) {
+                return response()->json(['success' => false, 'error' => 'Неверный или просроченный код.'], 422);
+            }
 
             $user = $code->user;
-
             $user->password = $request->password;
             $user->save();
 
+            // Single use: the code can never set a password again.
+            $code->delete();
+
             return response()->json(['success' => true, 'message' => 'Пароль успешно установлен'], 200);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'error' => $e->getMessage()], 400);
+            report($e);
+            return response()->json(['success' => false, 'error' => 'Произошла ошибка. Попробуйте позже.'], 400);
         }
     }
 
@@ -209,7 +226,8 @@ class AuthController extends Controller
             ], 200);
 
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'error' => $e->getMessage()], 400);
+            report($e);
+            return response()->json(['success' => false, 'error' => 'Произошла ошибка. Попробуйте позже.'], 400);
         }
     }
 
@@ -354,7 +372,10 @@ class AuthController extends Controller
             return response()->json(['success' => false, 'error' => 'Неверные данные либо код из смс. Повторите попытку позже.'], 422);
         }
 
-        $newCode = rand(100000, 999999);
+        // The SMS code is single use: swap it for a short-lived verify code.
+        $code->delete();
+
+        $newCode = random_int(100000, 999999);
 
         SmsTemp::create([
             'type' => 'reset',
@@ -379,6 +400,7 @@ class AuthController extends Controller
 
         $check = SmsTemp::where('type', 'reset')
             ->where('code', $request->verify_code)
+            ->where('created_at', '>', Carbon::now()->subMinutes(self::OTP_TTL_MINUTES))
             ->orderByDesc('id')
             ->first();
 
@@ -390,6 +412,8 @@ class AuthController extends Controller
 
         $user->password = $request->password;
         $user->update();
+
+        $check->delete();
 
         return response()->json(['success' => true, 'message' => 'Пароль успешно изменён. Можете войти.'], 200);
     }
