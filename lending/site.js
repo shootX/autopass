@@ -1,5 +1,12 @@
 (function () {
   var base = String(window.AUTOPASS_APP_BASE || "https://wash.socialsave.cc").replace(/\/+$/, "");
+  if (typeof window.autopassLoggedInHome === "function") {
+    var next = window.autopassLoggedInHome(base, localStorage.getItem("access_token"), location.pathname);
+    if (next) {
+      location.replace(next);
+      return;
+    }
+  }
   document.querySelectorAll("[data-app]").forEach(function (el) {
     var path = el.getAttribute("data-app") || "/";
     if (path.charAt(0) !== "/") path = "/" + path;
