@@ -33,6 +33,16 @@
                         </select>
                     </div>
 
+                    <div class="form-group">
+                        <label for="partnerId">{{ __('admin.partners') }}</label>
+                        <select id="partnerId" name="partner_id" class="form-select">
+                            <option value="">—</option>
+                            @foreach($partners as $partner)
+                                <option @if(old('partner_id', $voucher->partner_id) == $partner->id) selected @endif value="{{$partner->id}}">{{$partner->name}}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
                     <x-form-input value="{{old('name', $voucher->name)}}" required type="text" title="{{ __('admin.name') }}" name="name"/>
                     <x-form-input value="{{old('description', $voucher->description)}}" required type="textarea" rows="5" title="{{ __('admin.description') }}" name="description"/>
 

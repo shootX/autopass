@@ -68,7 +68,7 @@
                             </td>
                             <td>
                                 <div class="btn-group">
-                                    <a class="btn btn-sm btn-dark" href="{{route('admin.clients.ban', $client)}}"><i class="fas fa-ban"></i></a>
+                                    <form method="POST" action="{{route('admin.clients.ban', $client)}}" class="d-inline">@csrf<button type="submit" class="btn btn-sm btn-dark"><i class="fas fa-ban"></i></button></form>
                                     <a class="btn btn-sm btn-primary" href="{{route('admin.clients.edit', $client)}}"><i class="fas fa-edit"></i></a>
                                     <a class="btn btn-sm btn-danger removeUser" data-id="{{$client->id}}"><i class="fas fa-trash"></i></a>
                                 </div>
@@ -100,7 +100,7 @@
                         yes: { text: I18N.yes,
                             btnClass: 'btn-red',
                             action: function () {
-                                window.location.href = '/dashboard/clients/'+id+'/delete';
+                                window.deleteRequest('/dashboard/clients/'+id+'/delete');
                             }
                         },
                         no: { text: I18N.no,

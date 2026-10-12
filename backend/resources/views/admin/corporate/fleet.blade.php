@@ -159,7 +159,7 @@ X-Api-Key: <span id="fleet-token-inline">{{ $masked }}</span>
                 type: 'red',
                 buttons: {
                     yes: { text: I18N.yes, btnClass: 'btn-red', action: function () {
-                        window.location.href = @json($deleteBase) + '/' + id + '/delete';
+                        window.deleteRequest(@json($deleteBase) + '/' + id + '/delete');
                     }},
                     no: { text: I18N.no }
                 }
