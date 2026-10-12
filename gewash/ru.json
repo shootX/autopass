@@ -924,6 +924,10 @@
             "shareTo": "Поделиться:"
         }
     },
+    "Scanner": {
+        "cameraRequired": "Нужен доступ к камере",
+        "retry": "Повторить"
+    },
     "Help": {
         "title": "Помощь",
         "backAlt": "Назад",

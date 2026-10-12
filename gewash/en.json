@@ -924,6 +924,10 @@
             "shareTo": "Sharet to:"
         }
     },
+    "Scanner": {
+        "cameraRequired": "Camera access is required",
+        "retry": "Try again"
+    },
     "Help": {
         "title": "Help",
         "backAlt": "Back",

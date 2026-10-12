@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { shouldShowOnboarding } from "./lib/onboardingGate";
 import { Provider, useDispatch, useSelector } from "react-redux";
 import type { RootState } from "./store";
 import { store } from "./store";
@@ -72,6 +73,7 @@ function AppRoutes() {
   const [langLoading, setLangLoading] = useState(() => readLangCache(currentLang) === null);
   const [onboarded, setOnboarded] = useState(() => localStorage.getItem("autopass.onboarding.v4") === "1");
   const { loading: userLoading } = useUser();
+  const { pathname } = useLocation();
   useRefreshUserOnBfcacheRestore();
 
   useEffect(() => {
@@ -162,7 +164,7 @@ function AppRoutes() {
   }
 
   const loggedOut = !localStorage.getItem("access_token") && import.meta.env.VITE_BYPASS_AUTH !== "true";
-  if (loggedOut && !onboarded) {
+  if (shouldShowOnboarding(loggedOut, onboarded, pathname)) {
     return (
       <Onboarding
         onDone={() => {

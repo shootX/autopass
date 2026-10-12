@@ -726,7 +726,10 @@
   background: transparent;
   color: #97a29a;
   display: grid;
+  place-items: center;
   cursor: pointer;
+  min-width: 44px;
+  min-height: 44px;
 }
 
 /* home */
