@@ -7,6 +7,7 @@ import { store } from "./store";
 import { useUserRole } from "./hooks/useUserRole";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { useUser, useRefreshUserOnBfcacheRestore } from "@/hooks/useUser";
+import { selectAppRoute } from "@/lib/sessionRouting";
 import { lazy, Suspense, useEffect, useState } from "react";
 import { setTranslations } from "./store/langSlice";
 import { setRole, setUser } from "./store/userSlice";
@@ -60,6 +61,18 @@ const RenewPasswordPage = lazy(() => import("./components/pages/RenewPasswordPag
 const PrivacyPage = lazy(() => import("./components/pages/PrivacyPage"));
 const SettingsPage = lazy(() => import("./components/pages/SettingsPage"));
 
+function PublicAuthRoutes() {
+  return (
+    <>
+      <Route path="/auth" element={<Authentication />} />
+      <Route path="/payment-success" element={<PaymentSuccess />} />
+      <Route path="/register" element={<Registration />} />
+      <Route path="/renew-password" element={<RenewPasswordPage />} />
+      <Route path="/privacy" element={<PrivacyPage />} />
+    </>
+  );
+}
+
 function readLangCache(lang: string): Record<string, unknown> | null {
   try {
     const raw = sessionStorage.getItem(`gewash_lang:${lang}`);
@@ -70,11 +83,13 @@ function readLangCache(lang: string): Record<string, unknown> | null {
 }
 function AppRoutes() {
   const role = useUserRole();
+  const session = useSelector((s: RootState) => s.user.session);
+  const decision = selectAppRoute(session, role);
   const dispatch = useDispatch();
   const currentLang = useSelector((s: RootState) => s.lang.currentLang);
   const [langLoading, setLangLoading] = useState(() => readLangCache(currentLang) === null);
   const [onboarded, setOnboarded] = useState(() => localStorage.getItem("autopass.onboarding.v4") === "1");
-  const { loading: userLoading } = useUser();
+  useUser();
   useRefreshUserOnBfcacheRestore();
 
   useEffect(() => {
@@ -158,10 +173,19 @@ function AppRoutes() {
     };
   }, [langLoading]);
 
-  const waitingForRole = Boolean(localStorage.getItem("access_token")) && userLoading;
-
-  if (langLoading || waitingForRole) {
+  if (langLoading || decision === "loading" || decision === "hold") {
     return <SplashScreen />;
+  }
+
+  if (decision === "login") {
+    return (
+      <Suspense fallback={<SplashScreen />}>
+        <Routes>
+          <PublicAuthRoutes />
+          <Route path="*" element={<Navigate to="/auth" replace />} />
+        </Routes>
+      </Suspense>
+    );
   }
 
   const loggedOut = !localStorage.getItem("access_token") && import.meta.env.VITE_BYPASS_AUTH !== "true";
@@ -179,84 +203,79 @@ function AppRoutes() {
   return (
     <Suspense fallback={<SplashScreen />}>
     <Routes>
-      {/* Public routes */}
-      <Route path="/auth" element={<Authentication />} />
-      <Route path="/payment-success" element={<PaymentSuccess />} />
-      <Route path="/register" element={<Registration />} />
-      <Route path="/renew-password" element={<RenewPasswordPage/>} />
-      <Route path="/privacy" element={<PrivacyPage/>} />
+      <PublicAuthRoutes />
 
       {/* Secure routes */}
       <Route element={<ProtectedRoute />}>
-  <Route element={<CustomerLayout />}>
-    <Route path="/add-car" element={<AddCar showHeader />} />
-    <Route path={customerAliasPaths.profileCarsNew} element={<AddCar showHeader />} />
-  </Route>
-
-  <Route element={<CarCheckRoute />}>
-    {role === "manager" ? (
-      <Route element={<ManagerLayout />}>
-        <Route path="/" element={<ManagerCalendar />} />
-        <Route path={managerAliasPaths.home} element={<Navigate to="/" replace />} />
-        <Route path={managerAliasPaths.calendar} element={<ManagerCalendar />} />
-        <Route path="/profile" element={<MyData />} />
-        <Route path={managerAliasPaths.profile} element={<MyData />} />
-        <Route path="/carwash-statistics" element={<ManagerCarwashStatistics />} />
-        <Route path={managerAliasPaths.statistics} element={<ManagerCarwashStatistics />} />
-        <Route path="/booking" element={<Booking />} />
-        <Route path={managerAliasPaths.bookings} element={<Booking />} />
-        <Route path="/reschedule/:id" element={<ReschudelingOrder />} />
-        <Route path={managerAliasPaths.reschedule} element={<ReschudelingOrder />} />
-        <Route path="/manager-qr-page" element={<ManagerScanner />} />
-        <Route path={managerAliasPaths.scanner} element={<ManagerScanner />} />
-        <Route path="/contacts" element={<Contacts />} />
-        <Route path={managerAliasPaths.contacts} element={<Contacts />} />
-        <Route path="/help" element={<Help />} />
-        <Route path={managerAliasPaths.help} element={<Help />} />
-        <Route path="/settings" element={<SettingsPage />} />
-        <Route path={managerAliasPaths.settings} element={<SettingsPage />} />
+        {decision === "manager" ? (
+          <Route element={<ManagerLayout />}>
+            <Route path="/" element={<ManagerCalendar />} />
+            <Route path={managerAliasPaths.home} element={<Navigate to="/" replace />} />
+            <Route path={managerAliasPaths.calendar} element={<ManagerCalendar />} />
+            <Route path="/profile" element={<MyData />} />
+            <Route path={managerAliasPaths.profile} element={<MyData />} />
+            <Route path="/carwash-statistics" element={<ManagerCarwashStatistics />} />
+            <Route path={managerAliasPaths.statistics} element={<ManagerCarwashStatistics />} />
+            <Route path="/booking" element={<Booking />} />
+            <Route path={managerAliasPaths.bookings} element={<Booking />} />
+            <Route path="/reschedule/:id" element={<ReschudelingOrder />} />
+            <Route path={managerAliasPaths.reschedule} element={<ReschudelingOrder />} />
+            <Route path="/manager-qr-page" element={<ManagerScanner />} />
+            <Route path={managerAliasPaths.scanner} element={<ManagerScanner />} />
+            <Route path="/contacts" element={<Contacts />} />
+            <Route path={managerAliasPaths.contacts} element={<Contacts />} />
+            <Route path="/help" element={<Help />} />
+            <Route path={managerAliasPaths.help} element={<Help />} />
+            <Route path="/settings" element={<SettingsPage />} />
+            <Route path={managerAliasPaths.settings} element={<SettingsPage />} />
+          </Route>
+        ) : (
+          <>
+            <Route element={<CustomerLayout />}>
+              <Route path="/add-car" element={<AddCar showHeader />} />
+              <Route path={customerAliasPaths.profileCarsNew} element={<AddCar showHeader />} />
+            </Route>
+            <Route element={<CarCheckRoute />}>
+              <Route element={<CustomerLayout />}>
+                <Route path="/" element={<Home />} />
+                <Route path={customerAliasPaths.home} element={<Home />} />
+                <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/customer-my-data" element={<CustomerMyData />} />
+                <Route path="/change-phone" element={<PhoneNumberChanging />} />
+                <Route path="/change-email" element={<EmailChanging />} />
+                <Route path="/edit-car/:carid" element={<EditCar />} />
+                <Route path={customerAliasPaths.profileCarEdit} element={<EditCar />} />
+                <Route path="/branches/:id" element={<BranchDetail />} />
+                <Route path="/branches" element={<BranchScreen />} />
+                <Route path="/wash-appointment" element={<WashAppointment />} />
+                <Route path="/my-reviews" element={<MyReviews />} />
+                <Route path={customerAliasPaths.reviews} element={<MyReviews />} />
+                <Route path="/my-packages" element={<MyPackages />} />
+                <Route path="/my-points" element={<MyPoints />} />
+                <Route path="/my-area" element={<MyAreaPage />} />
+                <Route path="/my-points/info" element={<PointsInfo />} />
+                <Route path="/my-points/referrals" element={<ReferralsInfo />} />
+                <Route path={customerAliasPaths.referrals} element={<ReferralsInfo />} />
+                <Route path="/shop" element={<ShopPage />} />
+                <Route path="/shop/discounts" element={<DiscountsPage />} />
+                <Route path="/shop/discounts/:id" element={<DiscountDetailPage />} />
+                <Route path="/shop/giveaway" element={<GiveawayPage />} />
+                <Route path="/shop/giveaway/:id" element={<GiveawayDetailPage />} />
+                <Route path={customerAliasPaths.customerCalendar} element={<CustomerCalendar />} />
+                <Route path={customerAliasPaths.calendar} element={<CustomerCalendar />} />
+                <Route path="/customer-qr-page" element={<QRPage />} />
+                <Route path={customerAliasPaths.qr} element={<QRPage />} />
+                <Route path={customerAliasPaths.profileCars} element={<Navigate to="/customer-my-data#vehicles" replace />} />
+                <Route path="/messages" element={<Messages />} />
+                <Route path="/contacts" element={<Contacts />} />
+                <Route path="/help" element={<Help />} />
+                <Route path="/settings" element={<SettingsPage />} />
+              </Route>
+            </Route>
+          </>
+        )}
       </Route>
-    ) : (
-      <Route element={<CustomerLayout />}>
-        <Route path="/" element={<Home />} />
-        <Route path={customerAliasPaths.home} element={<Home />} />
-        <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/customer-my-data" element={<CustomerMyData />} />
-        <Route path="/change-phone" element={<PhoneNumberChanging />} />
-        <Route path="/change-email" element={<EmailChanging />} />
-        <Route path="/edit-car/:carid" element={<EditCar />} />
-        <Route path={customerAliasPaths.profileCarEdit} element={<EditCar />} />
-        <Route path="/branches/:id" element={<BranchDetail />} />
-        <Route path="/branches" element={<BranchScreen />} />
-        <Route path="/wash-appointment" element={<WashAppointment />} />
-        <Route path="/my-reviews" element={<MyReviews />} />
-        <Route path={customerAliasPaths.reviews} element={<MyReviews />} />
-        <Route path="/my-packages" element={<MyPackages />} />
-        <Route path="/my-points" element={<MyPoints />} />
-        <Route path="/my-area" element={<MyAreaPage />} />
-        <Route path="/my-points/info" element={<PointsInfo />} />
-        <Route path="/my-points/referrals" element={<ReferralsInfo />} />
-        <Route path={customerAliasPaths.referrals} element={<ReferralsInfo />} />
-        <Route path="/shop" element={<ShopPage />} />
-        <Route path="/shop/discounts" element={<DiscountsPage />} />
-        <Route path="/shop/discounts/:id" element={<DiscountDetailPage />} />
-        <Route path="/shop/giveaway" element={<GiveawayPage />} />
-        <Route path="/shop/giveaway/:id" element={<GiveawayDetailPage />} />
-        <Route path={customerAliasPaths.customerCalendar} element={<CustomerCalendar />} />
-        <Route path={customerAliasPaths.calendar} element={<CustomerCalendar />} />
-        <Route path="/customer-qr-page" element={<QRPage />} />
-        <Route path={customerAliasPaths.qr} element={<QRPage />} />
-        <Route path={customerAliasPaths.profileCars} element={<Navigate to="/customer-my-data#vehicles" replace />} />
-        <Route path="/messages" element={<Messages />} />
-        <Route path="/contacts" element={<Contacts />} />
-        <Route path="/help" element={<Help />} />
-        <Route path="/settings" element={<SettingsPage />} />
-      </Route>
-    )}
-  </Route>
-</Route>
 
-      {/* Fallback */}
       <Route path="*" element={<NotFound />} />
     </Routes>
     </Suspense>
