@@ -34,3 +34,8 @@ Source: autopass-audit-report-2026-10-10.pdf
 - [x] BE-19 (part 2) `user_vouchers.used_at` + `used_by_partner_id`; use marks instead of deleting; used vouchers hidden from client lists and can't be checked again.
 - [ ] Not backend / not in scope: FE-03/04/07/08/11/12, MOB-*, UX-*, DEPLOY-01 (build stamp), BE-07 (server storage permissions, ops).
 - [ ] Open: JWT TTL default is 90 days (`JWT_TTL=129600`, related to FE-08) — shorten? Needs a decision because it logs mobile users out sooner.
+
+## 2026-10-12 — UX backend + deploy runbook (PR #8)
+- [x] UX-09 promo typo „ჭკკვიანი“ → „ჭკვიანი“: text is in the DB (`promos`), fixed by an idempotent data migration `2026_10_12_000004_fix_promo_typo`.
+- [x] UX-30 corporate account: current password required only when setting a new password.
+- [x] `docs/DEPLOY_RUNBOOK.md` (.env keys, BE-07 permissions, nginx/UX-12 + security headers, DEPLOY-01 stamp, voucher backfill, rollback, merge order #5–#13).

@@ -22,3 +22,8 @@
 - Vouchers are never deleted on use anymore: `user_vouchers.used_at` / `used_by_partner_id`. `User::vouchers()` filters `used_at IS NULL`.
 - Voucher SMS brute-force lock: RateLimiter key `voucher-use:{temp_code}`, 5 attempts / 10 min, then the SMS code is deleted.
 - `CORS_ALLOWED_ORIGINS` default in `.env.example`: `https://wash.socialsave.cc`.
+
+## 2026-10-12 (UX/deploy)
+- Promo text lives in the DB; content fixes are done with idempotent data migrations, never by editing the server by hand.
+- Corporate panel `saveAccount`: `current_password` is `required_with:password`.
+- Merge order and deploy steps: `docs/DEPLOY_RUNBOOK.md`. Frontend PRs #9–#12 conflict with #6 on `gewash/package.json` (vitest) and `App.tsx`, so rebase each one after the previous merge.
