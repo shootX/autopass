@@ -3,12 +3,50 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Cache;
+use App\Models\CarBrand;
+use App\Models\CarModel;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use RuntimeException;
 
 class CarCatalog
 {
     public function brands(): array
+    {
+        try {
+            return $this->remoteBrands();
+        } catch (\Throwable $e) {
+            Log::warning('CarAPI brands unavailable, using local catalog.', ['error' => $e->getMessage()]);
+
+            return CarBrand::query()->orderBy('name')->get(['id', 'name'])
+                ->map(fn (CarBrand $b) => ['id' => (int) $b->id, 'name' => (string) $b->name, 'slug' => Str::slug($b->name)])
+                ->all();
+        }
+    }
+
+    public function models(int $brandId): ?array
+    {
+        $brand = collect($this->brands())->firstWhere('id', $brandId);
+        if (!$brand) {
+            return null;
+        }
+
+        try {
+            return $this->remoteModels($brand);
+        } catch (\Throwable $e) {
+            Log::warning('CarAPI models unavailable, using local catalog.', ['error' => $e->getMessage()]);
+
+            $local = CarBrand::query()->where('name', $brand['name'])->first();
+
+            return $local
+                ? CarModel::query()->where('brand_id', $local->id)->orderBy('name')->get(['id', 'name'])
+                    ->map(fn (CarModel $m) => ['id' => (int) $m->id, 'name' => (string) $m->name])->all()
+                : [];
+        }
+    }
+
+    private function remoteBrands(): array
     {
         return Cache::remember('carapi.brands', 60 * 60 * 6, function () {
             return array_map(fn (array $row) => [
@@ -19,13 +57,8 @@ class CarCatalog
         });
     }
 
-    public function models(int $brandId): ?array
+    private function remoteModels(array $brand): array
     {
-        $brand = collect($this->brands())->firstWhere('id', $brandId);
-        if (!$brand) {
-            return null;
-        }
-
         return Cache::remember('carapi.models.'.$brand['slug'], 60 * 60 * 6, function () use ($brand) {
             return array_map(fn (array $row) => [
                 'id' => (int) $row['id'],

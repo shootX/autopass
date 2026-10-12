@@ -87,7 +87,7 @@
                         yes: { text: I18N.yes,
                             btnClass: 'btn-red',
                             action: function() {
-                                window.location.href = '/dashboard/washings/{{$washing->id}}/reviews/'+removeID+'/delete';
+                                window.deleteRequest('/dashboard/washings/{{$washing->id}}/reviews/'+removeID+'/delete');
                             }
                         },
                         no: { text: I18N.no,
