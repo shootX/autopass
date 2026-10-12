@@ -1,0 +1,8 @@
+---
+description: ყოველი agent კითხულობს პროექტის docs-ს და დავალების შემდეგ ანახლებს TASKS-სა და MEMORY-ს
+alwaysApply: true
+---
+
+მუშაობის წინ წაიკითხე `docs/MEMORY.md`, `docs/TASKS.md` და `docs/RULES.md`.
+
+დავალების შემდეგ იმავე PR-ში განაახლე `docs/TASKS.md` და `docs/MEMORY.md`. ჩანაწერი თარიღიანია (`YYYY-MM-DD`). ერთი agent ერთ დროს ერთ დავალებას იღებს.

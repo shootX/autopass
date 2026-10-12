@@ -165,11 +165,12 @@ class PartnerPanelController extends Controller
         $corporate = $this->client($request);
         $data = $request->validate([
             'username' => ['required', 'string', 'min:3', 'max:64', Rule::unique('corporate_clients', 'username')->ignore($corporate->id)],
-            'current_password' => ['required', 'string'],
+            // UX-30: current password is only needed to set a new password.
+            'current_password' => ['required_with:password', 'nullable', 'string'],
             'password' => ['nullable', 'string', 'min:6', 'confirmed'],
         ]);
 
-        if (!Hash::check($data['current_password'], (string) $corporate->password)) {
+        if (!empty($data['password']) && !Hash::check((string) $data['current_password'], (string) $corporate->password)) {
             return back()->withErrors(['current_password' => __('admin.partner_password_wrong')]);
         }
 
