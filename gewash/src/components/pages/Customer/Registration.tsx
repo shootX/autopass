@@ -6,6 +6,7 @@ import { fetchUserData } from "@/lib/fetchUserData";
 import { buildSetPasswordBody, tempCodeFromRegister } from "@/lib/registerPassword";
 import { referralIpUrl } from "@/lib/referralIp";
 import { useDispatch } from "react-redux";
+import type { AppDispatch } from "@/store";
 const API_URL = import.meta.env.VITE_API_URL;
 import { useTranslation } from "@/hooks/useTranslation";
 import { logoUrl, googleServiceIconUrl, facebookUrl } from "@/assets/staticUrls";
@@ -51,7 +52,7 @@ export default function Registration() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [referralCode, setReferralCode] = useState<string | null>(null); // Состояние для хранения кода
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
 
   const togglePassword = () => setShowPassword((prev) => !prev);
   const [tempCode, setTempCode] = useState<number | null>(null);

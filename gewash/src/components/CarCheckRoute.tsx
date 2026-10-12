@@ -1,12 +1,18 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useFetchCars } from "@/hooks/useFetchCars";
+import { useUserRole } from "@/hooks/useUserRole";
+import { shouldCheckCars } from "@/lib/sessionRouting";
 
 export function CarCheckRoute() {
+  const role = useUserRole();
   const bypassAuth = import.meta.env.VITE_BYPASS_AUTH === "true";
-  if (bypassAuth) {
+  if (!shouldCheckCars(role, bypassAuth)) {
     return <Outlet />;
   }
+  return <CustomerCarCheck />;
+}
 
+function CustomerCarCheck() {
   const { cars, loading, error } = useFetchCars();
   const token = localStorage.getItem("access_token");
   const location = useLocation();
