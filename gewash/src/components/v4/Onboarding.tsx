@@ -32,7 +32,7 @@ export default function Onboarding({ onDone }: { onDone: () => void }) {
       </div>
       {index === 0 && (
         <>
-          <img src={CAR_SUV} alt="" style={{ position: "absolute", left: -10, top: 168, width: "108%", filter: "drop-shadow(0 18px 14px rgba(14,23,18,.18))" }} />
+          <img className="v4-onb-car" src={CAR_SUV} alt="" />
           <div className="v4-mini" style={{ left: 26, top: 92, width: 168 }}>
             <div className="v4-kicker">დარჩენილი რეცხვა</div>
             <div style={{ fontWeight: 800, fontSize: 22, marginTop: 2 }}>პაკეტი</div>
@@ -41,7 +41,7 @@ export default function Onboarding({ onDone }: { onDone: () => void }) {
       )}
       {index === 1 && (
         <>
-          <img src={CAR_SEDAN} alt="" style={{ position: "absolute", left: 24, top: 150, width: "86%", filter: "drop-shadow(0 18px 14px rgba(14,23,18,.18))" }} />
+          <img className="v4-onb-car" src={CAR_SEDAN} alt="" />
           <div className="v4-mini" style={{ right: 24, top: 108, display: "flex", gap: 10, alignItems: "center" }}>
             <span className="v4-limeico" style={{ width: 34, height: 34, borderRadius: 10 }}>
               <CalendarCheck size={18} />

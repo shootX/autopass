@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { scrollToHash } from '@/lib/scrollForLocation';
 import { scrollToElementId } from '@/lib/scrollToId';
 import { SingleCalendarMobileSheet } from '@/components/Calendars/SingleCalendarDropDownSheet';
 import { SexDropDown } from '@/components/ui/SexDropDown';
@@ -16,7 +17,7 @@ import { refreshCurrentUser } from '@/hooks/useUser';
 
 export default function CustomerMyData() {
   const navigate = useNavigate();
-  const location = useLocation();
+  const { hash } = useLocation();
   const user = useSelector((state: RootState) => state.user.data);
   const { editUser } = useEditUser();
 
@@ -36,15 +37,24 @@ export default function CustomerMyData() {
 
   const t = useTranslation();
 
-  const isFormFilled = firstName.trim() && secondName.trim() && selectedDate && selectedSex !== '';
-
   useEffect(() => {
-    if (location.hash !== '#vehicles') return;
+    if (hash !== '#vehicles') return;
+    scrollToHash(hash);
+    scrollToElementId('vehicles');
+    const frame = window.requestAnimationFrame(() => {
+      scrollToHash(hash);
+      scrollToElementId('vehicles');
+    });
     const timer = window.setTimeout(() => {
       scrollToElementId('vehicles');
     }, 0);
-    return () => window.clearTimeout(timer);
-  }, [location.hash]);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.clearTimeout(timer);
+    };
+  }, [hash]);
+
+  const isFormFilled = firstName.trim() && secondName.trim() && selectedDate && selectedSex !== '';
 
   useEffect(() => {
     const load = async () => {
@@ -227,7 +237,7 @@ export default function CustomerMyData() {
             >
               <input
                 type="text"
-                placeholder="---"
+                placeholder={t('CustomerMyData.form.placeholders.sex')}
                 value={selectedSex ? selectedSex[0].toUpperCase() + selectedSex.slice(1) : ''}
                 readOnly
               />

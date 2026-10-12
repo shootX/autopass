@@ -144,7 +144,7 @@ export default function AddCar({ showHeader }: { showHeader?: boolean }) {
         </header>
       )}
       <div className='add-car-content'>
-        <h1>{t("AddCar.title")}</h1>
+        {!shouldShowHeader && <h1>{t("AddCar.title")}</h1>}
         {!submitted ? (
           <>
             <p className='add-car-title-info'>{t("AddCar.subtitle")}</p>
