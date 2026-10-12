@@ -198,6 +198,7 @@ function AppRoutes() {
         <Route path="/booking" element={<Booking />} />
         <Route path="/reschedule/:id" element={<ReschudelingOrder />} />
         <Route path="/manager-qr-page" element={<ManagerScanner />} />
+        <Route path="/home" element={<Navigate to="/" replace />} />
         <Route path="/contacts" element={<Contacts />} />
         <Route path="/help" element={<Help />} />
         <Route path="/settings" element={<SettingsPage />} />
@@ -205,6 +206,7 @@ function AppRoutes() {
     ) : (
       <Route element={<CustomerLayout />}>
         <Route path="/" element={<Home />} />
+        <Route path="/home" element={<Home />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/customer-my-data" element={<CustomerMyData />} />
         <Route path="/change-phone" element={<PhoneNumberChanging />} />

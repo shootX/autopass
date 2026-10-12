@@ -1,6 +1,6 @@
 <div class="row">
-    <div class="col-lg-4">
-        <div class="card mt-4">
+    <div class="col-lg-4 d-flex">
+        <div class="card mt-4 w-100">
             <div class="card-header">{{ __('admin.fleet_manual') }}</div>
             <div class="card-body">
                 @php
@@ -41,13 +41,15 @@
             </div>
         </div>
     </div>
-    <div class="col-lg-4">
-        <div class="card mt-4">
+    <div class="col-lg-4 d-flex">
+        <div class="card mt-4 w-100">
             <div class="card-header">{{ __('admin.fleet_excel') }}</div>
             <div class="card-body">
                 <form action="{{ $importUrl }}" method="post" enctype="multipart/form-data">
                     @csrf
-                    <input class="form-control" type="file" name="file" accept=".xlsx,.xls,.csv" required>
+                    <label class="btn btn-outline-secondary" for="fleet_file">{{ __('admin.fleet_choose_file') }}</label>
+                    <input id="fleet_file" class="visually-hidden" type="file" name="file" accept=".xlsx,.xls,.csv" required>
+                    <span id="fleet_file_name" class="d-block mt-2">{{ __('admin.fleet_no_file') }}</span>
                     @error('file')<small style="color:red;">{{ $message }}</small>@enderror
                     <button class="btn btn-primary mt-3" type="submit">{{ __('admin.fleet_upload') }}</button>
                     <a class="btn btn-outline-secondary mt-3" href="{{ $templateUrl }}">{{ __('admin.fleet_template') }}</a>
@@ -56,17 +58,22 @@
             </div>
         </div>
     </div>
-    <div class="col-lg-4">
-        <div class="card mt-4">
+    <div class="col-lg-4 d-flex">
+        <div class="card mt-4 w-100">
             <div class="card-header">{{ __('admin.fleet_api') }}</div>
             <div class="card-body">
-                <div class="mb-2"><code style="word-break:break-all;">{{ $corporate->api_token }}</code></div>
-                <form action="{{ $tokenUrl }}" method="post" onsubmit="return confirm(@json(__('admin.corporate_token_confirm')))">
+                @php
+                    $token = (string) $corporate->api_token;
+                    $masked = str_repeat('•', max(0, strlen($token) - 4)).substr($token, -4);
+                @endphp
+                <div class="mb-2"><code id="fleet-token" style="word-break:break-all;" data-full="{{ $token }}" data-masked="{{ $masked }}">{{ $masked }}</code></div>
+                <button class="btn btn-outline-secondary btn-sm" type="button" id="fleet-token-toggle">{{ __('admin.fleet_token_show') }}</button>
+                <form action="{{ $tokenUrl }}" method="post" class="d-inline" onsubmit="return confirm(@json(__('admin.corporate_token_confirm')))">
                     @csrf
                     <button class="btn btn-outline-secondary btn-sm" type="submit">{{ __('admin.corporate_token_reset_btn') }}</button>
                 </form>
-                <pre class="mt-3 mb-0" style="white-space:pre-wrap;font-size:12px;">POST {{ url('/api/corporate/vehicles') }}
-X-Api-Key: {{ $corporate->api_token }}
+                <pre class="mt-3 mb-0" style="white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;">POST {{ url('/api/corporate/vehicles') }}
+X-Api-Key: <span id="fleet-token-inline">{{ $masked }}</span>
 {"plate":"AB123CD","brand":"Toyota","model":"Camry"}</pre>
             </div>
         </div>
@@ -107,17 +114,34 @@ X-Api-Key: {{ $corporate->api_token }}
 @push('js')
     <script>
         function fleetModels() {
-            const brand = $('#fleet_brand').val();
-            $('#fleet_model option').each(function () {
+            const brand = String($('#fleet_brand').val() || '');
+            const select = $('#fleet_model');
+            select.prop('disabled', brand === '');
+            select.find('option').each(function () {
                 const option = $(this);
                 if (!option.val()) return;
-                const show = option.data('brand') == brand;
+                const show = String(option.data('brand')) === brand;
                 option.prop('hidden', !show);
+                option.prop('disabled', !show);
                 if (!show && option.is(':selected')) option.prop('selected', false);
             });
         }
         $('#fleet_brand').on('change', fleetModels);
         fleetModels();
+
+        $('#fleet_file').on('change', function () {
+            const file = this.files && this.files[0];
+            $('#fleet_file_name').text(file ? file.name : @json(__('admin.fleet_no_file')));
+        });
+
+        $('#fleet-token-toggle').on('click', function () {
+            const node = $('#fleet-token');
+            const open = node.attr('data-open') === '1';
+            const next = open ? node.attr('data-masked') : node.attr('data-full');
+            node.text(next).attr('data-open', open ? '0' : '1');
+            $('#fleet-token-inline').text(next);
+            $(this).text(open ? @json(__('admin.fleet_token_show')) : @json(__('admin.fleet_token_hide')));
+        });
 
         $('#fleet_plate').on('input', function () {
             const value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 7);

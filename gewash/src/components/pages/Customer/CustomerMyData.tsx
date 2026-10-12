@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { scrollToHash } from '@/lib/scrollForLocation';
 import { SingleCalendarMobileSheet } from '@/components/Calendars/SingleCalendarDropDownSheet';
 import { SexDropDown } from '@/components/ui/SexDropDown';
 import CustomerContactInfo from '@/components/CustomerContactInfo';
@@ -15,6 +16,7 @@ import { refreshCurrentUser } from '@/hooks/useUser';
 
 export default function CustomerMyData() {
   const navigate = useNavigate();
+  const { hash } = useLocation();
   const user = useSelector((state: RootState) => state.user.data);
   const { editUser } = useEditUser();
 
@@ -33,6 +35,13 @@ export default function CustomerMyData() {
   const dispatch = useDispatch();
 
   const t = useTranslation();
+
+  useEffect(() => {
+    if (hash !== '#vehicles') return;
+    scrollToHash(hash);
+    const frame = window.requestAnimationFrame(() => scrollToHash(hash));
+    return () => window.cancelAnimationFrame(frame);
+  }, [hash]);
 
   const isFormFilled = firstName.trim() && secondName.trim() && selectedDate && selectedSex !== '';
 
@@ -217,7 +226,7 @@ export default function CustomerMyData() {
             >
               <input
                 type="text"
-                placeholder="---"
+                placeholder={t('CustomerMyData.form.placeholders.sex')}
                 value={selectedSex ? selectedSex[0].toUpperCase() + selectedSex.slice(1) : ''}
                 readOnly
               />

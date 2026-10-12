@@ -205,9 +205,15 @@
   .auth-accept-policy {
     display: flex;
     align-items: flex-start;
+    flex-wrap: wrap;
     gap: 10px;
+    max-width: 100%;
     font-size: 14px;
     line-height: 1.45;
+
+    a {
+      overflow-wrap: anywhere;
+    }
 
     input {
       width: 18px;
@@ -226,10 +232,13 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-wrap: wrap;
     @include font-roboto-regular-blue;
     margin-top: 16px;
     a {
-        color: $yellowMain;
+        color: $blueMain;
+        text-decoration: underline;
+        text-underline-offset: 3px;
     }
   }
 

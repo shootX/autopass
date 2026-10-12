@@ -725,6 +725,8 @@
     position: sticky;
     top: 0;
     height: 100dvh;
+    overflow-x: hidden;
+    overflow-y: auto;
   }
 
   .ap-side .lg {
@@ -781,6 +783,7 @@
 
   .ap-side .promo {
     margin-top: auto;
+    flex: none;
     background: linear-gradient(150deg, #1d6040, #14482f);
     border-radius: 22px;
     padding: 18px;
@@ -818,6 +821,7 @@
     align-items: center;
     gap: 12px;
     margin-top: 16px;
+    flex: none;
     padding: 10px;
     border-radius: 16px;
     background: rgba(255, 255, 255, 0.05);

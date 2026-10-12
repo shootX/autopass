@@ -110,8 +110,6 @@ export default function Authentication() {
       <div className="panel v4-dk">
         <h1>{t("Authentication.greeting.title")}</h1>
         <p className="sub">{t("Authentication.greeting.subtitle")}</p>
-        {phoneError && <p className="ap-error" style={{ marginTop: 16 }}>{phoneError}</p>}
-        {passwordError && <p className="ap-error">{passwordError}</p>}
 
         <div style={{ marginTop: 24 }}>
           <label>{t("Authentication.labels.phone")}</label>
@@ -121,12 +119,14 @@ export default function Authentication() {
             <input
               type="tel"
               inputMode="numeric"
+              autoComplete="tel"
               value={phone}
               onChange={handlePhoneChange}
               maxLength={9}
               placeholder={t("Authentication.placeholders.phone")}
             />
           </div>
+          {phoneError && <p className="ap-error" style={{ marginTop: 8 }}>{phoneError}</p>}
         </div>
 
         <div style={{ marginTop: 16 }}>
@@ -134,6 +134,7 @@ export default function Authentication() {
           <div className="v4-dinput">
             <input
               type={showPassword ? "text" : "password"}
+              autoComplete="current-password"
               value={password}
               onChange={(e) => {
                 setPassword(e.target.value);
@@ -145,6 +146,7 @@ export default function Authentication() {
               {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
             </button>
           </div>
+          {passwordError && <p className="ap-error" style={{ marginTop: 8 }}>{passwordError}</p>}
         </div>
 
         <div style={{ textAlign: "right", marginTop: 12 }}>
@@ -157,7 +159,7 @@ export default function Authentication() {
           {isLoading ? <span className="spinner" /> : t("Authentication.buttons.signIn")}
         </button>
 
-        <p style={{ marginTop: 22, textAlign: "center", color: "#97A29A", fontSize: 14.5 }}>
+        <p className="v4-auth-switch" style={{ marginTop: 22, textAlign: "center", fontSize: 14.5 }}>
           {t("Authentication.signupPrompt")}{" "}
           <Link to="/register" style={{ color: "#fff", fontWeight: 800, textDecoration: "none" }}>
             {t("Authentication.buttons.signUp")}

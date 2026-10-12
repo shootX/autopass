@@ -1,4 +1,12 @@
 (function () {
+  if (typeof window.autopassLoggedInHome === "function") {
+    var token = "";
+    try { token = localStorage.getItem("access_token") || ""; } catch (err) { token = ""; }
+    if (window.autopassLoggedInHome({ token: token, appBase: window.AUTOPASS_APP_BASE, replace: function (url) { location.replace(url); } })) {
+      return;
+    }
+  }
+
   var base = String(window.AUTOPASS_APP_BASE || "https://wash.socialsave.cc").replace(/\/+$/, "");
   document.querySelectorAll("[data-app]").forEach(function (el) {
     var path = el.getAttribute("data-app") || "/";
@@ -40,7 +48,7 @@
       if (event.key === "Escape") setOpen(false);
     });
     window.addEventListener("resize", function () {
-      if (window.innerWidth > 760) setOpen(false);
+      if (window.innerWidth > 860) setOpen(false);
     });
   }
 

@@ -151,13 +151,15 @@ export default function BranchScreen() {
         </>
       ) : (
         <>
-          <form className="v4-map-search" onSubmit={(e) => e.preventDefault()}>
-            <Search size={20} />
-            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="მოძებნე ფილიალი" aria-label="მოძებნე ფილიალი" />
-          </form>
-          <button type="button" className="v4-map-filter" aria-label="ფილტრი" onClick={() => setFilterOpen(true)}>
-            <SlidersHorizontal size={21} />
-          </button>
+          <div className="v4-map-tools">
+            <form className="v4-map-search" onSubmit={(e) => e.preventDefault()}>
+              <Search size={20} />
+              <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="მოძებნე ფილიალი" aria-label="მოძებნე ფილიალი" />
+            </form>
+            <button type="button" className="v4-map-filter" aria-label="ფილტრი" onClick={() => setFilterOpen(true)}>
+              <SlidersHorizontal size={21} />
+            </button>
+          </div>
           <div className="v4-tgl">
             <button type="button" className="on">რუკა</button>
             <button type="button" onClick={() => setViewMode('list')}>სია</button>

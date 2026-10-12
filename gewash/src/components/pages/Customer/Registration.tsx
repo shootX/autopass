@@ -239,7 +239,7 @@ export default function Registration() {
                   setPassword(e.target.value);
                   if (error.password) setError((prev) => ({ ...prev, password: undefined }));
                 }}
-                placeholder="Create your password"
+                placeholder={t("Registration.stage.setPassword.placeholder")}
                 className="custom-input"
               />
               <svg
@@ -314,7 +314,7 @@ export default function Registration() {
               value={phone}
               onChange={handlePhoneChange}
               maxLength={9}
-              placeholder='555112233'
+              placeholder={t("Authentication.placeholders.phone")}
               className='custom-input'
             />
           </div>

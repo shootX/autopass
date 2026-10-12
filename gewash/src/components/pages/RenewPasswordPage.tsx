@@ -189,7 +189,7 @@ export default function PasswordChangePage() {
                   if (error.password)
                     setError((prev) => ({ ...prev, password: undefined }));
                 }}
-                placeholder='Create your new password'
+                placeholder={t("PasswordChange.setPassword.placeholder")}
                 className='custom-input'
               />
               <svg
@@ -222,7 +222,7 @@ export default function PasswordChangePage() {
                   if (error.password === "mismatch")
                     setError((prev) => ({ ...prev, password: undefined }));
                 }}
-                placeholder='Repeat your password'
+                placeholder={t("PasswordChange.setPassword.repeat")}
                 className='custom-input'
               />
               <svg
@@ -281,7 +281,7 @@ export default function PasswordChangePage() {
               value={phone}
               onChange={handlePhoneChange}
               maxLength={9}
-              placeholder="706500505"
+              placeholder={t("Authentication.placeholders.phone")}
               className="custom-input"
             />
           </div>
