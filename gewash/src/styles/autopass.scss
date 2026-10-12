@@ -111,8 +111,8 @@
   transform: none;
   width: 100%;
   max-width: none;
-  height: 88px;
-  padding: 8px 18px 0;
+  height: calc(88px + env(safe-area-inset-bottom));
+  padding: 8px 18px env(safe-area-inset-bottom);
   background: #fff;
   border-top: 1px solid var(--ap-gray-100);
   z-index: 40;
@@ -130,6 +130,12 @@
   display: flex;
   justify-content: space-around;
   align-items: flex-start;
+}
+
+.nav-bar-container > a,
+.nav-bar-container a.ap-tab {
+  min-width: 44px;
+  min-height: 44px;
 }
 
 .nav-bar-container a.ap-tab {

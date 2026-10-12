@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { scrollToHash } from '@/lib/scrollForLocation';
+import { scrollToElementId } from '@/lib/scrollToId';
 import { SingleCalendarMobileSheet } from '@/components/Calendars/SingleCalendarDropDownSheet';
 import { SexDropDown } from '@/components/ui/SexDropDown';
 import CustomerContactInfo from '@/components/CustomerContactInfo';
@@ -39,8 +40,18 @@ export default function CustomerMyData() {
   useEffect(() => {
     if (hash !== '#vehicles') return;
     scrollToHash(hash);
-    const frame = window.requestAnimationFrame(() => scrollToHash(hash));
-    return () => window.cancelAnimationFrame(frame);
+    scrollToElementId('vehicles');
+    const frame = window.requestAnimationFrame(() => {
+      scrollToHash(hash);
+      scrollToElementId('vehicles');
+    });
+    const timer = window.setTimeout(() => {
+      scrollToElementId('vehicles');
+    }, 0);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.clearTimeout(timer);
+    };
   }, [hash]);
 
   const isFormFilled = firstName.trim() && secondName.trim() && selectedDate && selectedSex !== '';

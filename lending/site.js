@@ -1,13 +1,14 @@
 (function () {
+  var base = String(window.AUTOPASS_APP_BASE || "https://wash.socialsave.cc").replace(/\/+$/, "");
   if (typeof window.autopassLoggedInHome === "function") {
     var token = "";
     try { token = localStorage.getItem("access_token") || ""; } catch (err) { token = ""; }
-    if (window.autopassLoggedInHome({ token: token, appBase: window.AUTOPASS_APP_BASE, replace: function (url) { location.replace(url); } })) {
+    var next = window.autopassLoggedInHome(base, token, location.pathname);
+    if (next) {
+      location.replace(next);
       return;
     }
   }
-
-  var base = String(window.AUTOPASS_APP_BASE || "https://wash.socialsave.cc").replace(/\/+$/, "");
   document.querySelectorAll("[data-app]").forEach(function (el) {
     var path = el.getAttribute("data-app") || "/";
     if (path.charAt(0) !== "/") path = "/" + path;
