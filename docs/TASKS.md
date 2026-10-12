@@ -72,6 +72,10 @@ Source: autopass-audit-report-2026-10-10.pdf
 - [x] UX-30 corporate account: current password required only when setting a new password.
 - [x] `docs/DEPLOY_RUNBOOK.md` (.env keys, BE-07 permissions, nginx/UX-12 + security headers, DEPLOY-01 stamp, voucher backfill, rollback, merge order #5–#13).
 
+## 2026-10-12 — FE-11 / MOB-10
+
+- [x] FE-11 / MOB-10: მენეჯერი (`role = 1`) აღარ გადის მანქანის შემოწმებას და ლოგინის შემდეგ ხვდება `/manager-qr-page`-ზე. `GET /me` სრულდება მარშრუტის არჩევამდე; სანამ პასუხი არ მოვა, ჩანს splash. `401` აბრუნებს `/auth`-ზე.
+
 ## 2026-10-12
 
 UX-12. დაემატა `deploy/nginx/autopass.conf.example`. `/home` და დანარჩენი SPA მისამართები `try_files`-ით მიდის SPA-ის `index.html`-ზე. სერვერი არ შეხებულა.
