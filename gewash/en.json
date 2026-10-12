@@ -946,5 +946,9 @@
                 "a": "It depends on the package. The branch will tell you the exact time on site."
             }
         }
+    },
+    "NotFound": {
+        "title": "Page not found",
+        "home": "Back to home"
     }
 }

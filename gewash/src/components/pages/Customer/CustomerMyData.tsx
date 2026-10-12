@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { scrollToElementId } from '@/lib/scrollToId';
 import { SingleCalendarMobileSheet } from '@/components/Calendars/SingleCalendarDropDownSheet';
 import { SexDropDown } from '@/components/ui/SexDropDown';
 import CustomerContactInfo from '@/components/CustomerContactInfo';
@@ -15,6 +16,7 @@ import { refreshCurrentUser } from '@/hooks/useUser';
 
 export default function CustomerMyData() {
   const navigate = useNavigate();
+  const location = useLocation();
   const user = useSelector((state: RootState) => state.user.data);
   const { editUser } = useEditUser();
 
@@ -35,6 +37,14 @@ export default function CustomerMyData() {
   const t = useTranslation();
 
   const isFormFilled = firstName.trim() && secondName.trim() && selectedDate && selectedSex !== '';
+
+  useEffect(() => {
+    if (location.hash !== '#vehicles') return;
+    const timer = window.setTimeout(() => {
+      scrollToElementId('vehicles');
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [location.hash]);
 
   useEffect(() => {
     const load = async () => {
