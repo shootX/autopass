@@ -96,8 +96,10 @@ export default function DiscountDetailPage() {
     if (typeof userPoints === "number") setBalance(userPoints);
   }, [userPoints]);
 
+  const catalogReady = isCatalogComplete(passed);
+
   useEffect(() => {
-    if (isCatalogComplete(passed)) {
+    if (catalogReady) {
       setCatalogLoading(false);
       return;
     }
@@ -135,7 +137,7 @@ export default function DiscountDetailPage() {
     return () => {
       cancelled = true;
     };
-  }, [passed?.title, passed?.coins, routeId]);
+  }, [catalogReady, routeId]);
 
   // Только из My Area без кода в state — подтянуть код из API (не помечаем «куплен» для витрины)
   useEffect(() => {

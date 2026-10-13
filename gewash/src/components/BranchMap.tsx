@@ -1,12 +1,13 @@
 import { useRef, useEffect, useState } from 'react';
 import maplibregl from 'maplibre-gl';
-import MapView, { Marker } from '@vis.gl/react-maplibre';
+import MapView, { Marker, type MapRef } from '@vis.gl/react-maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { GEORGIA_BOUNDS, georgiaMapStyle, prepareGeorgiaMap } from './georgiaMap';
 import { Droplet, Phone, Route } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { Branch } from '@/hooks/useFetchBranches';
 import { Source, Layer } from '@vis.gl/react-maplibre';
+import type { Feature, Geometry } from 'geojson';
 import { useTranslation } from '@/hooks/useTranslation';
 import { DemoMap } from './DemoMap';
 import { branchPhoto, hourSpan, isRoundTheClock, kmBetween } from '@/lib/v4';
@@ -36,10 +37,10 @@ type MapMenuState = {
 };
 
 export function BranchMap({ branches, selectedBranchId, onSelect, variant = 'full' }: BranchMapProps) {
-  const mapRef = useRef<any>(null);
+  const mapRef = useRef<MapRef | null>(null);
   const navigate = useNavigate();
   const [mapReady, setMapReady] = useState(false);
-  const [routeGeoJSON] = useState<any>(null);
+  const [routeGeoJSON] = useState<Geometry | null>(null);
   const [userLocation, setUserLocation] = useState<{ lng: number; lat: number } | null>(null);
   
   // Безопасное получение филиала
@@ -172,7 +173,6 @@ export function BranchMap({ branches, selectedBranchId, onSelect, variant = 'ful
         minZoom={6}
         maxZoom={16}
         style={{ width: '100%', height: '100%' }}
-        attributionControl={true}
         onLoad={() => mapRef.current?.resize()}
         scrollZoom={{ around: 'center' }}
         dragPan={true}
@@ -204,7 +204,8 @@ export function BranchMap({ branches, selectedBranchId, onSelect, variant = 'ful
             data={{
               type: 'Feature',
               geometry: routeGeoJSON,
-            }}
+              properties: {},
+            } satisfies Feature}
           >
             <Layer
               id="route-line"

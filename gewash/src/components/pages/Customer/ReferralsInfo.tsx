@@ -65,23 +65,27 @@ export default function ReferralsInfo() {
           headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
         });
         if (!res.ok) return;
-        const data = (await res.json()) as any;
-        const list = (data?.referrals ?? data?.data ?? []) as any[];
-        if (!Array.isArray(list)) return;
+        const data: unknown = await res.json();
+        const record = data && typeof data === "object" ? (data as Record<string, unknown>) : {};
+        const rawList = record.referrals ?? record.data ?? [];
+        const list = Array.isArray(rawList) ? rawList : [];
+        if (list.length === 0 && !Array.isArray(rawList)) return;
 
         const mapped = list
-          .map((r, idx) => {
-            const id = Number(r?.id ?? idx + 1);
+          .map((item, idx) => {
+            const r = item && typeof item === "object" ? (item as Record<string, unknown>) : {};
+            const rawId = r.id ?? idx + 1;
+            const id = typeof rawId === "number" ? rawId : Number(rawId);
             const name =
-              typeof r?.name === "string"
+              typeof r.name === "string"
                 ? r.name
-                : typeof r?.full_name === "string"
+                : typeof r.full_name === "string"
                   ? r.full_name
-                  : typeof r?.username === "string"
+                  : typeof r.username === "string"
                     ? r.username
                     : "Referral";
-            const phone = typeof r?.phone === "string" ? r.phone : undefined;
-            return { id, name, phone };
+            const phone = typeof r.phone === "string" ? r.phone : undefined;
+            return { id: Number.isFinite(id) ? id : idx + 1, name, phone };
           })
           .filter(Boolean);
 

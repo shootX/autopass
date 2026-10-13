@@ -139,14 +139,16 @@ export default function GiveawayDetailPage() {
     };
   }, [passed, routeId]);
 
+  const ticketId = item?.id;
+
   useEffect(() => {
-    if (!item) return;
+    if (ticketId == null) return;
     let cancelled = false;
     void fetchMyTickets()
       .then((rows) => {
         if (cancelled) return;
         const sum = rows
-          .filter((r) => r.ticketId === item.id)
+          .filter((r) => r.ticketId === ticketId)
           .reduce((s, r) => s + r.qty, 0);
         setMyTickets(sum);
       })
@@ -154,7 +156,7 @@ export default function GiveawayDetailPage() {
     return () => {
       cancelled = true;
     };
-  }, [item?.id]);
+  }, [ticketId]);
 
   if (detailStatus === "loading" && !passed) {
     return (

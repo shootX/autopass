@@ -14,7 +14,7 @@ export async function updateAppointmentStatus(
 ) {
   const token = localStorage.getItem("access_token");
 
-  const body: Record<string, any> = { status };
+  const body: { status: number; date?: string; time?: string } = { status };
   if (date) body.date = date;
   if (time) body.time = time;
 

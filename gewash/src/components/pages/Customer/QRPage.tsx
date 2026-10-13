@@ -39,7 +39,7 @@ export default function QRPage() {
       setQrImageUrl(null);
       setActivePackageId(pkg.id);
     }
-  }, [pkg?.id]);
+  }, [pkg?.id, activePackageId]);
 
   useEffect(() => {
     if (!activePackageId) return;

@@ -42,7 +42,7 @@ export default function MyPackages() {
       .catch((err) => {
         console.error('Car fetch error:', err);
       });
-  }, []);
+  }, [dispatch]);
 
   const getMonthDiff = (start: string, end: string) => {
     const s = new Date(start);

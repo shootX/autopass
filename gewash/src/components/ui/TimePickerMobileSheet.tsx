@@ -10,15 +10,17 @@ export function TimePickerMobileSheet({
   open,
   setOpen,
   applyTime,
-  ...props
+  disabled,
+  toDate,
 }: {
   open: boolean;
   setOpen: (v: boolean) => void;
   applyTime: (time: string) => void;
+  disabled?: boolean;
+  toDate?: Date;
 }) {
   const [selectedTime, setSelectedTime] = useState("");
-console.log('props', props);
-  if (props.disabled) {
+  if (disabled) {
     return null;
   }
   if (!open) return null;
@@ -26,10 +28,10 @@ console.log('props', props);
   const now = new Date();
 
   const isToday =
-    props.toDate &&
-    props.toDate.getFullYear() === now.getFullYear() &&
-    props.toDate.getMonth() === now.getMonth() &&
-    props.toDate.getDate() === now.getDate();
+    toDate &&
+    toDate.getFullYear() === now.getFullYear() &&
+    toDate.getMonth() === now.getMonth() &&
+    toDate.getDate() === now.getDate();
 
   return (
     <>

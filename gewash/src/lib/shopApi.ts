@@ -173,10 +173,7 @@ export function normalizeVoucher(raw: unknown): ShopVoucher | null {
   );
   const category =
     categoryName ||
-    str(
-      typeof r.category === "string" ? r.category : "",
-      r.subtitle ?? r.type ?? "",
-    );
+    str(r.category, str(r.subtitle, str(r.type, "")));
 
   const percent = r.percent;
   const discount =

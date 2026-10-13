@@ -5,15 +5,15 @@ import GeoIconYellow from '@/assets/icons/geo-icon-yellow.svg?react';
 import { useTranslation } from '@/hooks/useTranslation';
 
 type Branch = {
-  id: string;
+  id: number | string;
   name: string;
   address: string;
-  isOpen: boolean;
+  isOpen?: boolean | null;
   lat: number | string;
   lng: number | string;
-  manager: {
-    phone: string;
-  };
+  manager?: {
+    phone?: string | null;
+  } | null;
 };
 
 type Props = {
@@ -69,7 +69,7 @@ export function BranchInfoPanel({ branch, onGoToMap }: Props) {
   }, [branch.id]); // Добавлена зависимость по id для точечной фильтрации
 
   // 1. Инициирует проверку карт в нативном приложении Expo
-  const handleRouteClick = (selectedBranch: any) => {
+  const handleRouteClick = (selectedBranch: Branch) => {
     if (!selectedBranch) return;
 
     // Записываем уникальный маркер нажатия для конкретной карточки

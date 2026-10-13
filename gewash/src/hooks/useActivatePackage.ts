@@ -7,8 +7,8 @@ export function useActivatePackage() {
 
   type ActivationPayload = {
     car_id: number;
-    number_of_washes: number;
-    sub_term: string;
+    number_of_washes: number | "infinity";
+    sub_term: number;
     renewal: boolean;
   };
   
@@ -40,8 +40,8 @@ export function useActivatePackage() {
       }
 
       return data;
-    } catch (err: any) {
-      setError(err.message || "Unknown error");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unknown error");
       return null;
     } finally {
       setLoading(false);

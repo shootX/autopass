@@ -92,7 +92,7 @@ export default function ManagerCalendarGrid() {
 
   selectedOrders.forEach((order) => {
     const key = order.status.toLowerCase();
-    if (key in countByStatus) countByStatus[key]++;
+    if (key === "new" || key === "rescheduled" || key === "confirm") countByStatus[key] += 1;
   });
 
   const monthStart = startOfMonth(currentMonth);
@@ -181,11 +181,12 @@ export default function ManagerCalendarGrid() {
         <ManagerOrder
           key={index}
           status={order.status}
+          localizedStatus={t(`ManagerOrdersList.status.${order.status}`)}
           date={order.date}
           type={order.type}
           customer={order.customer}
           onDelete={() => handleDelete(order)}
-          onReschedule={() => handleReschedule(order.id, order.date)}
+          onReschedule={() => handleReschedule(order.id)}
           onConfirmed={() => handleConfirm(order.id)}
         />
       ))}

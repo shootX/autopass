@@ -61,7 +61,7 @@ export default function CustomerMyData() {
     };
 
     load();
-  }, []);
+  }, [dispatch]);
 
   useEffect(() => {
     if (user) {

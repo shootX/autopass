@@ -167,4 +167,4 @@ SMS სტატუსი (`simulated`, `accepted`, `failed`, `unknown`) ერ�
 
 voucher-checker: `temp_code` მხოლოდ სტრინგია, რიცხვითი id აღარ იგზავნება. `must_change_password` სხვა ეკრანს ბლოკავს. 401 სესიას შლის. `PhoneOTPWrapper`-ის ძველი რიცხვითი `temp_code` მოხსნილია.
 
-`npm ci` გავიდა ორივე აპში. gewash vitest 83/83, vite build გავიდა. `build:check` 102 შეცდომიდან 19-ზეა (დარჩა რეალური ტიპების შეუსაბამობა). lint 49 შეცდომა და 7 გაფრთხილება იყო, ახლა 20 შეცდომა (`no-explicit-any` და react-refresh) და იგივე 7 გაფრთხილება. voucher-checker: vitest 9/9, `tsc -b && vite build` გავიდა, lint სუფთაა. დაემატა vitest. სერვერი არ შეხებულა.
+`npm ci` გავიდა ორივე აპში. შემდეგ იგივე დღეს ტიპები ბოლომდე გასწორდა, წესების მოშვების გარეშე. gewash: vitest 83/83 (23 ფაილი), `build:check` (`tsc -b` და vite build) 0 შეცდომა, lint 0 შეცდომა და 0 გაფრთხილება. voucher-checker: vitest 9/9 (2 ფაილი), `tsc -b && vite build` გავიდა, lint 0 შეცდომა და 0 გაფრთხილება. სერვერი არ შეხებულა.

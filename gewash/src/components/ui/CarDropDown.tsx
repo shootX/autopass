@@ -1,13 +1,13 @@
 import { motion } from "framer-motion";
 import { hatchbackIconUrl } from "@/assets/staticUrls";
-import type { CarPreview } from "@/store/carSlice";
+import type { Car } from "@/store/carSlice";
 import { dragY } from "@/lib/dragOffset";
 type Props = {
   open: boolean;
   setOpen: (v: boolean) => void;
-  applyCar: (car: CarPreview) => void;
-  selectedCar: CarPreview;
-  cars: CarPreview[];
+  applyCar: (car: Car) => void;
+  selectedCar: Car;
+  cars: Car[];
 };
 
 export function CarDropDown({

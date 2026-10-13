@@ -13,6 +13,18 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { leftArrowUrl, closeIconUrl } from "@/assets/staticUrls";
 import Header from "@/components/Header";
 
+function readCreatedCarId(body: unknown): number {
+  if (!body || typeof body !== "object") return 0;
+  const record = body as Record<string, unknown>;
+  const nested = record.car && typeof record.car === "object"
+    ? (record.car as Record<string, unknown>)
+    : record;
+  const rawId = nested.id ?? record.id;
+  if (typeof rawId === "number" && Number.isFinite(rawId)) return rawId;
+  if (typeof rawId === "string" && rawId.trim() && Number.isFinite(Number(rawId))) return Number(rawId);
+  return 0;
+}
+
 export default function AddCar({ showHeader }: { showHeader?: boolean }) {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
@@ -86,15 +98,24 @@ export default function AddCar({ showHeader }: { showHeader?: boolean }) {
       return;
     }
   
+    if (!brand || !model) {
+      setIsSubmitting(false);
+      return;
+    }
+
     const newCar: Car = {
-      brand: brand!,
-      model: model!,
+      id: 0,
       plate: numberPlate,
+      model: {
+        name: model.name,
+        type: "",
+        brand: { name: brand.name },
+      },
     };
   
     const token = localStorage.getItem("access_token");
     const payload = {
-      model_id: model!.id,
+      model_id: model.id,
       plate: normalizedPlate,
     };
   
@@ -111,10 +132,14 @@ export default function AddCar({ showHeader }: { showHeader?: boolean }) {
       if (!res.ok) {
         throw new Error("Failed to add car to server");
       }
-  
+
+      const body: unknown = await res.json().catch(() => null);
+      const createdId = readCreatedCarId(body);
+      const createdCar: Car = { ...newCar, id: createdId };
+
       invalidateCarsCache();
-      dispatch(addCar(newCar));
-      setAddedCar(newCar);
+      dispatch(addCar(createdCar));
+      setAddedCar(createdCar);
       setSubmitted(true);
     } catch (err) {
       console.error(err);
