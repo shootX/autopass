@@ -13,7 +13,7 @@ export default function OTPVerification({
   onVerify: (code: string) => Promise<void>;
   phone?: string;
   step?: string;
-  notice?: string | null;
+  notice?: React.ReactNode;
 }) {
   const [otp, setOtp] = useState(Array(6).fill(""));
   const [errorCode, setErrorCode] = useState<"none" | "invalid">("none");
@@ -68,7 +68,7 @@ export default function OTPVerification({
           {phone ? <><b style={{ color: "var(--ap-ink)" }}>{formatPhone(phone.startsWith("995") || phone.startsWith("+") ? phone : `995${phone}`)}</b>. </> : null}
           {t("OTPVerification.title")}
         </p>
-        {notice ? <p className="ap-sub">{notice}</p> : null}
+        {notice}
       </div>
       {errorCode === "invalid" && <p className="ap-error" style={{ marginTop: 16 }}>{t("OTPVerification.error.invalid")}</p>}
       <div className="ap-otp-boxes">

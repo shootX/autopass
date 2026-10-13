@@ -18,6 +18,7 @@ import {
 } from "@/lib/shopApi";
 import { refreshCurrentUser } from "@/hooks/useUser";
 import ShopAsyncLoader from "@/components/ui/ShopAsyncLoader";
+import { dragY } from "@/lib/dragOffset";
 
 type SheetState = "closed" | "confirm" | "not_enough";
 
@@ -208,7 +209,7 @@ export default function DiscountDetailPage() {
 
   const handleSheetDragEnd = (_: unknown, info: { offset: { y: number } }) => {
     // Drag down enough -> close, otherwise snap back.
-    if (info.offset.y > 90) setSheet("closed");
+    if (dragY(info.offset.y) > 90) setSheet("closed");
   };
 
   if (catalogLoading) {

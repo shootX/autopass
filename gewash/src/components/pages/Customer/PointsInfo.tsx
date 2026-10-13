@@ -9,6 +9,7 @@ import cardIconYellow from "@/assets/icons/card_icon_yellow.svg";
 import cardIconBlue from "@/assets/icons/card_icon_blue.svg";
 import ticketIcon from "@/assets/icons/ticket_icon.svg";
 import referralsIcon from "@/assets/icons/referals_icon.svg";
+import { dragY } from "@/lib/dragOffset";
 
 export default function PointsInfo() {
   const navigate = useNavigate();
@@ -73,7 +74,7 @@ export default function PointsInfo() {
             drag="y"
             dragConstraints={{ top: 0, bottom: 100 }}
             dragElastic={0.2}
-            onDragEnd={(_, info) => { if (info.offset.y > 50) setSheetOpen(false); }}
+            onDragEnd={(_, info) => { if (dragY(info.offset.y) > 50) setSheetOpen(false); }}
             initial={{ y: 400 }}
             animate={{ y: 0 }}
             exit={{ y: 400 }}

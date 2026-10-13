@@ -156,3 +156,15 @@ UX-12. დაემატა `deploy/nginx/autopass.conf.example`. `/home` დ�
 ## 2026-10-12 — Autopass merge დასრულდა
 
 main-ში რიგით დამერჯდა #7, #8, #5, #6, #9, #10–#17 (merge commit-ებით, force-push-ის გარეშე). სუფთა checkout-ზე: Pest 32/32 (108 assertions), vitest 72/72 (21 ფაილი), vite build გავიდა. დეპლოი არ გაკეთებულა, მას შოთა გააკეთებს.
+
+## 2026-10-13 — Stage 1 frontend
+
+`docs/API_CONTRACT_STAGE1.md` ამ ბრენჩზე არ არის. კონტრაქტი აღებულია `AuthController::smsJson`-იდან და პარტნიორის ვაუჩერის/პაროლის პასუხებიდან. რეგისტრაცია და პაროლის აღდგენა უკვე იყო `temp_code` (32 hex სტრინგი) + `setup_token`. ეს არ გადაკეთებულა, მხოლოდ შემოწმდა.
+
+SMS სტატუსი (`simulated`, `accepted`, `failed`, `unknown`) ერთი კომპონენტია რეგისტრაციაზე, აღდგენაზე, ტელეფონის შეცვლაზე და ვაუჩერის დადასტურებაზე. `simulated` სატესტო რეჟიმად წერია. `accepted` არ ნიშნავს მიტანას. OTP არც localStorage-ში ინახება და არც ლოგში იწერება. ტელეფონის შეცვლა `temp_code`-ს sessionStorage-ში აღარ დებს.
+
+`customFetch` 401 შლის ტოკენს, ვადას, როლს და `autopass.me` ქეშს. მენეჯერი მიდის `/manager-auth`-ზე, კლიენტი `/auth`-ზე. ორივე იგივე შესვლის ფორმაა. მენეჯერი კვლავ CarCheckRoute-ის გარეთ რჩება.
+
+voucher-checker: `temp_code` მხოლოდ სტრინგია, რიცხვითი id აღარ იგზავნება. `must_change_password` სხვა ეკრანს ბლოკავს. 401 სესიას შლის. `PhoneOTPWrapper`-ის ძველი რიცხვითი `temp_code` მოხსნილია.
+
+`npm ci` გავიდა ორივე აპში. gewash vitest 83/83, vite build გავიდა. `build:check` 102 შეცდომიდან 19-ზეა (დარჩა რეალური ტიპების შეუსაბამობა). lint 49 შეცდომა და 7 გაფრთხილება იყო, ახლა 20 შეცდომა (`no-explicit-any` და react-refresh) და იგივე 7 გაფრთხილება. voucher-checker: vitest 9/9, `tsc -b && vite build` გავიდა, lint სუფთაა. დაემატა vitest. სერვერი არ შეხებულა.

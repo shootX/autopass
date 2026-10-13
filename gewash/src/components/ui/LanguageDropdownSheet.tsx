@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { dragY } from "@/lib/dragOffset";
 import enFlag from "@/assets/icons/en_flag.svg";
 import geFlag from "@/assets/icons/ge_flag.svg";
 import ruFlag from "@/assets/icons/ru_flag.svg";
@@ -17,19 +18,18 @@ export function LanguageDropdownSheet({
   setOpen: (v: boolean) => void;
   savedLang: string;
   selectedLang: string;
-  setSelectedLang: (lang: string) => void;
+  setSelectedLang: (lang: "en" | "ru" | "ka") => void;
   onSave: () => void;
 }) {
+  const t = useTranslation();
   if (!open) return null;
 
-  const LANGUAGES = [
+  const LANGUAGES: { code: "en" | "ka" | "ru"; label: string }[] = [
     { code: "en", label: NATIVE_LANGUAGE_LABELS.en },
     { code: "ka", label: NATIVE_LANGUAGE_LABELS.ka },
     { code: "ru", label: NATIVE_LANGUAGE_LABELS.ru },
   ];
   const FLAG_MAP: Record<string, string> = { en: enFlag, ka: geFlag, ru: ruFlag };
-  
-  const t = useTranslation();
 
   return (
     <>
@@ -49,8 +49,8 @@ export function LanguageDropdownSheet({
         drag='y'
         dragConstraints={{ top: 0, bottom: 100 }}
         dragElastic={0.2}
-        onDragEnd={(e, info) => {
-          if (info.offset.y > 50) setOpen(false);
+        onDragEnd={(_e, info) => {
+          if (dragY(info.offset.y) > 50) setOpen(false);
         }}
         initial={{ y: 400 }}
         animate={{ y: 0 }}

@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import { useUser } from "@/hooks/useUser";
 import CustomerInfoSkeleton from "./Skeletons/CustomerInfoSkeleton";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store";

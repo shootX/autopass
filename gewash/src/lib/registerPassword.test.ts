@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildSetPasswordBody, tempCodeFromRegister } from "./registerPassword";
+import { buildSetPasswordBody, readSmsChallenge, tempCodeFromRegister } from "./registerPassword";
 
 const ID = "0123456789abcdef0123456789abcdef";
 
@@ -27,5 +27,15 @@ describe("register response", () => {
 
   it("returns null on failed delivery", () => {
     expect(tempCodeFromRegister({ success: false, temp_code: ID, delivery: "failed" })).toBeNull();
+  });
+
+  it("does not keep an OTP that arrived in the status text", () => {
+    const challenge = readSmsChallenge({
+      success: false,
+      delivery: "failed",
+      error: "code 123456",
+    });
+    expect(challenge.detail).toBeNull();
+    expect(challenge.tempCode).toBeNull();
   });
 });

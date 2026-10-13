@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import maplibregl from 'maplibre-gl';
 import MapView, { Marker } from '@vis.gl/react-maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -39,7 +39,7 @@ export function BranchMap({ branches, selectedBranchId, onSelect, variant = 'ful
   const mapRef = useRef<any>(null);
   const navigate = useNavigate();
   const [mapReady, setMapReady] = useState(false);
-  const [routeGeoJSON, setRouteGeoJSON] = useState<any>(null);
+  const [routeGeoJSON] = useState<any>(null);
   const [userLocation, setUserLocation] = useState<{ lng: number; lat: number } | null>(null);
   
   // Безопасное получение филиала
@@ -72,7 +72,7 @@ export function BranchMap({ branches, selectedBranchId, onSelect, variant = 'ful
             lng,
           });
         }
-      } catch (e) {
+      } catch {
         // Игнорируем нерелевантные сообщения от сторонних скриптов
       }
     };

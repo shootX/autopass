@@ -5,6 +5,9 @@ import { customFetch } from "@/utils/customFetch";
 import { useTranslation } from "@/hooks/useTranslation";
 import { logoUrl } from "@/assets/staticUrls";
 import { georgianLocalDigits } from "@/lib/format";
+import { readSmsChallenge } from "@/lib/registerPassword";
+import SmsStatusNotice from "@/components/SmsStatusNotice";
+import type { SmsDelivery } from "@/lib/smsDelivery";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -19,7 +22,8 @@ export default function PasswordChangePage() {
   const [tempCode, setTempCode] = useState<string | null>(null);
   const [setupToken, setSetupToken] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
-  const [smsNotice, setSmsNotice] = useState<string | null>(null);
+  const [smsDelivery, setSmsDelivery] = useState<SmsDelivery | null>(null);
+  const [smsDetail, setSmsDetail] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const togglePassword = () => setShowPassword((prev) => !prev);
@@ -47,15 +51,19 @@ export default function PasswordChangePage() {
       });
 
       const data = await res.json();
+      const challenge = readSmsChallenge(data);
 
-      if (data.temp_code && (data.success || data.delivery === "unknown")) {
-        setTempCode(data.temp_code);
-        setSmsNotice(data.delivery === "simulated"
-          ? "SMS-ის სატესტო რეჟიმია — შეტყობინება ტელეფონზე არ იგზავნება."
-          : null);
+      if (challenge.tempCode) {
+        setTempCode(challenge.tempCode);
+        setSmsDelivery(challenge.delivery);
+        setSmsDetail(challenge.detail);
         setStage("verify");
+      } else if (challenge.delivery) {
+        setSmsDelivery(challenge.delivery);
+        setSmsDetail(challenge.detail);
+        setError({ phone: "sms" });
       } else {
-        setError({ phone: data.error });
+        setError({ phone: typeof data.error === "string" ? data.error : "unknown" });
       }
     } catch (err) {
       console.error("Ошибка запроса:", err);
@@ -128,7 +136,10 @@ export default function PasswordChangePage() {
   if (stage === "verify" && tempCode) {
     return (
       <>
-        <OTPVerification onVerify={handleVerifyCode} notice={smsNotice} />
+        <OTPVerification
+          onVerify={handleVerifyCode}
+          notice={<SmsStatusNotice delivery={smsDelivery} detail={smsDetail} />}
+        />
         {error.phone && (
           <div className="phone-number-error">
             <p>{typeof error.phone === "string" ? error.phone : "Ошибка подтверждения"}</p>
@@ -269,11 +280,13 @@ export default function PasswordChangePage() {
         <p>{t("PasswordChange.request.subtitle")}</p>
       </div>
 
-      {error.phone && (
+      {error.phone === "sms" ? (
+        <SmsStatusNotice delivery={smsDelivery} detail={smsDetail} />
+      ) : error.phone ? (
         <div className="phone-number-error">
           <p>{t(`PasswordChange.request.errors.${error.phone}`)}</p>
         </div>
-      )}
+      ) : null}
 
       <div className="auth-input-block">
         <div className="auth-phone-input">

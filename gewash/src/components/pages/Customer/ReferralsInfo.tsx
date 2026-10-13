@@ -14,6 +14,7 @@ import whatsappIcon from "@/assets/icons/whatsapp_referal.svg";
 import facebookIcon from "@/assets/icons/facebook_referal.svg";
 import { leftArrowUrl } from "@/assets/staticUrls";
 import Header from "@/components/Header";
+import { dragY } from "@/lib/dragOffset";
 
 const MOCK_REFERRAL_LINK = "https://geocar.com/rnu2345681";
 
@@ -204,7 +205,7 @@ export default function ReferralsInfo() {
             drag="y"
             dragConstraints={{ top: 0, bottom: 100 }}
             dragElastic={0.2}
-            onDragEnd={(_, info) => { if (info.offset.y > 50) setSheetOpen(false); }}
+            onDragEnd={(_, info) => { if (dragY(info.offset.y) > 50) setSheetOpen(false); }}
             initial={{ y: 500 }}
             animate={{ y: 0 }}
             exit={{ y: 500 }}

@@ -10,6 +10,7 @@ import {
   type UserRole,
   type User,
 } from "@/store/userSlice";
+import { clearSessionStorage, rememberSessionRole } from "@/lib/session";
 import type { AppDispatch } from "@/store";
 
 export class MeRequestError extends Error {
@@ -55,7 +56,7 @@ export async function refreshCurrentUser(
     });
 
     if (res.status === 401) {
-      localStorage.removeItem("access_token");
+      clearSessionStorage();
       dispatch(rejectSession());
       throw new MeRequestError(401);
     }
@@ -88,6 +89,7 @@ export async function refreshCurrentUser(
     };
 
     const role = mapRole(data.user.role);
+    rememberSessionRole(role);
     dispatch(setUser(parsed));
     dispatch(setRole(role));
     dispatch(setSession("ready"));

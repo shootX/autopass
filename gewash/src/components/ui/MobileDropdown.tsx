@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { useTranslation } from "@/hooks/useTranslation";
+import { dragY } from "@/lib/dragOffset";
 
 export function MobileDropdownSheet({
   open,
@@ -10,8 +11,8 @@ export function MobileDropdownSheet({
   setOpen: (v: boolean) => void;
   setPeriod: (p: string) => void;
 }) {
-  if (!open) return null;
   const t = useTranslation();
+  if (!open) return null;
 
   const OPTIONS = [
     t("MobileDropdownSheet.options.today"),
@@ -35,11 +36,11 @@ export function MobileDropdownSheet({
       <motion.div
         drag='y'
         dragMomentum={false}
-        onDragEnd={(e, info) => {
-          if (info.offset.y > 50) setOpen(false);
+        onDragEnd={(_e, info) => {
+          if (dragY(info.offset.y) > 50) setOpen(false);
         }}
         onUpdate={(latest) => {
-          if (latest.y < 0) latest.y = 0;
+          if (dragY(latest.y) < 0) latest.y = 0;
         }}
         style={{
           position: "fixed",

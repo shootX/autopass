@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import "../../../src/styles/dropdowns/car-model-dropdown.scss";
 import type { Brand, Model} from "@/store/carSlice";
 import { searchIconUrl } from "@/assets/staticUrls";
+import { dragY } from "@/lib/dragOffset";
 
 export function CarModelDropDown({
   open,
@@ -34,11 +35,11 @@ export function CarModelDropDown({
       <motion.div
         drag='y'
         dragMomentum={false}
-        onDragEnd={(e, info) => {
-          if (info.offset.y > 60) setOpen(false);
+        onDragEnd={(_e, info) => {
+          if (dragY(info.offset.y) > 60) setOpen(false);
         }}
         onUpdate={(latest) => {
-          if (latest.y < 0) latest.y = 0;
+          if (dragY(latest.y) < 0) latest.y = 0;
         }}
         className='add-car-sheet'
       >

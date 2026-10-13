@@ -1,3 +1,4 @@
+import { assertPartnerAccess } from "./partnerGate";
 import { getToken } from "./session";
 import { authJsonHeaders, jsonHeaders } from "./apiHeaders";
 
@@ -86,6 +87,7 @@ export async function changePassword(password: string): Promise<string> {
     // ignore
   }
   const next = pickToken(json);
+  assertPartnerAccess(res.status, json, Boolean(token));
   if (!res.ok || !next) {
     const payload = json && typeof json === "object" ? (json as LoginResponse) : {};
     throw new Error(payload.error || payload.message || `Password change failed (${res.status})`);

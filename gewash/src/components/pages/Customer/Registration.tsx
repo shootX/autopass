@@ -3,7 +3,9 @@ import OTPVerification from "../../OTPVerification";
 import { Link, useNavigate } from "react-router-dom";
 import { customFetch } from "@/utils/customFetch";
 import { fetchUserData } from "@/lib/fetchUserData";
-import { buildSetPasswordBody, tempCodeFromRegister } from "@/lib/registerPassword";
+import { buildSetPasswordBody, readSmsChallenge } from "@/lib/registerPassword";
+import SmsStatusNotice from "@/components/SmsStatusNotice";
+import type { SmsDelivery } from "@/lib/smsDelivery";
 import { referralIpUrl } from "@/lib/referralIp";
 import { useDispatch } from "react-redux";
 import type { AppDispatch } from "@/store";
@@ -59,7 +61,8 @@ export default function Registration() {
   const [tempCode, setTempCode] = useState<string | null>(null);
   const [setupToken, setSetupToken] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
-  const [smsNotice, setSmsNotice] = useState<string | null>(null);
+  const [smsDelivery, setSmsDelivery] = useState<SmsDelivery | null>(null);
+  const [smsDetail, setSmsDetail] = useState<string | null>(null);
   const navigate = useNavigate();
 
   // Запрос при открытии страницы (монтировании компонента)
@@ -129,14 +132,17 @@ export default function Registration() {
       });
 
       const data = await res.json();
-      const ticket = tempCodeFromRegister(data);
+      const challenge = readSmsChallenge(data);
 
-      if (ticket != null) {
-        setTempCode(ticket);
-        setSmsNotice(data.delivery === "simulated"
-          ? "SMS-ის სატესტო რეჟიმია — შეტყობინება ტელეფონზე არ იგზავნება."
-          : null);
+      if (challenge.tempCode != null) {
+        setTempCode(challenge.tempCode);
+        setSmsDelivery(challenge.delivery);
+        setSmsDetail(challenge.detail);
         setStage("verify");
+      } else if (challenge.delivery) {
+        setSmsDelivery(challenge.delivery);
+        setSmsDetail(challenge.detail);
+        setError({ phone: "sms" });
       } else {
         const serverPhoneError = data.error?.phone?.[0] || "";
 
@@ -218,7 +224,14 @@ export default function Registration() {
 
 
   if (stage === "verify" && tempCode) {
-    return <OTPVerification onVerify={handleVerifyOTP} phone={phone} step="2 / 3" notice={smsNotice} />;
+    return (
+      <OTPVerification
+        onVerify={handleVerifyOTP}
+        phone={phone}
+        step="2 / 3"
+        notice={<SmsStatusNotice delivery={smsDelivery} detail={smsDetail} />}
+      />
+    );
   }
 
   if (stage === "set-password") {
@@ -306,6 +319,8 @@ export default function Registration() {
         <h1>{t("Registration.stage.register.title")}</h1>
         <p>{t("Registration.stage.register.subtitle")}</p>
       </div>
+
+      <SmsStatusNotice delivery={error.phone === "sms" ? smsDelivery : null} detail={smsDetail} />
 
       {error.phone === "empty" && (
         <div className='incorrect-password-error'>

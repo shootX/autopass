@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import PercentBar from '../../PercentBar';
 import { MobileDropdownSheet } from '../../ui/MobileDropdown';
 import { CalendarMobileSheet } from '../../Calendars/CalendarDropDownSheet';
 import { useTranslation } from '@/hooks/useTranslation';
 import Header from '@/components/Header';
-import { format } from 'date-fns';
 import { customFetch } from '@/utils/customFetch';
 import { WorkloadGraph } from '@/components/WorkloadGraph';
 import {
@@ -24,12 +23,18 @@ export default function CarwashStatistics() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [selectedPeriod, setSelectedPeriod] = useState('week');
-  const [range, setRange] = useState<{ from: Date; to: Date }>();
+  const [, setRange] = useState<{ from: Date; to: Date }>();
   const [stats, setStats] = useState<any>(null);
   const [isStatsLoading, setIsStatsLoading] = useState<boolean>(false);
 
   const t = useTranslation();
-  const [branch, setBranch] = useState(null);
+  const [branch, setBranch] = useState<{
+    id?: number;
+    name?: string;
+    address?: string;
+    work_time_start?: string;
+    work_time_end?: string;
+  } | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem('access_token');
@@ -253,7 +258,7 @@ export default function CarwashStatistics() {
           const packages = stats?.packages || {};
           const entries = Object.entries(packages);
 
-          const totalPackagesCount = entries.reduce((acc, [_, count]) => acc + Number(count), 0);
+          const totalPackagesCount = entries.reduce((acc, [, count]) => acc + Number(count), 0);
 
           if (entries.length === 0) {
             return <p>No packages data</p>;

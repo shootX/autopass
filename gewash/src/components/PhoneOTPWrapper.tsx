@@ -6,7 +6,7 @@ export default function PhoneOTPWrapper({
   phone,
   onSuccess,
 }: {
-  tempCode: number;
+  tempCode: string;
   phone: string;
   onSuccess: () => void;
 }) {

@@ -16,6 +16,7 @@ import giveaway3 from "@/assets/images/giveaway/giveaway_3.png";
 import { buyTicket, fetchMyTickets, fetchTickets } from "@/lib/shopApi";
 import { refreshCurrentUser } from "@/hooks/useUser";
 import Header, { HeaderBackChevron } from "@/components/Header";
+import { dragY } from "@/lib/dragOffset";
 
 const G_FALLBACK = [giveaway2, giveaway1, giveaway3];
 
@@ -334,7 +335,7 @@ export default function GiveawayDetailPage() {
             dragConstraints={{ top: 0, bottom: 600 }}
             dragElastic={0}
             onDragEnd={(_, info) => {
-              if (info.offset.y > 80 || info.velocity.y > 400) closeSheet();
+              if (dragY(info.offset.y) > 80 || dragY(info.velocity.y) > 400) closeSheet();
             }}
           >
             <div className="giveaway-sheet__handle" />

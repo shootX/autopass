@@ -55,8 +55,6 @@ export default function CustomerMyData() {
     };
   }, [hash]);
 
-  const isFormFilled = firstName.trim() && secondName.trim() && selectedDate && selectedSex !== '';
-
   useEffect(() => {
     const load = async () => {
       await refreshCurrentUser(dispatch);

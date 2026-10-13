@@ -1,3 +1,5 @@
+import { parseSmsDelivery, publicSmsDetail, type SmsDelivery } from "@/lib/smsDelivery";
+
 export type SetPasswordBody = {
   password: string;
   setup_token: string;
@@ -14,7 +16,7 @@ export function buildSetPasswordBody(input: { password: string; setupToken: stri
   };
 }
 
-export type SmsDelivery = "simulated" | "accepted" | "failed" | "unknown";
+export type { SmsDelivery } from "@/lib/smsDelivery";
 
 /**
  * Opaque challenge id (string) from POST /api/register (and reset/phone/voucher).
@@ -30,4 +32,19 @@ export function tempCodeFromRegister(data: {
   const value = data.temp_code;
   if (typeof value === "string" && /^[a-f0-9]{32}$/i.test(value)) return value;
   return null;
+}
+
+export function readSmsChallenge(data: {
+  success?: boolean;
+  temp_code?: unknown;
+  delivery?: unknown;
+  message?: unknown;
+  error?: unknown;
+}): { tempCode: string | null; delivery: SmsDelivery | null; detail: string | null } {
+  const detailSource = typeof data.message === "string" ? data.message : data.error;
+  return {
+    tempCode: tempCodeFromRegister(data),
+    delivery: parseSmsDelivery(data.delivery),
+    detail: publicSmsDetail(detailSource),
+  };
 }

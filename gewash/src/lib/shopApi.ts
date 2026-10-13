@@ -134,7 +134,7 @@ function asRecord(v: unknown): Record<string, unknown> | null {
   return v && typeof v === "object" && !Array.isArray(v) ? (v as Record<string, unknown>) : null;
 }
 
-export function normalizeTicket(raw: unknown, _index: number): ShopTicket | null {
+export function normalizeTicket(raw: unknown): ShopTicket | null {
   const r = asRecord(raw);
   if (!r) return null;
   const id = num(r.id ?? r.ticket_id);
@@ -162,7 +162,7 @@ export function normalizeTicket(raw: unknown, _index: number): ShopTicket | null
   };
 }
 
-export function normalizeVoucher(raw: unknown, _index: number): ShopVoucher | null {
+export function normalizeVoucher(raw: unknown): ShopVoucher | null {
   const r = asRecord(raw);
   if (!r) return null;
   const id = num(r.id ?? r.voucher_id);
@@ -244,10 +244,10 @@ export function loadShopBundle(): Promise<ShopBundle> {
     .then((json) => {
       const bundle: ShopBundle = {
         vouchers: (Array.isArray(json.vouchers) ? json.vouchers : [])
-          .map((row, i) => normalizeVoucher(row, i))
+          .map((row) => normalizeVoucher(row))
           .filter((x): x is ShopVoucher => x !== null),
         tickets: (Array.isArray(json.tickets) ? json.tickets : [])
-          .map((row, i) => normalizeTicket(row, i))
+          .map((row) => normalizeTicket(row))
           .filter((x): x is ShopTicket => x !== null),
         myVouchers: (Array.isArray(json.my_vouchers) ? json.my_vouchers : [])
           .map((row, i) => normalizeMyVoucher(row, i))
@@ -277,7 +277,7 @@ export async function fetchTickets(): Promise<ShopTicket[]> {
   const json = (await res.json()) as unknown;
   const list = unwrapLaravelCatalog(json, "tickets");
   return list
-    .map((row, i) => normalizeTicket(row, i))
+    .map((row) => normalizeTicket(row))
     .filter((x): x is ShopTicket => x !== null);
 }
 
@@ -290,7 +290,7 @@ export async function fetchVouchers(): Promise<ShopVoucher[]> {
   const json = (await res.json()) as unknown;
   const list = unwrapLaravelCatalog(json, "vouchers");
   return list
-    .map((row, i) => normalizeVoucher(row, i))
+    .map((row) => normalizeVoucher(row))
     .filter((x): x is ShopVoucher => x !== null);
 }
 

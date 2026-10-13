@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import CallIcon from '@/assets/icons/ManagerOrder/call_icon.svg?react';
 import PathIcon from '@/assets/icons/path-icon.svg?react';
 import GeoIconYellow from '@/assets/icons/geo-icon-yellow.svg?react';
-import CalendarIconYellow from '@/assets/icons/calendar-icon-yellow.svg?react';
 import { useTranslation } from '@/hooks/useTranslation';
 
 type Branch = {
@@ -19,8 +18,8 @@ type Branch = {
 
 type Props = {
   branch: Branch;
-  onGoToMap?: () => void;
-  onGoToCalendar?: () => void;
+  onGoToMap?: (event: { stopPropagation: () => void }) => void;
+  onGoToCalendar?: (event: { stopPropagation: () => void }) => void;
 };
 
 type MapMenuState = {
@@ -30,7 +29,7 @@ type MapMenuState = {
   lng: number | string | null;
 };
 
-export function BranchInfoPanel({ branch, onGoToMap, onGoToCalendar }: Props) {
+export function BranchInfoPanel({ branch, onGoToMap }: Props) {
   const t = useTranslation();
 
   // Состояние для отображения меню навигаторов
@@ -60,7 +59,7 @@ export function BranchInfoPanel({ branch, onGoToMap, onGoToCalendar }: Props) {
             lng,
           });
         }
-      } catch (e) {
+      } catch {
         // Игнорируем нерелевантные сообщения от сторонних скриптов
       }
     };

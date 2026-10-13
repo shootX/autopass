@@ -199,3 +199,13 @@ UX-12. მაგალითში `root` არის SPA-ის ბილდ�
 ## 2026-10-12 — Autopass main მდგომარეობა
 
 ყველა აუდიტის PR (#5–#17) main-შია. დეპლოიმდე: სერვერზე დააყენე CORS_ALLOWED_ORIGINS, ყველა არსებულ ვაუჩერს მიანიჭე partner_id (runbook §5), #7 და #9 ერთად უნდა გავიდეს. JWT_TTL=43200 (30 დღე).
+
+## 2026-10-13 — Stage 1 frontend
+
+`docs/API_CONTRACT_STAGE1.md` რეპოში არ დევს. ცოცხალი კონტრაქტია backend-ის `smsJson`: `simulated`/`accepted` არის 200 და `temp_code` 32 hex; `failed` არის 422 უკოდოდ; `unknown` არის 503 და `temp_code` რჩება. `set_password` იღებს მხოლოდ `{ setup_token, password }`. პარტნიორის login აბრუნებს `must_change_password`. სანამ პაროლი არ შეიცვლება, სხვა მარშრუტი 403-ს აბრუნებს ამ დროშით.
+
+გაზიარებული ტექსტი არის `gewash/src/lib/smsDelivery.ts`. კომპონენტი `SmsStatusNotice` ენას Redux-იდან იღებს. voucher-checker იმავე მოდულს იყენებს ინგლისურად, რადგან მისი ეკრანი ინგლისურია. `accepted` ტექსტი პირდაპირ ამბობს, რომ მიღება მიტანა არ არის.
+
+როლი სესიაში ინახება `sessionStorage` გასაღებით `autopass.session_role`, მხოლოდ `/me`-ის შემდეგ. 401 ამას შლის ტოკენთან და `autopass.me`-სთან ერთად, სანამ მისამართს აირჩევს. სრული `/me` პასუხი არ ინახება.
+
+voucher-checker-ში `useVoucher`/`usePath` სახელები შეიცვალა (`confirmVoucherUse`, `voucherUsePath`), რომ eslint ჰუკებად არ ჩაეთვალა. დარჩენილი 19 TS შეცდომა მოდელების შეუსაბამობაა (პაკეტი, მანქანა, ჯავშანი) და განზრახ არ შეცვლილა, რომ ქცევა არ შეიცვალოს.
