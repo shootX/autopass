@@ -11,7 +11,6 @@ const API_URL = import.meta.env.VITE_API_URL;
 import { useTranslation } from "@/hooks/useTranslation";
 import { logoUrl, googleServiceIconUrl, facebookUrl } from "@/assets/staticUrls";
 import { saveAccessToken } from "@/lib/accessToken";
-import { georgianLocalDigits } from "@/lib/format";
 
 async function generateHash(string: string) {
   const msgUint8 = new TextEncoder().encode(string);
