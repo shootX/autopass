@@ -30,7 +30,7 @@ function corporate(): CorporateClient
 
 it('updates the corporate username without the current password', function () {
     $c = corporate();
-    $this->withSession(['corporate_client_id' => $c->id])
+    $this->withSession(['corporate_client_id' => $c->id, 'corporate_session_version' => (int) $c->session_version])
         ->post('/partner/account', ['username' => 'newname'])
         ->assertSessionHasNoErrors()->assertRedirect(route('partner.account'));
     expect($c->fresh()->username)->toBe('newname');
@@ -38,7 +38,7 @@ it('updates the corporate username without the current password', function () {
 
 it('requires the correct current password to change the corporate password', function () {
     $c = corporate();
-    $s = ['corporate_client_id' => $c->id];
+    $s = ['corporate_client_id' => $c->id, 'corporate_session_version' => (int) $c->session_version];
     $this->withSession($s)->post('/partner/account', ['username' => 'corpuser', 'password' => 'newpass1', 'password_confirmation' => 'newpass1'])
         ->assertSessionHasErrors('current_password');
     $this->withSession($s)->post('/partner/account', ['username' => 'corpuser', 'current_password' => 'wrong', 'password' => 'newpass1', 'password_confirmation' => 'newpass1'])

@@ -1,34 +1,33 @@
 export type SetPasswordBody = {
   password: string;
-  temp_code: number;
-  code: string;
+  setup_token: string;
 };
 
-/** Body for POST /api/register/set_password. `code` is the SMS the user typed on verify. */
-export function buildSetPasswordBody(input: {
-  password: string;
-  tempCode: number;
-  code: string;
-}): SetPasswordBody {
+/**
+ * Body for POST /api/register/set_password (stage 1 contract).
+ * `setup_token` is the one-time token from POST /api/register/verify. The SMS code is never re-sent.
+ */
+export function buildSetPasswordBody(input: { password: string; setupToken: string }): SetPasswordBody {
   return {
     password: input.password,
-    temp_code: input.tempCode,
-    code: input.code,
+    setup_token: input.setupToken,
   };
 }
 
+export type SmsDelivery = "simulated" | "accepted" | "failed" | "unknown";
+
 /**
- * Ticket id from POST /api/register.
- * `sms_code` must not be read — the server no longer returns it, and the SPA never uses it.
+ * Opaque challenge id (string) from POST /api/register (and reset/phone/voucher).
+ * Returned on success, and on delivery "unknown" so the user can still type a code that may arrive.
+ * Numeric ids from the old contract are rejected.
  */
 export function tempCodeFromRegister(data: {
   success?: boolean;
   temp_code?: unknown;
-  sms_code?: unknown;
-}): number | null {
-  if (!data.success) return null;
+  delivery?: unknown;
+}): string | null {
+  if (!data.success && data.delivery !== "unknown") return null;
   const value = data.temp_code;
-  if (typeof value === "number" && Number.isInteger(value)) return value;
-  if (typeof value === "string" && /^\d+$/.test(value)) return Number(value);
+  if (typeof value === "string" && /^[a-f0-9]{32}$/i.test(value)) return value;
   return null;
 }

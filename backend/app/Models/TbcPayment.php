@@ -13,6 +13,8 @@ class TbcPayment extends Model
         'amount' => 'float',
         'payload' => 'array',
         'paid_at' => 'datetime',
+        'test_mode' => 'boolean',
+        'access_expires_at' => 'datetime',
     ];
 
     public function user(): BelongsTo

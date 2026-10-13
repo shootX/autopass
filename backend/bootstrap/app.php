@@ -3,6 +3,8 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -27,5 +29,27 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->render(function (Throwable $e, Request $request) {
+            if (! $request->is('api/*') && ! $request->expectsJson()) {
+                return null;
+            }
+
+            if ($e instanceof \Illuminate\Validation\ValidationException
+                || $e instanceof \Illuminate\Auth\AuthenticationException
+                || $e instanceof \Symfony\Component\HttpKernel\Exception\HttpExceptionInterface
+                || $e instanceof \Tymon\JWTAuth\Exceptions\JWTException) {
+                if ($e instanceof \Tymon\JWTAuth\Exceptions\JWTException) {
+                    return response()->json(['success' => false, 'error' => 'Unauthenticated'], 401);
+                }
+
+                return null;
+            }
+
+            Log::warning('request_failed', [
+                'path' => $request->path(),
+                'exception' => $e::class,
+            ]);
+
+            return response()->json(['success' => false, 'error' => 'Request failed'], 500);
+        });
     })->create();

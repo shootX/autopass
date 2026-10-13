@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\CarBrandsController;
 use App\Http\Controllers\Admin\PackagesController;
 use App\Http\Controllers\Admin\PartnersController;
 use App\Http\Controllers\Admin\PromoController;
+use App\Http\Controllers\Admin\SmsInboxController;
 use App\Http\Controllers\Admin\TicketsController;
 use App\Http\Controllers\Admin\VouchersController;
 use App\Http\Middleware\AdminMiddleware;
@@ -22,12 +23,16 @@ Route::prefix('dashboard')
     ->middleware(Authenticate::class, AdminMiddleware::class)
     ->group(function () {
 
-        Route::get('/logout', function () {
+        Route::post('/logout', function () {
             auth()->logout();
+            request()->session()->invalidate();
+            request()->session()->regenerateToken();
             return redirect()->route('login');
         })->name('admin.logout');
 
         Route::get('/', [DashboardController::class, 'index'])->name('admin.dashboard');
+        Route::get('/sms-inbox', [SmsInboxController::class, 'index'])->name('admin.sms_inbox');
+        Route::get('/sms-inbox/messages', [SmsInboxController::class, 'messages'])->name('admin.sms_inbox.messages');
         Route::get('/reports/washes', [ReportsController::class, 'washes'])->name('admin.reports.washes');
 
         Route::get('/search_managers', [WashingController::class, 'search'])->name('admin.search_managers');
@@ -181,6 +186,7 @@ Route::prefix('dashboard')
             Route::delete('/{corporate}/cars/{car}/delete', [CorporateController::class, 'deleteCar'])->name('admin.corporate.cars.delete');
             Route::post('/{corporate}/import', [CorporateController::class, 'import'])->name('admin.corporate.import');
             Route::post('/{corporate}/token', [CorporateController::class, 'token'])->name('admin.corporate.token');
+            Route::post('/{corporate}/temporary-password', [CorporateController::class, 'temporaryPassword'])->name('admin.corporate.temporary_password');
         });
 
         Route::prefix('/partners')->group(function () {
@@ -191,6 +197,7 @@ Route::prefix('dashboard')
             Route::delete('/{client}/delete', [PartnersController::class, 'delete'])->name('admin.partners.delete');
             Route::get('/{client}/edit', [PartnersController::class, 'editPage'])->name('admin.partners.edit');
             Route::post('/{client}/save', [PartnersController::class, 'editSave'])->name('admin.partners.edit_save');
+            Route::post('/{client}/temporary-password', [PartnersController::class, 'temporaryPassword'])->name('admin.partners.temporary_password');
 
         });
 

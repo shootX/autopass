@@ -11,6 +11,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 import { useTranslation } from "@/hooks/useTranslation";
 import { logoUrl, googleServiceIconUrl, facebookUrl } from "@/assets/staticUrls";
 import { saveAccessToken } from "@/lib/accessToken";
+import { georgianLocalDigits } from "@/lib/format";
 
 async function generateHash(string: string) {
   const msgUint8 = new TextEncoder().encode(string);
@@ -56,8 +57,10 @@ export default function Registration() {
   const dispatch = useDispatch<AppDispatch>();
 
   const togglePassword = () => setShowPassword((prev) => !prev);
-  const [tempCode, setTempCode] = useState<number | null>(null);
-  const [verifyCode, setVerifyCode] = useState<string | null>(null);
+  const [tempCode, setTempCode] = useState<string | null>(null);
+  const [setupToken, setSetupToken] = useState<string | null>(null);
+  const [sending, setSending] = useState(false);
+  const [smsNotice, setSmsNotice] = useState<string | null>(null);
   const navigate = useNavigate();
 
   // Запрос при открытии страницы (монтировании компонента)
@@ -97,7 +100,7 @@ export default function Registration() {
   };
 
   const handleRegister = async () => {
-    const fullPhone = "995" + phone;
+    const fullPhone = phone;
 
     if (!phone) {
       setError({ phone: "empty" });
@@ -112,6 +115,7 @@ export default function Registration() {
     }
 
     try {
+      setSending(true);
       const res = await fetch(`${API_URL}/register`, {
         method: "POST",
         headers: {
@@ -130,7 +134,9 @@ export default function Registration() {
 
       if (ticket != null) {
         setTempCode(ticket);
-        setVerifyCode(null);
+        setSmsNotice(data.delivery === "simulated"
+          ? "SMS-ის სატესტო რეჟიმია — შეტყობინება ტელეფონზე არ იგზავნება."
+          : null);
         setStage("verify");
       } else {
         const serverPhoneError = data.error?.phone?.[0] || "";
@@ -145,6 +151,8 @@ export default function Registration() {
       }
     } catch (err) {
       console.error("Ошибка запроса:", err);
+    } finally {
+      setSending(false);
     }
   };
 
@@ -162,9 +170,8 @@ export default function Registration() {
 
       const data = await res.json();
 
-      if (data.success && data.access_token) {
-        saveAccessToken(data.access_token, typeof data.expires_in === "number" ? data.expires_in : undefined);
-        setVerifyCode(code);
+      if (data.success && data.setup_token) {
+        setSetupToken(data.setup_token);
         handleOTPVerified();
       } else {
         throw new Error("Invalid code");
@@ -181,7 +188,7 @@ export default function Registration() {
       return;
     }
 
-    if (tempCode == null || !verifyCode) {
+    if (!setupToken) {
       setError({ password: "code-missing" });
       return;
     }
@@ -192,17 +199,13 @@ export default function Registration() {
         headers: {
           "Content-Type": "application/json",
           "Accept": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("access_token")}`,
         },
-        body: JSON.stringify(buildSetPasswordBody({
-          password,
-          tempCode,
-          code: verifyCode,
-        })),
+        body: JSON.stringify(buildSetPasswordBody({ password, setupToken })),
       });
 
       const data = await res.json();
-      if (data.success) {
+      if (data.success && data.access_token) {
+        saveAccessToken(data.access_token, typeof data.expires_in === "number" ? data.expires_in : undefined);
         await fetchUserData(dispatch);
         navigate("/add-car");
       } else {
@@ -216,7 +219,7 @@ export default function Registration() {
 
 
   if (stage === "verify" && tempCode) {
-    return <OTPVerification onVerify={handleVerifyOTP} phone={phone} step="2 / 3" />;
+    return <OTPVerification onVerify={handleVerifyOTP} phone={phone} step="2 / 3" notice={smsNotice} />;
   }
 
   if (stage === "set-password") {
@@ -358,7 +361,7 @@ export default function Registration() {
           <label htmlFor='accept-policy'>{t("Registration.stage.policy")}</label> <Link className="ap-link" to='/privacy'>{t("Registration.stage.policyLink")}</Link>
         </div>
 
-        <button className='sign-in' onClick={handleRegister}>
+        <button className='sign-in' onClick={handleRegister} disabled={sending}>
           {t("Registration.stage.register.button")}
         </button>
       </div>

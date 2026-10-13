@@ -14,6 +14,12 @@ class Partner extends Authenticatable implements JWTSubject
 
     protected $hidden = ['password', 'created_at', 'updated_at'];
 
+    protected $casts = [
+        'password' => 'hashed',
+        'password_must_change' => 'boolean',
+        'temp_password_expires_at' => 'datetime',
+    ];
+
     public function getJWTIdentifier()
     {
         return $this->getKey();
@@ -21,6 +27,9 @@ class Partner extends Authenticatable implements JWTSubject
 
     public function getJWTCustomClaims()
     {
-        return [];
+        return [
+            'tv' => (int) $this->token_version,
+            'must_change_password' => (bool) $this->password_must_change,
+        ];
     }
 }

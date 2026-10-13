@@ -20,6 +20,8 @@ Route::prefix('partner')->group(function () {
     Route::post('/login', [PartnerPanelController::class, 'login'])->middleware('throttle:10,1')->name('partner.login.submit');
 
     Route::middleware(CorporatePanel::class)->group(function () {
+        Route::get('/password', [PartnerPanelController::class, 'password'])->name('partner.password');
+        Route::post('/password', [PartnerPanelController::class, 'savePassword'])->name('partner.password.save');
         Route::get('/', [PartnerPanelController::class, 'dashboard'])->name('partner.home');
         Route::get('/fleet', [PartnerPanelController::class, 'home'])->name('partner.fleet');
         Route::get('/reports', [PartnerPanelController::class, 'reports'])->name('partner.reports');

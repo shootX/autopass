@@ -10,7 +10,23 @@ class SmsTemp extends Model
         'type',
         'user_id',
         'code',
-        'user_voucher_id'
+        'public_id',
+        'attempts',
+        'expires_at',
+        'consumed_at',
+        'context',
+        'user_voucher_id',
+    ];
+
+    protected $hidden = [
+        'code',
+    ];
+
+    protected $casts = [
+        'expires_at' => 'datetime',
+        'consumed_at' => 'datetime',
+        'context' => 'array',
+        'attempts' => 'integer',
     ];
 
     public function user()

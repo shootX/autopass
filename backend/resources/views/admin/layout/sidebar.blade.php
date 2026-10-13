@@ -65,6 +65,12 @@
                 <div class="sb-nav-link-icon"><i class="fa-solid fa-percent"></i></div>
                 {{ __('admin.promo_banner') }}
             </a>
+            @if(\App\Services\Sms\SmsInbox::enabled())
+            <a class="nav-link @if(Route::is('admin.sms_inbox')) active @endif" href="{{ route('admin.sms_inbox') }}">
+                <div class="sb-nav-link-icon"><i class="fa-solid fa-comment-sms"></i></div>
+                სატესტო SMS
+            </a>
+            @endif
 
 
 
@@ -76,7 +82,10 @@
             <span class="umami-avatar" aria-hidden="true">{{ mb_strtoupper(mb_substr(auth()->user()->name, 0, 1)) }}</span>
             <div class="umami-user-meta">
                 <div class="umami-user-name">{{ auth()->user()->name }} {{ auth()->user()->surname }}</div>
-                <a href="{{ route('admin.logout') }}">{{ __('admin.logout') }}</a>
+                <form action="{{ route('admin.logout') }}" method="post">
+                    @csrf
+                    <button type="submit" style="background:none;border:0;padding:0;color:inherit;">{{ __('admin.logout') }}</button>
+                </form>
             </div>
         </div>
         @endif

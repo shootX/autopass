@@ -36,6 +36,7 @@
     <form id="pay" method="post" action="{{ route('payment.sandbox.confirm') }}">
         @csrf
         <input type="hidden" name="order" value="{{ $payment->merchant_payment_id }}">
+        <input type="hidden" name="access" value="{{ $access }}">
         <input type="hidden" name="decision" id="decision" value="pay">
         <input type="hidden" name="method" id="method" value="card">
         <input type="hidden" name="last4" id="last4" value="">

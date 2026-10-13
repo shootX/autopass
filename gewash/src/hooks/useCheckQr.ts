@@ -3,23 +3,25 @@ import { customFetch } from "@/utils/customFetch";
 
 export interface QrCheckResponse {
   success: boolean;
-  user: {
-    name: string;
-    surname: string;
-    phone: string;
-  };
   package: {
+    id: number;
     start_date: string;
     end_date: string;
-    used_washes: number;
     created_at: string;
+    used_washes: number;
+    number_of_washes: number;
+    user: {
+      name: string;
+      surname: string;
+      phone: string;
+    };
     package: {
       count_washes: number;
       car_type: string;
     };
-  };
-  car: {
-    plate: string;
+    car?: {
+      plate: string | null;
+    };
   };
 }
 
