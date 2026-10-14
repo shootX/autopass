@@ -194,6 +194,12 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 ## 2026-10-14 — QA fix on #21
 - [x] Sandbox payment confirm re-checks the owner: TestPayments::allowed() is false for banned users, and SettleTbcPayment::grantNow() re-checks allowed() on the locked owner row for test_mode payments (marks the payment Failed, credits nothing).
 
+## 2026-10-14 — hotfix: ცარიელი გვერდები (`PublicAuthRoutes`)
+- [x] `gewash/src/App.tsx`: `<PublicAuthRoutes />` `<Routes>`-ის შვილად აღარ რენდერდება. იძახება `{PublicAuthRoutes()}`, რომ დაბრუნებული ფრაგმენტი პირდაპირი შვილი იყოს. react-router მხოლოდ `Route` ან `Fragment` შვილს იღებს და სხვა კომპონენტზე ისვრის, ამიტომ ყველა გვერდი ცარიელი იყო.
+- [x] ტესტი `gewash/src/App.routes.test.tsx`: აპის როუტერი ხატავს მთავარს (`/`, ნომერი და „სწრაფი ჩაწერა“) და შესვლას (`/auth`, სათაური „შესვლა“ და ტელეფონის ველი). `/login` მარშრუტი არ არსებობს — შესვლა არის `/auth`.
+- [x] შემოღებულია `650defc` (2026-10-12, ავტორი Cursor Agent), PR #6 (`cursor/fe-11-manager-routing-9883`).
+- [x] gewash: lint 0, vitest 85/85, `build:check` 0. მერჯი და დეპლოი არ გაკეთებულა.
+
 ## 2026-10-14 — Stage 2 items 5–6
 - [x] Partner voucher check: Cache::lock per voucher+recipient, open challenge reused within SECURITY_VOUCHER_CHECK_DEDUPE_SECONDS (60) → one SMS for repeated checks; 429 while a check is still running.
 - [x] Car catalog: source + external ids, CarAPI ids no longer treated as local ids, year on user_cars + GET /api/cars/years. Contract in gewash-frontend-integration.md.
