@@ -169,6 +169,9 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 
 `npm ci` გავიდა ორივე აპში. შემდეგ იგივე დღეს ტიპები ბოლომდე გასწორდა, წესების მოშვების გარეშე. gewash: vitest 83/83 (23 ფაილი), `build:check` (`tsc -b` და vite build) 0 შეცდომა, lint 0 შეცდომა და 0 გაფრთხილება. voucher-checker: vitest 9/9 (2 ფაილი), `tsc -b && vite build` გავიდა, lint 0 შეცდომა და 0 გაფრთხილება. სერვერი არ შეხებულა.
 
+## 2026-10-13 — სატესტო გადახდა პროდაქშენზე (flag)
+
+დაემატა `TEST_PAYMENT_ALLOW_PRODUCTION` (ნაგულისხმევად false). ჩართვის შემდეგაც სატესტო გადახდა მხოლოდ ადმინს და `TEST_PAYMENT_PHONES`-ის ნომრებს შეუძლიათ. მარშრუტები ახლა ყოველთვის რეგისტრირდება, ხოლო შემოწმება კონტროლერში ხდება (`App\Support\TestPayments`). webhook-ები არ შეცვლილა. Pest-ის ტესტები: `tests/Feature/TestPaymentProductionTest.php`. runbook §10.
 ## 2026-10-14 — Stage 1 merged to `main`
 - PR #19 (frontend, head `34b6a94`) merged into `feat/stage1-security-smsoffice` (`8c08f08`), then PR #18 merged into `main` (`7f73d2b`). Merge commits only, no force-push. Shota approved the merge in the GAI.GE Stuff group; no deploy.
 - Checks on a fresh `main` checkout: backend Pest 69/69 (408 assertions); gewash `npm ci` ok, vitest 83/83, build ok, `build:check` 0 TS errors, lint 0/0; voucher-checker `npm ci` ok, vitest 9/9, build ok, lint 0/0.

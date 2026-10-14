@@ -210,6 +210,9 @@ UX-12. მაგალითში `root` არის SPA-ის ბილდ�
 
 voucher-checker-ში `useVoucher`/`usePath` სახელები შეიცვალა (`confirmVoucherUse`, `voucherUsePath`), რომ eslint ჰუკებად არ ჩაეთვალა. იგივე დღეს დარჩენილი მოდელების შეუსაბამობაც გასწორდა რეალური ტიპებით: პაკეტს აქვს `id` და `car_id`, ჯავშანს `carId`, მანქანა ინახება `{ model: { name, type, brand } }` ფორმით. `buttonVariants` ცალკე ფაილშია, რომ react-refresh კომპონენტის ფაილში კონსტანტას არ ხედავდეს. `any`, `eslint-disable` და `@ts-ignore` არ დამატებულა. gewash `build:check` და lint, და voucher-checker-ის `tsc` და lint, ნულზეა.
 
+## 2026-10-13 — Test payment flag
+
+`App\Support\TestPayments::available()`: production-ზე false, თუ `security.test_payment_allow_production` (env `TEST_PAYMENT_ALLOW_PRODUCTION`) არ არის true. `allowed()` ამოწმებს ადმინს და `TEST_PAYMENT_PHONES`-ს. sandbox-ის დადასტურებისას ხელახლა მოწმდება, რომ გადახდის მფლობელი ჯერ კიდევ დაშვებულია. ტესტებში env=production რთავს CSRF-ს, ამიტომ ტესტის ფაილში `PreventRequestForgery` გამორთულია.
 ### 2026-10-14
 
 - Stage 1 (security + SMSOffice + frontend contracts) is on `main` via PR #19 → #18 → `main`. Tests: backend 69/69, gewash 83/83, voucher-checker 9/9; gewash `build:check` and lint clean.

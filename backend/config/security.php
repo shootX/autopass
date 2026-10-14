@@ -14,6 +14,9 @@ return [
 
     'payment_access_minutes' => (int) env('SECURITY_PAYMENT_ACCESS_MINUTES', 15),
 
+    // Test (sandbox) payments in APP_ENV=production. Default off. Even when on, only admins and TEST_PAYMENT_PHONES.
+    'test_payment_allow_production' => filter_var(env('TEST_PAYMENT_ALLOW_PRODUCTION', false), FILTER_VALIDATE_BOOLEAN),
+
     'test_payment_phones' => array_values(array_filter(array_map(
         static fn ($phone) => trim((string) $phone),
         explode(',', (string) env('TEST_PAYMENT_PHONES', ''))
