@@ -32,6 +32,8 @@ class TbcCheckoutController extends Controller
 
     public function sandbox(Request $request)
     {
+        abort_unless(\App\Support\TestPayments::available(), 404);
+
         $payment = $this->authorizedTestPayment($request->query('order'), $request->query('access'));
         if (! $payment) {
             return redirect($this->resultUrl(null, false));
@@ -48,6 +50,8 @@ class TbcCheckoutController extends Controller
 
     public function sandboxConfirm(Request $request, SettleTbcPayment $settle)
     {
+        abort_unless(\App\Support\TestPayments::available(), 404);
+
         $payment = $this->authorizedTestPayment($request->input('order'), $request->input('access'));
         if (! $payment) {
             return redirect($this->resultUrl(null, false));
@@ -121,6 +125,11 @@ class TbcCheckoutController extends Controller
 
         $payment = TbcPayment::query()->where('merchant_payment_id', $order)->first();
         if (! $payment || ! $payment->test_mode || ! is_string($payment->access_hash)) {
+            return null;
+        }
+
+        // The owner must still be an allowed tester (matters when production test payments are on).
+        if (! \App\Support\TestPayments::allowed($payment->user)) {
             return null;
         }
 

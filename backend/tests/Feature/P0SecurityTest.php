@@ -1,10 +1,10 @@
 <?php
 
 use App\Models\SmsTemp;
+use App\Support\TestPayments;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Route;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 // BE-01
@@ -78,11 +78,11 @@ it('has no hard-coded passwords in code or seeders', function () {
     }
 });
 
-// BE-15
-it('registers sandbox/test routes outside production only', function () {
-    expect(Route::has('payment.sandbox'))->toBeTrue();
-    $web = file_get_contents(base_path('routes/web.php'));
-    $api = file_get_contents(base_path('routes/api.php'));
-    expect($web)->toMatch("/environment\\('production'\\)\\)\\s*\\{\\s*Route::get\\('\\/payment\\/sandbox'/");
-    expect($api)->toMatch("/environment\\('production'\\)\\)\\s*\\{\\s*Route::get\\('\\/testpay'/");
+// BE-15 (now gated in the controller, see TestPaymentProductionTest)
+it('turns sandbox/test payment off in production by default', function () {
+    app()['env'] = 'production';
+    config(['security.test_payment_allow_production' => false]);
+    expect(TestPayments::available())->toBeFalse();
+    $this->get('/payment/sandbox?order=x&access=y')->assertNotFound();
+    app()['env'] = 'testing';
 });

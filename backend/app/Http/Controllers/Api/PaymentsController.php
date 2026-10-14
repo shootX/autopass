@@ -4,8 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\TbcPayment;
-use App\Models\User;
-use App\Support\Phone;
+use App\Support\TestPayments;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -13,8 +12,12 @@ class PaymentsController extends Controller
 {
     public function testpay(Request $request)
     {
+        if (! TestPayments::available()) {
+            abort(404);
+        }
+
         $user = $request->user();
-        if (! $this->allowed($user)) {
+        if (! TestPayments::allowed($user)) {
             return response()->json(['success' => false, 'error' => 'Forbidden'], 403);
         }
 
@@ -51,29 +54,5 @@ class PaymentsController extends Controller
             'url' => $url,
             'order' => $payment->merchant_payment_id,
         ]);
-    }
-
-    private function allowed(?User $user): bool
-    {
-        if (! $user) {
-            return false;
-        }
-
-        if ((int) $user->role === User::ROLE_ADMIN) {
-            return true;
-        }
-
-        $phone = Phone::normalize($user->phone);
-        if ($phone === null) {
-            return false;
-        }
-
-        foreach (config('security.test_payment_phones', []) as $allowed) {
-            if (Phone::normalize((string) $allowed) === $phone) {
-                return true;
-            }
-        }
-
-        return false;
     }
 }

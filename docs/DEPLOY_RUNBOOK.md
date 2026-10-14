@@ -177,3 +177,17 @@ php artisan optimize:clear && php artisan up
 # frontend: rebuild gewash/lending from the previous commit, or restore the dist backups
 ```
 Data note: after rolling back `user_vouchers.used_at`, vouchers used since the deploy will reappear as unused. If that matters, restore the DB dump instead.
+
+## 10. Test payment in production (2026-10-13)
+
+By default `/api/testpay` and `/payment/sandbox` return 404 when `APP_ENV=production`. To let QA test payments on production, set the following in the server `backend/.env`:
+
+```
+TEST_PAYMENT_ALLOW_PRODUCTION=true
+TEST_PAYMENT_PHONES=+995555000000,+995555000001
+```
+
+- Even with the flag on, test payments are open only to admins (role 2) and the numbers in `TEST_PAYMENT_PHONES`. Everyone else gets 403.
+- Every existing server check still applies: the order must be a test order (`test_mode`), the one-time access hash and its expiry are checked, the owner must still be an allowed tester, and a payment is credited only once.
+- Flitt/TBC webhooks are unchanged: no user auth, and the signature and amount are checked.
+- Afterwards run `php artisan config:clear` (or `config:cache`). To turn it off, set `TEST_PAYMENT_ALLOW_PRODUCTION=false`.

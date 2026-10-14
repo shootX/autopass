@@ -158,9 +158,8 @@ Route::middleware(['auth:api', CorsMiddleware::class, \App\Http\Middleware\Ensur
     Route::get('/allrecords', [AppointmentsController::class, 'allRecords']);
 
 
-    if (! app()->environment('production')) {
-        Route::get('/testpay', [PaymentsController::class, 'testpay']);
-    }
+    // Gated in the controller: off in production unless TEST_PAYMENT_ALLOW_PRODUCTION=true.
+    Route::get('/testpay', [PaymentsController::class, 'testpay']);
 
     Route::get('/admin/sms-inbox', [\App\Http\Controllers\Admin\SmsInboxController::class, 'messages']);
 

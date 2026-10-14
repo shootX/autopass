@@ -168,3 +168,7 @@ SMS სტატუსი (`simulated`, `accepted`, `failed`, `unknown`) ერ�
 voucher-checker: `temp_code` მხოლოდ სტრინგია, რიცხვითი id აღარ იგზავნება. `must_change_password` სხვა ეკრანს ბლოკავს. 401 სესიას შლის. `PhoneOTPWrapper`-ის ძველი რიცხვითი `temp_code` მოხსნილია.
 
 `npm ci` გავიდა ორივე აპში. შემდეგ იგივე დღეს ტიპები ბოლომდე გასწორდა, წესების მოშვების გარეშე. gewash: vitest 83/83 (23 ფაილი), `build:check` (`tsc -b` და vite build) 0 შეცდომა, lint 0 შეცდომა და 0 გაფრთხილება. voucher-checker: vitest 9/9 (2 ფაილი), `tsc -b && vite build` გავიდა, lint 0 შეცდომა და 0 გაფრთხილება. სერვერი არ შეხებულა.
+
+## 2026-10-13 — სატესტო გადახდა პროდაქშენზე (flag)
+
+დაემატა `TEST_PAYMENT_ALLOW_PRODUCTION` (ნაგულისხმევად false). ჩართვის შემდეგაც სატესტო გადახდა მხოლოდ ადმინს და `TEST_PAYMENT_PHONES`-ის ნომრებს შეუძლიათ. მარშრუტები ახლა ყოველთვის რეგისტრირდება, ხოლო შემოწმება კონტროლერში ხდება (`App\Support\TestPayments`). webhook-ები არ შეცვლილა. Pest-ის ტესტები: `tests/Feature/TestPaymentProductionTest.php`. runbook §10.

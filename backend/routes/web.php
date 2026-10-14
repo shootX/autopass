@@ -38,12 +38,11 @@ Route::prefix('partner')->group(function () {
 
 Route::get('/ref/{code}', [ReferralsController::class, 'handleRef'])->name('referral.link');
 
-if (! app()->environment('production')) {
-    Route::get('/payment/sandbox', [TbcCheckoutController::class, 'sandbox'])
-        ->name('payment.sandbox');
-    Route::post('/payment/sandbox', [TbcCheckoutController::class, 'sandboxConfirm'])
-        ->name('payment.sandbox.confirm');
-}
+// Gated in the controller: off in production unless TEST_PAYMENT_ALLOW_PRODUCTION=true.
+Route::get('/payment/sandbox', [TbcCheckoutController::class, 'sandbox'])
+    ->name('payment.sandbox');
+Route::post('/payment/sandbox', [TbcCheckoutController::class, 'sandboxConfirm'])
+    ->name('payment.sandbox.confirm');
 
 Route::any('/payment/return', [TbcCheckoutController::class, 'returned'])
     ->name('payment.return');
