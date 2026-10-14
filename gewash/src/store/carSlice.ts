@@ -1,14 +1,9 @@
 import { createSlice,  type PayloadAction } from "@reduxjs/toolkit";
+import type { CatalogItem } from "@/lib/carCatalog";
 
-export type Brand = {
-  id: number;
-  name: string;
-};
+export type Brand = CatalogItem;
 
-export type Model = {
-  id: number;
-  name: string;
-};
+export type Model = CatalogItem;
  
  export type Car = {
   id: number;

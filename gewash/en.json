@@ -60,16 +60,19 @@
         "labels": {
             "brand": "Car brand",
             "model": "Car model",
-            "plate": "Number plate"
+            "plate": "Number plate",
+            "year": "Year"
         },
         "placeholders": {
             "plate": "XX - XXX - XX",
             "chooseBrand": "Choose your car brand",
-            "chooseModel": "Choose your car model"
+            "chooseModel": "Choose your car model",
+            "chooseYear": "Choose year"
         },
         "errors": {
             "invalidPlate": "Invalid number plate format",
-            "plateExists": "Number plate is already exist"
+            "plateExists": "Number plate is already exist",
+            "loadFailed": "Could not load car data"
         },
         "buttons": {
             "add": "Add",
@@ -134,7 +137,8 @@
     "CustomerMyData": {
         "header": {
             "title": "My Data",
-            "backAlt": "back"
+            "backAlt": "back",
+            "saved": "Saved"
         },
         "form": {
             "title": "My Information",
@@ -190,7 +194,8 @@
         "labels": {
             "brand": "Car brand",
             "model": "Car model",
-            "plate": "Number plate"
+            "plate": "Number plate",
+            "year": "Year"
         },
         "placeholders": {
             "plate": "XX - XXX - XX"
@@ -229,7 +234,24 @@
             "error": "Email address is not valid",
             "button": {
                 "set": "Set"
+            },
+            "errors": {
+                "sendFailed": "Failed to send the verification code",
+                "somethingWentWrong": "Something went wrong"
             }
+        },
+        "verification": {
+            "button": {
+                "verify": "Verify"
+            },
+            "codeRequired": "Enter the verification code",
+            "failed": "Verification failed",
+            "inputTitle": "Enter the verification code",
+            "invalidCode": "Invalid verification code",
+            "label": "Verification code sent to your email",
+            "placeholder": "123456",
+            "successAlert": "Email verified and updated",
+            "title": "Verify email"
         }
     },
     "MyPackages": {
@@ -316,7 +338,8 @@
                 "errors": {
                     "duplicate": "Phone number already exists",
                     "invalidFormat": "Phone number is incorrect",
-                    "empty": "Phone number is required"
+                    "empty": "Phone number is required",
+                    "privacy": "Accept the privacy policy to continue"
                 },
                 "navigate": {
                     "text": "Already have an account?",
@@ -811,7 +834,8 @@
             "title": "My Tickets",
             "daysLeft": "days left",
             "join": "Join the giveaway",
-            "empty": "No giveaways yet."
+            "empty": "No giveaways yet.",
+            "mineEmpty": "You have no tickets yet"
         }
     },
     "Discounts": {
@@ -985,5 +1009,89 @@
             "title": "Result unknown",
             "body": "The send result could not be confirmed. If the code arrives, use it. It is not sent again automatically."
         }
+    },
+    "Branches": {
+        "closed": "Closed",
+        "opened": "Open"
+    },
+    "CustomerCalendar": {
+        "cancel": "Cancel",
+        "cancel_appointment": "Cancel appointment",
+        "cancel_warning": "This appointment will be cancelled. This cannot be undone.",
+        "yes": "Yes"
+    },
+    "ManagerCarwashStatistics": {
+        "branch": {
+            "closed": "Closed",
+            "open": "Open",
+            "time": "Hours",
+            "title": "Branch"
+        },
+        "carTypes": {
+            "coupe": "Coupe",
+            "distribution": "Distribution",
+            "pickup": "Pickup",
+            "sedan": "Sedan",
+            "title": "Body types",
+            "wagon": "Wagon"
+        },
+        "header": {
+            "title": "Statistics"
+        },
+        "packages": {
+            "distribution": "Distribution",
+            "title": "Packages",
+            "unlimit": "Unlimited",
+            "washesSuffix": "washes"
+        },
+        "washes": {
+            "period": "For the selected period",
+            "title": "Washes"
+        },
+        "workload": {
+            "average": "per day",
+            "avgWashes": "Average washes",
+            "period": "Period",
+            "title": "Workload"
+        }
+    },
+    "Messages": {
+        "empty": "No messages yet"
+    },
+    "MyReviews": {
+        "empty": "No reviews yet",
+        "title": "My reviews"
+    },
+    "Settings": {
+        "ChooseLanguage": {
+            "save": "Save",
+            "title": "Choose language"
+        },
+        "account": "Account",
+        "cancel": "Cancel",
+        "confirmLogout": "Log out",
+        "deleteAccount": "Delete account",
+        "deleteBtn": "Delete",
+        "language": "Language",
+        "logout": "Log out",
+        "remove_button": "Delete account",
+        "sure_delete": "This will permanently delete your account.",
+        "sure_logout": "Do you want to log out?"
+    },
+    "CarBrandDropDown": {
+        "title": "Choose car brand",
+        "search": "Search...",
+        "select": "Select",
+        "loading": "Loading brands...",
+        "empty": "No brands found",
+        "error": "Could not load brands"
+    },
+    "CarModelDropDown": {
+        "title": "Choose model of {name}",
+        "search": "Search...",
+        "select": "Select",
+        "loading": "Loading models...",
+        "empty": "No models available for {name}",
+        "error": "Could not load models"
     }
 }

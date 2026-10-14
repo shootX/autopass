@@ -219,17 +219,31 @@ voucher-checker-ში `useVoucher`/`usePath` სახელები შეი
 - Backend Pest tests read `backend/.env`; on a fresh checkout copy `.env.example` to `.env` locally before `php artisan test` (otherwise 67 tests end as warnings).
 - Nothing deployed. Test payment in production stays off until the separate flag PR is reviewed and merged.
 
-## 2026-10-14 — Stage 2 (1–4)
-
-`users.pending_email`: `/email/set` ახალ მისამართს `pending_email`-ში ინახავს, ხოლო `/email/verify` ამ მისამართს `email`-ში გადაიტანს. ban-ს ამოწმებს EnsureApiSession, EnsurePartnerReady, CorporatePanel და AdminMiddleware; ადმინის ban ასევე ზრდის `token_version`-ს. ვებ-შესვლა ban-ს ამოწმებს `LoginController::credentials()`-ში. პარტნიორის/კომპანიის ban-ის ადმინ UI ჯერ არ არის, მხოლოდ სვეტია. ადმინის რედაქტირებიდან (clients/partners edit) ტელეფონისა და ელფოსტის შეცვლა შენარჩუნებულია, როგორც ადმინის ფუნქცია.
-
 ## 2026-10-14 — Car ids and voucher SMS dedupe
 - car_models.id is always local. CarAPI ids live in external_model_id / external_brand_id with source='carapi'. Never look up a client model_id unless it comes with a source.
 - Voucher check SMS: dedupe key voucher-check:{user_voucher_id}:{user_id}; within the window the open SmsTemp public_id is returned (deduplicated: true).
 
+## 2026-10-14 — Frontend i18n, npm ci, catalog ids
+- `gewash/scripts/check-i18n.mjs` checks en, ka, and ru and exits 1 if a `t()` key is missing or blank. The 56 keys that were absent from all three files are filled in.
+- gewash lockfile omitted optional platform packages (`@esbuild/*`, `@rollup/rollup-*`, lightningcss, …). npm 10 `npm ci` ignored that; npm 11 failed with `Missing: … from lock file`. The lockfile now includes them. voucher-checker and backend locks were already complete. Supported engines are Node `^22.12.0 || ^24 || >=26` (vitest 5) and npm `^10 || ^11`.
+- Add car posts `source` copied from the picked model, plus `brand_id` and `model_id` from that same source, and optional `year` from `GET /api/cars/years`. A saved car's local `model.id` is not sent back as a CarAPI id (`catalogWriteIds` uses `external_model_id` when `source` is `carapi`). Edit updates plate and year only.
+
+## 2026-10-14 — Stage 2 (1–4)
+
+`users.pending_email`: `/email/set` ახალ მისამართს `pending_email`-ში ინახავს, ხოლო `/email/verify` ამ მისამართს `email`-ში გადაიტანს. ban-ს ამოწმებს EnsureApiSession, EnsurePartnerReady, CorporatePanel და AdminMiddleware; ადმინის ban ასევე ზრდის `token_version`-ს. ვებ-შესვლა ban-ს ამოწმებს `LoginController::credentials()`-ში. პარტნიორის/კომპანიის ban-ის ადმინ UI ჯერ არ არის, მხოლოდ სვეტია. ადმინის რედაქტირებიდან (clients/partners edit) ტელეფონისა და ელფოსტის შეცვლა შენარჩუნებულია, როგორც ადმინის ფუნქცია.
+
 ## 2026-10-14 — Mass assignment policy
 - Privileged columns (role, ban, points, token/session versions, credentials, api_token, phone_verified_at, referral ids) are NOT in $fillable. Set them with forceFill/forceCreate in trusted code only. DatabaseSeeder runs Model::unguard().
 - All points mutations (vouchers, tickets, packages, TBC settle) run in DB::transaction with lockForUpdate on the user row.
+
+## 2026-10-14 — Revocation + audit helpers
+- App\Support\SessionRevoker::{user,partner,corporate} is the one way to kill live credentials (version bump + DB sessions for users).
+- App\Support\AdminAudit::record() writes admin_audit_logs; old/new values are masked (email first char + domain, phone last 2 digits).
+
+## 2026-10-14 — public lang and picker copy
+- The app loads `GET /api/lang/{lang}` from `backend/public/lang`, not from `gewash/*.json`. Those files must match: `i18n:check` exits 1 when a frontend leaf is missing, blank, or different in the public copy. Backend-only extra keys stay.
+- Brand and model sheets use `CarBrandDropDown.*` and `CarModelDropDown.*`. `{name}` in the model title and empty line is the picked brand. Loading and error are shown in the sheet.
+- PR #24 merged `feat/stage2-voucher-sms-carmodels` at `039c942` (merge commit, no rebase). Catalog resolution now checks the brand and retries a unique external-id insert.
 
 ## 2026-10-14 — ცარიელი გვერდები
 

@@ -40,6 +40,10 @@
                     @csrf
                     <button class="btn btn-outline-secondary" type="submit">{{ __('admin.temp_password_sent') }}</button>
                 </form>
+                <form action="{{ route('admin.partners.ban', $client) }}" method="post" class="mt-3">
+                    @csrf
+                    <button class="btn {{ $client->ban ? 'btn-warning' : 'btn-dark' }}" type="submit"><i class="fas fa-ban"></i> {{ $client->ban ? __('admin.unbanned') : __('admin.banned') }}</button>
+                </form>
             </div>
         </div>
     </div>
