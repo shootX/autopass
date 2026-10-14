@@ -226,3 +226,11 @@ voucher-checker-ში `useVoucher`/`usePath` სახელები შეი
 ## 2026-10-14 — Mass assignment policy
 - Privileged columns (role, ban, points, token/session versions, credentials, api_token, phone_verified_at, referral ids) are NOT in $fillable. Set them with forceFill/forceCreate in trusted code only. DatabaseSeeder runs Model::unguard().
 - All points mutations (vouchers, tickets, packages, TBC settle) run in DB::transaction with lockForUpdate on the user row.
+
+## 2026-10-14 — ცარიელი გვერდები
+
+`Routes`-ის შვილი მხოლოდ `Route` ან `React.Fragment` შეიძლება იყოს. `<PublicAuthRoutes />` კომპონენტია, ამიტომ react-router 7 `invariant`-ს ისვრის და აპი ცარიელი რჩება. `{PublicAuthRoutes()}` აბრუნებს ფრაგმენტს, რომელსაც როუტერი შლის შვილებად. შესვლის მისამართი არის `/auth`, არა `/login`.
+
+შემომტანი: `650defce35952d263f2615385a15da0c3b4fa574` (2026-10-12, Cursor Agent `<cursoragent@cursor.com>`, co-author Shota Chkhvirkia). PR [#6](https://github.com/shootX/autopass/pull/6) `cursor/fe-11-manager-routing-9883`, merge `e96ea3c`.
+
+შემოწმება ამ hotfix-ზე: gewash lint 0, vitest 85/85 (24 ფაილი), `build:check` 0. დეპლოი არ ყოფილა.
