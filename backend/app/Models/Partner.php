@@ -2,15 +2,13 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
 class Partner extends Authenticatable implements JWTSubject
 {
-
-    protected $guarded = [];
+    // Security columns (password, ban, password_must_change, temp_password_expires_at, token_version) are set explicitly.
+    protected $fillable = ['name', 'description', 'login', 'email', 'photo'];
 
     protected $hidden = ['password', 'created_at', 'updated_at'];
 

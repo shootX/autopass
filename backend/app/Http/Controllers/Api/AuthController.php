@@ -50,7 +50,7 @@ class AuthController extends Controller
                 $referralId = User::query()->where('ref_code', $request->code)->value('id');
             }
 
-            $existing = User::query()->create([
+            $existing = User::query()->forceCreate([
                 'name' => null,
                 'surname' => null,
                 'email' => null,

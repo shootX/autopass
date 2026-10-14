@@ -289,7 +289,7 @@ class PartnerPanelController extends Controller
     public function token(Request $request)
     {
         $corporate = $this->client($request);
-        $corporate->update(['api_token' => CorporateClient::makeToken()]);
+        $corporate->forceFill(['api_token' => CorporateClient::makeToken()])->save();
 
         return redirect()->route('partner.fleet')->with('message', __('admin.corporate_token_reset'));
     }

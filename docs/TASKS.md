@@ -184,3 +184,9 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 2. დაბლოკილი (ban) მომხმარებელი: API, ადმინის ვები, პარტნიორის API და კომპანიის პანელი ძველ სესიას/ტოკენს მაშინვე უარყოფს, შესვლაც უარყოფილია. partners/corporate_clients-ს დაემატა `ban` სვეტი.
 3. კომპანიის `/partner/password` მუშაობს მხოლოდ მაშინ, როცა `password_must_change=true`. ჩვეულებრივ ცვლილებას სჭირდება მიმდინარე პაროლი, და `session_version` სხვა სესიებს აუქმებს.
 4. ვაუჩერის ყიდვა ერთ ტრანზაქციაშია და ბალანსის ჩანაწერზე იყენებს `lockForUpdate`-ს. ნებისმიერი შეცდომისას ყველაფერი უკან ბრუნდება.
+
+## 2026-10-14 — Stage 2 sweep (mass-assignment + balance mutations)
+- [x] User/Partner/CorporateClient privileged columns removed from mass assignment (role, referral_id, ref_code, phone_verified_at; partner login secrets via $fillable; corporate credentials/api_token/session_version/must_change). Creates use forceCreate; token rotations forceFill.
+- [x] Admin car wash edit validates fields; manager_id must be a manager; services stripped from update.
+- [x] Ticket purchase: integer qty 1..20, DB::transaction + lockForUpdate (ticket, user), limit counts qty, tickets + ledger inside transaction, rollback tested.
+- [ ] Follow-up: admin UI for partner/company ban; ReferralsController::saveHash public unvalidated writes; TbcPayment/Transaction/UserVoucher still $guarded=[] (server-side only).
