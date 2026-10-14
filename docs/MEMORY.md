@@ -213,3 +213,8 @@ voucher-checker-ში `useVoucher`/`usePath` სახელები შეი
 ## 2026-10-13 — Test payment flag
 
 `App\Support\TestPayments::available()`: production-ზე false, თუ `security.test_payment_allow_production` (env `TEST_PAYMENT_ALLOW_PRODUCTION`) არ არის true. `allowed()` ამოწმებს ადმინს და `TEST_PAYMENT_PHONES`-ს. sandbox-ის დადასტურებისას ხელახლა მოწმდება, რომ გადახდის მფლობელი ჯერ კიდევ დაშვებულია. ტესტებში env=production რთავს CSRF-ს, ამიტომ ტესტის ფაილში `PreventRequestForgery` გამორთულია.
+### 2026-10-14
+
+- Stage 1 (security + SMSOffice + frontend contracts) is on `main` via PR #19 → #18 → `main`. Tests: backend 69/69, gewash 83/83, voucher-checker 9/9; gewash `build:check` and lint clean.
+- Backend Pest tests read `backend/.env`; on a fresh checkout copy `.env.example` to `.env` locally before `php artisan test` (otherwise 67 tests end as warnings).
+- Nothing deployed. Test payment in production stays off until the separate flag PR is reviewed and merged.
