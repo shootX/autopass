@@ -2,6 +2,7 @@
 
 use App\Models\TbcPayment;
 use App\Models\User;
+use App\Services\Payments\SettleTbcPayment;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
@@ -91,4 +92,29 @@ it('denies a normal user and a foreign order in production when the flag is on',
     config(['security.test_payment_phones' => []]);
     tpPay($this, $start->json('url'));
     expect((int) $qa->fresh()->points)->toBe(0)->and((int) $normal->fresh()->points)->toBe(0);
+});
+
+it('refuses to confirm a sandbox payment after the owner is banned or loses tester status', function () {
+    config(['security.test_payment_allow_production' => true]);
+
+    $banned = tpUser('555900001');
+    $start = tpStart($this, $banned)->assertOk();
+    $banned->forceFill(['ban' => true])->save();
+    tpPay($this, $start->json('url'))->assertRedirect();
+    expect((int) $banned->fresh()->points)->toBe(0)
+        ->and(TbcPayment::query()->where('user_id', $banned->id)->value('status'))->not->toBe('succeeded');
+
+    $admin = tpUser('555900040', User::ROLE_ADMIN);
+    $start = tpStart($this, $admin)->assertOk();
+    $admin->forceFill(['role' => User::ROLE_USER])->save();
+    tpPay($this, $start->json('url'))->assertRedirect();
+    expect((int) $admin->fresh()->points)->toBe(0);
+
+    // Settlement itself re-checks on the locked owner row (e.g. banned between page load and confirm).
+    $qa = tpUser('555900041', User::ROLE_ADMIN);
+    $start = tpStart($this, $qa)->assertOk();
+    $payment = TbcPayment::query()->where('user_id', $qa->id)->firstOrFail();
+    $qa->forceFill(['ban' => true])->save();
+    app(SettleTbcPayment::class)->grantNow($payment);
+    expect((int) $qa->fresh()->points)->toBe(0)->and($payment->fresh()->status)->not->toBe('succeeded');
 });

@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Exports\PartnersExport;
 use App\Exports\WashingsExport;
 use App\Http\Controllers\Controller;
 use App\Models\CarWash;
@@ -12,20 +11,21 @@ use App\Models\Review;
 use App\Models\User;
 use App\Support\Phone;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Maatwebsite\Excel\Facades\Excel;
 
 class WashingController extends Controller
 {
     public function index(Request $request)
     {
-        if($request->has('export'))
-        {
+        if ($request->has('export')) {
             return Excel::download(
-                new WashingsExport(),
+                new WashingsExport,
                 'washings.xlsx'
             );
         }
         $washings = CarWash::paginate(10);
+
         return view('admin.washing.index', compact('washings'));
     }
 
@@ -49,7 +49,8 @@ class WashingController extends Controller
                 'text' => $user->pickerLabel(),
             ];
         })->values();
-        return response()->json(['items' =>$users]);
+
+        return response()->json(['items' => $users]);
     }
 
     public function search_wash_services(Request $request)
@@ -63,6 +64,7 @@ class WashingController extends Controller
                 'text' => $service->name,
             ];
         });
+
         return response()->json(['items' => $services]);
     }
 
@@ -74,26 +76,28 @@ class WashingController extends Controller
         $cars = $cars->map(function ($car) {
             return [
                 'id' => $car->id,
-                'text' => $car->model->brand->name . ' ' . $car->model->name . ' (' . $car->plate . ')',
+                'text' => $car->model->brand->name.' '.$car->model->name.' ('.$car->plate.')',
             ];
         });
+
         return response()->json(['items' => $cars]);
     }
 
     public function search_wash(Request $request)
     {
         $query = $request->input('q');
-        $washes = CarWash::where('name', 'like', '%' . $query . '%')
-            ->orWhere('address', 'like', '%' . $query . '%')
+        $washes = CarWash::where('name', 'like', '%'.$query.'%')
+            ->orWhere('address', 'like', '%'.$query.'%')
             ->limit(10)
             ->get();
 
         $washes = $washes->map(function ($wash) {
             return [
                 'id' => $wash->id,
-                'text' => $wash->name . ' (' . $wash->address . ')',
+                'text' => $wash->name.' ('.$wash->address.')',
             ];
         });
+
         return response()->json(['items' => $washes]);
     }
 
@@ -101,7 +105,7 @@ class WashingController extends Controller
     {
         $query = $request->input('q');
         $users = User::where('role', User::ROLE_USER)
-            ->where(function($q) use ($query) {
+            ->where(function ($q) use ($query) {
                 $q->where('name', 'like', "%{$query}%")
                     ->orWhere('surname', 'like', "%{$query}%")
                     ->orWhere('email', 'like', "%{$query}%")
@@ -116,9 +120,10 @@ class WashingController extends Controller
         $users = $users->map(function ($user) {
             return [
                 'id' => $user->id,
-                'text' => $user->name . ' '. $user->surname . ' (' . $user->email . ')',
+                'text' => $user->name.' '.$user->surname.' ('.$user->email.')',
             ];
         });
+
         return response()->json(['items' => $users]);
     }
 
@@ -128,8 +133,7 @@ class WashingController extends Controller
         $carWash = $request->input('washing_id');
 
         $washing = CarWash::find($carWash);
-        if($washing->manager)
-        {
+        if ($washing->manager) {
             $washing->manager->role = User::ROLE_USER;
             $washing->manager->update();
         }
@@ -147,6 +151,7 @@ class WashingController extends Controller
     public function addPage(Request $request)
     {
         $services = CarWashService::all();
+
         return view('admin.washing.add', compact('services'));
     }
 
@@ -181,6 +186,7 @@ class WashingController extends Controller
     public function remove(Request $request, CarWash $washing)
     {
         $washing->delete();
+
         return redirect()->route('admin.washings')->with('success', __('admin.washing_deleted'));
     }
 
@@ -188,12 +194,23 @@ class WashingController extends Controller
     {
         $selectedServices = $washing->services->pluck('id')->toArray();
         $services = CarWashService::all();
+
         return view('admin.washing.edit', compact('washing', 'services', 'selectedServices'));
     }
 
     public function edit(Request $request, CarWash $washing)
     {
-        $washing->update($request->all());
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'address' => 'required|string|max:255',
+            'work_time_start' => 'required|string|max:8',
+            'work_time_end' => 'required|string|max:8',
+            'location' => 'required|string|max:255',
+            'manager_id' => ['sometimes', 'nullable', Rule::exists('users', 'id')->where('role', User::ROLE_MANAGER)],
+            'services' => 'array|nullable',
+        ]);
+        unset($data['services']);
+        $washing->update($data);
 
         CarWashServicesList::where('car_wash_id', $washing->id)->delete();
 
@@ -207,12 +224,14 @@ class WashingController extends Controller
     public function reviews(Request $request, CarWash $washing)
     {
         $reviews = $washing->reviews()->paginate(10);
+
         return view('admin.washing.reviews.index', compact('washing', 'reviews'));
     }
 
     public function deleteReview(Request $request, CarWash $washing, Review $review)
     {
         $review->delete();
+
         return redirect()->route('admin.washings.reviews', ['washing' => $washing->id])->with('success', __('admin.review_deleted'));
     }
 
@@ -241,7 +260,7 @@ class WashingController extends Controller
 
     public function toggleReview(Request $request, CarWash $washing, Review $review)
     {
-        $review->status = !$review->status;
+        $review->status = ! $review->status;
         $review->update();
 
         return redirect()->back()->with('success', __('admin.review_toggled'));
