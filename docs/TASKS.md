@@ -190,3 +190,6 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 - [x] Admin car wash edit validates fields; manager_id must be a manager; services stripped from update.
 - [x] Ticket purchase: integer qty 1..20, DB::transaction + lockForUpdate (ticket, user), limit counts qty, tickets + ledger inside transaction, rollback tested.
 - [ ] Follow-up: admin UI for partner/company ban; ReferralsController::saveHash public unvalidated writes; TbcPayment/Transaction/UserVoucher still $guarded=[] (server-side only).
+
+## 2026-10-14 — QA fix on #21
+- [x] Sandbox payment confirm re-checks the owner: TestPayments::allowed() is false for banned users, and SettleTbcPayment::grantNow() re-checks allowed() on the locked owner row for test_mode payments (marks the payment Failed, credits nothing).
