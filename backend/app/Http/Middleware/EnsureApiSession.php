@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,13 +17,17 @@ class EnsureApiSession
             return response()->json(['success' => false, 'error' => 'Unauthenticated'], 401);
         }
 
+        if ($user->ban) {
+            return response()->json(['success' => false, 'error' => 'Unauthenticated'], 401);
+        }
+
         $claim = JWTAuth::parseToken()->getPayload()->get('tv');
         $version = $claim === null ? 0 : (int) $claim;
         if ($version !== (int) $user->token_version) {
             return response()->json(['success' => false, 'error' => 'Unauthenticated'], 401);
         }
 
-        if ((int) $user->role === \App\Models\User::ROLE_USER && $user->phone_verified_at === null) {
+        if ((int) $user->role === User::ROLE_USER && $user->phone_verified_at === null) {
             return response()->json(['success' => false, 'error' => 'Account is not confirmed'], 403);
         }
 

@@ -13,7 +13,7 @@ class CorporatePanel
     {
         $client = CorporateClient::query()->find($request->session()->get('corporate_client_id'));
         $version = $request->session()->get('corporate_session_version');
-        if (! $client || $version === null || (int) $version !== (int) $client->session_version) {
+        if (! $client || $client->ban || $version === null || (int) $version !== (int) $client->session_version) {
             $request->session()->forget(['corporate_client_id', 'corporate_session_version']);
 
             return redirect()->route('partner.login');

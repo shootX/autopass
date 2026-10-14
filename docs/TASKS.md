@@ -176,3 +176,11 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 - PR #19 (frontend, head `34b6a94`) merged into `feat/stage1-security-smsoffice` (`8c08f08`), then PR #18 merged into `main` (`7f73d2b`). Merge commits only, no force-push. Shota approved the merge in the GAI.GE Stuff group; no deploy.
 - Checks on a fresh `main` checkout: backend Pest 69/69 (408 assertions); gewash `npm ci` ok, vitest 83/83, build ok, `build:check` 0 TS errors, lint 0/0; voucher-checker `npm ci` ok, vitest 9/9, build ok, lint 0/0.
 - Open: test-payment flag for test accounts in production (separate PR, not merged yet). Deploy is done by Shota: `php artisan migrate`, scheduler running, cache driver with locks; backend and frontend ship together.
+
+## 2026-10-14 — Stage 2 უსაფრთხოება (1–4), branch `feat/stage2-security`
+
+ყველა პუნქტისთვის ჯერ დაიწერა ტესტი, რომელიც ვარდებოდა (`tests/Feature/Stage2SecurityTest.php`), მერე გასწორდა.
+1. `/api/me/edit` ტელეფონს და ელფოსტას აღარ ცვლის (თუ შეცვლილია, აბრუნებს 422-ს). ელფოსტა იცვლება მხოლოდ `pending_email`-ის გავლით, ჰეშირებული კოდით და ვადით.
+2. დაბლოკილი (ban) მომხმარებელი: API, ადმინის ვები, პარტნიორის API და კომპანიის პანელი ძველ სესიას/ტოკენს მაშინვე უარყოფს, შესვლაც უარყოფილია. partners/corporate_clients-ს დაემატა `ban` სვეტი.
+3. კომპანიის `/partner/password` მუშაობს მხოლოდ მაშინ, როცა `password_must_change=true`. ჩვეულებრივ ცვლილებას სჭირდება მიმდინარე პაროლი, და `session_version` სხვა სესიებს აუქმებს.
+4. ვაუჩერის ყიდვა ერთ ტრანზაქციაშია და ბალანსის ჩანაწერზე იყენებს `lockForUpdate`-ს. ნებისმიერი შეცდომისას ყველაფერი უკან ბრუნდება.
