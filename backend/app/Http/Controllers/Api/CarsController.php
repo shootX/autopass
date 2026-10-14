@@ -247,6 +247,13 @@ class CarsController extends Controller
                 return response()->json(['success' => false, 'error' => 'Машина не найдена'], 404);
             }
 
+            if ($request->filled('year') && ! $request->filled('model_id') && ! $request->filled('model_name') && $car->model->source === CarCatalog::REMOTE) {
+                $years = app(CarCatalog::class)->modelYears(CarCatalog::REMOTE, (int) $car->model->brand->external_brand_id, (int) $car->model->external_model_id);
+                if ($years !== null && ! in_array((int) $request->year, $years, true)) {
+                    return response()->json(['success' => false, 'error' => __('booking.year_invalid')], 422);
+                }
+            }
+
             // Only whitelisted fields; never mass-assign user_id etc.
             $data = $request->only(['plate']);
             if ($request->has('year')) {

@@ -18,12 +18,12 @@ class BookingService
     {
         return DB::transaction(function () use ($userId, $data) {
             $wash = CarWash::query()->lockForUpdate()->findOrFail($data['car_wash_id']);
-            $car = UserCar::query()->where('user_id', $userId)->findOrFail($data['car_id']);
+            $car = UserCar::query()->where('user_id', $userId)->lockForUpdate()->findOrFail($data['car_id']);
             $services = array_values(array_unique($data['services']));
             if ($wash->services()->whereIn('car_wash_services.id', $services)->count() !== count($services)) {
                 throw ValidationException::withMessages(['service_id' => __('booking.service_unavailable')]);
             }
-            $this->validateSlot($wash, $data['date'], $data['time']);
+            $this->validateSlot($wash, $data['date'], $data['time'], null, $car->id);
             $appointment = Appointment::create([
                 'user_id' => $userId, 'car_wash_id' => $wash->id, 'car_id' => $car->id,
                 'date' => $data['date'], 'time' => $data['time'], 'approved' => AppointmentStatus::Pending->value,
@@ -56,8 +56,12 @@ class BookingService
             if ($before->terminal() && $status !== $before) {
                 throw ValidationException::withMessages(['status' => __('booking.terminal')]);
             }
+            if ($status === AppointmentStatus::Rescheduled && ! $moved && $before !== $status) {
+                throw ValidationException::withMessages(['time' => __('booking.reschedule_time_required')]);
+            }
             if ($moved && in_array($status->value, AppointmentStatus::active(), true)) {
-                $this->validateSlot($wash, $date, $time, $locked->id);
+                UserCar::query()->whereKey($locked->car_id)->lockForUpdate()->firstOrFail();
+                $this->validateSlot($wash, $date, $time, $locked->id, $locked->car_id);
             }
             $locked->fill(['date' => $date, 'time' => $time, 'approved' => $status->value])->save();
 
@@ -65,7 +69,7 @@ class BookingService
         });
     }
 
-    private function validateSlot(CarWash $wash, string $date, string $time, ?int $except = null): void
+    private function validateSlot(CarWash $wash, string $date, string $time, ?int $except = null, ?int $carId = null): void
     {
         $at = Carbon::parse($date.' '.$time, config('app.timezone'));
         if ($at->lte(now())) {
@@ -79,7 +83,8 @@ class BookingService
         if (! $allDay && (! $open || $start === $end)) {
             throw ValidationException::withMessages(['time' => __('booking.closed')]);
         }
-        if (Appointment::query()->where('car_wash_id', $wash->id)->whereDate('date', $at->toDateString())
+        if (Appointment::query()->where(fn ($query) => $query->where('car_wash_id', $wash->id)->when($carId, fn ($query) => $query->orWhere('car_id', $carId)))
+            ->whereDate('date', $at->toDateString())
             ->whereTime('time', $clock)->whereIn('approved', AppointmentStatus::active())
             ->when($except, fn ($query) => $query->whereKeyNot($except))->exists()) {
             throw ValidationException::withMessages(['time' => __('booking.occupied')]);

@@ -22,6 +22,10 @@ class PostgresConcurrencyTest extends TestCase
         parent::setUp();
         $this->assertSame('testing', app()->environment());
         $this->assertSame('pgsql', DB::getDriverName());
+        $database = (string) config('database.connections.pgsql.database');
+        $port = (int) config('database.connections.pgsql.port');
+        $localWasm = getenv('AUTOPASS_PGLITE_TEST') === '1' && $database === 'postgres' && $port >= 15400 && $port < 15500;
+        $this->assertTrue(str_ends_with($database, '_test') || $localWasm, 'An isolated test database is required');
         $this->artisan('migrate:fresh', ['--force' => true])->assertExitCode(0);
     }
 
@@ -76,7 +80,7 @@ class PostgresConcurrencyTest extends TestCase
             'car_wash_id' => $f['wash']->id, 'car_id' => $f['car']->id, 'services' => [$f['service']->id],
             'date' => now()->addDay()->toDateString(), 'time' => '10:00',
         ]]);
-        $this->assertSame(1, count(array_filter($results, fn ($result) => $result['ok'])));
+        $this->assertSame(1, count(array_filter($results, fn ($result) => $result['ok'])), json_encode($results, JSON_THROW_ON_ERROR));
         $this->assertSame(1, Appointment::count());
     }
 

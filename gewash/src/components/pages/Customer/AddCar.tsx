@@ -3,8 +3,7 @@ import { CarBrandDropDown } from "@/components/ui/CarBrandDropDown";
 import { CarModelDropDown } from "@/components/ui/CarModelDropDown";
 import { useAppDispatch, useAppSelector } from "../../../hooks/hooks";
 import { setBrand, setModel, addCar } from "@/store/carSlice";
-import { useNavigate } from "react-router-dom";
-import { useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { customFetch } from "@/utils/customFetch";
 import { invalidateCarsCache } from "@/hooks/useFetchCars";
 import { useCarBrands } from "@/hooks/useCarBrands";
@@ -39,7 +38,6 @@ export default function AddCar({ showHeader }: { showHeader?: boolean }) {
   const { brands, loading, error: brandsError } = useCarBrands();
   const normalizedPlate = numberPlate.replace(/[\s-]/g, "");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
 
   const handlePlateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
@@ -53,7 +51,6 @@ export default function AddCar({ showHeader }: { showHeader?: boolean }) {
     setNumberPlate(formatted);
     setError("");
   };
-  
 
   const handleBrandSelect = async (selected: Brand) => {
     dispatch(setBrand(selected));
@@ -95,7 +92,7 @@ export default function AddCar({ showHeader }: { showHeader?: boolean }) {
   
     if (!isValidPlate) {
       setError("Invalid number plate format");
-      setIsSubmitting(false); // ⬅️ сброс при валидации
+      setIsSubmitting(false);
       return;
     }
   

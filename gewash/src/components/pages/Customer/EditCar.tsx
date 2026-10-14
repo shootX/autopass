@@ -26,10 +26,10 @@ export default function EditCar() {
   const [isClosing, setIsClosing] = useState(false);
   const t = useTranslation();
 
-  const carId = carToEdit?.id || carid;
+  const carId = carid ?? carToEdit?.id;
 
   useEffect(() => {
-    if ((!carToEdit || !carToEdit.model.id) && carId) {
+    if ((!carToEdit || carToEdit.id !== Number(carId) || !carToEdit.model.id) && carId) {
       const token = localStorage.getItem('access_token');
       customFetch(`${import.meta.env.VITE_API_URL}/mycars/${carId}`, {
         headers: {
@@ -65,7 +65,7 @@ export default function EditCar() {
   };
 
   const isValidPlate = /^([A-Z]{2}) - ([0-9]{3}) - ([A-Z]{2})$/.test(numberPlate);
-  const isFormReady = brand && model && isValidPlate;
+  const isFormReady = brand && model && isValidPlate && carToEdit?.id === Number(carId);
 
   const handleSubmit = async () => {
     if (!isValidPlate) {

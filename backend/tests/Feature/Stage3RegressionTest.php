@@ -240,3 +240,28 @@ it('keeps expired package history and does not repeat the expiry notification', 
     $this->artisan('user-packages:check')->assertExitCode(0);
     expect($package->fresh()->expiration_notified_at)->toBe($notifiedAt);
 });
+
+it('rejects the same vehicle booked at the same time in another branch', function () {
+    $f = stage2ReviewFixture('18');
+    $otherManager = makeUser('555821899', User::ROLE_MANAGER);
+    $otherWash = CarWash::create(['name' => 'Other review branch', 'address' => 'Review',
+        'work_time_start' => '09:00', 'work_time_end' => '20:00', 'location' => 'Review', 'manager_id' => $otherManager->id]);
+    $otherWash->services()->attach($f['service']->id);
+    app(BookingService::class)->create($f['client']->id, stage2ReviewBooking($f) + ['services' => [$f['service']->id]]);
+    $this->withToken(JWTAuth::fromUser($f['client']))->postJson('/api/appointments/add',
+        stage2ReviewBooking($f, ['car_wash_id' => $otherWash->id]))->assertStatus(422);
+    expect(Appointment::count())->toBe(1);
+});
+
+it('localizes a closed-branch error in the requested API language', function () {
+    $f = stage2ReviewFixture('19');
+    $this->withToken(JWTAuth::fromUser($f['client']))->withHeader('Accept-Language', 'en')
+        ->postJson('/api/appointments/add', stage2ReviewBooking($f, ['time' => '03:00']))
+        ->assertStatus(422)->assertJsonPath('error', 'The branch is closed at the selected time.');
+});
+
+it('does not expose another customer car on the single car endpoint', function () {
+    $f = stage2ReviewFixture('20');
+    $other = makeUser('555822099');
+    $this->withToken(JWTAuth::fromUser($other))->getJson('/api/mycars/'.$f['car']->id)->assertNotFound();
+});

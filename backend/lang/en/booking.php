@@ -1,6 +1,8 @@
 <?php
 
 return [
+    'year_invalid' => 'The selected year is not available for this model.',
+    'reschedule_time_required' => 'Choose a new date or time to reschedule.',
     'payment_in_progress' => 'Payment checkout is in progress. Please try again.',
     'checkout_failed' => 'Payment could not be started. Please try again.',
     'service_unavailable' => 'This branch does not offer the selected service.',

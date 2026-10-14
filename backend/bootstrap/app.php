@@ -1,10 +1,16 @@
 <?php
 
+use App\Http\Middleware\SetApiLocale;
+use App\Http\Middleware\SetLocale;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
+use Tymon\JWTAuth\Exceptions\JWTException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -18,8 +24,9 @@ return Application::configure(basePath: dirname(__DIR__))
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->api(append: [SetApiLocale::class]);
         $middleware->web(append: [
-            \App\Http\Middleware\SetLocale::class,
+            SetLocale::class,
         ]);
 
         $middleware->validateCsrfTokens(except: [
@@ -34,11 +41,11 @@ return Application::configure(basePath: dirname(__DIR__))
                 return null;
             }
 
-            if ($e instanceof \Illuminate\Validation\ValidationException
-                || $e instanceof \Illuminate\Auth\AuthenticationException
-                || $e instanceof \Symfony\Component\HttpKernel\Exception\HttpExceptionInterface
-                || $e instanceof \Tymon\JWTAuth\Exceptions\JWTException) {
-                if ($e instanceof \Tymon\JWTAuth\Exceptions\JWTException) {
+            if ($e instanceof ValidationException
+                || $e instanceof AuthenticationException
+                || $e instanceof HttpExceptionInterface
+                || $e instanceof JWTException) {
+                if ($e instanceof JWTException) {
                     return response()->json(['success' => false, 'error' => 'Unauthenticated'], 401);
                 }
 

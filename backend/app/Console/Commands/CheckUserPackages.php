@@ -23,6 +23,9 @@ class CheckUserPackages extends Command
                         if (! $locked || $locked->expiration_notified_at !== null) {
                             return;
                         }
+                        if (now()->lt($locked->end_date) && $locked->used_washes < $locked->number_of_washes) {
+                            return;
+                        }
                         $locked->expiration_notified_at = now();
                         $locked->save();
                         $locked->user?->sendPush(
