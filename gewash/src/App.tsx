@@ -206,7 +206,7 @@ function AppRoutes() {
     return (
       <Suspense fallback={<SplashScreen />}>
         <Routes>
-          <PublicAuthRoutes />
+          {PublicAuthRoutes()}
           <Route path="*" element={<Navigate to={loginPathForRole(readSessionRole())} replace />} />
         </Routes>
       </Suspense>
@@ -228,7 +228,7 @@ function AppRoutes() {
   return (
     <Suspense fallback={<SplashScreen />}>
     <Routes>
-      <PublicAuthRoutes />
+      {PublicAuthRoutes()}
 
       {/* Secure routes */}
       <Route element={<ProtectedRoute />}>
