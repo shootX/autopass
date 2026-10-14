@@ -236,6 +236,10 @@ voucher-checker-ში `useVoucher`/`usePath` სახელები შეი
 - Privileged columns (role, ban, points, token/session versions, credentials, api_token, phone_verified_at, referral ids) are NOT in $fillable. Set them with forceFill/forceCreate in trusted code only. DatabaseSeeder runs Model::unguard().
 - All points mutations (vouchers, tickets, packages, TBC settle) run in DB::transaction with lockForUpdate on the user row.
 
+## 2026-10-14 — Revocation + audit helpers
+- App\Support\SessionRevoker::{user,partner,corporate} is the one way to kill live credentials (version bump + DB sessions for users).
+- App\Support\AdminAudit::record() writes admin_audit_logs; old/new values are masked (email first char + domain, phone last 2 digits).
+
 ## 2026-10-14 — public lang and picker copy
 - The app loads `GET /api/lang/{lang}` from `backend/public/lang`, not from `gewash/*.json`. Those files must match: `i18n:check` exits 1 when a frontend leaf is missing, blank, or different in the public copy. Backend-only extra keys stay.
 - Brand and model sheets use `CarBrandDropDown.*` and `CarModelDropDown.*`. `{name}` in the model title and empty line is the picked brand. Loading and error are shown in the sheet.

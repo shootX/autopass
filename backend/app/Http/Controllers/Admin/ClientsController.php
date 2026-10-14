@@ -11,7 +11,9 @@ use App\Models\PackagePrice;
 use App\Models\User;
 use App\Models\UserCar;
 use App\Models\UserPackage;
+use App\Support\AdminAudit;
 use App\Support\Phone;
+use App\Support\SessionRevoker;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -68,10 +70,10 @@ class ClientsController extends Controller
 
     public function ban(Request $request, User $client)
     {
-        $client->ban = ! $client->ban;
-        // Existing JWTs stop working at once (EnsureApiSession also checks the ban flag).
-        $client->token_version = (int) $client->token_version + 1;
-        $client->update();
+        $client->forceFill(['ban' => ! $client->ban])->save();
+        // Existing JWTs and web sessions stop working at once (middleware also checks the ban flag).
+        SessionRevoker::user($client);
+        AdminAudit::record('user', (int) $client->id, $client->ban ? 'ban' : 'unban');
 
         return redirect()->back()->with('message', __('admin.client_ban_status', [
             'status' => $client->ban ? __('admin.banned') : __('admin.unbanned'),
@@ -85,6 +87,7 @@ class ClientsController extends Controller
 
     public function edit_save(Request $request, User $client)
     {
+        abort_unless((int) $request->user()?->role === User::ROLE_ADMIN, 403);
         Phone::prepare($request);
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
@@ -114,6 +117,9 @@ class ClientsController extends Controller
                 ->withInput();
         }
 
+        $oldEmail = (string) $client->email;
+        $oldPhone = (string) $client->phone;
+
         $client->name = $request->name;
         $client->surname = $request->surname;
         $client->email = $request->email;
@@ -129,6 +135,21 @@ class ClientsController extends Controller
         }
 
         $client->update();
+
+        $changed = [];
+        if (mb_strtolower($oldEmail) !== mb_strtolower((string) $client->email)) {
+            $changed['email'] = [$oldEmail, (string) $client->email];
+        }
+        if (Phone::digits($oldPhone) !== Phone::digits((string) $client->phone)) {
+            $changed['phone'] = [$oldPhone, (string) $client->phone];
+        }
+        foreach ($changed as $field => [$old, $new]) {
+            AdminAudit::record('user', (int) $client->id, 'update', $field, $old, $new);
+        }
+        if ($changed !== []) {
+            // Login identifiers changed: whoever holds the old sessions must sign in again.
+            SessionRevoker::user($client);
+        }
 
         return redirect()->route('admin.clients')->with('message', $msg);
     }

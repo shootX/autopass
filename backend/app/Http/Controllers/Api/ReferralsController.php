@@ -16,15 +16,17 @@ class ReferralsController extends Controller
                 return [
                     'id' => $referral->id,
                     'name' => $referral->name,
-                    'created_at' => $referral->created_at
+                    'created_at' => $referral->created_at,
                 ];
             });
+
         return response()->json(['success' => true, 'referrals' => $referrals]);
     }
 
     public function getIp(Request $request)
     {
         $ipAddr = $request->getClientIp();
+
         return response()->json(['success' => true, 'ip' => $ipAddr]);
     }
 
@@ -52,21 +54,28 @@ class ReferralsController extends Controller
 
     public function saveHash(Request $request)
     {
-        ReferralCodeTemp::create([
-            'hash' => $request->input('hash'),
-            'ref_code' => $request->input('code')
+        $data = $request->validate([
+            'hash' => ['required', 'string', 'regex:/^[a-f0-9]{64}$/'],
+            'code' => ['required', 'string', 'alpha_num', 'size:5', 'exists:users,ref_code'],
         ]);
+
+        ReferralCodeTemp::create([
+            'hash' => $data['hash'],
+            'ref_code' => $data['code'],
+        ]);
+
         return response()->json(['success' => true]);
     }
 
     public function checkHash(Request $request)
     {
+        $request->validate(['hash' => ['required', 'string', 'regex:/^[a-f0-9]{64}$/']]);
         $hash = $request->input('hash');
         $check = ReferralCodeTemp::query()->where('hash', $hash)->latest()->first();
-        if($check)
-        {
+        if ($check) {
             $checkCode = $check->ref_code;
         }
+
         return response()->json(['success' => true, 'code' => $checkCode ?? null]);
     }
 }
