@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\BodyType;
 use App\Models\CarBrand;
 use App\Models\CarModel;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -65,7 +66,12 @@ class CarCatalog
     public function resolveModelId(string $source, int $modelId, ?int $brandId): ?int
     {
         if ($source === self::LOCAL) {
-            return CarModel::query()->whereKey($modelId)->exists() ? $modelId : null;
+            // brand_id, when sent, must be the model's own local brand.
+            $id = CarModel::query()->whereKey($modelId)
+                ->when($brandId !== null, fn ($q) => $q->where('brand_id', $brandId))
+                ->value('id');
+
+            return $id ? (int) $id : null;
         }
         if ($source !== self::REMOTE || $brandId === null) {
             return null;
@@ -77,7 +83,12 @@ class CarCatalog
         } catch (\Throwable $e) {
             Log::warning('CarAPI unavailable while resolving model.', ['error' => $e->getMessage()]);
 
-            $known = CarModel::query()->where('source', self::REMOTE)->where('external_model_id', $modelId)->value('id');
+            // Offline: reuse only a mapping we already made, and only under the same external brand.
+            $known = CarModel::query()
+                ->where('car_models.source', self::REMOTE)
+                ->where('car_models.external_model_id', $modelId)
+                ->whereHas('brand', fn ($q) => $q->where('source', self::REMOTE)->where('external_brand_id', $brandId))
+                ->value('car_models.id');
 
             return $known ? (int) $known : null;
         }
@@ -85,25 +96,43 @@ class CarCatalog
             return null;
         }
 
-        $localBrand = CarBrand::query()->where('source', self::REMOTE)->where('external_brand_id', $brandId)->first();
-        if (! $localBrand) {
-            $localBrand = new CarBrand;
-            $localBrand->forceFill(['name' => mb_substr($brand['name'], 0, 64), 'source' => self::REMOTE, 'external_brand_id' => $brandId])->save();
-        }
-
-        $local = CarModel::query()->where('source', self::REMOTE)->where('external_model_id', $modelId)->first();
-        if (! $local) {
-            $local = new CarModel;
-            $local->forceFill([
+        // A parallel request can insert the same row between lookup and insert; the unique index
+        // (source, external_*_id) rejects ours and we read the winner's row. No outer transaction here,
+        // so a failed INSERT does not poison the connection on Postgres.
+        $localBrand = $this->firstOrCreateUnique(CarBrand::class,
+            ['source' => self::REMOTE, 'external_brand_id' => $brandId],
+            ['name' => mb_substr($brand['name'], 0, 64)],
+        );
+        $local = $this->firstOrCreateUnique(CarModel::class,
+            ['source' => self::REMOTE, 'external_model_id' => $modelId],
+            [
                 'name' => mb_substr($model['name'], 0, 64),
                 'brand_id' => $localBrand->id,
                 'type' => BodyType::query()->where('name', 'sedan')->value('name') ?? BodyType::query()->orderBy('id')->value('name') ?? 'sedan',
-                'source' => self::REMOTE,
-                'external_model_id' => $modelId,
-            ])->save();
-        }
+            ],
+        );
 
         return (int) $local->id;
+    }
+
+    /**
+     * @template T of \Illuminate\Database\Eloquent\Model
+     *
+     * @param  class-string<T>  $class
+     * @return T
+     */
+    private function firstOrCreateUnique(string $class, array $keys, array $values)
+    {
+        $found = $class::query()->where($keys)->first();
+        if ($found) {
+            return $found;
+        }
+
+        try {
+            return $class::query()->create($keys + $values);
+        } catch (UniqueConstraintViolationException $e) {
+            return $class::query()->where($keys)->first() ?? throw $e;
+        }
     }
 
     /** Selectable model years, newest first. */

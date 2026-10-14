@@ -12,6 +12,8 @@ class CarModel extends Model
         'brand_id',
         'type',
         'img',
+        'source',
+        'external_model_id',
     ];
 
     protected $casts = ['external_model_id' => 'integer'];
