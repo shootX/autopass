@@ -43,6 +43,7 @@
                                 <td>
                                     <div class="btn-group">
                                         <a class="btn btn-sm btn-success" href="{{ route('admin.corporate.show', $client) }}">{{ __('admin.fleet') }}</a>
+                                        <form method="POST" action="{{ route('admin.corporate.ban', $client) }}" class="d-inline">@csrf<button type="submit" class="btn btn-sm {{ $client->ban ? 'btn-warning' : 'btn-dark' }}" title="{{ $client->ban ? __('admin.unbanned') : __('admin.banned') }}"><i class="fas fa-ban"></i></button></form>
                                         <a class="btn btn-sm btn-primary" href="{{ route('admin.corporate.edit', $client) }}"><i class="fas fa-edit"></i></a>
                                         <a class="btn btn-sm btn-danger remove-corporate" data-id="{{ $client->id }}"><i class="fas fa-trash"></i></a>
                                     </div>

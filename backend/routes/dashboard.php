@@ -1,23 +1,23 @@
 <?php
 
+use App\Http\Controllers\Admin\AppointmentsController;
 use App\Http\Controllers\Admin\BodyTypesController;
-use App\Http\Controllers\Admin\CorporateController;
 use App\Http\Controllers\Admin\CarBrandsController;
+use App\Http\Controllers\Admin\ClientsController;
+use App\Http\Controllers\Admin\CorporateController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\ManagerController;
 use App\Http\Controllers\Admin\PackagesController;
 use App\Http\Controllers\Admin\PartnersController;
 use App\Http\Controllers\Admin\PromoController;
+use App\Http\Controllers\Admin\ReportsController;
 use App\Http\Controllers\Admin\SmsInboxController;
 use App\Http\Controllers\Admin\TicketsController;
 use App\Http\Controllers\Admin\VouchersController;
-use App\Http\Middleware\AdminMiddleware;
-use Illuminate\Support\Facades\Route;
-use Illuminate\Auth\Middleware\Authenticate;
-use App\Http\Controllers\Admin\ClientsController;
-use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\ManagerController;
-use App\Http\Controllers\Admin\AppointmentsController;
-use App\Http\Controllers\Admin\ReportsController;
 use App\Http\Controllers\Admin\WashingController;
+use App\Http\Middleware\AdminMiddleware;
+use Illuminate\Auth\Middleware\Authenticate;
+use Illuminate\Support\Facades\Route;
 
 Route::prefix('dashboard')
     ->middleware(Authenticate::class, AdminMiddleware::class)
@@ -27,6 +27,7 @@ Route::prefix('dashboard')
             auth()->logout();
             request()->session()->invalidate();
             request()->session()->regenerateToken();
+
             return redirect()->route('login');
         })->name('admin.logout');
 
@@ -43,7 +44,6 @@ Route::prefix('dashboard')
 
         Route::get('/search_car_brands', [ClientsController::class, 'search_car_brands'])->name('admin.search_car_brands');
         Route::get('/search_car_models', [ClientsController::class, 'search_car_models'])->name('admin.search_car_brands');
-
 
         Route::post('/set_manager_washing', [WashingController::class, 'set_manager_washing'])->name('admin.set_manager');
 
@@ -71,7 +71,7 @@ Route::prefix('dashboard')
                 Route::get('/add', [ClientsController::class, 'addUserCar'])->name('admin.сlients.add_car');
                 Route::post('/store', [ClientsController::class, 'storeUserCar'])->name('admin.clients.store_car');
                 Route::delete('/{car}/delete', [ClientsController::class, 'carDelete'])->name('admin.clients.cars.delete');
-                //Route::post('/renew', [ClientsController::class, 'renewPackage'])->name('admin.clients.renew_package');
+                // Route::post('/renew', [ClientsController::class, 'renewPackage'])->name('admin.clients.renew_package');
             });
 
             Route::get('/get_packages_for_car/{car}', [ClientsController::class, 'getPackagesForCar'])->name('admin.clients.get_packages_for_car');
@@ -140,7 +140,7 @@ Route::prefix('dashboard')
 
         Route::prefix('/vouchers')->group(function () {
 
-            Route::prefix('/categories')->group(function(){
+            Route::prefix('/categories')->group(function () {
                 Route::get('/', [VouchersController::class, 'categoriesIndex'])->name('admin.vouchers.categories');
                 Route::get('/add', [VouchersController::class, 'categorieAdd'])->name('admin.vouchers.categories.add');
                 Route::post('/store', [VouchersController::class, 'categorieStore'])->name('admin.vouchers.categories.store');
@@ -167,8 +167,6 @@ Route::prefix('dashboard')
             Route::get('/{ticket}/edit', [TicketsController::class, 'edit'])->name('admin.tickets.edit');
             Route::post('/{ticket}/save', [TicketsController::class, 'save'])->name('admin.tickets.save');
 
-
-
             Route::get('/{ticket}/export', [TicketsController::class, 'export'])->name('admin.tickets.export');
 
         });
@@ -180,6 +178,7 @@ Route::prefix('dashboard')
             Route::get('/template', [CorporateController::class, 'template'])->name('admin.corporate.template');
             Route::get('/{corporate}/edit', [CorporateController::class, 'editPage'])->name('admin.corporate.edit');
             Route::post('/{corporate}/save', [CorporateController::class, 'save'])->name('admin.corporate.save');
+            Route::post('/{corporate}/ban', [CorporateController::class, 'ban'])->name('admin.corporate.ban');
             Route::delete('/{corporate}/delete', [CorporateController::class, 'delete'])->name('admin.corporate.delete');
             Route::get('/{corporate}', [CorporateController::class, 'show'])->name('admin.corporate.show');
             Route::post('/{corporate}/cars', [CorporateController::class, 'storeCar'])->name('admin.corporate.cars.store');
@@ -197,6 +196,7 @@ Route::prefix('dashboard')
             Route::delete('/{client}/delete', [PartnersController::class, 'delete'])->name('admin.partners.delete');
             Route::get('/{client}/edit', [PartnersController::class, 'editPage'])->name('admin.partners.edit');
             Route::post('/{client}/save', [PartnersController::class, 'editSave'])->name('admin.partners.edit_save');
+            Route::post('/{client}/ban', [PartnersController::class, 'ban'])->name('admin.partners.ban');
             Route::post('/{client}/temporary-password', [PartnersController::class, 'temporaryPassword'])->name('admin.partners.temporary_password');
 
         });
