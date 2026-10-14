@@ -1,8 +1,8 @@
+import { appointmentStatus } from "@/lib/appointmentStatus";
 import { useTranslation } from "@/hooks/useTranslation";
 import ManagerOrder from "../../ManagerOrder";
 import type { Appointment } from "@/hooks/useAllRecords";
 
-type Status = "New" | "Confirm" | "Deleted" | "Rescheduled" | "Expired";
 type Filter = "New" | "Confirmed" | "Sheduled" | "All";
 
 interface ManagerOrdersListProps {
@@ -23,24 +23,15 @@ export default function ManagerOrdersList({
 }: ManagerOrdersListProps) {
   const t = useTranslation();
 
-  function getRawStatus(code: number): Status {
-    switch (code) {
-      case 0: return "New";
-      case 1: return "Confirm";
-      case 2: return "Deleted";
-      case 3: return "Rescheduled";
-      case 4: return "Expired";
-      default: return "New";
-    }
-  }
+
 
   function getLocalizedStatus(code: number): string {
-    const raw = getRawStatus(code);
+    const raw = appointmentStatus(code);
     return t(`ManagerOrdersList.status.${raw}`);
   }
 
   const filteredAppointments = appointments.filter((a) => {
-    const rawStatus = getRawStatus(a.approved);
+    const rawStatus = appointmentStatus(a.approved);
     if (activeStatus === "All") return true;
     if (activeStatus === "Sheduled") return rawStatus === "Rescheduled";
     if (activeStatus === "Confirmed") return rawStatus === "Confirm";
@@ -56,7 +47,7 @@ export default function ManagerOrdersList({
       {filteredAppointments.map((a) => (
         <ManagerOrder
           key={a.id}
-          status={getRawStatus(a.approved)}
+          status={appointmentStatus(a.approved)}
           localizedStatus={getLocalizedStatus(a.approved)}
           date={`${a.date} · ${a.time.slice(0, 5)}`}
           type={a.services.map((s) => s.name).join(", ")}

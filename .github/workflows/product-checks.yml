@@ -1,0 +1,78 @@
+name: Product regression checks
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version-file: .nvmrc
+      - run: npm install --global npm@11.9.0
+      - run: npm ci && npm test && npm run build:check && npm run lint && npm run i18n:check && npm run i18n:test
+        working-directory: gewash
+      - run: npm ci && npm test && npm run build && npm run lint
+        working-directory: gewash/voucher-checker
+
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: autopass_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports: [5432:5432]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      APP_ENV: testing
+      APP_KEY: base64:2fl+Ktvkfl+Fuz4Qp/A75G2RTiWVA/ZoKZvp6fiiM10=
+      JWT_SECRET: testing-jwt-secret-not-used-in-production
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      SMS_DRIVER: mock
+      MAIL_MAILER: array
+      QUEUE_CONNECTION: sync
+      SESSION_DRIVER: array
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962
+        with:
+          php-version: '8.4'
+          extensions: pdo_sqlite, pdo_pgsql, mbstring, gd, zip, bcmath
+          coverage: none
+      - run: cp .env.example .env && composer install --no-interaction --prefer-dist
+        working-directory: backend
+      - run: vendor/bin/pest --log-junit=../backend-sqlite.xml
+        working-directory: backend
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ':memory:'
+          CACHE_STORE: array
+      - run: vendor/bin/pest -c phpunit.pgsql.xml --log-junit=../backend-postgres.xml
+        working-directory: backend
+        env:
+          DB_CONNECTION: pgsql
+          DB_DATABASE: autopass_test
+          CACHE_STORE: database
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: backend-test-results
+          path: backend-*.xml
+

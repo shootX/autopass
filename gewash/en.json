@@ -60,16 +60,24 @@
         "labels": {
             "brand": "Car brand",
             "model": "Car model",
-            "plate": "Number plate"
+            "plate": "Number plate",
+            "year": "Production year"
         },
         "placeholders": {
             "plate": "XX - XXX - XX",
             "chooseBrand": "Choose your car brand",
-            "chooseModel": "Choose your car model"
+            "chooseModel": "Choose your car model",
+            "chooseYear": "Choose a year"
         },
         "errors": {
             "invalidPlate": "Invalid number plate format",
-            "plateExists": "Number plate is already exist"
+            "plateExists": "Number plate is already exist",
+            "brandsUnavailable": "Could not load brands.",
+            "modelsUnavailable": "Could not load models.",
+            "yearsUnavailable": "Could not load years.",
+            "chooseYear": "Choose the production year.",
+            "saveFailed": "Could not add the vehicle. Please try again.",
+            "sessionExpired": "Your session expired. Please sign in again."
         },
         "buttons": {
             "add": "Add",
@@ -83,7 +91,9 @@
         },
         "icons": {
             "arrowAlt": "Arrow"
-        }
+        },
+        "retry": "Try again",
+        "yearManual": "Choose the year manually for this model."
     },
     "Authentication": {
         "logoAlt": "LOGO",
@@ -134,7 +144,8 @@
     "CustomerMyData": {
         "header": {
             "title": "My Data",
-            "backAlt": "back"
+            "backAlt": "back",
+            "saved": "Saved"
         },
         "form": {
             "title": "My Information",
@@ -151,7 +162,12 @@
             },
             "calendarAlt": "calendar",
             "sexAlt": "select",
-            "calendarTitle": "Select date of birth"
+            "calendarTitle": "Select date of birth",
+            "sexOptions": {
+                "male": "Male",
+                "female": "Female"
+            },
+            "sexSheetTitle": "Choose your sex"
         },
         "modal": {
             "title": "Unsaved data",
@@ -169,7 +185,8 @@
             "calendar": "Calendar",
             "qr": "QR Code",
             "branches": "Branches",
-            "myData": "My Data"
+            "myData": "My Data",
+            "shop": "Shop"
         },
         "icons": {
             "homeAlt": "home",
@@ -200,8 +217,8 @@
             "model": "Unknown model"
         },
         "errors": {
-            "invalidPlate": "Invalid number plate format",
-            "loadFailed": "Failed to load car data",
+            "invalidPlate": "Enter a valid number plate.",
+            "loadFailed": "Could not load the vehicle.",
             "saveFailed": "Failed to save changes",
             "deleteFailed": "Failed to delete car"
         },
@@ -229,6 +246,23 @@
             "error": "Email address is not valid",
             "button": {
                 "set": "Set"
+            },
+            "errors": {
+                "sendFailed": "Failed to send verification code",
+                "somethingWentWrong": "Something went wrong"
+            }
+        },
+        "verification": {
+            "title": "Verify Email",
+            "inputTitle": "Enter verification code",
+            "label": "Verification code sent to your email",
+            "placeholder": "123456",
+            "codeRequired": "Please enter verification code",
+            "invalidCode": "Invalid verification code",
+            "failed": "Verification failed",
+            "successAlert": "🎉 Email successfully verified and updated!",
+            "button": {
+                "verify": "Verify"
             }
         }
     },
@@ -316,7 +350,8 @@
                 "errors": {
                     "duplicate": "Phone number already exists",
                     "invalidFormat": "Phone number is incorrect",
-                    "empty": "Phone number is required"
+                    "empty": "Phone number is required",
+                    "privacy": "You must agree to the privacy policy"
                 },
                 "navigate": {
                     "text": "Already have an account?",
@@ -465,7 +500,8 @@
             "Confirm": "Confirmed",
             "Deleted": "Deleted",
             "Rescheduled": "Rescheduled",
-            "Expired": "Expired"
+            "Expired": "Expired",
+            "Completed": "Completed"
         }
     },
     "ManagerScanner": {
@@ -506,7 +542,10 @@
             "roleValue": "Wash manager",
             "branch": "Branch",
             "branchName": "Geocar on Shartava",
-            "branchAddress": "57 Zhiuli Shartava St, Tbilisi"
+            "branchAddress": "57 Zhiuli Shartava St, Tbilisi",
+            "admin": "Owner",
+            "manager": "Manager",
+            "user": "Client"
         },
         "statistic": {
             "title": "My statistic",
@@ -811,7 +850,8 @@
             "title": "My Tickets",
             "daysLeft": "days left",
             "join": "Join the giveaway",
-            "empty": "No giveaways yet."
+            "empty": "No giveaways yet.",
+            "mineEmpty": "No tickets yet."
         }
     },
     "Discounts": {
@@ -984,6 +1024,112 @@
         "unknown": {
             "title": "Result unknown",
             "body": "The send result could not be confirmed. If the code arrives, use it. It is not sent again automatically."
+        }
+    },
+    "MyReviews": {
+        "title": "My Reviews",
+        "empty": "No reviews yet."
+    },
+    "Messages": {
+        "empty": "No messages yet."
+    },
+    "Settings": {
+        "theme": "Theme",
+        "themeLight": "Light",
+        "themeDark": "Dark",
+        "language": "App Language",
+        "account": "Account",
+        "logout": "Log Out",
+        "sure_logout": "Are you sure you want to log out?",
+        "cancel": "Cancel",
+        "confirmLogout": "Log Out",
+        "deleteAccount": "Delete Account",
+        "deleteBtn": "Delete",
+        "ChooseLanguage": {
+            "title": "Choose App Language",
+            "save": "Select Language"
+        },
+        "sure_delete": "Are you sure you want to delete your account? This action cannot be undone.",
+        "remove_button": "Yes, Delete"
+    },
+    "CustomerCalendar": {
+        "cancel_appointment": "Cancel Appointment",
+        "cancel_warning": "Are you sure you want to cancel the appointment?",
+        "yes": "Yes, Cancel",
+        "no": "No",
+        "cancel": "Cancel"
+    },
+    "Branches": {
+        "title": "Branches",
+        "empty": "No branches yet.",
+        "list": "List",
+        "map": "Map",
+        "opened": "Open",
+        "closed": "Closed"
+    },
+    "ManagerCarwashStatistics": {
+        "header": {
+            "title": "Carwash statistics"
+        },
+        "branch": {
+            "title": "Branch",
+            "open": "Open",
+            "closed": "Closed",
+            "time": "Mn - Sn",
+            "selectPeriod": "Select period"
+        },
+        "washes": {
+            "title": "Washes",
+            "period": "Period:"
+        },
+        "packages": {
+            "title": "Packages",
+            "distribution": "Distribution by package",
+            "noData": "No packages data",
+            "washesSuffix": "washes",
+            "unlimit": "Unlimit washes"
+        },
+        "carTypes": {
+            "title": "Car types",
+            "distribution": "Distribution by car types",
+            "sedan": "Sedan",
+            "wagon": "Wagon",
+            "coupe": "Coupe",
+            "pickup": "Pickup"
+        },
+        "workload": {
+            "title": "Workload",
+            "period": "Period:",
+            "avgWashes": "Average number of washes:",
+            "average": "Per Day"
+        }
+    },
+    "ManagerReport": {
+        "header": "Report",
+        "dateFrom": "Date from",
+        "dateTo": "Date to",
+        "timeFrom": "Time from",
+        "timeTo": "Time to",
+        "bodyType": "Body type",
+        "allTypes": "All",
+        "apply": "Filter",
+        "found": "Found",
+        "empty": "No records",
+        "status": {
+            "pending": "Pending",
+            "confirmed": "Confirmed",
+            "cancelled": "Cancelled",
+            "completed": "Completed"
+        },
+        "bodyTypes": {
+            "sedan": "Sedan",
+            "suv": "SUV",
+            "hatchback": "Hatchback",
+            "coupe": "Coupe",
+            "convertible": "Convertible",
+            "wagon": "Wagon",
+            "pickup": "Pickup",
+            "truck": "Truck"
         }
     }
 }

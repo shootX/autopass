@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { customFetch } from "@/utils/customFetch";
 
-export type Status = "New" | "Confirm" | "Deleted" | "Rescheduled" | "Expired";
+export type Status = "New" | "Confirm" | "Deleted" | "Rescheduled" | "Expired" | "Completed";
 
 export interface Appointment {
   id: number;

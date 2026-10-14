@@ -112,6 +112,7 @@ class CarsController extends Controller
             return response()->json([
                 'success' => false,
                 'error' => 'Такой номер уже есть в базе',
+                'error_code' => 'plate_exists',
             ], 400);
         }
 
@@ -123,7 +124,7 @@ class CarsController extends Controller
             ], 422);
         }
 
-        UserCar::create([
+        $car = UserCar::create([
             'user_id' => $user->id,
             'model_id' => $modelId,
             'plate' => $request->plate,
@@ -132,6 +133,7 @@ class CarsController extends Controller
 
         return response()->json([
             'success' => true,
+            'car' => $this->carPayload($car),
             'msg' => 'Машина добавлена',
         ], 200);
 
@@ -181,12 +183,41 @@ class CarsController extends Controller
             return 'source is required with model_id';
         }
 
+        if ($request->input('source') === CarCatalog::REMOTE && $request->filled('year')) {
+            $years = app(CarCatalog::class)->modelYears(CarCatalog::REMOTE, (int) $request->input('brand_id'), (int) $request->input('model_id'));
+            if ($years !== null && ! in_array((int) $request->input('year'), $years, true)) {
+                return 'Year is not available for the selected model';
+            }
+        }
+
         return null;
     }
 
-    public function years()
+    public function years(Request $request)
     {
-        return response()->json(['success' => true, 'years' => CarCatalog::years()]);
+        $data = $request->validate([
+            'source' => ['nullable', 'in:local,carapi'],
+            'brand_id' => ['nullable', 'integer', 'min:1'],
+            'model_id' => ['nullable', 'integer', 'min:1'],
+        ]);
+        $years = app(CarCatalog::class)->modelYears($data['source'] ?? 'local', (int) ($data['brand_id'] ?? 0), (int) ($data['model_id'] ?? 0));
+
+        return response()->json(['success' => true, 'years' => $years ?? CarCatalog::years(), 'source' => $years === null ? 'manual' : 'catalog']);
+    }
+
+    public function showMyCar(Request $request, int $carid)
+    {
+        $car = $request->user()->cars()->findOrFail($carid);
+
+        return response()->json(['success' => true, 'car' => $this->carPayload($car)]);
+    }
+
+    private function carPayload(UserCar $car): array
+    {
+        $car->loadMissing('model.brand');
+
+        return ['id' => $car->id, 'plate' => $car->plate, 'year' => $car->year,
+            'model' => $car->model, 'brand' => $car->model->brand, 'image' => $car->model->image];
     }
 
     public function editMyCar(Request $request, $carid)

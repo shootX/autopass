@@ -24,6 +24,7 @@ class CarCatalogIdsTest extends TestCase
         Cache::flush();
         config(['services.carapi.url' => 'https://carapi.test/api/v1', 'services.carapi.secret' => 'k']);
         Http::fake([
+            'carapi.test/api/v1/models/*/generations*' => Http::response(['data' => []]),
             'carapi.test/api/v1/brands/toyota/models*' => Http::response(['data' => [['id' => 7, 'name' => 'Camry']], 'meta' => ['total' => 1]]),
             'carapi.test/api/v1/brands*' => Http::response(['data' => [['id' => 501, 'name' => 'Toyota', 'slug' => 'toyota']], 'meta' => ['total' => 1]]),
         ]);

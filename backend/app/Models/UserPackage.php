@@ -9,6 +9,7 @@ class UserPackage extends Model
 {
     protected $fillable = [
         'user_id',
+        'tbc_payment_id',
         'package_id',
         'price_id',
         'user_car_id',
@@ -21,20 +22,20 @@ class UserPackage extends Model
     ];
 
     protected $hidden = [
-        'rectoken'
+        'rectoken',
     ];
 
-    public function user() : BelongsTo
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function package() : BelongsTo
+    public function package(): BelongsTo
     {
         return $this->belongsTo(Package::class, 'package_id');
     }
 
-    public function car() : BelongsTo
+    public function car(): BelongsTo
     {
         return $this->belongsTo(UserCar::class, 'user_car_id');
     }

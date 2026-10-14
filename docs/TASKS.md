@@ -213,3 +213,9 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 ## 2026-10-14 — QA fixes on #22
 - [x] Model resolution checks brand: local model must belong to brand_id; offline CarAPI fallback only reuses a mapping under the same external brand.
 - [x] Parallel first-time add of the same CarAPI model: unique (source, external_*_id) + lookup/insert with UniqueConstraintViolationException retry → no 500, one row.
+
+## 2026-10-14 — Stage 3, Codex (`codex/stage3-product-fixes`)
+
+- In progress: audited product regressions from `f751751`: car catalog/year contract, owned-car booking and branch/time validation, password session revocation, package order idempotency and retained history, unified appointment statuses, locale validation and npm 11 clean installs.
+- No deploy or main merge. Real payment/SMS delivery remains disabled in tests.
+- Native PostgreSQL concurrency checks are prepared for CI; local PostgreSQL-WASM checks are explicitly separate from a native server result.

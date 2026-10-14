@@ -60,16 +60,24 @@
         "labels": {
             "brand": "Car brand",
             "model": "Car model",
-            "plate": "Number plate"
+            "plate": "Number plate",
+            "year": "Production year"
         },
         "placeholders": {
             "plate": "XX - XXX - XX",
             "chooseBrand": "Choose your car brand",
-            "chooseModel": "Choose your car model"
+            "chooseModel": "Choose your car model",
+            "chooseYear": "Choose a year"
         },
         "errors": {
             "invalidPlate": "Invalid number plate format",
-            "plateExists": "Number plate is already exist"
+            "plateExists": "Number plate is already exist",
+            "brandsUnavailable": "Could not load brands.",
+            "modelsUnavailable": "Could not load models.",
+            "yearsUnavailable": "Could not load years.",
+            "chooseYear": "Choose the production year.",
+            "saveFailed": "Could not add the vehicle. Please try again.",
+            "sessionExpired": "Your session expired. Please sign in again."
         },
         "buttons": {
             "add": "Add",
@@ -83,7 +91,9 @@
         },
         "icons": {
             "arrowAlt": "Arrow"
-        }
+        },
+        "retry": "Try again",
+        "yearManual": "Choose the year manually for this model."
     },
     "Authentication": {
         "logoAlt": "LOGO",
@@ -152,7 +162,8 @@
             "sexSheetTitle": "Choose your sex",
             "placeholders": {
                 "text": "---",
-                "date": "--/--/----"
+                "date": "--/--/----",
+                "sex": "Choose"
             },
             "calendarAlt": "calendar",
             "sexAlt": "select",
@@ -206,8 +217,8 @@
             "model": "Unknown model"
         },
         "errors": {
-            "invalidPlate": "Invalid number plate format",
-            "loadFailed": "Failed to load car data",
+            "invalidPlate": "Enter a valid number plate.",
+            "loadFailed": "Could not load the vehicle.",
             "saveFailed": "Failed to save changes",
             "deleteFailed": "Failed to delete car"
         },
@@ -370,7 +381,8 @@
                 "errors": {
                     "tooShort": "Password must be at least 6 characters",
                     "serverError": "Server error. Please try again.",
-                    "network": "Network error. Please check your connection."
+                    "network": "Network error. Please check your connection.",
+                    "codeMissing": "The code is missing. Verify your phone again."
                 }
             }
         }
@@ -400,7 +412,9 @@
             "finish": "Save",
             "errors": {
                 "tooShort": "Password must be at least 6 characters"
-            }
+            },
+            "placeholder": "New password",
+            "repeat": "Repeat password"
         }
     },
     "WashAppointment": {
@@ -437,7 +451,8 @@
             "service": {
                 "label": "Service",
                 "placeholder": "-",
-                "arrowAlt": "Arrow"
+                "arrowAlt": "Arrow",
+                "empty": "This branch has no services yet"
             },
             "submit": {
                 "button": "Book a service",
@@ -485,7 +500,8 @@
             "Confirm": "Confirmed",
             "Deleted": "Deleted",
             "Rescheduled": "Rescheduled",
-            "Expired": "Expired"
+            "Expired": "Expired",
+            "Completed": "Completed"
         }
     },
     "ManagerScanner": {
@@ -796,7 +812,8 @@
             "unit": "month"
         },
         "renewal": {
-            "label": "Auto-renewal"
+            "label": "Auto-renewal",
+            "hint": "Optional. If on, the card is charged when the term ends"
         },
         "price": {
             "label": "Subscription price",
@@ -854,6 +871,14 @@
             "notEnoughTitle": "Not enough points",
             "notEnoughDesc": "You don't have enough points to get this discount. Buy more points to continue.",
             "buyPoints": "Buy points"
+        },
+        "categories": {
+            "All": "All",
+            "Auto": "Auto",
+            "Health": "Health",
+            "Food": "Food",
+            "Rest": "Rest",
+            "Booking": "Booking"
         }
     },
     "MyReviews": {
@@ -886,7 +911,8 @@
         "cancel_appointment": "Cancel Appointment",
         "cancel_warning": "Are you sure you want to cancel the appointment?",
         "yes": "Yes, Cancel",
-        "no": "No"
+        "no": "No",
+        "cancel": "Cancel"
     },
     "Branches": {
         "title": "Branches",
@@ -1078,6 +1104,32 @@
                 "q": "How long does a wash take?",
                 "a": "It depends on the package. The branch will tell you the exact time on site."
             }
+        }
+    },
+    "Scanner": {
+        "cameraRequired": "Camera access is required",
+        "retry": "Try again"
+    },
+    "NotFound": {
+        "title": "Page not found",
+        "home": "Back to home"
+    },
+    "SmsStatus": {
+        "simulated": {
+            "title": "Test mode",
+            "body": "The code was created in test mode. The message is not sent to the phone."
+        },
+        "accepted": {
+            "title": "Accepted",
+            "body": "The request was accepted. Enter the code when the message arrives. Accepted does not mean delivered."
+        },
+        "failed": {
+            "title": "Not sent",
+            "body": "The message was not sent. Try again in a moment."
+        },
+        "unknown": {
+            "title": "Result unknown",
+            "body": "The send result could not be confirmed. If the code arrives, use it. It is not sent again automatically."
         }
     }
 }

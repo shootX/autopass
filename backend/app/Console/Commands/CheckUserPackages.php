@@ -3,65 +3,38 @@
 namespace App\Console\Commands;
 
 use App\Models\UserPackage;
-use Carbon\Carbon;
-use DragonCode\Support\Facades\Helpers\Str;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 
 class CheckUserPackages extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
     protected $signature = 'user-packages:check';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Command description';
+    protected $description = 'Notify once about expired packages while preserving purchase and wash history';
 
-    /**
-     * Execute the console command.
-     */
-    public function handle()
+    public function handle(): int
     {
-        $userPackages = UserPackage::whereDate('end_date', '<=', Carbon::now())
-            ->orWhereColumn('used_washes', '>=', 'number_of_washes')
-            ->get();
-
-        foreach ($userPackages as $userPackage) {
-
-            if($userPackage->rectoken)
-            {
-                if(!$userPackage->price_id)
-                {
-                    $userPackage->delete();
-                } else {
-                    //Попытка продлить
+        UserPackage::query()->whereNull('expiration_notified_at')
+            ->where(fn ($query) => $query->where('end_date', '<=', now())->orWhereColumn('used_washes', '>=', 'number_of_washes'))
+            ->chunkById(100, function ($packages) {
+                foreach ($packages as $package) {
+                    DB::transaction(function () use ($package) {
+                        $locked = UserPackage::query()->lockForUpdate()->find($package->id);
+                        if (! $locked || $locked->expiration_notified_at !== null) {
+                            return;
+                        }
+                        $locked->expiration_notified_at = now();
+                        $locked->save();
+                        $locked->user?->sendPush(
+                            ['en' => 'Package expired', 'ru' => 'Пакет закончился', 'ka' => 'პაკეტი დასრულებულია'],
+                            ['en' => 'Your package has expired. You can purchase a new package.',
+                                'ru' => 'Срок пакета истёк. Вы можете приобрести новый пакет.',
+                                'ka' => 'პაკეტის ვადა ამოიწურა. შეგიძლიათ შეიძინოთ ახალი პაკეტი.']
+                        );
+                    });
                 }
+            });
 
-                $userPackage->qr_code = Str::random(16);
-                $userPackage->update();
-
-            } else {
-
-                $userPackage->user->sendPush([
-                    'en' => 'Package expired',
-                    'ru' => 'Пакет закончился',
-                    'ka' => 'პაკეტი დასრულებულია',
-                ], [
-                    'en' => 'Your package has expired. Renew your subscription to continue using our services!',
-                    'ru' => 'Срок действия вашего пакета истёк. Продлите подписку, чтобы снова пользоваться услугами!',
-                    'ka' => 'თქვენი პაკეტი ვადაგასულია. განაახლეთ თქვენი გამოწერა, რათა კვლავ ისარგებლოთ მომსახურებით!'
-                ]);
-
-                $userPackage->delete();
-            }
-
-        }
-        return 0;
+        return self::SUCCESS;
     }
 }

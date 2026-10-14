@@ -1,3 +1,4 @@
+import { appointmentStatus, type AppointmentStatus } from "@/lib/appointmentStatus";
 import { useState } from 'react';
 import {
   addMonths,
@@ -18,7 +19,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import Header from '@/components/Header';
 import PageSkeleton from '@/components/Skeletons/PageSkeleton';
 
-type Status = 'Confirm' | 'Rescheduled' | 'Expired' | 'Deleted' | 'New';
+type Status = AppointmentStatus;
 const dayNames = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 
 export default function ManagerCalendarGrid() {
@@ -42,28 +43,13 @@ export default function ManagerCalendarGrid() {
     handleConfirm,
   } = managerActions;
 
-  function mapApprovedToStatus(code: number): Status {
-    switch (code) {
-      case 0:
-        return 'New';
-      case 1:
-        return 'Confirm';
-      case 2:
-        return 'Deleted';
-      case 3:
-        return 'Rescheduled';
-      case 4:
-        return 'Expired';
-      default:
-        return 'New';
-    }
-  }
+
 
   const orders = appointments.map((a) => {
     const parsedDate = new Date(`${a.date}T${a.time}`);
     return {
       id: a.id,
-      status: mapApprovedToStatus(a.approved),
+      status: appointmentStatus(a.approved),
       date: `${a.date} · ${a.time.slice(0, 5)}`,
       parsedDate,
       type: a.services.map((s) => s.name).join(', '),

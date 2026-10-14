@@ -52,7 +52,7 @@ export default function ReschudelingOrder() {
     const formattedTime = pickedTime;
   
     try {
-      await updateAppointmentStatus(orderId, 3, formattedDate, formattedTime);
+      await updateAppointmentStatus(orderId, 5, formattedDate, formattedTime);
       navigate("/"); 
       refetch();
       window.location.reload();

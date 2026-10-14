@@ -94,6 +94,7 @@ Route::middleware(['auth:api', CorsMiddleware::class, EnsureApiSession::class])-
     Route::prefix('/mycars')->group(function () {
         Route::get('/', [CarsController::class, 'mycars']);
         Route::post('/add', [CarsController::class, 'addMyCar']);
+        Route::get('/{carid}', [CarsController::class, 'showMyCar']);
         Route::post('/{carid}/edit', [CarsController::class, 'editMyCar']);
         Route::delete('/{carid}/remove', [CarsController::class, 'removeMyCar']);
     });

@@ -42,8 +42,8 @@ class WashReportQuery
             $query->whereDate('created_at', '<=', $to);
         }
 
-        if (self::text($filters, 'approved') !== null && in_array((string) $filters['approved'], ['0', '1'], true)) {
-            $query->where('approved', $filters['approved'] === '1');
+        if (self::text($filters, 'approved') !== null && in_array((string) $filters['approved'], ['0', '1', '2', '3', '4', '5'], true)) {
+            $query->where('approved', (int) $filters['approved']);
         }
 
         if ($washId = self::int($filters, 'car_wash_id')) {
@@ -166,6 +166,8 @@ class WashReportQuery
         return match ((string) $approved) {
             '2' => __('admin.cancelled'),
             '3' => __('admin.completed'),
+            '4' => __('admin.expired'),
+            '5' => __('admin.rescheduled'),
             default => (string) $approved,
         };
     }

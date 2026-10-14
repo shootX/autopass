@@ -3,20 +3,29 @@ import { createSlice,  type PayloadAction } from "@reduxjs/toolkit";
 export type Brand = {
   id: number;
   name: string;
+  source?: "local" | "carapi";
 };
 
 export type Model = {
   id: number;
   name: string;
+  source?: "local" | "carapi";
 };
  
  export type Car = {
   id: number;
   plate: string;
+  year?: number | null;
   model: {
+    id?: number;
+    source?: "local" | "carapi";
+    external_model_id?: number | null;
     name: string;
     type: string;
     brand: {
+      id?: number;
+      source?: "local" | "carapi";
+      external_brand_id?: number | null;
       name: string;
     };
   };
@@ -68,6 +77,7 @@ export const carSlice = createSlice({
       if (index !== -1) {
         const current = state.cars[index];
         state.cars[index] = {
+          ...current,
           id,
           plate,
           model: {

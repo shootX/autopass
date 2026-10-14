@@ -39,7 +39,7 @@ class DashboardController extends Controller
             'brands' => CarBrand::query()->count(),
             'appointments' => Appointment::query()->count(),
             'appointments_today' => Appointment::query()->whereDate('date', $today)->count(),
-            'appointments_pending' => Appointment::query()->where('approved', false)->count(),
+            'appointments_pending' => Appointment::query()->where('approved', 0)->count(),
             'packages_active' => UserPackage::query()->whereDate('end_date', '>=', $today)->count(),
             'packages_total' => UserPackage::query()->count(),
             'reviews' => Review::query()->count(),

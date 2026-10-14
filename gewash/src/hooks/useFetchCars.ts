@@ -4,6 +4,7 @@ import { customFetch } from "@/utils/customFetch";
 type EnrichedCar = {
   id: number;
   plate: string;
+  year: number | null;
   type: string;
   model: string;
   brand: string;
@@ -54,6 +55,7 @@ function loadCars(): Promise<EnrichedCar[]> {
         return {
           id: Number.isFinite(id) ? id : 0,
           plate: readString(car?.plate, ""),
+          year: typeof car?.year === "number" ? car.year : null,
           type: readString(model?.type, "Unknown"),
           model: readString(model?.name, "Unknown"),
           brand: readString(brand?.name, "Unknown"),

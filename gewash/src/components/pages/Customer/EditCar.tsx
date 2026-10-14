@@ -7,16 +7,20 @@ import closeIcon from '@/assets/icons/close-icon.svg';
 import { useTranslation } from '@/hooks/useTranslation';
 import Header from '@/components/Header';
 import { apiErrorMessage, type ApiBody } from '@/lib/apiResult';
+import { readCar, formatPlate } from '@/lib/carResult';
 
 export default function EditCar() {
   const navigate = useNavigate();
   const location = useLocation();
   const { carid } = useParams();
 
-  const [carToEdit, setCarToEdit] = useState(location.state?.car || null);
+  const routeState = location.state as { car?: unknown } | null;
+  const [carToEdit, setCarToEdit] = useState(() => readCar(routeState?.car));
   const [brand, setBrandLocal] = useState('');
   const [model, setModelLocal] = useState('');
   const [numberPlate, setNumberPlate] = useState('');
+  const [year, setYear] = useState('');
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [deletePopupShow, setDeletePopupShow] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
@@ -25,7 +29,7 @@ export default function EditCar() {
   const carId = carToEdit?.id || carid;
 
   useEffect(() => {
-    if (!carToEdit && carId) {
+    if ((!carToEdit || !carToEdit.model.id) && carId) {
       const token = localStorage.getItem('access_token');
       customFetch(`${import.meta.env.VITE_API_URL}/mycars/${carId}`, {
         headers: {
@@ -34,20 +38,19 @@ export default function EditCar() {
       })
         .then(async (res) => {
           if (!res.ok) throw new Error('Failed to fetch car');
-          const data = await res.json();
+          const data = readCar(await res.json());
+          if (!data) throw new Error('Invalid car data');
           setCarToEdit(data);
-          setBrandLocal(data.brand || '');
-          setModelLocal(data.model || '');
-          setNumberPlate(data.plate || '');
         })
         .catch((err) => {
           console.error(err);
-          setError('Failed to load car data');
+          setError('loadFailed');
         });
     } else if (carToEdit) {
-      setBrandLocal(carToEdit.brand || '');
-      setModelLocal(carToEdit.model || '');
-      setNumberPlate(carToEdit.plate || '');
+      setBrandLocal(carToEdit.model.brand.name);
+      setModelLocal(carToEdit.model.name);
+      setNumberPlate(formatPlate(carToEdit.plate));
+      setYear(carToEdit.year == null ? '' : String(carToEdit.year));
     }
   }, [carToEdit, carId]);
 
@@ -66,16 +69,17 @@ export default function EditCar() {
 
   const handleSubmit = async () => {
     if (!isValidPlate) {
-      setError('Invalid number plate format');
+      setError(t('EditCar.errors.invalidPlate'));
       return;
     }
 
+    if (saving || !carToEdit) return;
+    setSaving(true);
     const token = localStorage.getItem('access_token');
 
     try {
       const sendPlate = numberPlate.replace(/[^a-zA-Z0-9]/g, '');
 
-      console.log(brand, model, sendPlate);
       const response = await customFetch(`${import.meta.env.VITE_API_URL}/mycars/${carId}/edit`, {
         method: 'POST',
         headers: {
@@ -84,9 +88,8 @@ export default function EditCar() {
           Accept: 'application/json',
         },
         body: JSON.stringify({
-          // brand,
-          // model,
           plate: sendPlate,
+          year: year ? Number(year) : null,
         }),
       });
       let resData: ApiBody | null = null;
@@ -106,7 +109,9 @@ export default function EditCar() {
       navigate('/customer-my-data');
     } catch (err) {
       console.error(err);
-      setError('Failed to save changes');
+      setError(err instanceof Error ? err.message : t('EditCar.errors.saveFailed'));
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -142,7 +147,7 @@ export default function EditCar() {
       }, 300);
     } catch (err) {
       console.error(err);
-      setError('Failed to delete car');
+      setError(t('EditCar.errors.deleteFailed'));
       setIsClosing(false);
     }
   };
@@ -154,7 +159,7 @@ export default function EditCar() {
         title={t('EditCar.header.title')}
         titleAs="h3"
         left={<img src={leftArrow} alt="Back" onClick={() => navigate(-1)} />}
-        right={<img src={closeIcon} alt="Close" />}
+        right={<img src={closeIcon} alt={t('EditCar.header.closeAlt')} onClick={() => navigate('/customer-my-data')} />}
       />
 
       <div className="edit-car-content">
@@ -176,6 +181,12 @@ export default function EditCar() {
           </div>
         </div>
 
+        <div className="input-block">
+          <label htmlFor="edit-car-year">{t('AddCar.labels.year')}</label>
+          <input id="edit-car-year" type="number" className="custom-input" min="1950" max={new Date().getFullYear() + 1}
+            value={year} onChange={event => setYear(event.target.value)} />
+        </div>
+
         <div className="number-plate-input">
           <label>{t('EditCar.labels.plate')}</label>
           <div className="input-with-prefix">
@@ -187,13 +198,13 @@ export default function EditCar() {
               maxLength={14}
             />
           </div>
-          {error && <span className="plate-error">{error}</span>}
+          {error && <span className="plate-error">{error === 'loadFailed' ? t('EditCar.errors.loadFailed') : error}</span>}
         </div>
 
         <button
           className={`add-car-btn ${isFormReady ? 'active' : ''}`}
           onClick={handleSubmit}
-          disabled={!isFormReady}
+          disabled={!isFormReady || saving}
         >
           {t('EditCar.buttons.save')}
         </button>

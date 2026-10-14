@@ -242,3 +242,9 @@ voucher-checker-ში `useVoucher`/`usePath` სახელები შეი
 ## 2026-10-14 — Revocation + audit helpers
 - App\Support\SessionRevoker::{user,partner,corporate} is the one way to kill live credentials (version bump + DB sessions for users).
 - App\Support\AdminAudit::record() writes admin_audit_logs; old/new values are masked (email first char + domain, phone last 2 digits).
+
+## 2026-10-14 — Stage 3, Codex (`codex/stage3-product-fixes`)
+
+- In progress: audited product regressions from `f751751`: car catalog/year contract, owned-car booking and branch/time validation, password session revocation, package order idempotency and retained history, unified appointment statuses, locale validation and npm 11 clean installs.
+- No deploy or main merge. Real payment/SMS delivery remains disabled in tests.
+- Native PostgreSQL concurrency checks are prepared for CI; local PostgreSQL-WASM checks are explicitly separate from a native server result.
