@@ -105,7 +105,8 @@
             "phoneNotFound": "Phone number doesn't exist",
             "passwordIncorrect": "Password is incorrect",
             "phoneRequired": "Phone number is required",
-            "passwordRequired": "Password is required"
+            "passwordRequired": "Password is required",
+            "connectionFailed": "Could not connect. Please try again."
         },
         "labels": {
             "phone": "Phone number",

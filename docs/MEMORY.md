@@ -256,3 +256,12 @@ voucher-checker-ში `useVoucher`/`usePath` სახელები შეი
 - Re-verified on the box with Node 24.19.0 / npm 11.9.0: backend SQLite 131/131 (695 assertions); gewash npm ci, test 92/92, build:check, lint, i18n:check (373 keys, 0 missing), i18n:test all passed; voucher-checker npm ci, test 9/9, build, lint passed.
 - Native PostgreSQL 17 (local, isolated `autopass_test` DB, box-only) with `CACHE_STORE=database vendor/bin/pest -c phpunit.pgsql.xml`: 22/22 (82 assertions), 8 consecutive runs, both race tests passed. PostgreSQL 16 CI job still not run; production DB not touched.
 - Still open: browser visual/E2E, live CarAPI, SMTP/SMS/payment sandbox delivery, migration on a copy of the target DB. No merge, no deploy.
+
+## 2026-10-14 — Controlled test launch readiness (Codex)
+
+- PR #27 (`3718736`) contains all Stage 3 code. GitHub Product regression checks completed successfully, including native PostgreSQL 16/database-cache checks; the earlier WASM uncertainty is not the current native CI result.
+- Additional local hardening: authentication responses/tokens are no longer logged; a translated connection-failure alert replaces a silent login catch; the service worker caches public assets only, respects private/no-store responses, and removes its old application cache without deleting unrelated caches. Document navigation and authenticated routes pass through the network. Uncached page navigation will require connectivity.
+- Example deployment endpoints now point to wash.socialsave.cc and car.socialsave.cc instead of a temporary tunnel or empty values; authentication bypass remains false.
+- Verification: gewash 103/103 (11 new regressions), build:check/lint/i18n checks passed; 374 referenced locale keys, 0 missing in six dictionaries. Stage 3 backend 131/131, voucher 9/9 and PostgreSQL 22/22 remain prior CI evidence; backend business code and voucher application code were not changed in this follow-up.
+- Browser observed the current landing, customer login, recovery, registration, public privacy text and admin login. No credentials were submitted; private panels and full new-version workflows were not tested. Landing help redirects anonymous visitors to login; privacy is English-only. These are recorded polish tasks for the closed test.
+- No merge, target server change or deployment. Target database copy, server credentials/configuration, actual CarAPI key and mail delivery are unavailable here. See docs/TEST_LAUNCH_READINESS.md for the exact controlled launch gates. Follow-up patch must be uploaded before deploying.

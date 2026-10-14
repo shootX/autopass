@@ -229,3 +229,12 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 - [ ] Browser visual/E2E check (QA, Playwright).
 - [ ] Live CarAPI fields, SMTP/SMS/payment sandbox delivery.
 - [ ] Migration validated on a copy of the target DB before deploy.
+
+## 2026-10-14 — Controlled test launch readiness (Codex)
+
+- PR #27 (`3718736`) contains all Stage 3 code. GitHub Product regression checks completed successfully, including native PostgreSQL 16/database-cache checks; the earlier WASM uncertainty is not the current native CI result.
+- Additional local hardening: authentication responses/tokens are no longer logged; a translated connection-failure alert replaces a silent login catch; the service worker caches public assets only, respects private/no-store responses, and removes its old application cache without deleting unrelated caches. Document navigation and authenticated routes pass through the network. Uncached page navigation will require connectivity.
+- Example deployment endpoints now point to wash.socialsave.cc and car.socialsave.cc instead of a temporary tunnel or empty values; authentication bypass remains false.
+- Verification: gewash 103/103 (11 new regressions), build:check/lint/i18n checks passed; 374 referenced locale keys, 0 missing in six dictionaries. Stage 3 backend 131/131, voucher 9/9 and PostgreSQL 22/22 remain prior CI evidence; backend business code and voucher application code were not changed in this follow-up.
+- Browser observed the current landing, customer login, recovery, registration, public privacy text and admin login. No credentials were submitted; private panels and full new-version workflows were not tested. Landing help redirects anonymous visitors to login; privacy is English-only. These are recorded polish tasks for the closed test.
+- No merge, target server change or deployment. Target database copy, server credentials/configuration, actual CarAPI key and mail delivery are unavailable here. See docs/TEST_LAUNCH_READINESS.md for the exact controlled launch gates. Follow-up patch must be uploaded before deploying.

@@ -49,7 +49,6 @@ export default function Authentication() {
 
     if (Object.keys(newError).length > 0) {
       setError(newError);
-      console.warn("Validation failed:", newError);
       return;
     }
 
@@ -66,7 +65,6 @@ export default function Authentication() {
       });
 
       const data = await res.json();
-      console.log("Response:", data);
 
       if (res.ok && data.access_token) {
         saveAccessToken(data.access_token, typeof data.expires_in === "number" ? data.expires_in : undefined);
@@ -84,8 +82,8 @@ export default function Authentication() {
           setError({ password: "incorrect" });
         }
       }
-    } catch (err) {
-      console.error("Network error:", err);
+    } catch {
+      setError({ password: t("Authentication.errors.connectionFailed") });
     } finally {
       setIsLoading(false);
     }
@@ -145,7 +143,7 @@ export default function Authentication() {
               {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
             </button>
           </div>
-          {passwordError && <p className="ap-error" style={{ marginTop: 8 }}>{passwordError}</p>}
+          {passwordError && <p role="alert" className="ap-error" style={{ marginTop: 8 }}>{passwordError}</p>}
         </div>
 
         <div style={{ textAlign: "right", marginTop: 12 }}>

@@ -2,8 +2,7 @@
 
 Base: `f7517518915c916a8014bfe8c2e1687f18256ec0` (main inspected on 2026-10-14).
 Local branch: `codex/stage3-product-fixes`.
-Publication: blocked by GitHub integration HTTP 403, `Resource not accessible by integration`.
-No remote branch/PR, main merge or deployment was performed.
+Publication update: Stage 3 is uploaded in Draft PR #27 (`3718736`); no main merge or deployment. The original Codex upload was blocked by integration HTTP 403, then the user's bot published the patch. Current launch follow-up: see `docs/TEST_LAUNCH_READINESS.md`.
 
 ## Fixed behavior
 
@@ -32,8 +31,8 @@ Twenty new backend regressions and seven new frontend regressions are included. 
 
 ## Required follow-up verification
 
-- **Native PostgreSQL concurrency:** a PostgreSQL 16 CI job with database-backed cache is included but has not run. PostgreSQL-WASM ran the 20 feature regressions successfully and one file-cache run passed all 22 checks. Later parallel runs were unstable: database-cache checkout produced a PDO error, and the latest file-cache run reported a booking race failure before completing. These results do not certify native PostgreSQL locking or production concurrency. Run `CACHE_STORE=database vendor/bin/pest -c phpunit.pgsql.xml` against an isolated database ending in `_test`; inspect both race tests before release. Do not replace these checks with the successful SQLite suite.
-- **Visual and browser E2E:** not executed. Chromium installation failed because downloaded archives were truncated. React tests use a DOM test environment and mocked API responses; they do not prove every panel, pixel, mobile layout or browser flow is correct.
+- **Native PostgreSQL concurrency:** GitHub Actions run 38543496588 completed successfully for native PostgreSQL 16/database-backed cache, including both race tests. The user's bot also reports PostgreSQL 17, 22/22 in eight local runs; those local logs were not independently inspected here. Earlier Codex PostgreSQL-WASM runs were unstable and are historical experimental evidence, not the current native CI result. Migration of a copy of the hosted target database is still pending.
+- **Visual and browser E2E:** full role-based flows not executed. Later cloud-browser checks confirmed public entry pages and admin login render; see the launch report for their scope. Chromium installation failed because downloaded archives were truncated. React tests use a DOM test environment and mocked API responses; they do not prove every panel, pixel, mobile layout or browser flow is correct.
 - **Car catalog:** documented generations endpoint and supported year aliases were tested with fake responses. Authenticated live response fields and coverage must be verified with an actual CarAPI key. The manual year range is a fallback, not verified catalog data.
 - **External delivery:** actual SMTP one-time-password delivery, SMSOffice requests, payment checkout/callback and push delivery need sandbox credentials/configuration. Existing test payment was retained as requested; SMS remains mocked.
 - **Booking duration/capacity:** the current data model has no service-duration or bay-capacity rule. Validation prevents duplicate exact timestamps; it does not infer overlapping durations or introduce an unapproved capacity policy.

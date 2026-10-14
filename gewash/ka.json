@@ -105,7 +105,8 @@
             "phoneNotFound": "ნომერი ვერ მოიძებნა",
             "passwordIncorrect": "არასწორი პაროლი",
             "phoneRequired": "შეიყვანეთ ტელეფონის ნომერი",
-            "passwordRequired": "შეიყვანეთ პაროლი"
+            "passwordRequired": "შეიყვანეთ პაროლი",
+            "connectionFailed": "კავშირი ვერ დამყარდა. სცადეთ ხელახლა."
         },
         "labels": {
             "phone": "ტელეფონის ნომერი",

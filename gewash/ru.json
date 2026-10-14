@@ -105,7 +105,8 @@
             "phoneNotFound": "Номер не найден",
             "passwordIncorrect": "Неверный пароль",
             "phoneRequired": "Введите номер телефона",
-            "passwordRequired": "Введите пароль"
+            "passwordRequired": "Введите пароль",
+            "connectionFailed": "Не удалось подключиться. Попробуйте снова."
         },
         "labels": {
             "phone": "Номер телефона",
