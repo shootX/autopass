@@ -1077,5 +1077,21 @@
         "remove_button": "Delete account",
         "sure_delete": "This will permanently delete your account.",
         "sure_logout": "Do you want to log out?"
+    },
+    "CarBrandDropDown": {
+        "title": "Choose car brand",
+        "search": "Search...",
+        "select": "Select",
+        "loading": "Loading brands...",
+        "empty": "No brands found",
+        "error": "Could not load brands"
+    },
+    "CarModelDropDown": {
+        "title": "Choose model of {name}",
+        "search": "Search...",
+        "select": "Select",
+        "loading": "Loading models...",
+        "empty": "No models available for {name}",
+        "error": "Could not load models"
     }
 }

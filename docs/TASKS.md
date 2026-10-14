@@ -190,3 +190,8 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 ## 2026-10-14 — QA fixes on #22
 - [x] Model resolution checks brand: local model must belong to brand_id; offline CarAPI fallback only reuses a mapping under the same external brand.
 - [x] Parallel first-time add of the same CarAPI model: unique (source, external_*_id) + lookup/insert with UniqueConstraintViolationException retry → no 500, one row.
+
+## 2026-10-14 — public lang, picker i18n, merge #22
+- [x] `backend/public/lang/{en,ka,ru}.json` იღებს frontend-ის ფოთლებს (29 აკლია გასაღები და განსხვავებული ტექსტი). `i18n:check` ამ ასლსაც ამოწმებს: აკლია, ცარიელი ან frontend-ისგან განსხვავებული მნიშვნელობა → exit 1.
+- [x] მარკის/მოდელის ფურცლის სათაური, ძებნა, არჩევა, ცარიელი სია, ჩატვირთვა და შეცდომა არის `t()` (`ka` / `en` / `ru`), მათ შორის public lang-ში.
+- [x] PR #24-ში შერწყმულია `feat/stage2-voucher-sms-carmodels` (`039c942`), merge commit, force-push-ის გარეშე. `docs/TASKS.md`-ში დარჩა ორივე მხარის ჩანაწერი.

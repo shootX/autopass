@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { collectTranslationKeys, missingLocaleKeys } from "../../scripts/check-i18n.mjs";
+import { collectTranslationKeys, missingLocaleKeys, publicLangProblems } from "../../scripts/check-i18n.mjs";
 
 const gewashRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -39,6 +39,7 @@ describe("i18n coverage", () => {
     }
     expect(missing).toEqual([]);
     expect(missingLocaleKeys(gewashRoot).missing).toEqual([]);
+    expect(publicLangProblems(gewashRoot)).toEqual([]);
   });
 
   it("exits non-zero when a locale key is missing", () => {
@@ -53,5 +54,28 @@ describe("i18n coverage", () => {
     expect(result.stdout).toContain("en:Missing.Key");
     expect(result.stdout).toContain("ka:Missing.Key");
     expect(result.stdout).toContain("ru:Missing.Key");
+    expect(result.stdout).toContain("en:backend-missing-file");
+  });
+
+  it("exits non-zero when backend public lang is missing or drifted", () => {
+    const parent = fs.mkdtempSync(path.join(os.tmpdir(), "i18n-public-"));
+    const root = path.join(parent, "gewash");
+    const back = path.join(parent, "backend", "public", "lang");
+    fs.mkdirSync(path.join(root, "src"));
+    fs.mkdirSync(back);
+    fs.writeFileSync(path.join(root, "src", "screen.tsx"), `export const label = t("Hello.Key");\n`);
+    const front = { Hello: { Key: "Hello" } };
+    const drifted = { Hello: { Key: "Other" } };
+    for (const locale of ["en", "ka", "ru"]) {
+      fs.writeFileSync(path.join(root, `${locale}.json`), `${JSON.stringify(front)}\n`);
+      fs.writeFileSync(path.join(back, `${locale}.json`), `${JSON.stringify(locale === "en" ? drifted : {})}\n`);
+    }
+    const result = spawnSync(process.execPath, [path.join(gewashRoot, "scripts/check-i18n.mjs"), root], {
+      encoding: "utf8",
+    });
+    expect(result.status).toBe(1);
+    expect(result.stdout).toContain("en:drift:Hello.Key");
+    expect(result.stdout).toContain("ka:missing:Hello.Key");
+    expect(result.stdout).toContain("ru:missing:Hello.Key");
   });
 });

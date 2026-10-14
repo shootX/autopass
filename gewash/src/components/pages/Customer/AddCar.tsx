@@ -9,8 +9,8 @@ import { customFetch } from "@/utils/customFetch";
 import { invalidateCarsCache } from "@/hooks/useFetchCars";
 import { useCarBrands } from "@/hooks/useCarBrands";
 import { useCarYears } from "@/hooks/useCarModels";
-import { myCarAddBody, parseCatalogList, readCreatedCarId } from "@/lib/carCatalog";
-import type { Brand, Model, Car } from "@/store/carSlice";
+import { myCarAddBody, readCreatedCarId } from "@/lib/carCatalog";
+import type { Brand, Car } from "@/store/carSlice";
 import { useTranslation } from "@/hooks/useTranslation";
 import { leftArrowUrl, closeIconUrl } from "@/assets/staticUrls";
 import Header from "@/components/Header";
@@ -30,9 +30,8 @@ export default function AddCar({ showHeader }: { showHeader?: boolean }) {
   const [addedCar, setAddedCar] = useState<Car | null>(null);
   const location = useLocation();
   const shouldShowHeader = showHeader !== false && location.state?.fromRegistration !== true;
-  const [models, setModels] = useState<Model[]>([]);
   const [year, setYear] = useState<number | null>(null);
-  const { brands, loading } = useCarBrands();
+  const { brands, loading, error: brandsError } = useCarBrands();
   const { years } = useCarYears();
   const normalizedPlate = numberPlate.replace(/[\s-]/g, "");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -52,30 +51,11 @@ export default function AddCar({ showHeader }: { showHeader?: boolean }) {
   };
   
 
-  const handleBrandSelect = async (selected: Brand) => {
+  const handleBrandSelect = (selected: Brand) => {
     dispatch(setBrand(selected));
     setBrandDropdownOpen(false);
-
-    const token = localStorage.getItem("access_token");
-    const res = await customFetch(
-      `${import.meta.env.VITE_API_URL}/cars/brands/${selected.id}/models`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    if (res.ok) {
-      const data: unknown = await res.json();
-      const body = data && typeof data === "object" ? (data as { models?: unknown }) : {};
-      setModels(parseCatalogList(body.models).filter((model) => model.source === selected.source));
-      setError("");
-      setModelDropdownOpen(true);
-    } else {
-      setError("load-failed");
-    }
+    setError("");
+    setModelDropdownOpen(true);
   };
 
   const isValidPlate = /^([A-Z]{2}) - ([0-9]{3}) - ([A-Z]{2})$/.test(
@@ -304,13 +284,13 @@ export default function AddCar({ showHeader }: { showHeader?: boolean }) {
         applyBrand={handleBrandSelect}
         brands={brands}
         loading={loading}
+        error={brandsError}
       />
 
       <CarModelDropDown
         open={modelDropdownOpen}
         setOpen={setModelDropdownOpen}
         selectedBrand={brand}
-        models={models}
         applyModel={(m) => dispatch(setModel(m))}
       />
     </div>

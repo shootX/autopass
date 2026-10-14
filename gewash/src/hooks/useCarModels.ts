@@ -20,15 +20,24 @@ export function useCarModels(brand: CatalogItem | null) {
   const brandSource = brand?.source ?? null;
 
   useEffect(() => {
-    if (brandId === null || brandSource === null) return;
+    if (brandId === null || brandSource === null) {
+      setModels([]);
+      setError(null);
+      setLoading(false);
+      return;
+    }
 
     const token = localStorage.getItem("access_token");
     if (!token) {
-      setError(new Error("No access token"));
+      setModels([]);
+      setError(new Error("models"));
+      setLoading(false);
       return;
     }
 
     let cancelled = false;
+    setModels([]);
+    setError(null);
     setLoading(true);
     customFetch(`${API_URL}/cars/brands/${brandId}/models`, { headers: authHeaders() })
       .then((res) => {

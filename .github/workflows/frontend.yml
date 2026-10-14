@@ -63,4 +63,4 @@ jobs:
       - working-directory: gewash/voucher-checker
         run: npm test
       - working-directory: gewash/voucher-checker
-        run: npm run build
+        run: npm run build:check

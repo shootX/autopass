@@ -60,16 +60,19 @@
         "labels": {
             "brand": "Car brand",
             "model": "Car model",
-            "plate": "Number plate"
+            "plate": "Number plate",
+            "year": "Year"
         },
         "placeholders": {
             "plate": "XX - XXX - XX",
             "chooseBrand": "Choose your car brand",
-            "chooseModel": "Choose your car model"
+            "chooseModel": "Choose your car model",
+            "chooseYear": "Choose year"
         },
         "errors": {
             "invalidPlate": "Invalid number plate format",
-            "plateExists": "Number plate is already exist"
+            "plateExists": "Number plate is already exist",
+            "loadFailed": "Could not load car data"
         },
         "buttons": {
             "add": "Add",
@@ -102,7 +105,7 @@
             "password": "Password"
         },
         "placeholders": {
-            "phone": "599 12 34 56",
+            "phone": "500500555",
             "password": "Input your password"
         },
         "prefix": "+995",
@@ -152,7 +155,8 @@
             "sexSheetTitle": "Choose your sex",
             "placeholders": {
                 "text": "---",
-                "date": "--/--/----"
+                "date": "--/--/----",
+                "sex": "Choose"
             },
             "calendarAlt": "calendar",
             "sexAlt": "select",
@@ -196,7 +200,8 @@
         "labels": {
             "brand": "Car brand",
             "model": "Car model",
-            "plate": "Number plate"
+            "plate": "Number plate",
+            "year": "Year"
         },
         "placeholders": {
             "plate": "XX - XXX - XX"
@@ -234,7 +239,7 @@
             "placeholder": "simplemail@simple.domain",
             "error": "Email address is not valid",
             "errors": {
-                "sendFailed": "Failed to send verification code",
+                "sendFailed": "Failed to send the verification code",
                 "somethingWentWrong": "Something went wrong"
             },
             "button": {
@@ -242,14 +247,14 @@
             }
         },
         "verification": {
-            "title": "Verify Email",
-            "inputTitle": "Enter verification code",
+            "title": "Verify email",
+            "inputTitle": "Enter the verification code",
             "label": "Verification code sent to your email",
             "placeholder": "123456",
-            "codeRequired": "Please enter verification code",
+            "codeRequired": "Enter the verification code",
             "invalidCode": "Invalid verification code",
             "failed": "Verification failed",
-            "successAlert": "🎉 Email successfully verified and updated!",
+            "successAlert": "Email verified and updated",
             "button": {
                 "verify": "Verify"
             }
@@ -298,7 +303,7 @@
             "title": "Enter a new phone number",
             "label": "Phone number",
             "prefix": "+995",
-            "placeholder": "599 12 34 56",
+            "placeholder": "XXX XXX XXX",
             "error": "Phone number doesn't exist",
             "invalidAlert": "❗ Phone number must be 9 digits",
             "button": {
@@ -330,8 +335,8 @@
     "Registration": {
         "logoAlt": "LOGO",
         "stage": {
-            "policy": "By signing up, you agree the ",
-            "policyLink": "privacy policy",
+            "policy": "I agree",
+            "policyLink": "the privacy policy",
             "register": {
                 "title": "Create account",
                 "subtitle": "Please enter your phone number to register",
@@ -342,7 +347,7 @@
                     "duplicate": "Phone number already exists",
                     "invalidFormat": "Phone number is incorrect",
                     "empty": "Phone number is required",
-                    "privacy": "You must agree to the privacy policy"
+                    "privacy": "Accept the privacy policy to continue"
                 },
                 "navigate": {
                     "text": "Already have an account?",
@@ -370,7 +375,8 @@
                 "errors": {
                     "tooShort": "Password must be at least 6 characters",
                     "serverError": "Server error. Please try again.",
-                    "network": "Network error. Please check your connection."
+                    "network": "Network error. Please check your connection.",
+                    "codeMissing": "The code is missing. Verify your phone again."
                 }
             }
         }
@@ -400,7 +406,9 @@
             "finish": "Save",
             "errors": {
                 "tooShort": "Password must be at least 6 characters"
-            }
+            },
+            "placeholder": "New password",
+            "repeat": "Repeat password"
         }
     },
     "WashAppointment": {
@@ -437,7 +445,8 @@
             "service": {
                 "label": "Service",
                 "placeholder": "-",
-                "arrowAlt": "Arrow"
+                "arrowAlt": "Arrow",
+                "empty": "This branch has no services yet"
             },
             "submit": {
                 "button": "Book a service",
@@ -796,7 +805,8 @@
             "unit": "month"
         },
         "renewal": {
-            "label": "Auto-renewal"
+            "label": "Auto-renewal",
+            "hint": "Optional. If on, the card is charged when the term ends"
         },
         "price": {
             "label": "Subscription price",
@@ -834,7 +844,7 @@
             "daysLeft": "days left",
             "join": "Join the giveaway",
             "empty": "No giveaways yet.",
-            "mineEmpty": "No tickets yet."
+            "mineEmpty": "You have no tickets yet"
         }
     },
     "Discounts": {
@@ -854,39 +864,48 @@
             "notEnoughTitle": "Not enough points",
             "notEnoughDesc": "You don't have enough points to get this discount. Buy more points to continue.",
             "buyPoints": "Buy points"
+        },
+        "categories": {
+            "All": "All",
+            "Auto": "Auto",
+            "Health": "Health",
+            "Food": "Food",
+            "Rest": "Rest",
+            "Booking": "Booking"
         }
     },
     "MyReviews": {
-        "title": "My Reviews",
-        "empty": "No reviews yet."
+        "title": "My reviews",
+        "empty": "No reviews yet"
     },
     "Messages": {
-        "empty": "No messages yet."
+        "empty": "No messages yet"
     },
     "Settings": {
         "theme": "Theme",
         "themeLight": "Light",
         "themeDark": "Dark",
-        "language": "App Language",
+        "language": "Language",
         "account": "Account",
-        "logout": "Log Out",
-        "sure_logout": "Are you sure you want to log out?",
+        "logout": "Log out",
+        "sure_logout": "Do you want to log out?",
         "cancel": "Cancel",
-        "confirmLogout": "Log Out",
-        "deleteAccount": "Delete Account",
+        "confirmLogout": "Log out",
+        "deleteAccount": "Delete account",
         "deleteBtn": "Delete",
         "ChooseLanguage": {
-            "title": "Choose App Language",
-            "save": "Select Language"
+            "title": "Choose language",
+            "save": "Save"
         },
-        "sure_delete": "Are you sure you want to delete your account? This action cannot be undone.",
-        "remove_button": "Yes, Delete"
+        "sure_delete": "This will permanently delete your account.",
+        "remove_button": "Delete account"
     },
     "CustomerCalendar": {
-        "cancel_appointment": "Cancel Appointment",
-        "cancel_warning": "Are you sure you want to cancel the appointment?",
-        "yes": "Yes, Cancel",
-        "no": "No"
+        "cancel_appointment": "Cancel appointment",
+        "cancel_warning": "This appointment will be cancelled. This cannot be undone.",
+        "yes": "Yes",
+        "no": "No",
+        "cancel": "Cancel"
     },
     "Branches": {
         "title": "Branches",
@@ -995,29 +1014,29 @@
     },
     "ManagerCarwashStatistics": {
         "header": {
-            "title": "Carwash statistics"
+            "title": "Statistics"
         },
         "branch": {
             "title": "Branch",
             "open": "Open",
             "closed": "Closed",
-            "time": "Mn - Sn",
+            "time": "Hours",
             "selectPeriod": "Select period"
         },
         "washes": {
             "title": "Washes",
-            "period": "Period:"
+            "period": "For the selected period"
         },
         "packages": {
             "title": "Packages",
-            "distribution": "Distribution by package",
+            "distribution": "Distribution",
             "noData": "No packages data",
             "washesSuffix": "washes",
-            "unlimit": "Unlimit washes"
+            "unlimit": "Unlimited"
         },
         "carTypes": {
-            "title": "Car types",
-            "distribution": "Distribution by car types",
+            "title": "Body types",
+            "distribution": "Distribution",
             "sedan": "Sedan",
             "wagon": "Wagon",
             "coupe": "Coupe",
@@ -1025,9 +1044,9 @@
         },
         "workload": {
             "title": "Workload",
-            "period": "Period:",
-            "avgWashes": "Average number of washes:",
-            "average": "Per Day"
+            "period": "Period",
+            "avgWashes": "Average washes",
+            "average": "per day"
         }
     },
     "ManagerReport": {
@@ -1079,5 +1098,47 @@
                 "a": "It depends on the package. The branch will tell you the exact time on site."
             }
         }
+    },
+    "Scanner": {
+        "cameraRequired": "Camera access is required",
+        "retry": "Try again"
+    },
+    "NotFound": {
+        "title": "Page not found",
+        "home": "Back to home"
+    },
+    "SmsStatus": {
+        "simulated": {
+            "title": "Test mode",
+            "body": "The code was created in test mode. The message is not sent to the phone."
+        },
+        "accepted": {
+            "title": "Accepted",
+            "body": "The request was accepted. Enter the code when the message arrives. Accepted does not mean delivered."
+        },
+        "failed": {
+            "title": "Not sent",
+            "body": "The message was not sent. Try again in a moment."
+        },
+        "unknown": {
+            "title": "Result unknown",
+            "body": "The send result could not be confirmed. If the code arrives, use it. It is not sent again automatically."
+        }
+    },
+    "CarBrandDropDown": {
+        "title": "Choose car brand",
+        "search": "Search...",
+        "select": "Select",
+        "loading": "Loading brands...",
+        "empty": "No brands found",
+        "error": "Could not load brands"
+    },
+    "CarModelDropDown": {
+        "title": "Choose model of {name}",
+        "search": "Search...",
+        "select": "Select",
+        "loading": "Loading models...",
+        "empty": "No models available for {name}",
+        "error": "Could not load models"
     }
 }

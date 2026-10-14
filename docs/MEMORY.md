@@ -227,3 +227,8 @@ voucher-checker-ში `useVoucher`/`usePath` სახელები შეი
 - `gewash/scripts/check-i18n.mjs` checks en, ka, and ru and exits 1 if a `t()` key is missing or blank. The 56 keys that were absent from all three files are filled in.
 - gewash lockfile omitted optional platform packages (`@esbuild/*`, `@rollup/rollup-*`, lightningcss, …). npm 10 `npm ci` ignored that; npm 11 failed with `Missing: … from lock file`. The lockfile now includes them. voucher-checker and backend locks were already complete. Supported engines are Node `^22.12.0 || ^24 || >=26` (vitest 5) and npm `^10 || ^11`.
 - Add car posts `source` copied from the picked model, plus `brand_id` and `model_id` from that same source, and optional `year` from `GET /api/cars/years`. A saved car's local `model.id` is not sent back as a CarAPI id (`catalogWriteIds` uses `external_model_id` when `source` is `carapi`). Edit updates plate and year only.
+
+## 2026-10-14 — public lang and picker copy
+- The app loads `GET /api/lang/{lang}` from `backend/public/lang`, not from `gewash/*.json`. Those files must match: `i18n:check` exits 1 when a frontend leaf is missing, blank, or different in the public copy. Backend-only extra keys stay.
+- Brand and model sheets use `CarBrandDropDown.*` and `CarModelDropDown.*`. `{name}` in the model title and empty line is the picked brand. Loading and error are shown in the sheet.
+- PR #24 merged `feat/stage2-voucher-sms-carmodels` at `039c942` (merge commit, no rebase). Catalog resolution now checks the brand and retries a unique external-id insert.

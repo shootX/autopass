@@ -50,14 +50,60 @@ export function missingLocaleKeys(root) {
   return { keys, missing };
 }
 
+export function publicLangDir(root) {
+  return path.resolve(root, "../backend/public/lang");
+}
+
+function flattenStrings(value, prefix = "", out = new Map()) {
+  if (typeof value === "string") {
+    if (prefix) out.set(prefix, value);
+    return out;
+  }
+  if (!value || typeof value !== "object" || Array.isArray(value)) return out;
+  for (const [key, child] of Object.entries(value)) {
+    flattenStrings(child, prefix ? `${prefix}.${key}` : key, out);
+  }
+  return out;
+}
+
+export function publicLangProblems(root) {
+  const dir = publicLangDir(root);
+  const problems = [];
+  for (const locale of LOCALES) {
+    const backFile = path.join(dir, `${locale}.json`);
+    if (!fs.existsSync(backFile)) {
+      problems.push(`${locale}:backend-missing-file`);
+      continue;
+    }
+    const front = flattenStrings(JSON.parse(fs.readFileSync(path.join(root, `${locale}.json`), "utf8")));
+    const back = flattenStrings(JSON.parse(fs.readFileSync(backFile, "utf8")));
+    for (const [key, value] of front) {
+      if (!back.has(key)) {
+        problems.push(`${locale}:missing:${key}`);
+        continue;
+      }
+      const other = back.get(key);
+      if (other.trim() === "" || value.trim() === "") {
+        problems.push(`${locale}:empty:${key}`);
+        continue;
+      }
+      if (other !== value) problems.push(`${locale}:drift:${key}`);
+    }
+  }
+  return problems.sort();
+}
+
 const isDirect = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 if (isDirect) {
   const root = process.argv[2] ? path.resolve(process.argv[2]) : process.cwd();
   const { keys, missing } = missingLocaleKeys(root);
+  const drift = publicLangProblems(root);
+  const problems = [...missing, ...drift];
   console.log(`t() keys: ${keys.length}`);
   console.log(`missing: ${missing.length}`);
-  if (missing.length) {
-    console.log(missing.join("\n"));
+  console.log(`public-lang: ${drift.length}`);
+  if (problems.length) {
+    console.log(problems.join("\n"));
     process.exit(1);
   }
 }
