@@ -12,7 +12,6 @@ use App\Models\User;
 use App\Models\UserCar;
 use App\Models\UserPackage;
 use App\Support\Phone;
-use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -36,7 +35,7 @@ class ClientsController extends Controller
 
         $clients = User::query()->where('role', User::ROLE_USER);
 
-        if($request->search){
+        if ($request->search) {
             $search = $request->search;
             $clients->where(function ($query) use ($search) {
                 $query->where('name', 'like', '%'.$search.'%')
@@ -49,10 +48,9 @@ class ClientsController extends Controller
             });
         }
 
-        if($request->has('export'))
-        {
+        if ($request->has('export')) {
             return Excel::download(
-                new ClientsExport(),
+                new ClientsExport,
                 'clients.xlsx'
             );
         }
@@ -64,13 +62,17 @@ class ClientsController extends Controller
         }
 
         $clients = $clients->orderBy($sort, $dir)->paginate(10)->withQueryString();
+
         return view('admin.clients.index', compact('clients'));
     }
 
     public function ban(Request $request, User $client)
     {
-        $client->ban = !$client->ban;
+        $client->ban = ! $client->ban;
+        // Existing JWTs stop working at once (EnsureApiSession also checks the ban flag).
+        $client->token_version = (int) $client->token_version + 1;
         $client->update();
+
         return redirect()->back()->with('message', __('admin.client_ban_status', [
             'status' => $client->ban ? __('admin.banned') : __('admin.unbanned'),
         ]));
@@ -87,7 +89,7 @@ class ClientsController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'surname' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:users,email,' . $client->id,
+            'email' => 'required|email|max:255|unique:users,email,'.$client->id,
             'phone' => [
                 'required',
                 function (string $attribute, mixed $value, \Closure $fail) use ($client) {
@@ -106,7 +108,7 @@ class ClientsController extends Controller
             'password' => 'nullable|string|min:8',
         ]);
 
-        if( $validator->fails()) {
+        if ($validator->fails()) {
             return redirect()->back()
                 ->withErrors($validator)
                 ->withInput();
@@ -137,12 +139,14 @@ class ClientsController extends Controller
             return redirect()->back()->with('error', __('admin.cannot_delete_self'));
         }
         $client->delete();
+
         return redirect()->route('admin.clients')->with('message', __('admin.client_deleted'));
     }
 
     public function packages(Request $request, User $client)
     {
         $userPackages = $client->packages()->paginate(10);
+
         return view('admin.clients.packages.packages', compact('client', 'userPackages'));
     }
 
@@ -159,10 +163,10 @@ class ClientsController extends Controller
                 ->withInput();
         }
 
-        $package = $client->packages()->where('id', (int)$request->package_id)
+        $package = $client->packages()->where('id', (int) $request->package_id)
             ->first();
 
-        if (!$package) {
+        if (! $package) {
             return redirect()->back()->with('error', __('admin.package_not_found'));
         }
 
@@ -193,11 +197,11 @@ class ClientsController extends Controller
                     $html = '';
 
                     foreach ($package->prices as $price) {
-                        $option = '<option value="' . $price->id . '">' . e(__('admin.package_price_option', [
+                        $option = '<option value="'.$price->id.'">'.e(__('admin.package_price_option', [
                             'month' => $price->month,
                             'price' => $price->price,
                             'washes' => $package->count_washes,
-                        ])) . '</option>';
+                        ])).'</option>';
                         $html .= $option;
                     }
 
@@ -207,6 +211,7 @@ class ClientsController extends Controller
                     return '';
                 }
             }
+
             return '';
         } catch (\Exception $e) {
             return '';
@@ -247,6 +252,7 @@ class ClientsController extends Controller
     {
         abort_unless((int) $pack->user_id === (int) $client->id, 404);
         $pack->delete();
+
         return redirect()->route('admin.clients.packages', ['client' => $client->id])
             ->with('message', __('admin.user_package_deleted'));
     }
@@ -254,12 +260,14 @@ class ClientsController extends Controller
     public function cars(Request $request, User $client)
     {
         $userCars = $client->cars()->paginate(10);
+
         return view('admin.clients.cars.index', compact('client', 'userCars'));
     }
 
     public function carDelete(Request $request, User $client, UserCar $car)
     {
         $car->delete();
+
         return redirect()->route('admin.clients.cars', $client->id)->with('message', __('admin.car_deleted'));
     }
 
@@ -272,7 +280,7 @@ class ClientsController extends Controller
     {
         $query = $request->input('q');
 
-        $brands = CarBrand::where('name', 'like', '%' . $query . '%')->get();
+        $brands = CarBrand::where('name', 'like', '%'.$query.'%')->get();
 
         $brands = $brands->map(function ($brand) {
             return [

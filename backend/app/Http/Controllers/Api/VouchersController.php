@@ -4,10 +4,10 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Transaction;
+use App\Models\User;
 use App\Models\UserVoucher;
 use App\Models\Voucher;
 use App\Models\VoucherCategory;
-use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -18,55 +18,50 @@ class VouchersController extends Controller
     public function getVouchers(Request $request)
     {
         $validate = Validator::make($request->all(), [
-            'category_id' => 'nullable|exists:App\Models\VoucherCategory,id'
+            'category_id' => 'nullable|exists:App\Models\VoucherCategory,id',
         ]);
 
-        if($validate->fails()) {
+        if ($validate->fails()) {
             return response()->json([
                 'success' => false,
-                'message' => 'category_id is invalid'
+                'message' => 'category_id is invalid',
             ]);
         }
 
         $vouchers = Voucher::with('category');
 
-        if($request->has('category_id'))
-        {
+        if ($request->has('category_id')) {
             $vouchers->where('category_id', $request->category_id);
         }
         $vouchers = $vouchers->paginate(50);
+
         return response()->json([
             'success' => true,
-            'vouchers' => $vouchers
+            'vouchers' => $vouchers,
         ]);
     }
 
     public function getCategories(Request $request)
     {
         $categories = VoucherCategory::paginate(10);
+
         return response()->json([
             'success' => true,
-            'categories' => $categories
+            'categories' => $categories,
         ]);
     }
 
-    private function generateVoucher(array $data, int $attempts = 5)
+    private function uniqueCode(): string
     {
-        do {
-            try {
-                return UserVoucher::create([
-                    ...$data,
-                    'code' => strtoupper(Str::random(8)),
-                ]);
-            } catch (QueryException $e) {
-                // 1062 — duplicate entry (MySQL)
-                if ($e->getCode() != 23000) {
-                    throw $e; // другая ошибка — пробрасываем
-                }
+        // Picked before the insert: a failed INSERT would abort the surrounding Postgres transaction.
+        for ($i = 0; $i < 10; $i++) {
+            $code = strtoupper(Str::random(8));
+            if (! UserVoucher::query()->where('code', $code)->exists()) {
+                return $code;
             }
-        } while (--$attempts > 0);
+        }
 
-        throw new \Exception('Some error');
+        throw new \RuntimeException('Could not generate a voucher code');
     }
 
     public function buyVoucher(Request $request)
@@ -79,50 +74,53 @@ class VouchersController extends Controller
             return response()->json(['success' => false, 'message' => $validate->errors()]);
         }
 
-        $user = auth()->user();
+        $voucher = Voucher::query()->findOrFail($request->voucher_id);
+        $price = (int) $voucher->price;
+        $userId = (int) auth()->id();
 
-        $voucher = Voucher::find($request->voucher_id);
+        try {
+            // Balance check, deduction, voucher and ledger row are one unit: any failure rolls all of it back.
+            $points = DB::transaction(function () use ($userId, $voucher, $price) {
+                $user = User::query()->whereKey($userId)->lockForUpdate()->firstOrFail();
+                if ((int) $user->points < $price) {
+                    return null;
+                }
 
-        if($voucher->price <= $user->points)
-        {
-            try {
-                $this->generateVoucher([
+                $user->points = (int) $user->points - $price;
+                $user->save();
+
+                UserVoucher::query()->create([
                     'user_id' => $user->id,
                     'voucher_id' => $voucher->id,
+                    'code' => $this->uniqueCode(),
                 ]);
 
-                DB::transaction(function () use ($user, $voucher) {
-                    $user->points -= $voucher->price;
-                    $user->update();
-
-                    Transaction::create([
-                        'user_id' => $user->id,
-                        'amount' => $voucher->price,
-                        'type' => 'outcome',
-                        'system' => 'Points',
-                        'status' => true,
-                        'comment' => 'Voucher'
-                    ]);
-                });
-
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Voucher purchased successfully',
-                    'points' => $user->points
+                Transaction::query()->create([
+                    'user_id' => $user->id,
+                    'amount' => $price,
+                    'type' => 'outcome',
+                    'system' => 'Points',
+                    'status' => true,
+                    'comment' => 'Voucher',
                 ]);
-            } catch (\Exception $ex)
-            {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Some error'
-                ]);
-            }
-        } else {
-            return response()->json([
-                'success' => false,
-                'message' => 'Not enough points'
-            ]);
+
+                return (int) $user->points;
+            });
+        } catch (\Throwable $e) {
+            report($e);
+
+            return response()->json(['success' => false, 'message' => 'Some error']);
         }
+
+        if ($points === null) {
+            return response()->json(['success' => false, 'message' => 'Not enough points']);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Voucher purchased successfully',
+            'points' => $points,
+        ]);
     }
 
     public function myVouchers(Request $request)
@@ -136,13 +134,12 @@ class VouchersController extends Controller
 
             return response()->json([
                 'success' => true,
-                'vouchers' => $v
+                'vouchers' => $v,
             ]);
-        } catch (\Exception $ex)
-        {
+        } catch (\Exception $ex) {
             return response()->json([
                 'success' => false,
-                'message' => 'Some error'
+                'message' => 'Some error',
             ]);
         }
     }

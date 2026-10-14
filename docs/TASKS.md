@@ -177,6 +177,23 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 - Checks on a fresh `main` checkout: backend Pest 69/69 (408 assertions); gewash `npm ci` ok, vitest 83/83, build ok, `build:check` 0 TS errors, lint 0/0; voucher-checker `npm ci` ok, vitest 9/9, build ok, lint 0/0.
 - Open: test-payment flag for test accounts in production (separate PR, not merged yet). Deploy is done by Shota: `php artisan migrate`, scheduler running, cache driver with locks; backend and frontend ship together.
 
+## 2026-10-14 — Stage 2 უსაფრთხოება (1–4), branch `feat/stage2-security`
+
+ყველა პუნქტისთვის ჯერ დაიწერა ტესტი, რომელიც ვარდებოდა (`tests/Feature/Stage2SecurityTest.php`), მერე გასწორდა.
+1. `/api/me/edit` ტელეფონს და ელფოსტას აღარ ცვლის (თუ შეცვლილია, აბრუნებს 422-ს). ელფოსტა იცვლება მხოლოდ `pending_email`-ის გავლით, ჰეშირებული კოდით და ვადით.
+2. დაბლოკილი (ban) მომხმარებელი: API, ადმინის ვები, პარტნიორის API და კომპანიის პანელი ძველ სესიას/ტოკენს მაშინვე უარყოფს, შესვლაც უარყოფილია. partners/corporate_clients-ს დაემატა `ban` სვეტი.
+3. კომპანიის `/partner/password` მუშაობს მხოლოდ მაშინ, როცა `password_must_change=true`. ჩვეულებრივ ცვლილებას სჭირდება მიმდინარე პაროლი, და `session_version` სხვა სესიებს აუქმებს.
+4. ვაუჩერის ყიდვა ერთ ტრანზაქციაშია და ბალანსის ჩანაწერზე იყენებს `lockForUpdate`-ს. ნებისმიერი შეცდომისას ყველაფერი უკან ბრუნდება.
+
+## 2026-10-14 — Stage 2 sweep (mass-assignment + balance mutations)
+- [x] User/Partner/CorporateClient privileged columns removed from mass assignment (role, referral_id, ref_code, phone_verified_at; partner login secrets via $fillable; corporate credentials/api_token/session_version/must_change). Creates use forceCreate; token rotations forceFill.
+- [x] Admin car wash edit validates fields; manager_id must be a manager; services stripped from update.
+- [x] Ticket purchase: integer qty 1..20, DB::transaction + lockForUpdate (ticket, user), limit counts qty, tickets + ledger inside transaction, rollback tested.
+- [ ] Follow-up: admin UI for partner/company ban; ReferralsController::saveHash public unvalidated writes; TbcPayment/Transaction/UserVoucher still $guarded=[] (server-side only).
+
+## 2026-10-14 — QA fix on #21
+- [x] Sandbox payment confirm re-checks the owner: TestPayments::allowed() is false for banned users, and SettleTbcPayment::grantNow() re-checks allowed() on the locked owner row for test_mode payments (marks the payment Failed, credits nothing).
+
 ## 2026-10-14 — Stage 2 items 5–6
 - [x] Partner voucher check: Cache::lock per voucher+recipient, open challenge reused within SECURITY_VOUCHER_CHECK_DEDUPE_SECONDS (60) → one SMS for repeated checks; 429 while a check is still running.
 - [x] Car catalog: source + external ids, CarAPI ids no longer treated as local ids, year on user_cars + GET /api/cars/years. Contract in gewash-frontend-integration.md.

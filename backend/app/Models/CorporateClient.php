@@ -22,16 +22,10 @@ class CorporateClient extends Model
         'email',
         'website',
         'vat_payer',
-        'username',
-        'password',
-        'credentials_custom',
         'note',
-        'api_token',
-        'password_must_change',
-        'temp_password_expires_at',
-        'session_version',
-        'credentials_retired_at',
     ];
+    // username, password, credentials_custom, api_token, password_must_change, temp_password_expires_at,
+    // session_version, credentials_retired_at and ban are set explicitly by server code only.
 
     protected $hidden = [
         'password',
