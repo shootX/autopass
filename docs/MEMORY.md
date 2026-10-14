@@ -222,3 +222,8 @@ voucher-checker-ში `useVoucher`/`usePath` სახელები შეი
 ## 2026-10-14 — Car ids and voucher SMS dedupe
 - car_models.id is always local. CarAPI ids live in external_model_id / external_brand_id with source='carapi'. Never look up a client model_id unless it comes with a source.
 - Voucher check SMS: dedupe key voucher-check:{user_voucher_id}:{user_id}; within the window the open SmsTemp public_id is returned (deduplicated: true).
+
+## 2026-10-14 — Frontend i18n, npm ci, catalog ids
+- `gewash/scripts/check-i18n.mjs` checks en, ka, and ru and exits 1 if a `t()` key is missing or blank. The 56 keys that were absent from all three files are filled in.
+- gewash lockfile omitted optional platform packages (`@esbuild/*`, `@rollup/rollup-*`, lightningcss, …). npm 10 `npm ci` ignored that; npm 11 failed with `Missing: … from lock file`. The lockfile now includes them. voucher-checker and backend locks were already complete. Supported engines are Node `^22.12.0 || ^24 || >=26` (vitest 5) and npm `^10 || ^11`.
+- Add car posts `source` copied from the picked model, plus `brand_id` and `model_id` from that same source, and optional `year` from `GET /api/cars/years`. A saved car's local `model.id` is not sent back as a CarAPI id (`catalogWriteIds` uses `external_model_id` when `source` is `carapi`). Edit updates plate and year only.

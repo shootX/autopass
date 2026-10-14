@@ -1,3 +1,4 @@
+import { parseCatalogList } from "@/lib/carCatalog";
 import type { Brand } from "@/store/carSlice";
 import { customFetch } from "@/utils/customFetch";
 import { useEffect, useState } from "react";
@@ -27,8 +28,9 @@ export function useCarBrands() {
         if (!res.ok) throw new Error("Ошибка загрузки брендов");
         return res.json();
       })
-      .then((data) => {
-        setBrands(data.brands);
+      .then((data: unknown) => {
+        const body = data && typeof data === "object" ? (data as { brands?: unknown }) : {};
+        setBrands(parseCatalogList(body.brands));
       })
       .catch((err) => {
         console.error("Ошибка при загрузке брендов:", err);

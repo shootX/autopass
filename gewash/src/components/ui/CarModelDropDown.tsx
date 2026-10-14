@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import "../../../src/styles/dropdowns/car-model-dropdown.scss";
+import { catalogKey } from "@/lib/carCatalog";
 import type { Brand, Model} from "@/store/carSlice";
 import { searchIconUrl } from "@/assets/staticUrls";
 import { dragY } from "@/lib/dragOffset";
@@ -23,9 +24,10 @@ export function CarModelDropDown({
 
   const filteredModels = useMemo(() => {
     return models.filter((m) =>
+      m.source === selectedBrand?.source &&
       m.name.toLowerCase().includes(search.toLowerCase())
     );
-  }, [search, models]);
+  }, [search, models, selectedBrand?.source]);
 
   if (!open || !selectedBrand) return null;
 
@@ -74,10 +76,10 @@ export function CarModelDropDown({
             ) : (
               filteredModels.map((model) => (
                 <div
-                  key={model.id}
+                  key={catalogKey(model)}
                   className={`brand-option ${
-                    selectedModel?.name === model.name ? "selected" : ""
-                  }`}                  
+                    selectedModel && catalogKey(selectedModel) === catalogKey(model) ? "selected" : ""
+                  }`}
                   onClick={() => setSelectedModel(model)}
                 >
                   {model.name}

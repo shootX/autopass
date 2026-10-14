@@ -1,0 +1,66 @@
+name: frontend
+
+on:
+  pull_request:
+  push:
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        npm: ["10", "11"]
+        app: [gewash, gewash/voucher-checker]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Select npm
+        run: npm install -g npm@${{ matrix.npm }}
+      - name: Clean install
+        working-directory: ${{ matrix.app }}
+        run: npm ci
+
+  gewash:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: gewash/package-lock.json
+      - working-directory: gewash
+        run: npm ci
+      - working-directory: gewash
+        run: npm run i18n:check
+      - working-directory: gewash
+        run: npm run lockfile:check
+      - working-directory: gewash
+        run: npm run lint
+      - working-directory: gewash
+        run: npm test
+      - working-directory: gewash
+        run: npm run build:check
+
+  voucher-checker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: gewash/voucher-checker/package-lock.json
+      - working-directory: gewash/voucher-checker
+        run: npm ci
+      - working-directory: gewash/voucher-checker
+        run: npm run lockfile:check
+      - working-directory: gewash/voucher-checker
+        run: npm run lint
+      - working-directory: gewash/voucher-checker
+        run: npm test
+      - working-directory: gewash/voucher-checker
+        run: npm run build

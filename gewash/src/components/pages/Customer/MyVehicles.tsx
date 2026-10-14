@@ -36,6 +36,7 @@ export default function MyVehicles() {
               <h4 className='auto-number'>{car.plate?.replace(/^([A-Z]{2})(\d{3})([A-Z]{2})$/, '$1-$2-$3') ?? ''}</h4>
               <p className='car-type'>
                 {[car.brand, car.model].filter((part) => part && part !== 'Unknown').join(' ')}
+                {car.year ? ` ${car.year}` : ''}
                 {car.type && car.type !== 'Unknown' ? ` · ${car.type}` : ''}
               </p>
             </div>

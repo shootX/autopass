@@ -7,6 +7,8 @@ import closeIcon from '@/assets/icons/close-icon.svg';
 import { useTranslation } from '@/hooks/useTranslation';
 import Header from '@/components/Header';
 import { apiErrorMessage, type ApiBody } from '@/lib/apiResult';
+import { myCarEditBody } from '@/lib/carCatalog';
+import { useCarYears } from '@/hooks/useCarModels';
 
 export default function EditCar() {
   const navigate = useNavigate();
@@ -17,6 +19,8 @@ export default function EditCar() {
   const [brand, setBrandLocal] = useState('');
   const [model, setModelLocal] = useState('');
   const [numberPlate, setNumberPlate] = useState('');
+  const [year, setYear] = useState<number | null>(null);
+  const { years } = useCarYears();
   const [error, setError] = useState('');
   const [deletePopupShow, setDeletePopupShow] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
@@ -39,6 +43,7 @@ export default function EditCar() {
           setBrandLocal(data.brand || '');
           setModelLocal(data.model || '');
           setNumberPlate(data.plate || '');
+          setYear(typeof data.year === 'number' ? data.year : null);
         })
         .catch((err) => {
           console.error(err);
@@ -48,6 +53,7 @@ export default function EditCar() {
       setBrandLocal(carToEdit.brand || '');
       setModelLocal(carToEdit.model || '');
       setNumberPlate(carToEdit.plate || '');
+      setYear(typeof carToEdit.year === 'number' ? carToEdit.year : null);
     }
   }, [carToEdit, carId]);
 
@@ -75,7 +81,11 @@ export default function EditCar() {
     try {
       const sendPlate = numberPlate.replace(/[^a-zA-Z0-9]/g, '');
 
-      console.log(brand, model, sendPlate);
+      const payload = myCarEditBody({ plate: sendPlate, year, includeYear: true });
+      if (!payload) {
+        setError(t('EditCar.errors.saveFailed'));
+        return;
+      }
       const response = await customFetch(`${import.meta.env.VITE_API_URL}/mycars/${carId}/edit`, {
         method: 'POST',
         headers: {
@@ -83,11 +93,7 @@ export default function EditCar() {
           'Content-Type': 'application/json',
           Accept: 'application/json',
         },
-        body: JSON.stringify({
-          // brand,
-          // model,
-          plate: sendPlate,
-        }),
+        body: JSON.stringify(payload),
       });
       let resData: ApiBody | null = null;
       try {
@@ -174,6 +180,20 @@ export default function EditCar() {
             <span className="active">{model || 'Unknown model'}</span>
             <img src={leftArrow} alt="Locked" />
           </div>
+        </div>
+
+        <div className="input-block">
+          <label>{t('EditCar.labels.year')}</label>
+          <select
+            className="input-select"
+            value={year ?? ''}
+            onChange={(e) => setYear(e.target.value ? Number(e.target.value) : null)}
+          >
+            <option value="">{t('AddCar.placeholders.chooseYear')}</option>
+            {years.map((item) => (
+              <option key={item} value={item}>{item}</option>
+            ))}
+          </select>
         </div>
 
         <div className="number-plate-input">

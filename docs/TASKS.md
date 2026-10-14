@@ -180,4 +180,8 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 ## 2026-10-14 — Stage 2 items 5–6
 - [x] Partner voucher check: Cache::lock per voucher+recipient, open challenge reused within SECURITY_VOUCHER_CHECK_DEDUPE_SECONDS (60) → one SMS for repeated checks; 429 while a check is still running.
 - [x] Car catalog: source + external ids, CarAPI ids no longer treated as local ids, year on user_cars + GET /api/cars/years. Contract in gewash-frontend-integration.md.
-- [ ] Frontend: AddCar must send source/brand_id/year (see contract).
+- [x] Frontend: AddCar sends `{ plate, source, model_id, brand_id, year? }` from the picked catalog item. A CarAPI id is never posted as a local id. Year picker uses `GET /api/cars/years`. Edit sends `year` and does not resend `model_id` without `source`.
+
+## 2026-10-14 — i18n keys, npm 10/11 ci, car catalog frontend
+- [x] 56 missing `t()` keys added in `en.json`, `ka.json`, and `ru.json` (real translations, not key names). `node scripts/check-i18n.mjs` exits 1 when any of en/ka/ru lacks a key. `npm run i18n:check` and `.github/workflows/frontend.yml`.
+- [x] gewash `package-lock.json` now lists every optional platform package. Clean `npm ci` passes on npm 10.9.9 and npm 11.21.0 for gewash and voucher-checker. `engines`: node `^22.12.0 || ^24.0.0 || >=26.0.0`, npm `^10 || ^11`. `npm run lockfile:check` covers gewash, voucher-checker, and backend.

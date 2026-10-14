@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import "../../../src/styles/dropdowns/car-brands-dropdown.scss";
+import { catalogKey } from "@/lib/carCatalog";
 import type { Brand } from "@/store/carSlice";
 import { searchIconUrl } from "@/assets/staticUrls";
 import { dragY } from "@/lib/dragOffset";
@@ -80,9 +81,9 @@ onDragEnd={(_e, info) => {
       </div>
       {brands.map((brand) => (
         <div
-          key={brand.id}
+          key={catalogKey(brand)}
           className={`brand-option ${
-            selectedBrand?.id === brand.id ? "selected" : ""
+            selectedBrand && catalogKey(selectedBrand) === catalogKey(brand) ? "selected" : ""
           }`}
           onClick={() => setSelectedBrand(brand)}
         >
