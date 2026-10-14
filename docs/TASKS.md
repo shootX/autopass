@@ -168,3 +168,8 @@ SMS სტატუსი (`simulated`, `accepted`, `failed`, `unknown`) ერ�
 voucher-checker: `temp_code` მხოლოდ სტრინგია, რიცხვითი id აღარ იგზავნება. `must_change_password` სხვა ეკრანს ბლოკავს. 401 სესიას შლის. `PhoneOTPWrapper`-ის ძველი რიცხვითი `temp_code` მოხსნილია.
 
 `npm ci` გავიდა ორივე აპში. შემდეგ იგივე დღეს ტიპები ბოლომდე გასწორდა, წესების მოშვების გარეშე. gewash: vitest 83/83 (23 ფაილი), `build:check` (`tsc -b` და vite build) 0 შეცდომა, lint 0 შეცდომა და 0 გაფრთხილება. voucher-checker: vitest 9/9 (2 ფაილი), `tsc -b && vite build` გავიდა, lint 0 შეცდომა და 0 გაფრთხილება. სერვერი არ შეხებულა.
+
+## 2026-10-14 — Stage 1 merged to `main`
+- PR #19 (frontend, head `34b6a94`) merged into `feat/stage1-security-smsoffice` (`8c08f08`), then PR #18 merged into `main` (`7f73d2b`). Merge commits only, no force-push. Shota approved the merge in the GAI.GE Stuff group; no deploy.
+- Checks on a fresh `main` checkout: backend Pest 69/69 (408 assertions); gewash `npm ci` ok, vitest 83/83, build ok, `build:check` 0 TS errors, lint 0/0; voucher-checker `npm ci` ok, vitest 9/9, build ok, lint 0/0.
+- Open: test-payment flag for test accounts in production (separate PR, not merged yet). Deploy is done by Shota: `php artisan migrate`, scheduler running, cache driver with locks; backend and frontend ship together.

@@ -209,3 +209,9 @@ UX-12. მაგალითში `root` არის SPA-ის ბილდ�
 როლი სესიაში ინახება `sessionStorage` გასაღებით `autopass.session_role`, მხოლოდ `/me`-ის შემდეგ. 401 ამას შლის ტოკენთან და `autopass.me`-სთან ერთად, სანამ მისამართს აირჩევს. სრული `/me` პასუხი არ ინახება.
 
 voucher-checker-ში `useVoucher`/`usePath` სახელები შეიცვალა (`confirmVoucherUse`, `voucherUsePath`), რომ eslint ჰუკებად არ ჩაეთვალა. იგივე დღეს დარჩენილი მოდელების შეუსაბამობაც გასწორდა რეალური ტიპებით: პაკეტს აქვს `id` და `car_id`, ჯავშანს `carId`, მანქანა ინახება `{ model: { name, type, brand } }` ფორმით. `buttonVariants` ცალკე ფაილშია, რომ react-refresh კომპონენტის ფაილში კონსტანტას არ ხედავდეს. `any`, `eslint-disable` და `@ts-ignore` არ დამატებულა. gewash `build:check` და lint, და voucher-checker-ის `tsc` და lint, ნულზეა.
+
+### 2026-10-14
+
+- Stage 1 (security + SMSOffice + frontend contracts) is on `main` via PR #19 → #18 → `main`. Tests: backend 69/69, gewash 83/83, voucher-checker 9/9; gewash `build:check` and lint clean.
+- Backend Pest tests read `backend/.env`; on a fresh checkout copy `.env.example` to `.env` locally before `php artisan test` (otherwise 67 tests end as warnings).
+- Nothing deployed. Test payment in production stays off until the separate flag PR is reviewed and merged.
