@@ -6,6 +6,9 @@ return [
 
     'sms_max_attempts' => (int) env('SECURITY_SMS_MAX_ATTEMPTS', 5),
 
+    // Partner voucher check: identical checks inside this window reuse the open SMS challenge.
+    'voucher_check_dedupe_seconds' => (int) env('SECURITY_VOUCHER_CHECK_DEDUPE_SECONDS', 60),
+
     'sms_resend_seconds' => (int) env('SECURITY_SMS_RESEND_SECONDS', 60),
 
     'password_grant_minutes' => (int) env('SECURITY_PASSWORD_GRANT_MINUTES', 10),

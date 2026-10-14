@@ -86,6 +86,7 @@ Route::middleware(['auth:api', CorsMiddleware::class, \App\Http\Middleware\Ensur
     Route::get('/transactions', [UserController::class, 'transactions']);
 
     Route::get('/cars/brands', [CarsController::class, 'brands']);
+    Route::get('/cars/years', [CarsController::class, 'years']);
     Route::get('/cars/brands/{brand_id}/models', [CarsController::class, 'models']);
 
     Route::prefix('/mycars')->group(function () {

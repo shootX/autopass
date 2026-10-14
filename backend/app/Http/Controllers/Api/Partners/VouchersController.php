@@ -10,6 +10,7 @@ use App\Services\Security\SmsChallengeService;
 use App\Services\Sms\SmsStatus;
 use App\Services\Sms\SmsUserMessage;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
@@ -35,22 +36,52 @@ class VouchersController extends Controller
             return response()->json(['success' => false, 'message' => 'Incorrect code'], 403);
         }
 
-        $sent = SmsTemp::query()
-            ->where('type', 'use_voucher')
-            ->where('user_voucher_id', $voucher->id)
-            ->where('created_at', '>', now()->subMinutes(10))
-            ->count();
-
-        if ($sent >= 2) {
-            return response()->json(['success' => false, 'message' => 'SMS limit exceeded. Wait 10 minutes.']);
+        // Dedupe: one SMS per voucher+recipient per window. The lock serialises parallel checks;
+        // a repeat inside the window gets the still-open challenge back instead of a new SMS.
+        $lock = Cache::lock('voucher-check:'.$voucher->id.':'.$voucher->user_id, 15);
+        if (! $lock->get()) {
+            return response()->json(['success' => false, 'message' => 'Check already in progress'], 429);
         }
 
         try {
-            $issued = $sms->issue($voucher->user, 'use_voucher', [], $voucher->id, false);
-        } catch (\Throwable $e) {
-            Log::warning('voucher_check_failed', ['exception' => $e::class]);
+            $window = (int) config('security.voucher_check_dedupe_seconds', 60);
+            $open = SmsTemp::query()
+                ->where('type', 'use_voucher')
+                ->where('user_voucher_id', $voucher->id)
+                ->where('user_id', $voucher->user_id)
+                ->whereNull('consumed_at')
+                ->where('expires_at', '>', now())
+                ->where('attempts', '<', (int) config('security.sms_max_attempts'))
+                ->where('created_at', '>', now()->subSeconds($window))
+                ->latest('id')
+                ->first();
+            if ($open) {
+                return response()->json([
+                    'success' => true,
+                    'temp_code' => $open->public_id,
+                    'deduplicated' => true,
+                ]);
+            }
 
-            return response()->json(['success' => false, 'message' => 'Some error'], 500);
+            $sent = SmsTemp::query()
+                ->where('type', 'use_voucher')
+                ->where('user_voucher_id', $voucher->id)
+                ->where('created_at', '>', now()->subMinutes(10))
+                ->count();
+
+            if ($sent >= 2) {
+                return response()->json(['success' => false, 'message' => 'SMS limit exceeded. Wait 10 minutes.']);
+            }
+
+            try {
+                $issued = $sms->issue($voucher->user, 'use_voucher', [], $voucher->id, false);
+            } catch (\Throwable $e) {
+                Log::warning('voucher_check_failed', ['exception' => $e::class]);
+
+                return response()->json(['success' => false, 'message' => 'Some error'], 500);
+            }
+        } finally {
+            $lock->release();
         }
 
         if (! $issued->result->ok()) {

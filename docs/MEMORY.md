@@ -218,3 +218,7 @@ voucher-checker-ში `useVoucher`/`usePath` სახელები შეი
 - Stage 1 (security + SMSOffice + frontend contracts) is on `main` via PR #19 → #18 → `main`. Tests: backend 69/69, gewash 83/83, voucher-checker 9/9; gewash `build:check` and lint clean.
 - Backend Pest tests read `backend/.env`; on a fresh checkout copy `.env.example` to `.env` locally before `php artisan test` (otherwise 67 tests end as warnings).
 - Nothing deployed. Test payment in production stays off until the separate flag PR is reviewed and merged.
+
+## 2026-10-14 — Car ids and voucher SMS dedupe
+- car_models.id is always local. CarAPI ids live in external_model_id / external_brand_id with source='carapi'. Never look up a client model_id unless it comes with a source.
+- Voucher check SMS: dedupe key voucher-check:{user_voucher_id}:{user_id}; within the window the open SmsTemp public_id is returned (deduplicated: true).

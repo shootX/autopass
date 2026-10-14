@@ -176,3 +176,8 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 - PR #19 (frontend, head `34b6a94`) merged into `feat/stage1-security-smsoffice` (`8c08f08`), then PR #18 merged into `main` (`7f73d2b`). Merge commits only, no force-push. Shota approved the merge in the GAI.GE Stuff group; no deploy.
 - Checks on a fresh `main` checkout: backend Pest 69/69 (408 assertions); gewash `npm ci` ok, vitest 83/83, build ok, `build:check` 0 TS errors, lint 0/0; voucher-checker `npm ci` ok, vitest 9/9, build ok, lint 0/0.
 - Open: test-payment flag for test accounts in production (separate PR, not merged yet). Deploy is done by Shota: `php artisan migrate`, scheduler running, cache driver with locks; backend and frontend ship together.
+
+## 2026-10-14 — Stage 2 items 5–6
+- [x] Partner voucher check: Cache::lock per voucher+recipient, open challenge reused within SECURITY_VOUCHER_CHECK_DEDUPE_SECONDS (60) → one SMS for repeated checks; 429 while a check is still running.
+- [x] Car catalog: source + external ids, CarAPI ids no longer treated as local ids, year on user_cars + GET /api/cars/years. Contract in gewash-frontend-integration.md.
+- [ ] Frontend: AddCar must send source/brand_id/year (see contract).
