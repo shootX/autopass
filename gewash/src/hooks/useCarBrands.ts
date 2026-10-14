@@ -7,6 +7,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 export function useCarBrands() {
   const [brands, setBrands] = useState<Brand[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("access_token");
@@ -31,6 +32,7 @@ export function useCarBrands() {
         setBrands(data.brands);
       })
       .catch((err) => {
+        setError(true);
         console.error("Ошибка при загрузке брендов:", err);
       })
       .finally(() => {
@@ -38,5 +40,5 @@ export function useCarBrands() {
       });
   }, []);
 
-  return { brands, loading };
+  return { brands, loading, error };
 }

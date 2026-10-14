@@ -113,7 +113,7 @@ class PartnerPanelController extends Controller
             'cars' => $corporate->cars()->count(),
             'washes' => (clone $washes)->count(),
             'today' => (clone $washes)->whereDate('date', $today)->count(),
-            'pending' => (clone $washes)->where('approved', false)->count(),
+            'pending' => (clone $washes)->where('approved', 0)->count(),
         ];
         $maxTrend = max(1, $trend->max('total'));
 
@@ -126,7 +126,7 @@ class PartnerPanelController extends Controller
         $filters = $request->validate([
             'date_from' => 'nullable|date',
             'date_to' => 'nullable|date',
-            'approved' => 'nullable|in:0,1',
+            'approved' => 'nullable|integer|between:0,5',
             'car_wash_id' => 'nullable|integer|min:1',
             'plate' => 'nullable|string|max:32',
             'export' => 'nullable',

@@ -4,6 +4,10 @@ export async function customFetch(input: RequestInfo, init?: RequestInit): Promi
   const url = typeof input === "string" ? input : input.url;
 
   const headers = new Headers(init?.headers || {});
+  if (!headers.has("Accept-Language")) {
+    const language = localStorage.getItem("lang");
+    headers.set("Accept-Language", language === "en" || language === "ru" ? language : "ka");
+  }
   if (url.includes("ngrok-free.app")) {
     headers.set("ngrok-skip-browser-warning", "true");
   }

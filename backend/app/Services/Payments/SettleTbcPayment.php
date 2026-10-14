@@ -115,6 +115,7 @@ class SettleTbcPayment
 
     private function grantPackage(TbcPayment $payment, string $recId): void
     {
+        User::query()->whereKey($payment->user_id)->lockForUpdate()->firstOrFail();
         $payload = $payment->payload;
         $package = Package::query()->find($payload['package_id'] ?? 0);
         if (! $package) {
@@ -122,10 +123,7 @@ class SettleTbcPayment
         }
 
         $exists = UserPackage::query()
-            ->where('user_id', $payment->user_id)
-            ->where('user_car_id', $payload['car_id'] ?? 0)
-            ->where('package_id', $package->id)
-            ->where('created_at', '>=', $payment->created_at)
+            ->where('tbc_payment_id', $payment->id)
             ->exists();
 
         if ($exists) {
@@ -133,13 +131,14 @@ class SettleTbcPayment
         }
 
         UserPackage::create([
+            'tbc_payment_id' => $payment->id,
             'user_id' => $payment->user_id,
             'user_car_id' => $payload['car_id'],
             'package_id' => $package->id,
             'price_id' => $payload['price_id'] ?? null,
             'start_date' => now(),
             'end_date' => now()->addMonths((int) ($payload['month'] ?? 1)),
-            'number_of_washes' => $package->count_washes,
+            'number_of_washes' => (int) ($payload['washes'] ?? $package->count_washes),
             'used_washes' => 0,
             'qr_code' => Str::random(16),
             'rectoken' => $recId !== '' ? $recId : null,

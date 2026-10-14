@@ -208,8 +208,33 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 ## 2026-10-14 — Stage 2 items 5–6
 - [x] Partner voucher check: Cache::lock per voucher+recipient, open challenge reused within SECURITY_VOUCHER_CHECK_DEDUPE_SECONDS (60) → one SMS for repeated checks; 429 while a check is still running.
 - [x] Car catalog: source + external ids, CarAPI ids no longer treated as local ids, year on user_cars + GET /api/cars/years. Contract in gewash-frontend-integration.md.
-- [ ] Frontend: AddCar must send source/brand_id/year (see contract).
+- [x] Frontend: AddCar sends source/brand_id/model_id/year; implemented locally in Stage 3, publication pending (see latest entry).
 
 ## 2026-10-14 — QA fixes on #22
 - [x] Model resolution checks brand: local model must belong to brand_id; offline CarAPI fallback only reuses a mapping under the same external brand.
 - [x] Parallel first-time add of the same CarAPI model: unique (source, external_*_id) + lookup/insert with UniqueConstraintViolationException retry → no 500, one row.
+
+## 2026-10-14 — Stage 3, Codex (`codex/stage3-product-fixes`)
+
+- Implemented locally from `f751751`: AddCar catalog/source/year contract and real car id; EditCar direct route; generation-year provenance; owned-car/branch/service/hours booking validation and atomic writes; duplicate exact slots; password-reset session revocation; pending package order reuse and one benefit per paid payment; expired/exhausted replacement with retained history; consistent appointment statuses; locale keys and npm 11 clean installs.
+- Verification: backend SQLite 131/131 (695 assertions), gewash 92/92, voucher-checker 9/9; both builds and lints passed; all six locale files cover 373 referenced keys; i18n regression passed; clean npm 11 installs passed. See `docs/STAGE3_QA.md` for commands and limits.
+- Native PostgreSQL 16/database-cache concurrency CI prepared, NOT run. Local PostgreSQL-WASM regression tests passed, but concurrency runs were unstable; no native database concurrency certification.
+- Browser visual/E2E checks and authenticated CarAPI, SMTP/SMS/payment delivery still require a working browser/provider environment. Test payment remains enabled only as previously authorized; SMS stays mocked.
+- GitHub branch creation was rejected with HTTP 403 `Resource not accessible by integration`; no remote branch, PR, main merge or deployment. Export contains the local commits and test evidence. GitHub write access is required to publish.
+
+## 2026-10-14 — Stage 3 publication
+- [ ] Push branch `codex/stage3-product-fixes` and open draft PR (blocked: token lacks `workflow` scope for `.github/workflows/product-checks.yml`).
+- [x] Native local PostgreSQL 17 concurrency suite: 22/22, 8 runs.
+- [ ] PostgreSQL 16 CI job run.
+- [ ] Browser visual/E2E check (QA, Playwright).
+- [ ] Live CarAPI fields, SMTP/SMS/payment sandbox delivery.
+- [ ] Migration validated on a copy of the target DB before deploy.
+
+## 2026-10-14 — Controlled test launch readiness (Codex)
+
+- PR #27 (`3718736`) contains all Stage 3 code. GitHub Product regression checks completed successfully, including native PostgreSQL 16/database-cache checks; the earlier WASM uncertainty is not the current native CI result.
+- Additional local hardening: authentication responses/tokens are no longer logged; a translated connection-failure alert replaces a silent login catch; the service worker caches public assets only, respects private/no-store responses, and removes its old application cache without deleting unrelated caches. Document navigation and authenticated routes pass through the network. Uncached page navigation will require connectivity.
+- Example deployment endpoints now point to wash.socialsave.cc and car.socialsave.cc instead of a temporary tunnel or empty values; authentication bypass remains false.
+- Verification: gewash 103/103 (11 new regressions), build:check/lint/i18n checks passed; 374 referenced locale keys, 0 missing in six dictionaries. Stage 3 backend 131/131, voucher 9/9 and PostgreSQL 22/22 remain prior CI evidence; backend business code and voucher application code were not changed in this follow-up.
+- Browser observed the current landing, customer login, recovery, registration, public privacy text and admin login. No credentials were submitted; private panels and full new-version workflows were not tested. Landing help redirects anonymous visitors to login; privacy is English-only. These are recorded polish tasks for the closed test.
+- No merge, target server change or deployment. Target database copy, server credentials/configuration, actual CarAPI key and mail delivery are unavailable here. See docs/TEST_LAUNCH_READINESS.md for the exact controlled launch gates. Follow-up patch must be uploaded before deploying.

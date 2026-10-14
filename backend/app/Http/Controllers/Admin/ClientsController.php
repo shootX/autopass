@@ -146,7 +146,7 @@ class ClientsController extends Controller
         foreach ($changed as $field => [$old, $new]) {
             AdminAudit::record('user', (int) $client->id, 'update', $field, $old, $new);
         }
-        if ($changed !== []) {
+        if ($changed !== [] || $request->filled('password')) {
             // Login identifiers changed: whoever holds the old sessions must sign in again.
             SessionRevoker::user($client);
         }

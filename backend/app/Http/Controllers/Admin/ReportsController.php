@@ -26,7 +26,7 @@ class ReportsController extends Controller
             'time_to' => ['nullable', 'regex:/^\d{2}:\d{2}(:\d{2})?$/'],
             'created_from' => 'nullable|date',
             'created_to' => 'nullable|date',
-            'approved' => 'nullable|in:0,1',
+            'approved' => 'nullable|integer|between:0,5',
             'car_wash_id' => 'nullable|integer|min:1',
             'manager_id' => 'nullable|integer|min:1',
             'service_id' => 'nullable|integer|min:1',

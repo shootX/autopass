@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Appointment extends Model
 {
+    protected $casts = ['approved' => 'integer'];
     //
 
     protected $fillable = [
@@ -51,6 +52,7 @@ class Appointment extends Model
         foreach ($services as $service) {
             $l[] = $service->name;
         }
+
         return implode(', ', $l);
     }
 }

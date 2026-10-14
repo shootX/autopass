@@ -1,6 +1,8 @@
 <?php
 
 return [
+    'expired' => 'Expired',
+    'rescheduled' => 'Rescheduled',
     'panel' => 'Admin',
     'dashboard' => 'Dashboard',
     'data_board' => 'Dashboard',

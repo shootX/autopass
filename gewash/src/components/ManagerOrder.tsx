@@ -9,7 +9,7 @@ import {
 } from '@/assets/staticUrls'
 import { formatPhone } from '@/lib/format'
 
-type Status = 'Confirm' | 'Rescheduled' | 'Expired' | 'Deleted' | 'New'
+type Status = 'Confirm' | 'Rescheduled' | 'Expired' | 'Deleted' | 'New' | 'Completed'
 
 interface ManagerOrderProps {
   status?: Status
@@ -36,6 +36,9 @@ const statusColorMap: Record<
     capText: "#14482F",
     labelBg: "#1E9E5A",
     labelText: "#FFFFFF",
+  },
+  Completed: {
+    capBg: "#B0EFBC", capText: "#14482F", labelBg: "#1E9E5A", labelText: "#FFFFFF",
   },
   Rescheduled: {
     capBg: "#A2ABA4",
@@ -92,6 +95,7 @@ export default function ManagerOrder({
   const isConfirmed = status === 'Confirm'
   const isNew = status === 'New'
   const isDeleted = status === 'Deleted'
+  const isTerminal = isDeleted || status === 'Completed' || status === 'Expired'
   const capStyle = {
     backgroundColor: statusColorMap[status].capBg,
     color: statusColorMap[status].capText,
@@ -105,16 +109,16 @@ export default function ManagerOrder({
             <img src={managerCallIconUrl} alt='cutomerCall' />
           </button>
         </a>
-        {!isConfirmed && onReschedule && (
+        {!isConfirmed && !isTerminal && onReschedule && (
           <button
             className='order-btn'
             onClick={onReschedule}
-            disabled={isDeleted}
+            disabled={isTerminal}
           >
             <img src={managerRefreshIconUrl} alt='refresh' />
           </button>
         )}
-        <button className='order-btn' disabled={isDeleted} onClick={onConfirmed}>
+        <button className='order-btn' disabled={isTerminal} onClick={onConfirmed}>
           <img src={managerConfirmedIconUrl} alt='confirmed' />
 
         </button>
@@ -152,7 +156,7 @@ export default function ManagerOrder({
             <button
               className='order-btn cancel'
               onClick={onDelete}
-              disabled={isDeleted}
+              disabled={isTerminal}
             >
               <img
                 src={managerCancelIconUrl}
@@ -163,7 +167,7 @@ export default function ManagerOrder({
 
           {(isNew || isDeleted) && renderControlButtons()}
 
-          {status !== "New" && !isDeleted && (
+          {status !== "New" && !isTerminal && (
             <div className='order-controll-right-box'>
               <a href={`tel:+${customer.phone}`}>
                 <button className='order-btn'>

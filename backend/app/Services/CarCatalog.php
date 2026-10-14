@@ -136,6 +136,44 @@ class CarCatalog
     }
 
     /** Selectable model years, newest first. */
+    /** null means no published production years: the client must label the choice as manual. */
+    public function modelYears(string $source, int $brandId, int $modelId): ?array
+    {
+        if ($source !== self::REMOTE || $brandId < 1 || $modelId < 1) {
+            return null;
+        }
+        try {
+            $brand = collect($this->remoteBrands())->firstWhere('id', $brandId);
+            if (! $brand || ! collect($this->remoteModels($brand))->contains('id', $modelId)) {
+                return null;
+            }
+            $rows = Cache::remember('carapi.generations.'.$modelId, 60 * 60 * 6,
+                fn () => $this->pages('/models/'.$modelId.'/generations'));
+            $years = [];
+            foreach ($rows as $row) {
+                $start = $row['year_start'] ?? $row['start_year'] ?? null;
+                $end = $row['year_end'] ?? $row['end_year'] ?? null;
+                if (! is_numeric($start) || (int) $start < self::MIN_YEAR || (int) $start > (int) now()->year + 1) {
+                    continue;
+                }
+                if ($end !== null && (! is_numeric($end) || (int) $end < (int) $start)) {
+                    continue;
+                }
+                $last = min($end === null ? (int) now()->year + 1 : (int) $end, (int) now()->year + 1);
+                foreach (range((int) $start, $last) as $year) {
+                    $years[$year] = $year;
+                }
+            }
+            rsort($years);
+
+            return $years === [] ? null : array_values($years);
+        } catch (\Throwable $e) {
+            Log::warning('CarAPI years unavailable.', ['exception' => $e::class]);
+
+            return null;
+        }
+    }
+
     public static function years(): array
     {
         return range((int) now()->year + 1, self::MIN_YEAR);

@@ -61,6 +61,8 @@
                                     <option value="1" @if($appointment->approved == 1) selected @endif>{{ __('admin.confirmed') }}</option>
                                     <option value="2" @if($appointment->approved == 2) selected @endif>{{ __('admin.cancelled') }}</option>
                                     <option value="3" @if($appointment->approved == 3) selected @endif>{{ __('admin.completed') }}</option>
+                                    <option value="4" @if($appointment->approved == 4) selected @endif>{{ __('admin.expired') }}</option>
+                                    <option value="5" @if($appointment->approved == 5) selected @endif>{{ __('admin.rescheduled') }}</option>
                                 </select>
 
 

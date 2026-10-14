@@ -33,6 +33,10 @@
                                 <option value="">{{ __('admin.all') }}</option>
                                 <option value="0" @selected(request('approved') === '0')>{{ __('admin.pending') }}</option>
                                 <option value="1" @selected(request('approved') === '1')>{{ __('admin.confirmed') }}</option>
+                                <option value="2" @selected(request('approved') === '2')>{{ __('admin.cancelled') }}</option>
+                                <option value="3" @selected(request('approved') === '3')>{{ __('admin.completed') }}</option>
+                                <option value="4" @selected(request('approved') === '4')>{{ __('admin.expired') }}</option>
+                                <option value="5" @selected(request('approved') === '5')>{{ __('admin.rescheduled') }}</option>
                             </select>
                         </div>
 

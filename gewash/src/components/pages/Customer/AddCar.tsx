@@ -1,29 +1,18 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { CarBrandDropDown } from "@/components/ui/CarBrandDropDown";
 import { CarModelDropDown } from "@/components/ui/CarModelDropDown";
 import { useAppDispatch, useAppSelector } from "../../../hooks/hooks";
 import { setBrand, setModel, addCar } from "@/store/carSlice";
-import { useNavigate } from "react-router-dom";
-import { useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { customFetch } from "@/utils/customFetch";
 import { invalidateCarsCache } from "@/hooks/useFetchCars";
 import { useCarBrands } from "@/hooks/useCarBrands";
 import type { Brand, Model, Car } from "@/store/carSlice";
+import { useCarYears } from "@/hooks/useCarYears";
+import { readCar, record } from "@/lib/carResult";
 import { useTranslation } from "@/hooks/useTranslation";
 import { leftArrowUrl, closeIconUrl } from "@/assets/staticUrls";
 import Header from "@/components/Header";
-
-function readCreatedCarId(body: unknown): number {
-  if (!body || typeof body !== "object") return 0;
-  const record = body as Record<string, unknown>;
-  const nested = record.car && typeof record.car === "object"
-    ? (record.car as Record<string, unknown>)
-    : record;
-  const rawId = nested.id ?? record.id;
-  if (typeof rawId === "number" && Number.isFinite(rawId)) return rawId;
-  if (typeof rawId === "string" && rawId.trim() && Number.isFinite(Number(rawId))) return Number(rawId);
-  return 0;
-}
 
 export default function AddCar({ showHeader }: { showHeader?: boolean }) {
   const dispatch = useAppDispatch();
@@ -41,10 +30,14 @@ export default function AddCar({ showHeader }: { showHeader?: boolean }) {
   const location = useLocation();
   const shouldShowHeader = showHeader !== false && location.state?.fromRegistration !== true;
   const [models, setModels] = useState<Model[]>([]);
-  const { brands, loading } = useCarBrands();
+  const [year, setYear] = useState("");
+  const [modelsLoading, setModelsLoading] = useState(false);
+  const modelRequest = useRef(0);
+  const yearOptions = useCarYears(brand, model);
+  useEffect(() => { setYear(""); }, [brand?.id, model?.id]);
+  const { brands, loading, error: brandsError } = useCarBrands();
   const normalizedPlate = numberPlate.replace(/[\s-]/g, "");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
 
   const handlePlateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
@@ -58,43 +51,48 @@ export default function AddCar({ showHeader }: { showHeader?: boolean }) {
     setNumberPlate(formatted);
     setError("");
   };
-  
 
   const handleBrandSelect = async (selected: Brand) => {
     dispatch(setBrand(selected));
     setBrandDropdownOpen(false);
-
-    const token = localStorage.getItem("access_token");
-    const res = await customFetch(
-      `${import.meta.env.VITE_API_URL}/cars/brands/${selected.id}/models`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    if (res.ok) {
-      const data = await res.json();
-      setModels(data.models);
+    setModelDropdownOpen(false);
+    setModels([]);
+    setError("");
+    setModelsLoading(true);
+    const sequence = ++modelRequest.current;
+    try {
+      const res = await customFetch(`${import.meta.env.VITE_API_URL}/cars/brands/${selected.id}/models`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` },
+      });
+      if (!res.ok) throw new Error("Models unavailable");
+      const body = record(await res.json());
+      if (sequence !== modelRequest.current) return;
+      if (!Array.isArray(body?.models)) throw new Error("Invalid models");
+      const options: Model[] = body.models.flatMap(value => {
+        const row = record(value);
+        return typeof row?.id === "number" && typeof row.name === "string"
+          ? [{ id: row.id, name: row.name, source: row.source === "carapi" ? "carapi" : "local" }] : [];
+      });
+      setModels(options);
       setModelDropdownOpen(true);
-    } else {
-      console.error("Failed to load models");
+    } catch {
+      if (sequence === modelRequest.current) setError("modelsUnavailable");
+    } finally {
+      if (sequence === modelRequest.current) setModelsLoading(false);
     }
   };
 
   const isValidPlate = /^([A-Z]{2}) - ([0-9]{3}) - ([A-Z]{2})$/.test(
     numberPlate
   );
-  const isFormReady = brand && model && isValidPlate;
+  const isFormReady = brand && model && year && isValidPlate && !yearOptions.loading;
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
   
     if (!isValidPlate) {
       setError("Invalid number plate format");
-      setIsSubmitting(false); // ⬅️ сброс при валидации
+      setIsSubmitting(false);
       return;
     }
   
@@ -103,57 +101,49 @@ export default function AddCar({ showHeader }: { showHeader?: boolean }) {
       return;
     }
 
-    const newCar: Car = {
-      id: 0,
-      plate: numberPlate,
-      model: {
-        name: model.name,
-        type: "",
-        brand: { name: brand.name },
-      },
-    };
-  
+    if (!year || !yearOptions.years.includes(Number(year))) {
+      setError("chooseYear");
+      setIsSubmitting(false);
+      return;
+    }
     const token = localStorage.getItem("access_token");
     const payload = {
-      model_id: model.id,
-      plate: normalizedPlate,
+      source: model.source ?? brand.source ?? "local",
+      brand_id: brand.id, model_id: model.id, year: Number(year), plate: normalizedPlate,
     };
-  
     try {
       const res = await customFetch(`${import.meta.env.VITE_API_URL}/mycars/add`, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-  
-      if (!res.ok) {
-        throw new Error("Failed to add car to server");
-      }
-
       const body: unknown = await res.json().catch(() => null);
-      const createdId = readCreatedCarId(body);
-      const createdCar: Car = { ...newCar, id: createdId };
-
+      const data = record(body);
+      if (!res.ok || data?.success !== true) {
+        setError(data?.error_code === "plate_exists" ? "plateExists" : res.status === 401 ? "sessionExpired" : "saveFailed");
+        return;
+      }
+      const createdCar = readCar(body);
+      if (!createdCar) {
+        setError("saveFailed");
+        return;
+      }
       invalidateCarsCache();
       dispatch(addCar(createdCar));
       setAddedCar(createdCar);
       setSubmitted(true);
-    } catch (err) {
-      console.error(err);
-      setError("Number plate is already exist");
+    } catch {
+      setError("saveFailed");
     } finally {
       setIsSubmitting(false);
     }
   };
-  
 
   const resetForm = () => {
     dispatch(setBrand(null));
     dispatch(setModel(null));
     setNumberPlate("");
+    setYear("");
     setSubmitted(false);
     setError("");
     setAddedCar(null);
@@ -176,11 +166,10 @@ export default function AddCar({ showHeader }: { showHeader?: boolean }) {
         {!submitted ? (
           <>
             <p className='add-car-title-info'>{t("AddCar.subtitle")}</p>
+            {brandsError && <span className="plate-error">{t("AddCar.errors.brandsUnavailable")}</span>}
             {error && (
               <span className='plate-error'>
-                {error === "Invalid number plate format"
-                  ? t("AddCar.errors.invalidPlate")
-                  : t("AddCar.errors.plateExists")}
+                {error === "Invalid number plate format" ? t("AddCar.errors.invalidPlate") : t(`AddCar.errors.${error}`)}
               </span>
             )}
             <div className='input-block'>
@@ -203,7 +192,7 @@ export default function AddCar({ showHeader }: { showHeader?: boolean }) {
               <label>{t("AddCar.labels.model")}</label>
               <div
                 className={`input-select ${!brand ? "disabled" : ""}`}
-                onClick={() => brand && setModelDropdownOpen(true)}
+                onClick={() => brand && !modelsLoading && setModelDropdownOpen(true)}
               >
                 <span className={model ? "active" : ""}>
                   {model?.name || t("AddCar.placeholders.chooseModel")}
@@ -213,6 +202,19 @@ export default function AddCar({ showHeader }: { showHeader?: boolean }) {
                   alt={t("AddCar.icons.arrowAlt")}
                 />
               </div>
+            </div>
+
+            <div className="input-block">
+              <label htmlFor="car-year">{t("AddCar.labels.year")}</label>
+              <select id="car-year" className="input-select" value={year} disabled={!model || yearOptions.loading}
+                onChange={event => { setYear(event.target.value); setError(""); }}>
+                <option value="">{t("AddCar.placeholders.chooseYear")}</option>
+                {yearOptions.years.map(value => <option key={value} value={value}>{value}</option>)}
+              </select>
+              {model && !yearOptions.loading && !yearOptions.failed && yearOptions.source === "manual" && <p>{t("AddCar.yearManual")}</p>}
+              {yearOptions.failed && <div role="alert">{t("AddCar.errors.yearsUnavailable")}
+                <button type="button" onClick={yearOptions.retry}>{t("AddCar.retry")}</button>
+              </div>}
             </div>
 
             <div className='number-plate-input'>

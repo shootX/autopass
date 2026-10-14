@@ -1,48 +1,47 @@
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
-const root = process.cwd();
-
-function walk(dir, out = []) {
-  for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
-    const p = path.join(dir, ent.name);
-    if (ent.isDirectory()) walk(p, out);
-    else if (/\.(ts|tsx|js|jsx)$/.test(ent.name)) out.push(p);
+export function scanKeys(dir) {
+  const keys = new Set();
+  function walk(folder) {
+    for (const ent of fs.readdirSync(folder, { withFileTypes: true })) {
+      const file = path.join(folder, ent.name);
+      if (ent.isDirectory()) walk(file);
+      else if (/\.(ts|tsx|js|jsx)$/.test(ent.name) && !/\.(test|spec)\./.test(ent.name)) {
+        for (const match of fs.readFileSync(file, "utf8").matchAll(/\bt\(\s*(["'])([^"']+?)\1\s*\)/g)) keys.add(match[2]);
+      }
+    }
   }
-  return out;
+  walk(dir);
+  return [...keys].sort();
 }
 
-const en = JSON.parse(fs.readFileSync(path.join(root, "en.json"), "utf8"));
+export function missingKeys(translations, keys) {
+  return keys.filter(key => {
+    let value = translations;
+    for (const part of key.split(".")) value = value && typeof value === "object" ? value[part] : undefined;
+    return typeof value !== "string" || !value.trim() || value === key;
+  });
+}
 
-function has(obj, key) {
-  const parts = key.split(".");
-  let cur = obj;
-  for (const k of parts) {
-    if (!cur || typeof cur !== "object" || Array.isArray(cur)) return false;
-    if (!Object.prototype.hasOwnProperty.call(cur, k)) return false;
-    cur = cur[k];
+export function check(root) {
+  const keys = scanKeys(path.join(root, "src"));
+  let missing = 0;
+  for (const language of ["ka", "en", "ru"]) {
+    for (const file of [path.join(root, language + ".json"), path.join(root, "../backend/public/lang", language + ".json")]) {
+      const absent = missingKeys(JSON.parse(fs.readFileSync(file, "utf8")), keys);
+      console.log(path.relative(root, file) + ": " + absent.length + " missing");
+      if (absent.length) console.log(absent.join("\n"));
+      missing += absent.length;
+    }
   }
-  return cur !== undefined;
+  console.log("t() keys: " + keys.length);
+  return missing === 0 ? 0 : 1;
 }
 
-const srcDir = path.join(root, "src");
-const files = walk(srcDir);
-
-const tCallRe = /\bt\(\s*(["'])([^"']+?)\1\s*\)/g;
-const keys = new Set();
-
-for (const f of files) {
-  const txt = fs.readFileSync(f, "utf8");
-  let m;
-  while ((m = tCallRe.exec(txt))) keys.add(m[2]);
-}
-
-const all = [...keys].sort();
-const missing = all.filter((k) => !has(en, k));
-
-console.log(`t() keys: ${keys.size}`);
-console.log(`missing: ${missing.length}`);
-if (missing.length) {
-  console.log(missing.join("\n"));
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  try { process.exitCode = check(process.cwd()); }
+  catch (error) { console.error(error.message); process.exitCode = 1; }
 }
 

@@ -19,31 +19,31 @@ class StatisticsController extends Controller
 {
     public function my_washes(Request $request)
     {
-        //Current user
+        // Current user
         $user = auth()->user();
-        //Check if manager
+        // Check if manager
         if ($user->role != User::ROLE_MANAGER) {
             return response()->json([
                 'success' => false,
-                'message' => 'Forbidden'
+                'message' => 'Forbidden',
             ], 403);
         }
 
         $myWashes = CarWash::where('manager_id', $user->id)->first();
 
-        if($myWashes)
-        {
+        if ($myWashes) {
             return response()->json([
                 'success' => true,
-                'my_wash' => $myWashes
+                'my_wash' => $myWashes,
             ]);
         } else {
             return response()->json([
                 'success' => false,
-                'message' => 'Car wash not found'
+                'message' => 'Car wash not found',
             ], 404);
         }
     }
+
     public function report(Request $request)
     {
         $user = auth()->user();
@@ -100,35 +100,35 @@ class StatisticsController extends Controller
     public function statistic(Request $request, CarWash $carWash)
     {
         try {
-            //Current user
+            // Current user
             $user = auth()->user();
-            //Check if manager
+            // Check if manager
             if ($user->role != User::ROLE_MANAGER) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Forbidden'
+                    'message' => 'Forbidden',
                 ], 403);
             }
-            //Check if manager is owner of car wash
+            // Check if manager is owner of car wash
             if ($carWash->manager_id != $user->id) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Forbidden'
+                    'message' => 'Forbidden',
                 ], 403);
             }
-            //Validation
+            // Validation
             $validator = Validator::make($request->all(), [
-                'period' => 'required|in:today,yesterday,week,month'
+                'period' => 'required|in:today,yesterday,week,month',
             ]);
 
             if ($validator->fails()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Invalid period'
+                    'message' => 'Invalid period',
                 ], 400);
             }
 
-            //Get statistics
+            // Get statistics
             $period = $request->input('period');
             $end = now();
             switch ($period) {
@@ -146,10 +146,10 @@ class StatisticsController extends Controller
                     $start = now()->startOfMonth();
                     break;
             }
-            //Get statistics
+            // Get statistics
             $washCount = Appointment::where('car_wash_id', $carWash->id)
                 ->whereBetween('date', [$start, $end])
-                ->where('approved', true)
+                ->where('approved', 3)
                 ->count();
 
             $car_types = Appointment::query()
@@ -157,8 +157,8 @@ class StatisticsController extends Controller
                 ->join('packages', 'packages.id', '=', 'user_packages.package_id')
                 ->where('appointments.car_wash_id', $carWash->id)
                 ->whereBetween('appointments.date', [$start, $end])
-                ->where('appointments.approved', true)
-                ->select('packages.car_type', DB::raw('COUNT(*) as count'))
+                ->where('appointments.approved', 3)
+                ->select('packages.car_type', DB::raw('COUNT(DISTINCT appointments.id) as count'))
                 ->groupBy('packages.car_type')
                 ->pluck('count', 'packages.car_type');
 
@@ -167,7 +167,7 @@ class StatisticsController extends Controller
                 ->join('packages', 'packages.id', '=', 'user_packages.package_id')
                 ->where('appointments.car_wash_id', $carWash->id)
                 ->whereBetween('appointments.date', [$start, $end])
-                ->where('appointments.approved', true)
+                ->where('appointments.approved', 3)
                 ->select(
                     'packages.count_washes',
                     DB::raw('COUNT(DISTINCT appointments.user_id) as count')
@@ -181,14 +181,13 @@ class StatisticsController extends Controller
                 'whashes' => $washCount,
                 'packages' => $packageStats,
                 'car_types' => $car_types,
-                'graph' => null
+                'graph' => null,
             ];
 
-            if(in_array($period, ['week', 'month']))
-            {
+            if (in_array($period, ['week', 'month'])) {
                 $washCountWeek = Appointment::where('car_wash_id', $carWash->id)
                     ->whereBetween('date', [$start, $end])
-                    ->where('approved', true)
+                    ->where('approved', 3)
                     ->select(
                         'date as day',
                         DB::raw('COUNT(*) as count')
@@ -203,14 +202,13 @@ class StatisticsController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $data
+                'data' => $data,
             ]);
 
-        } catch (Exception $e)
-        {
+        } catch (Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Some error'
+                'message' => 'Some error',
             ], 500);
         }
     }
@@ -228,6 +226,8 @@ class StatisticsController extends Controller
         return match ((string) $approved) {
             '2' => 'cancelled',
             '3' => 'completed',
+            '4' => 'expired',
+            '5' => 'rescheduled',
             default => 'pending',
         };
     }

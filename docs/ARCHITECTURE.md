@@ -64,7 +64,7 @@ API პრეფიქსი Laravel-ის ნაგულისხმევი
 
 - ფილიალი: `CarWash`, სერვისი `CarWashService`, კავშირი `CarWashServicesList`. მენეჯერი `manager_id`.
 - მანქანა: `CarBrand`, `CarModel`, `BodyType`, კლიენტის მანქანა `UserCar`.
-- ჯავშანი: `Appointment` + `AppointmentsService`. ველი `approved` ინახავს სტატუსს. API იღებს მთელ რიცხვს 1–5. ადმინის სია: `0` მოლოდინი, `1` დადასტურებული, `2` გაუქმებული, `3` დასრულებული (`WashReportQuery::statusLabel`). API-ში `1` არის დადასტურების push, `2` უარყოფა და წაშლა, `3` გადატანის push.
+- ჯავშანი: `Appointment` + `AppointmentsService`. `AppointmentStatus` არის საერთო კონტრაქტი: `0` მოლოდინი, `1` დადასტურებული, `2` გაუქმებული, `3` დასრულებული, `4` ვადაგასული, `5` გადატანილი. PostgreSQL-ზე `approved` არის smallint + check (0–5). გაუქმება ისტორიას არ შლის. `BookingService` ფილიალსა და მანქანას ბლოკავს, ამოწმებს მფლობელს, ფილიალის სერვისებს, სამუშაო საათსა და ზუსტ დროს, შემდეგ ჯავშანსა და სერვისებს ერთ ტრანზაქციაში ინახავს. დასრულების სტატისტიკა ითვლის `3`-ს.
 - პაკეტი: `Package`, `PackagePrice`, `UserPackage` (QR, ვადა, დარჩენილი რეცხვა).
 - მაღაზია: `Ticket` / `UserTicket`, `Voucher` / `UserVoucher` / `VoucherCategory`.
 - ქულები: `users.points`, `Transaction`.

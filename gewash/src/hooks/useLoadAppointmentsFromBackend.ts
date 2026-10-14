@@ -31,7 +31,8 @@ export function useLoadAppointmentsFromBackend() {
       .then((res) => res.json())
       .then((data: unknown) => {
         const body = asRecord(data);
-        const list = Array.isArray(body?.appointments) ? body.appointments : [];
+        const list = Array.isArray(body?.appointments)
+          ? body.appointments.filter(item => ![2, 3, 4].includes(Number(asRecord(item)?.approved))) : [];
         const mapped = list.map((item) => {
           const a = asRecord(item);
           const washing = asRecord(a?.washing);

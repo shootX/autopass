@@ -1,6 +1,8 @@
 <?php
 
 return [
+    'expired' => 'ვადაგასული',
+    'rescheduled' => 'გადატანილი',
     'panel' => 'ადმინი',
     'dashboard' => 'დეშბორდი',
     'data_board' => 'მონაცემთა დაფა',
