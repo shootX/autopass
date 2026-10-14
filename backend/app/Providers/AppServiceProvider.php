@@ -2,13 +2,13 @@
 
 namespace App\Providers;
 
-use Illuminate\Cache\RateLimiting\Limit;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\RateLimiter;
 use App\Services\Sms\MockSmsGateway;
 use App\Services\Sms\SmsConfigurationException;
 use App\Services\Sms\SmsGateway;
 use App\Services\Sms\SmsOfficeGateway;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
@@ -34,7 +34,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //URL::forceScheme('https');
+        // URL::forceScheme('https');
 
         // OTP / SMS endpoints: per IP and per phone, so one number can't be spammed.
         RateLimiter::for('otp', fn (Request $request) => [
@@ -47,8 +47,9 @@ class AppServiceProvider extends ServiceProvider
             Limit::perMinute(5)->by('login-id:'.strtolower((string) ($request->input('phone') ?? $request->input('login') ?? ''))),
         ]);
 
-        RateLimiter::for('voucher', fn (Request $request) =>
-            Limit::perMinute(20)->by('voucher:'.(auth('partners')->id() ?? auth('api')->id() ?? $request->ip())));
+        RateLimiter::for('voucher', fn (Request $request) => Limit::perMinute(20)->by('voucher:'.(auth('partners')->id() ?? auth('api')->id() ?? $request->ip())));
+
+        RateLimiter::for('referral', fn (Request $request) => Limit::perMinute(10)->by('referral:'.$request->ip()));
 
         RateLimiter::for('public', fn (Request $request) => Limit::perMinute(60)->by($request->ip()));
     }

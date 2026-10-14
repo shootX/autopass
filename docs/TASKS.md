@@ -190,3 +190,8 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 - [x] Admin car wash edit validates fields; manager_id must be a manager; services stripped from update.
 - [x] Ticket purchase: integer qty 1..20, DB::transaction + lockForUpdate (ticket, user), limit counts qty, tickets + ledger inside transaction, rollback tested.
 - [ ] Follow-up: admin UI for partner/company ban; ReferralsController::saveHash public unvalidated writes; TbcPayment/Transaction/UserVoucher still $guarded=[] (server-side only).
+
+## 2026-10-14 — Stage 2 follow-ups
+- [x] /api/ref/save-hash + check-hash: hash must be 64 hex, code must be an existing 5-char ref_code; `throttle:referral` 10/min/IP.
+- [x] Admin ban/unban partner (POST /dashboard/partners/{id}/ban, button on partner edit page) and company (POST /dashboard/corporate/{id}/ban, button in corporate list). Partner JWTs revoked via token_version, company panel sessions via session_version, company API key refused (403) while banned.
+- [x] Admin edit of user phone/email: admin role only, admin_audit_logs entry per field (masked), user's JWTs + DB sessions revoked. Bans are audited too.
