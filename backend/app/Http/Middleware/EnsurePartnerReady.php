@@ -16,6 +16,10 @@ class EnsurePartnerReady
             return response()->json(['success' => false, 'error' => 'Unauthenticated'], 401);
         }
 
+        if ($partner->ban) {
+            return response()->json(['success' => false, 'error' => 'Unauthenticated'], 401);
+        }
+
         $claim = JWTAuth::parseToken()->getPayload()->get('tv');
         $version = $claim === null ? 0 : (int) $claim;
         if ($version !== (int) $partner->token_version) {

@@ -7,14 +7,13 @@ use App\Models\TbcPayment;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Models\UserPackage;
+use App\Support\TestPayments;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class SettleTbcPayment
 {
-    public function __construct(private TbcCheckout $tbc)
-    {
-    }
+    public function __construct(private TbcCheckout $tbc) {}
 
     public function fromPayId(string $payId): ?TbcPayment
     {
@@ -42,6 +41,16 @@ class SettleTbcPayment
             $locked = TbcPayment::query()->whereKey($payment->id)->lockForUpdate()->first();
             if (! $locked || $locked->status === 'succeeded') {
                 return $locked ?? $payment;
+            }
+
+            // Sandbox money is only credited if the owner is still an allowed, unbanned tester right now.
+            if ($locked->test_mode) {
+                $owner = User::query()->whereKey($locked->user_id)->lockForUpdate()->first();
+                if (! TestPayments::allowed($owner)) {
+                    $locked->update(['status' => 'Failed']);
+
+                    return $locked->fresh();
+                }
             }
 
             if ($locked->type === 'package') {

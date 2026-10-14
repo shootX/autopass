@@ -22,6 +22,7 @@ use App\Models\UserTicket;
 use App\Models\UserVoucher;
 use App\Models\Voucher;
 use App\Models\VoucherCategory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -30,6 +31,9 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        // Seed data sets role/points/ref_code, which are not mass-assignable in app code.
+        Model::unguard();
+
         $admin = User::query()->updateOrCreate(
             ['email' => 'admin@gewash.ge'],
             [
