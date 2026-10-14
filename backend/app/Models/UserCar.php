@@ -11,9 +11,13 @@ class UserCar extends Model
         'user_id',
         'model_id',
         'plate',
+        'year',
     ];
 
-    public function model() {
+    protected $casts = ['year' => 'integer'];
+
+    public function model()
+    {
         return $this->belongsTo(CarModel::class, 'model_id');
     }
 
@@ -21,5 +25,4 @@ class UserCar extends Model
     {
         return $this->hasOne(UserPackage::class, 'user_car_id');
     }
-
 }

@@ -11,8 +11,13 @@ class CarModel extends Model
         'name',
         'brand_id',
         'type',
-        'img'
+        'img',
+        'source',
+        'external_model_id',
     ];
+
+    protected $casts = ['external_model_id' => 'integer'];
+
     const IMAGES = [
         'sedan' => '/assets/img/car_types/sedan_image.png',
         'suv' => '/assets/img/car_types/suv_image.png',
@@ -20,9 +25,10 @@ class CarModel extends Model
         'coupe' => '/assets/img/car_types/coupe_image.png',
         'convertible' => '/assets/img/car_types/convertible_image.png',
         'wagon' => '/assets/img/car_types/wagon_image.png',
-        //'van' => '/assets/img/car_types/van_image.png',
+        // 'van' => '/assets/img/car_types/van_image.png',
         'pickup' => '/assets/img/car_types/pickup_image.png',
     ];
+
     public function brand(): BelongsTo
     {
         return $this->belongsTo(CarBrand::class, 'brand_id');
@@ -30,7 +36,7 @@ class CarModel extends Model
 
     public function getImageAttribute()
     {
-        //return self::IMAGES[$this->type] ?? '/assets/images/car_types/sedan_image.png';
+        // return self::IMAGES[$this->type] ?? '/assets/images/car_types/sedan_image.png';
 
         $img = $this->img;
         if (is_null($img)) {
@@ -45,6 +51,7 @@ class CarModel extends Model
                 return self::IMAGES[$this->type] ?? '/assets/images/car_types/sedan_image.png';
             }
         }
+
         return $img;
     }
 }

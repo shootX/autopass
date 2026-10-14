@@ -204,3 +204,12 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 - [x] ტესტი `gewash/src/App.routes.test.tsx`: აპის როუტერი ხატავს მთავარს (`/`, ნომერი და „სწრაფი ჩაწერა“) და შესვლას (`/auth`, სათაური „შესვლა“ და ტელეფონის ველი). `/login` მარშრუტი არ არსებობს — შესვლა არის `/auth`.
 - [x] შემოღებულია `650defc` (2026-10-12, ავტორი Cursor Agent), PR #6 (`cursor/fe-11-manager-routing-9883`).
 - [x] gewash: lint 0, vitest 85/85, `build:check` 0. მერჯი და დეპლოი არ გაკეთებულა.
+
+## 2026-10-14 — Stage 2 items 5–6
+- [x] Partner voucher check: Cache::lock per voucher+recipient, open challenge reused within SECURITY_VOUCHER_CHECK_DEDUPE_SECONDS (60) → one SMS for repeated checks; 429 while a check is still running.
+- [x] Car catalog: source + external ids, CarAPI ids no longer treated as local ids, year on user_cars + GET /api/cars/years. Contract in gewash-frontend-integration.md.
+- [ ] Frontend: AddCar must send source/brand_id/year (see contract).
+
+## 2026-10-14 — QA fixes on #22
+- [x] Model resolution checks brand: local model must belong to brand_id; offline CarAPI fallback only reuses a mapping under the same external brand.
+- [x] Parallel first-time add of the same CarAPI model: unique (source, external_*_id) + lookup/insert with UniqueConstraintViolationException retry → no 500, one row.

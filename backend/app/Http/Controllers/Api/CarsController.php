@@ -3,13 +3,12 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\BodyType;
 use App\Models\CarBrand;
 use App\Models\CarModel;
 use App\Models\UserCar;
 use App\Services\CarCatalog;
-use Auth;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 class CarsController extends Controller
@@ -20,6 +19,7 @@ class CarsController extends Controller
             $brands = array_map(fn (array $brand) => [
                 'id' => $brand['id'],
                 'name' => $brand['name'],
+                'source' => $brand['source'],
             ], app(CarCatalog::class)->brands());
 
             return response()->json(['success' => true, 'brands' => $brands]);
@@ -41,7 +41,7 @@ class CarsController extends Controller
 
             return response()->json([
                 'success' => true,
-                'brand' => ['id' => (int) $brand_id, 'name' => $brand['name'] ?? ''],
+                'brand' => ['id' => (int) $brand_id, 'name' => $brand['name'] ?? '', 'source' => $brand['source'] ?? CarCatalog::LOCAL],
                 'models' => $models,
             ]);
         } catch (\Exception $e) {
@@ -59,9 +59,11 @@ class CarsController extends Controller
             $cars = $cars->map(function ($car) {
                 $m = $car->model;
                 $b = $m->brand;
+
                 return [
                     'id' => $car->id,
                     'plate' => $car->plate,
+                    'year' => $car->year,
                     'model' => $m,
                     'brand' => $b,
                     'image' => $m->image,
@@ -70,12 +72,12 @@ class CarsController extends Controller
 
             return response()->json([
                 'success' => true,
-                'cars' => $cars
+                'cars' => $cars,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'error' => 'Request failed'
+                'error' => 'Request failed',
             ], 400);
         }
     }
@@ -86,7 +88,7 @@ class CarsController extends Controller
 
         $validator = Validator::make($request->all(), [
             'plate' => ['required', 'string', 'max:9', function ($attribute, $value, $fail) {
-                if (!preg_match('/^[A-Z]{2}[0-9]{3}[A-Z]{2}$/', $value)) {
+                if (! preg_match('/^[A-Z]{2}[0-9]{3}[A-Z]{2}$/', $value)) {
                     $fail('The '.$attribute.' must be in the format of 2 letters 3 numbers 2 letters.');
                 }
             }],
@@ -95,17 +97,21 @@ class CarsController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'error' => 'Не верный формат номера'
+                'error' => 'Не верный формат номера',
             ], 400);
+        }
+
+        $catalogErrors = $this->catalogValidator($request);
+        if ($catalogErrors !== null) {
+            return response()->json(['success' => false, 'error' => $catalogErrors], 422);
         }
 
         $exist = UserCar::where('plate', $request->plate)->first();
 
-        if($exist)
-        {
+        if ($exist) {
             return response()->json([
                 'success' => false,
-                'error' => 'Такой номер уже есть в базе'
+                'error' => 'Такой номер уже есть в базе',
             ], 400);
         }
 
@@ -114,18 +120,19 @@ class CarsController extends Controller
             return response()->json([
                 'success' => false,
                 'error' => 'Модель не найдена',
-            ], 400);
+            ], 422);
         }
 
         UserCar::create([
             'user_id' => $user->id,
             'model_id' => $modelId,
             'plate' => $request->plate,
+            'year' => $request->filled('year') ? (int) $request->input('year') : null,
         ]);
 
         return response()->json([
             'success' => true,
-            'msg' => 'Машина добавлена'
+            'msg' => 'Машина добавлена',
         ], 200);
 
     }
@@ -147,9 +154,39 @@ class CarsController extends Controller
             return (int) $model->id;
         }
 
-        $id = (int) $request->input('model_id');
+        if (! $request->filled('model_id') || ! $request->filled('source')) {
+            return null;
+        }
 
-        return CarModel::query()->whereKey($id)->exists() ? $id : null;
+        return app(CarCatalog::class)->resolveModelId(
+            (string) $request->input('source'),
+            (int) $request->input('model_id'),
+            $request->filled('brand_id') ? (int) $request->input('brand_id') : null,
+        );
+    }
+
+    /** model_id is only meaningful with its id space (source); year is optional. */
+    private function catalogValidator(Request $request): ?string
+    {
+        $v = Validator::make($request->all(), [
+            'source' => ['nullable', 'in:'.CarCatalog::LOCAL.','.CarCatalog::REMOTE],
+            'model_id' => ['nullable', 'integer', 'min:1'],
+            'brand_id' => ['nullable', 'integer', 'min:1', 'required_if:source,'.CarCatalog::REMOTE],
+            'year' => ['nullable', 'integer', 'between:'.CarCatalog::MIN_YEAR.','.((int) now()->year + 1)],
+        ]);
+        if ($v->fails()) {
+            return $v->errors()->first();
+        }
+        if ($request->filled('model_id') && ! $request->filled('source')) {
+            return 'source is required with model_id';
+        }
+
+        return null;
+    }
+
+    public function years()
+    {
+        return response()->json(['success' => true, 'years' => CarCatalog::years()]);
     }
 
     public function editMyCar(Request $request, $carid)
@@ -159,7 +196,7 @@ class CarsController extends Controller
 
             $validator = Validator::make($request->all(), [
                 'plate' => ['sometimes', 'required', 'string', 'max:9', function ($attribute, $value, $fail) {
-                    if (!preg_match('/^[A-Z]{2}[0-9]{3}[A-Z]{2}$/', $value)) {
+                    if (! preg_match('/^[A-Z]{2}[0-9]{3}[A-Z]{2}$/', $value)) {
                         $fail('The '.$attribute.' must be in the format of 2 letters 3 numbers 2 letters.');
                     }
                 }],
@@ -169,6 +206,11 @@ class CarsController extends Controller
                 return response()->json(['success' => false, 'error' => $validator->errors()->first()], 422);
             }
 
+            $catalogErrors = $this->catalogValidator($request);
+            if ($catalogErrors !== null) {
+                return response()->json(['success' => false, 'error' => $catalogErrors], 422);
+            }
+
             $car = $user->cars()->where('id', $carid)->first();
             if (! $car) {
                 return response()->json(['success' => false, 'error' => 'Машина не найдена'], 404);
@@ -176,6 +218,9 @@ class CarsController extends Controller
 
             // Only whitelisted fields; never mass-assign user_id etc.
             $data = $request->only(['plate']);
+            if ($request->has('year')) {
+                $data['year'] = $request->filled('year') ? (int) $request->input('year') : null;
+            }
             if ($request->filled('model_id') || ($request->filled('brand_name') && $request->filled('model_name'))) {
                 $modelId = $this->localModelId($request);
                 if ($modelId === null) {
@@ -187,12 +232,12 @@ class CarsController extends Controller
 
             return response()->json([
                 'success' => true,
-                'msg' => 'Машина обновлена'
+                'msg' => 'Машина обновлена',
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'error' => 'Ошибка обновления'
+                'error' => 'Ошибка обновления',
             ], 400);
         }
     }
@@ -208,12 +253,12 @@ class CarsController extends Controller
 
             return response()->json([
                 'success' => true,
-                'msg' => 'Машина удалена'
+                'msg' => 'Машина удалена',
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'error' => 'Ошибка удаления'
+                'error' => 'Ошибка удаления',
             ], 400);
         }
     }

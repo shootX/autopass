@@ -22,3 +22,22 @@ Live რეჟიმი ნაგულისხმევია. `VITE_DEMO` ა
 | maintenance | — | /maintenance | სერვერის დროშა არ არის |
 
 დროის ზონა ჯავშნებზე რჩება სერვერის `date` + `time` ველებზე. ბრაუზერის timezone-ით დღე არ გადაითვლება.
+## Car catalog contract (2026-10-14, stage 2 item 6)
+
+Ids from the catalog live in two id spaces. Every catalog item now says which one.
+
+- `GET /api/cars/brands` → `brands[]: { id, name, source }`. `source` is `"carapi"` (id = CarAPI brand id) or `"local"` (id = our `car_brands.id`, used when CarAPI is down/unconfigured).
+- `GET /api/cars/brands/{brand_id}/models` → `brand: { id, name, source }`, `models[]: { id, name, source }`. Same meaning.
+- `GET /api/cars/years` (new, auth) → `years: number[]`, newest first, from current year + 1 down to 1950.
+- `POST /api/mycars/add` body: `{ plate, source, model_id, brand_id?, year? }`
+  - `source` is **required** whenever `model_id` is sent; copy it from the picked model.
+  - `brand_id` is required when `source = "carapi"` (the picked brand's `id`). With `source = "local"` it is optional, but if sent the model must belong to that brand (else 422). If CarAPI is down, a CarAPI pick is accepted only if it was mapped before under the same brand.
+  - `year` optional integer 1950..current+1.
+  - `model_id` without `source` → 422. Unknown model → 422 (was 400).
+  - Legacy `{ brand_name, model_name }` still works.
+- `POST /api/mycars/{id}/edit`: same fields (all optional); `year: null` clears it.
+- `GET /api/mycars` → each car adds `year` (number|null); `model` adds `source` and `external_model_id` (CarAPI id or null). `model.id` is always our local id.
+
+Backend: `car_brands.source/external_brand_id`, `car_models.source/external_model_id` (unique per source), `user_cars.year`. Additive migration; existing rows become `source=local`, no ids change. CarAPI picks are upserted to a local row by (source, external id) after checking them against CarAPI.
+
+Frontend change (gewash AddCar.tsx): send `source: model.source, brand_id: brand.id, model_id: model.id` plus `year` from a picker fed by `/api/cars/years`. Deploy backend and frontend together: the current frontend sends `model_id` without `source` and will get a 422 (before this, it silently attached the wrong model when a CarAPI id matched a local id).
