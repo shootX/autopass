@@ -61,8 +61,8 @@ describe("i18n coverage", () => {
     const parent = fs.mkdtempSync(path.join(os.tmpdir(), "i18n-public-"));
     const root = path.join(parent, "gewash");
     const back = path.join(parent, "backend", "public", "lang");
-    fs.mkdirSync(path.join(root, "src"));
-    fs.mkdirSync(back);
+    fs.mkdirSync(path.join(root, "src"), { recursive: true });
+    fs.mkdirSync(back, { recursive: true });
     fs.writeFileSync(path.join(root, "src", "screen.tsx"), `export const label = t("Hello.Key");\n`);
     const front = { Hello: { Key: "Hello" } };
     const drifted = { Hello: { Key: "Other" } };
