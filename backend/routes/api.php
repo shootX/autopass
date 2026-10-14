@@ -1,25 +1,27 @@
 <?php
 
+use App\Http\Controllers\Admin\SmsInboxController;
 use App\Http\Controllers\Api\AppointmentsController;
-use App\Http\Controllers\Api\CorporateFleetController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CarsController;
+use App\Http\Controllers\Api\ContactsController;
+use App\Http\Controllers\Api\CorporateFleetController;
 use App\Http\Controllers\Api\FaqController;
 use App\Http\Controllers\Api\PackagesController;
 use App\Http\Controllers\Api\PaymentsController;
 use App\Http\Controllers\Api\PointsController;
 use App\Http\Controllers\Api\ReferralsController;
 use App\Http\Controllers\Api\ReviewsController;
+use App\Http\Controllers\Api\ShopController;
 use App\Http\Controllers\Api\StatisticsController;
 use App\Http\Controllers\Api\TicketsController;
 use App\Http\Controllers\Api\UserController;
-use App\Http\Controllers\Api\ContactsController;
-use App\Http\Controllers\Api\ShopController;
 use App\Http\Controllers\Api\VouchersController;
-use App\Models\User;
-use App\Models\Voucher;
-use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\CorsMiddleware;
+use App\Http\Middleware\EnsureApiSession;
+use App\Http\Middleware\EnsurePartnerReady;
+use App\Models\Promo;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/lang/{lang}', function ($lang) {
 
@@ -28,12 +30,12 @@ Route::get('/lang/{lang}', function ($lang) {
     }
 
     $allowed = ['ka', 'en', 'ru'];
-    if (!in_array($lang, $allowed, true)) {
+    if (! in_array($lang, $allowed, true)) {
         return response()->json(['success' => false], 404);
     }
 
-    $jsonFile = file_get_contents(public_path('lang/' . $lang . '.json'));
-    $etag = '"' . md5($jsonFile) . '"';
+    $jsonFile = file_get_contents(public_path('lang/'.$lang.'.json'));
+    $etag = '"'.md5($jsonFile).'"';
 
     if (request()->header('If-None-Match') === $etag) {
         return response('', 304)->header('ETag', $etag);
@@ -47,8 +49,8 @@ Route::get('/lang/{lang}', function ($lang) {
 });
 
 Route::get('/ref/ip', [ReferralsController::class, 'getIp']);
-Route::post('/ref/save-hash', [ReferralsController::class, 'saveHash']);
-Route::post('/ref/check-hash', [ReferralsController::class, 'checkHash']);
+Route::post('/ref/save-hash', [ReferralsController::class, 'saveHash'])->middleware('throttle:referral');
+Route::post('/ref/check-hash', [ReferralsController::class, 'checkHash'])->middleware('throttle:referral');
 
 Route::post('/device/register', [AuthController::class, 'registerDevice']);
 
@@ -61,7 +63,7 @@ Route::post('/change_password', [AuthController::class, 'changePassword'])->midd
 Route::post('/change_password/verify', [AuthController::class, 'changePasswordVerify'])->middleware('throttle:otp');
 Route::post('/change_password/verify_submit', [AuthController::class, 'changePasswordVerifySubmit'])->middleware('throttle:otp');
 
-Route::middleware(['auth:api', CorsMiddleware::class, \App\Http\Middleware\EnsureApiSession::class])->group(function () {
+Route::middleware(['auth:api', CorsMiddleware::class, EnsureApiSession::class])->group(function () {
 
     Route::post('/device/push', [AuthController::class, 'setDevicePushId']);
 
@@ -78,7 +80,7 @@ Route::middleware(['auth:api', CorsMiddleware::class, \App\Http\Middleware\Ensur
     Route::post('/logout', [AuthController::class, 'logout']);
 
     Route::get('/me', [UserController::class, 'me']);
-    Route::get('/me/get-referral-link', function (){
+    Route::get('/me/get-referral-link', function () {
         return response()->json(['success' => true, 'referral_link' => auth()->user()->getReferralCode()]);
     });
     Route::post('/me/edit', [UserController::class, 'edit']);
@@ -95,7 +97,7 @@ Route::middleware(['auth:api', CorsMiddleware::class, \App\Http\Middleware\Ensur
         Route::delete('/{carid}/remove', [CarsController::class, 'removeMyCar']);
     });
 
-    Route::prefix('/tickets')->group(function(){
+    Route::prefix('/tickets')->group(function () {
         Route::get('/', [TicketsController::class, 'getTickets']);
         Route::post('/buy', [TicketsController::class, 'buyTicket']);
         Route::get('/my', [TicketsController::class, 'myTickets']);
@@ -133,7 +135,7 @@ Route::middleware(['auth:api', CorsMiddleware::class, \App\Http\Middleware\Ensur
         Route::delete('/{userPackage}/remove', [PackagesController::class, 'removePackage']);
     });
 
-    Route::prefix('appointments')->group(function (){
+    Route::prefix('appointments')->group(function () {
 
         Route::post('/{appointment}/edit', [AppointmentsController::class, 'setStatus']);
         Route::post('/add', [AppointmentsController::class, 'addAppointment']);
@@ -157,17 +159,17 @@ Route::middleware(['auth:api', CorsMiddleware::class, \App\Http\Middleware\Ensur
 
     Route::get('/allrecords', [AppointmentsController::class, 'allRecords']);
 
-
     // Gated in the controller: off in production unless TEST_PAYMENT_ALLOW_PRODUCTION=true.
     Route::get('/testpay', [PaymentsController::class, 'testpay']);
 
-    Route::get('/admin/sms-inbox', [\App\Http\Controllers\Admin\SmsInboxController::class, 'messages']);
+    Route::get('/admin/sms-inbox', [SmsInboxController::class, 'messages']);
 
 });
 
-Route::middleware('throttle:public')->get('/promo', function(){
+Route::middleware('throttle:public')->get('/promo', function () {
     // Public sidebar banner: expose only the display fields.
-    $promo = \App\Models\Promo::query()->select(['title', 'description', 'url'])->first();
+    $promo = Promo::query()->select(['title', 'description', 'url'])->first();
+
     return response()->json(['success' => true, 'promo' => $promo]);
 });
 
@@ -178,16 +180,16 @@ Route::prefix('/corporate')->group(function () {
 });
 
 Route::prefix('/partner')->middleware([CorsMiddleware::class])->group(function () {
-    Route::post('/login', [\App\Http\Controllers\Api\Partners\AuthController::class, 'login'])
+    Route::post('/login', [App\Http\Controllers\Api\Partners\AuthController::class, 'login'])
         ->middleware('throttle:login')
         ->name('partner.api.login');
 
-    Route::middleware(['auth:partners', \App\Http\Middleware\EnsurePartnerReady::class])->group(function () {
-        Route::post('/logout', [\App\Http\Controllers\Api\Partners\AuthController::class, 'logout'])->name('partner.api.logout');
-        Route::post('/password', [\App\Http\Controllers\Api\Partners\AuthController::class, 'password'])->name('partner.api.password');
+    Route::middleware(['auth:partners', EnsurePartnerReady::class])->group(function () {
+        Route::post('/logout', [App\Http\Controllers\Api\Partners\AuthController::class, 'logout'])->name('partner.api.logout');
+        Route::post('/password', [App\Http\Controllers\Api\Partners\AuthController::class, 'password'])->name('partner.api.password');
         Route::middleware('throttle:voucher')->group(function () {
-            Route::post('/voucher/check', [\App\Http\Controllers\Api\Partners\VouchersController::class, 'checkVoucher'])->name('partner.api.voucher.check');
-            Route::post('/voucher/use', [\App\Http\Controllers\Api\Partners\VouchersController::class, 'useVoucher'])->name('partner.api.voucher.use');
+            Route::post('/voucher/check', [App\Http\Controllers\Api\Partners\VouchersController::class, 'checkVoucher'])->name('partner.api.voucher.check');
+            Route::post('/voucher/use', [App\Http\Controllers\Api\Partners\VouchersController::class, 'useVoucher'])->name('partner.api.voucher.use');
         });
     });
 });

@@ -10,6 +10,8 @@ use App\Models\CorporateClient;
 use App\Models\FleetCar;
 use App\Services\FleetCars;
 use App\Services\Security\TemporaryPassword;
+use App\Support\AdminAudit;
+use App\Support\SessionRevoker;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -106,6 +108,18 @@ class CorporateController extends Controller
         $corporate->save();
 
         return redirect()->route('admin.corporate.show', $corporate)->with('message', __('admin.corporate_updated'));
+    }
+
+    public function ban(CorporateClient $corporate)
+    {
+        $corporate->forceFill(['ban' => ! $corporate->ban])->save();
+        // Panel sessions die via session_version; the API key is refused while banned.
+        SessionRevoker::corporate($corporate);
+        AdminAudit::record('corporate', (int) $corporate->id, $corporate->ban ? 'ban' : 'unban');
+
+        return redirect()->back()->with('message', __('admin.client_ban_status', [
+            'status' => $corporate->ban ? __('admin.banned') : __('admin.unbanned'),
+        ]));
     }
 
     public function delete(CorporateClient $corporate)
