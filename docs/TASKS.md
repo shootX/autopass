@@ -221,3 +221,11 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 - Native PostgreSQL 16/database-cache concurrency CI prepared, NOT run. Local PostgreSQL-WASM regression tests passed, but concurrency runs were unstable; no native database concurrency certification.
 - Browser visual/E2E checks and authenticated CarAPI, SMTP/SMS/payment delivery still require a working browser/provider environment. Test payment remains enabled only as previously authorized; SMS stays mocked.
 - GitHub branch creation was rejected with HTTP 403 `Resource not accessible by integration`; no remote branch, PR, main merge or deployment. Export contains the local commits and test evidence. GitHub write access is required to publish.
+
+## 2026-10-14 — Stage 3 publication
+- [ ] Push branch `codex/stage3-product-fixes` and open draft PR (blocked: token lacks `workflow` scope for `.github/workflows/product-checks.yml`).
+- [x] Native local PostgreSQL 17 concurrency suite: 22/22, 8 runs.
+- [ ] PostgreSQL 16 CI job run.
+- [ ] Browser visual/E2E check (QA, Playwright).
+- [ ] Live CarAPI fields, SMTP/SMS/payment sandbox delivery.
+- [ ] Migration validated on a copy of the target DB before deploy.

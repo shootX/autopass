@@ -250,3 +250,9 @@ voucher-checker-ში `useVoucher`/`usePath` სახელები შეი
 - Native PostgreSQL 16/database-cache concurrency CI prepared, NOT run. Local PostgreSQL-WASM regression tests passed, but concurrency runs were unstable; no native database concurrency certification.
 - Browser visual/E2E checks and authenticated CarAPI, SMTP/SMS/payment delivery still require a working browser/provider environment. Test payment remains enabled only as previously authorized; SMS stays mocked.
 - GitHub branch creation was rejected with HTTP 403 `Resource not accessible by integration`; no remote branch, PR, main merge or deployment. Export contains the local commits and test evidence. GitHub write access is required to publish.
+
+## 2026-10-14 — Stage 3 applied and re-verified
+- Patch applied with `git am` on `f751751` (main had not moved) on branch `codex/stage3-product-fixes`. Commit SHAs differ from the local export (`0efc820`) only because of committer metadata; content is identical to the patch.
+- Re-verified on the box with Node 24.19.0 / npm 11.9.0: backend SQLite 131/131 (695 assertions); gewash npm ci, test 92/92, build:check, lint, i18n:check (373 keys, 0 missing), i18n:test all passed; voucher-checker npm ci, test 9/9, build, lint passed.
+- Native PostgreSQL 17 (local, isolated `autopass_test` DB, box-only) with `CACHE_STORE=database vendor/bin/pest -c phpunit.pgsql.xml`: 22/22 (82 assertions), 8 consecutive runs, both race tests passed. PostgreSQL 16 CI job still not run; production DB not touched.
+- Still open: browser visual/E2E, live CarAPI, SMTP/SMS/payment sandbox delivery, migration on a copy of the target DB. No merge, no deploy.
