@@ -177,21 +177,52 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 - Checks on a fresh `main` checkout: backend Pest 69/69 (408 assertions); gewash `npm ci` ok, vitest 83/83, build ok, `build:check` 0 TS errors, lint 0/0; voucher-checker `npm ci` ok, vitest 9/9, build ok, lint 0/0.
 - Open: test-payment flag for test accounts in production (separate PR, not merged yet). Deploy is done by Shota: `php artisan migrate`, scheduler running, cache driver with locks; backend and frontend ship together.
 
+## 2026-10-14 — Stage 2 უსაფრთხოება (1–4), branch `feat/stage2-security`
+
+ყველა პუნქტისთვის ჯერ დაიწერა ტესტი, რომელიც ვარდებოდა (`tests/Feature/Stage2SecurityTest.php`), მერე გასწორდა.
+1. `/api/me/edit` ტელეფონს და ელფოსტას აღარ ცვლის (თუ შეცვლილია, აბრუნებს 422-ს). ელფოსტა იცვლება მხოლოდ `pending_email`-ის გავლით, ჰეშირებული კოდით და ვადით.
+2. დაბლოკილი (ban) მომხმარებელი: API, ადმინის ვები, პარტნიორის API და კომპანიის პანელი ძველ სესიას/ტოკენს მაშინვე უარყოფს, შესვლაც უარყოფილია. partners/corporate_clients-ს დაემატა `ban` სვეტი.
+3. კომპანიის `/partner/password` მუშაობს მხოლოდ მაშინ, როცა `password_must_change=true`. ჩვეულებრივ ცვლილებას სჭირდება მიმდინარე პაროლი, და `session_version` სხვა სესიებს აუქმებს.
+4. ვაუჩერის ყიდვა ერთ ტრანზაქციაშია და ბალანსის ჩანაწერზე იყენებს `lockForUpdate`-ს. ნებისმიერი შეცდომისას ყველაფერი უკან ბრუნდება.
+
+## 2026-10-14 — Stage 2 sweep (mass-assignment + balance mutations)
+- [x] User/Partner/CorporateClient privileged columns removed from mass assignment (role, referral_id, ref_code, phone_verified_at; partner login secrets via $fillable; corporate credentials/api_token/session_version/must_change). Creates use forceCreate; token rotations forceFill.
+- [x] Admin car wash edit validates fields; manager_id must be a manager; services stripped from update.
+- [x] Ticket purchase: integer qty 1..20, DB::transaction + lockForUpdate (ticket, user), limit counts qty, tickets + ledger inside transaction, rollback tested.
+- [ ] Follow-up: admin UI for partner/company ban; ReferralsController::saveHash public unvalidated writes; TbcPayment/Transaction/UserVoucher still $guarded=[] (server-side only).
+
+## 2026-10-14 — Stage 2 follow-ups
+- [x] /api/ref/save-hash + check-hash: hash must be 64 hex, code must be an existing 5-char ref_code; `throttle:referral` 10/min/IP.
+- [x] Admin ban/unban partner (POST /dashboard/partners/{id}/ban, button on partner edit page) and company (POST /dashboard/corporate/{id}/ban, button in corporate list). Partner JWTs revoked via token_version, company panel sessions via session_version, company API key refused (403) while banned.
+- [x] Admin edit of user phone/email: admin role only, admin_audit_logs entry per field (masked), user's JWTs + DB sessions revoked. Bans are audited too.
+
+## 2026-10-14 — QA fix on #21
+- [x] Sandbox payment confirm re-checks the owner: TestPayments::allowed() is false for banned users, and SettleTbcPayment::grantNow() re-checks allowed() on the locked owner row for test_mode payments (marks the payment Failed, credits nothing).
+
+## 2026-10-14 — hotfix: ცარიელი გვერდები (`PublicAuthRoutes`)
+- [x] `gewash/src/App.tsx`: `<PublicAuthRoutes />` `<Routes>`-ის შვილად აღარ რენდერდება. იძახება `{PublicAuthRoutes()}`, რომ დაბრუნებული ფრაგმენტი პირდაპირი შვილი იყოს. react-router მხოლოდ `Route` ან `Fragment` შვილს იღებს და სხვა კომპონენტზე ისვრის, ამიტომ ყველა გვერდი ცარიელი იყო.
+- [x] ტესტი `gewash/src/App.routes.test.tsx`: აპის როუტერი ხატავს მთავარს (`/`, ნომერი და „სწრაფი ჩაწერა“) და შესვლას (`/auth`, სათაური „შესვლა“ და ტელეფონის ველი). `/login` მარშრუტი არ არსებობს — შესვლა არის `/auth`.
+- [x] შემოღებულია `650defc` (2026-10-12, ავტორი Cursor Agent), PR #6 (`cursor/fe-11-manager-routing-9883`).
+- [x] gewash: lint 0, vitest 85/85, `build:check` 0. მერჯი და დეპლოი არ გაკეთებულა.
+
 ## 2026-10-14 — Stage 2 items 5–6
 - [x] Partner voucher check: Cache::lock per voucher+recipient, open challenge reused within SECURITY_VOUCHER_CHECK_DEDUPE_SECONDS (60) → one SMS for repeated checks; 429 while a check is still running.
 - [x] Car catalog: source + external ids, CarAPI ids no longer treated as local ids, year on user_cars + GET /api/cars/years. Contract in gewash-frontend-integration.md.
-- [x] Frontend: AddCar sends `{ plate, source, model_id, brand_id, year? }` from the picked catalog item. A CarAPI id is never posted as a local id. Year picker uses `GET /api/cars/years`. Edit sends `year` and does not resend `model_id` without `source`.
-- [ ] Frontend: AddCar must send source/brand_id/year (see contract).
-
-## 2026-10-14 — i18n keys, npm 10/11 ci, car catalog frontend
-- [x] 56 missing `t()` keys added in `en.json`, `ka.json`, and `ru.json` (real translations, not key names). `node scripts/check-i18n.mjs` exits 1 when any of en/ka/ru lacks a key. `npm run i18n:check` and `.github/workflows/frontend.yml`.
-- [x] gewash `package-lock.json` now lists every optional platform package. Clean `npm ci` passes on npm 10.9.9 and npm 11.21.0 for gewash and voucher-checker. `engines`: node `^22.12.0 || ^24.0.0 || >=26.0.0`, npm `^10 || ^11`. `npm run lockfile:check` covers gewash, voucher-checker, and backend.
+- [x] Frontend: AddCar sends `{ plate, source, model_id, brand_id, year? }` from the picked catalog item (`myCarAddBody`). A CarAPI id is never posted as a local id. Year picker uses `GET /api/cars/years`. Edit sends `year` and does not resend `model_id` without `source`.
 
 ## 2026-10-14 — QA fixes on #22
 - [x] Model resolution checks brand: local model must belong to brand_id; offline CarAPI fallback only reuses a mapping under the same external brand.
 - [x] Parallel first-time add of the same CarAPI model: unique (source, external_*_id) + lookup/insert with UniqueConstraintViolationException retry → no 500, one row.
 
+## 2026-10-14 — i18n keys, npm 10/11 ci, car catalog frontend
+- [x] 56 missing `t()` keys added in `en.json`, `ka.json`, and `ru.json` (real translations, not key names). `node scripts/check-i18n.mjs` exits 1 when any of en/ka/ru lacks a key. `npm run i18n:check` and `.github/workflows/frontend.yml`.
+- [x] gewash `package-lock.json` now lists every optional platform package. Clean `npm ci` passes on npm 10.9.9 and npm 11.21.0 for gewash and voucher-checker. `engines`: node `^22.12.0 || ^24.0.0 || >=26.0.0`, npm `^10 || ^11`. `npm run lockfile:check` covers gewash, voucher-checker, and backend.
+
 ## 2026-10-14 — public lang, picker i18n, merge #22
 - [x] `backend/public/lang/{en,ka,ru}.json` იღებს frontend-ის ფოთლებს (29 აკლია გასაღები და განსხვავებული ტექსტი). `i18n:check` ამ ასლსაც ამოწმებს: აკლია, ცარიელი ან frontend-ისგან განსხვავებული მნიშვნელობა → exit 1.
 - [x] მარკის/მოდელის ფურცლის სათაური, ძებნა, არჩევა, ცარიელი სია, ჩატვირთვა და შეცდომა არის `t()` (`ka` / `en` / `ru`), მათ შორის public lang-ში.
 - [x] PR #24-ში შერწყმულია `feat/stage2-voucher-sms-carmodels` (`039c942`), merge commit, force-push-ის გარეშე. `docs/TASKS.md`-ში დარჩა ორივე მხარის ჩანაწერი.
+
+## 2026-10-14 — merge main into PR #24
+- [x] `origin/main` (`f751751`, PR #22) შერწყმულია `cursor/i18n-npm-car-ids-cf00`-ში. Backend დარჩა `main`-ის, frontend ამ PR-ის. კონფლიქტი მხოლოდ docs-ში იყო.
+- [x] gewash AddCar აგზავნის `source`, `brand_id`, `model_id` და არასავალდებულო `year`-ს (`docs/gewash-frontend-integration.md`). `source=carapi` 422-ს იღებს `brand_id`-ის გარეშე.

@@ -21,13 +21,12 @@ class EmailChallengeService
         }
 
         $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-        $previousEmail = $user->email;
-        $previousVerified = $user->email_verified_at;
+        $previousPending = $user->pending_email;
 
+        // The current email stays in place; the new one waits in pending_email until verified.
         DB::transaction(function () use ($user, $email, $code) {
             $user->verificationCodes()->whereNull('consumed_at')->update(['consumed_at' => now()]);
-            $user->email = $email;
-            $user->email_verified_at = null;
+            $user->pending_email = $email;
             $user->save();
             $user->verificationCodes()->create([
                 'code' => null,
@@ -40,8 +39,7 @@ class EmailChallengeService
         try {
             Mail::to($email)->send(new VerificationMail($code));
         } catch (Throwable $e) {
-            $user->email = $previousEmail;
-            $user->email_verified_at = $previousVerified;
+            $user->pending_email = $previousPending;
             $user->save();
             $user->verificationCodes()->whereNull('consumed_at')->update(['consumed_at' => now()]);
             Log::warning('email_verification_failed', ['exception' => $e::class]);
@@ -86,7 +84,15 @@ class EmailChallengeService
                 return;
             }
 
-            $user->markEmailAsVerified();
+            $pending = $user->fresh()->pending_email;
+            if (! is_string($pending) || $pending === '' || User::query()->where('email', $pending)->whereKeyNot($user->id)->exists()) {
+                return;
+            }
+            $user->forceFill([
+                'email' => $pending,
+                'pending_email' => null,
+                'email_verified_at' => now(),
+            ])->save();
             $verified = true;
         });
 

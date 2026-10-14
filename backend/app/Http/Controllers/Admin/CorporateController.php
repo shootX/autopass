@@ -10,6 +10,9 @@ use App\Models\CorporateClient;
 use App\Models\FleetCar;
 use App\Services\FleetCars;
 use App\Services\Security\TemporaryPassword;
+use App\Support\AdminAudit;
+use App\Support\SessionRevoker;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -64,7 +67,7 @@ class CorporateController extends Controller
                 $data['temp_password_expires_at'] = now()->addHours($hours);
                 $data['session_version'] = 1;
                 $data['api_token'] = CorporateClient::makeToken();
-                $client = CorporateClient::query()->create($data);
+                $client = CorporateClient::query()->forceCreate($data);
 
                 Mail::to($client->email)->send(new TemporaryPasswordMail(
                     $client->name,
@@ -92,7 +95,7 @@ class CorporateController extends Controller
     public function save(Request $request, CorporateClient $corporate)
     {
         $corporate->fill($this->validateClient($request, $corporate));
-        if (!$corporate->credentials_custom && $corporate->isDirty('identification_code')) {
+        if (! $corporate->credentials_custom && $corporate->isDirty('identification_code')) {
             $taken = CorporateClient::query()
                 ->where('username', $corporate->identification_code)
                 ->where('id', '!=', $corporate->id)
@@ -105,6 +108,18 @@ class CorporateController extends Controller
         $corporate->save();
 
         return redirect()->route('admin.corporate.show', $corporate)->with('message', __('admin.corporate_updated'));
+    }
+
+    public function ban(CorporateClient $corporate)
+    {
+        $corporate->forceFill(['ban' => ! $corporate->ban])->save();
+        // Panel sessions die via session_version; the API key is refused while banned.
+        SessionRevoker::corporate($corporate);
+        AdminAudit::record('corporate', (int) $corporate->id, $corporate->ban ? 'ban' : 'unban');
+
+        return redirect()->back()->with('message', __('admin.client_ban_status', [
+            'status' => $corporate->ban ? __('admin.banned') : __('admin.unbanned'),
+        ]));
     }
 
     public function delete(CorporateClient $corporate)
@@ -124,7 +139,7 @@ class CorporateController extends Controller
     public function storeCar(Request $request, CorporateClient $corporate)
     {
         $data = $this->carFields($request);
-        if ($data instanceof \Illuminate\Http\RedirectResponse) {
+        if ($data instanceof RedirectResponse) {
             return $data;
         }
 
@@ -173,7 +188,7 @@ class CorporateController extends Controller
 
     public function token(CorporateClient $corporate)
     {
-        $corporate->update(['api_token' => CorporateClient::makeToken()]);
+        $corporate->forceFill(['api_token' => CorporateClient::makeToken()])->save();
 
         return redirect()->route('admin.corporate.show', $corporate)->with('message', __('admin.corporate_token_reset'));
     }
@@ -220,7 +235,7 @@ class CorporateController extends Controller
         return redirect()->route('admin.corporate.show', $corporate)->with('message', __('admin.temp_password_sent'));
     }
 
-    private function carFields(Request $request): array|\Illuminate\Http\RedirectResponse
+    private function carFields(Request $request): array|RedirectResponse
     {
         $data = $request->validate([
             'plate' => ['required', 'string', 'max:20'],
@@ -228,7 +243,7 @@ class CorporateController extends Controller
             'model_id' => ['required', 'integer', Rule::exists('car_models', 'id')->where(fn ($query) => $query->where('brand_id', $request->integer('brand_id')))],
         ]);
 
-        if (!FleetCars::validPlate($data['plate'])) {
+        if (! FleetCars::validPlate($data['plate'])) {
             return back()->withInput()->withErrors(['plate' => __('admin.fleet_plate_format')]);
         }
 

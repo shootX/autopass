@@ -4,21 +4,21 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Jobs\SendPush;
-use Hashids\Hashids;
+use App\Support\Phone;
+use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\DB;
 use Tymon\JWTAuth\Contracts\JWTSubject;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-
 
 class User extends Authenticatable implements JWTSubject
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
+    /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
     /**
@@ -34,18 +34,18 @@ class User extends Authenticatable implements JWTSubject
         'date_of_birth',
         'phone',
         'sex',
-        'role',
         'enable_push_wash_appointment',
         'enable_push_renewal_subscription',
         'enable_push_special_promotions',
-        'referral_id',
-        'ref_code',
-        'phone_verified_at',
     ];
+    // role, phone_verified_at, referral_id, ref_code, points, ban, token_version, pending_email are set
+    // explicitly (forceFill / property assignment) by server code only.
 
-    public const ROLE_USER = 0; //Пользователь мойки
-    public const ROLE_MANAGER = 1; //Менеджер мойки
-    public const ROLE_ADMIN = 2; //Администратор системы
+    public const ROLE_USER = 0; // Пользователь мойки
+
+    public const ROLE_MANAGER = 1; // Менеджер мойки
+
+    public const ROLE_ADMIN = 2; // Администратор системы
 
     /**
      * The attributes that should be hidden for serialization.
@@ -60,7 +60,7 @@ class User extends Authenticatable implements JWTSubject
     ];
 
     protected $appends = [
-        'referrals_count'
+        'referrals_count',
     ];
 
     /**
@@ -96,47 +96,47 @@ class User extends Authenticatable implements JWTSubject
         ];
     }
 
-    public function referral() : BelongsTo
+    public function referral(): BelongsTo
     {
         return $this->belongsTo(User::class, 'referral_id');
     }
 
-    public function referrals() : HasMany
+    public function referrals(): HasMany
     {
         return $this->hasMany(User::class, 'referral_id');
     }
 
-    public function getReferralsCountAttribute() : int
+    public function getReferralsCountAttribute(): int
     {
         return User::where('referral_id', $this->id)->count() ?? 0;
     }
 
-    public function appointments() : HasMany
+    public function appointments(): HasMany
     {
         return $this->hasMany(Appointment::class, 'user_id');
     }
 
-    public function cars() : HasMany
+    public function cars(): HasMany
     {
         return $this->hasMany(UserCar::class, 'user_id');
     }
 
-    public function reviews() : HasMany
+    public function reviews(): HasMany
     {
         return $this->hasMany(Review::class, 'user_id', 'id');
     }
 
-    public function packages() : HasMany
+    public function packages(): HasMany
     {
         return $this->hasMany(UserPackage::class, 'user_id');
     }
 
-    public function washing() : HasOne
+    public function washing(): HasOne
     {
         return $this->hasOne(CarWash::class, 'manager_id');
     }
 
-    public function transactions() : HasMany
+    public function transactions(): HasMany
     {
         return $this->hasMany(Transaction::class, 'user_id');
     }
@@ -146,7 +146,7 @@ class User extends Authenticatable implements JWTSubject
         return route('referral.link', $this->ref_code);
     }
 
-    public function tickets() : BelongsToMany
+    public function tickets(): BelongsToMany
     {
         return $this->belongsToMany(Ticket::class, 'user_tickets');
     }
@@ -168,7 +168,7 @@ class User extends Authenticatable implements JWTSubject
         return $tickets;
     }
 
-    public function vouchers() : BelongsToMany
+    public function vouchers(): BelongsToMany
     {
         return $this->belongsToMany(Voucher::class, 'user_vouchers')
             ->with('category')
@@ -176,7 +176,7 @@ class User extends Authenticatable implements JWTSubject
             ->wherePivotNull('used_at');
     }
 
-    public function pushTokens() : HasMany
+    public function pushTokens(): HasMany
     {
         return $this->hasMany(UserPushToken::class, 'user_id');
     }
@@ -191,8 +191,8 @@ class User extends Authenticatable implements JWTSubject
 
         $deleted = is_string($value) && str_ends_with($value, '-del');
         $base = $deleted ? substr($value, 0, -4) : (string) $value;
-        $normalized = \App\Support\Phone::normalize($base);
-        $stored = $normalized ?? (\App\Support\Phone::digits($base) ?: $base);
+        $normalized = Phone::normalize($base);
+        $stored = $normalized ?? (Phone::digits($base) ?: $base);
 
         $this->attributes['phone'] = $deleted ? $stored.'-del' : $stored;
     }
@@ -215,7 +215,7 @@ class User extends Authenticatable implements JWTSubject
             return $name;
         }
 
-        return \App\Support\Phone::format($this->phone);
+        return Phone::format($this->phone);
     }
 
     public function pickerLabel(): string
@@ -226,7 +226,7 @@ class User extends Authenticatable implements JWTSubject
         )));
         $contact = trim((string) $this->email);
         if ($contact === '') {
-            $contact = \App\Support\Phone::format($this->phone);
+            $contact = Phone::format($this->phone);
         }
         if ($name === '') {
             return $contact !== '' ? $contact : '#'.$this->id;
@@ -238,15 +238,15 @@ class User extends Authenticatable implements JWTSubject
         return $name.' ('.$contact.')';
     }
 
-    public function sendPush($title = [], $body = [], $url = 'https://app.geocar.ge/messages') : void
+    public function sendPush($title = [], $body = [], $url = 'https://app.geocar.ge/messages'): void
     {
         $pushTokens = $this->pushTokens()->first();
-        if($pushTokens) {
+        if ($pushTokens) {
             SendPush::dispatch($pushTokens->push_id, $title, $body, $url ? ['url' => $url] : null);
         }
     }
 
-    public function verificationCodes() : HasMany
+    public function verificationCodes(): HasMany
     {
         return $this->hasMany(VerificationCode::class, 'user_id');
     }

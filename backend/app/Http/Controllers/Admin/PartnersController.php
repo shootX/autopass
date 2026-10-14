@@ -6,12 +6,14 @@ use App\Exports\PartnersExport;
 use App\Http\Controllers\Controller;
 use App\Mail\TemporaryPasswordMail;
 use App\Models\Partner;
+use App\Services\Security\TemporaryPassword;
+use App\Support\AdminAudit;
+use App\Support\SessionRevoker;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
-use App\Services\Security\TemporaryPassword;
 use Maatwebsite\Excel\Facades\Excel;
 use Throwable;
 
@@ -19,19 +21,32 @@ class PartnersController extends Controller
 {
     public function index(Request $request)
     {
-        if($request->has('export'))
-        {
+        if ($request->has('export')) {
             return Excel::download(
-                new PartnersExport(),
+                new PartnersExport,
                 'partners.xlsx'
             );
         }
+
         return redirect()->route('admin.corporate');
+    }
+
+    public function ban(Partner $client)
+    {
+        $client->forceFill(['ban' => ! $client->ban])->save();
+        // Ban and unban both invalidate every issued partner JWT.
+        SessionRevoker::partner($client);
+        AdminAudit::record('partner', (int) $client->id, $client->ban ? 'ban' : 'unban');
+
+        return redirect()->back()->with('message', __('admin.client_ban_status', [
+            'status' => $client->ban ? __('admin.banned') : __('admin.unbanned'),
+        ]));
     }
 
     public function delete(Request $request, Partner $client)
     {
         $client->delete();
+
         return redirect()->route('admin.partners')->with('message', __('admin.partner_deleted'));
     }
 
@@ -82,7 +97,7 @@ class PartnersController extends Controller
 
         try {
             DB::transaction(function () use ($data, $plain, $hours) {
-                $partner = Partner::query()->create([
+                $partner = Partner::query()->forceCreate([
                     ...$data,
                     'password' => $plain,
                     'password_must_change' => true,

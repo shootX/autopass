@@ -30,6 +30,10 @@ class AuthController extends Controller
             return response()->json(['success' => false, 'error' => 'Wrong login or password'], 401);
         }
 
+        if ($partner->ban) {
+            return response()->json(['success' => false, 'error' => 'Account is blocked'], 403);
+        }
+
         if ($partner->password_must_change && $partner->temp_password_expires_at && $partner->temp_password_expires_at->isPast()) {
             return response()->json(['success' => false, 'error' => 'Temporary password expired'], 401);
         }

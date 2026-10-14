@@ -23,7 +23,7 @@ class TestPayments
 
     public static function allowed(?User $user): bool
     {
-        if (! $user || ! self::available()) {
+        if (! $user || ! self::available() || $user->ban) {
             return false;
         }
 

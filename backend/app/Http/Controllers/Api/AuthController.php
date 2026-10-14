@@ -14,6 +14,7 @@ use App\Services\Sms\SmsUserMessage;
 use App\Support\Phone;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Tymon\JWTAuth\Facades\JWTAuth;
@@ -49,7 +50,7 @@ class AuthController extends Controller
                 $referralId = User::query()->where('ref_code', $request->code)->value('id');
             }
 
-            $existing = User::query()->create([
+            $existing = User::query()->forceCreate([
                 'name' => null,
                 'surname' => null,
                 'email' => null,
@@ -150,6 +151,15 @@ class AuthController extends Controller
 
         if ((int) $user->role === User::ROLE_USER && $user->phone_verified_at === null) {
             return response()->json(['success' => false, 'error' => 'Account is not confirmed'], 403);
+        }
+
+        if ($user->ban) {
+            // Checked after the password so a ban doesn't reveal which numbers exist.
+            if (! Hash::check((string) $request->password, (string) $user->password)) {
+                return response()->json(['success' => false, 'error' => 'Не верный логин либо пароль.'], 401);
+            }
+
+            return response()->json(['success' => false, 'error' => 'Account is blocked'], 403);
         }
 
         if (! $token = JWTAuth::attempt($request->only('phone', 'password'))) {

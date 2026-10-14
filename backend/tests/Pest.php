@@ -12,7 +12,7 @@ pest()->extend(TestCase::class)
 
 function makeUser(string $phone, int $role = User::ROLE_USER): User
 {
-    return User::create([
+    return User::forceCreate([
         'phone' => $phone,
         'password' => Hash::make(Str::random(20)),
         'role' => $role,

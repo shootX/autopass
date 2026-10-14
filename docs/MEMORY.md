@@ -219,6 +219,10 @@ voucher-checker-ში `useVoucher`/`usePath` სახელები შეი
 - Backend Pest tests read `backend/.env`; on a fresh checkout copy `.env.example` to `.env` locally before `php artisan test` (otherwise 67 tests end as warnings).
 - Nothing deployed. Test payment in production stays off until the separate flag PR is reviewed and merged.
 
+## 2026-10-14 — Stage 2 (1–4)
+
+`users.pending_email`: `/email/set` ახალ მისამართს `pending_email`-ში ინახავს, ხოლო `/email/verify` ამ მისამართს `email`-ში გადაიტანს. ban-ს ამოწმებს EnsureApiSession, EnsurePartnerReady, CorporatePanel და AdminMiddleware; ადმინის ban ასევე ზრდის `token_version`-ს. ვებ-შესვლა ban-ს ამოწმებს `LoginController::credentials()`-ში. პარტნიორის/კომპანიის ban-ის ადმინ UI ჯერ არ არის, მხოლოდ სვეტია. ადმინის რედაქტირებიდან (clients/partners edit) ტელეფონისა და ელფოსტის შეცვლა შენარჩუნებულია, როგორც ადმინის ფუნქცია.
+
 ## 2026-10-14 — Car ids and voucher SMS dedupe
 - car_models.id is always local. CarAPI ids live in external_model_id / external_brand_id with source='carapi'. Never look up a client model_id unless it comes with a source.
 - Voucher check SMS: dedupe key voucher-check:{user_voucher_id}:{user_id}; within the window the open SmsTemp public_id is returned (deduplicated: true).
@@ -232,3 +236,23 @@ voucher-checker-ში `useVoucher`/`usePath` სახელები შეი
 - The app loads `GET /api/lang/{lang}` from `backend/public/lang`, not from `gewash/*.json`. Those files must match: `i18n:check` exits 1 when a frontend leaf is missing, blank, or different in the public copy. Backend-only extra keys stay.
 - Brand and model sheets use `CarBrandDropDown.*` and `CarModelDropDown.*`. `{name}` in the model title and empty line is the picked brand. Loading and error are shown in the sheet.
 - PR #24 merged `feat/stage2-voucher-sms-carmodels` at `039c942` (merge commit, no rebase). Catalog resolution now checks the brand and retries a unique external-id insert.
+
+## 2026-10-14 — Mass assignment policy
+- Privileged columns (role, ban, points, token/session versions, credentials, api_token, phone_verified_at, referral ids) are NOT in $fillable. Set them with forceFill/forceCreate in trusted code only. DatabaseSeeder runs Model::unguard().
+- All points mutations (vouchers, tickets, packages, TBC settle) run in DB::transaction with lockForUpdate on the user row.
+
+## 2026-10-14 — ცარიელი გვერდები
+
+`Routes`-ის შვილი მხოლოდ `Route` ან `React.Fragment` შეიძლება იყოს. `<PublicAuthRoutes />` კომპონენტია, ამიტომ react-router 7 `invariant`-ს ისვრის და აპი ცარიელი რჩება. `{PublicAuthRoutes()}` აბრუნებს ფრაგმენტს, რომელსაც როუტერი შლის შვილებად. შესვლის მისამართი არის `/auth`, არა `/login`.
+
+შემომტანი: `650defce35952d263f2615385a15da0c3b4fa574` (2026-10-12, Cursor Agent `<cursoragent@cursor.com>`, co-author Shota Chkhvirkia). PR [#6](https://github.com/shootX/autopass/pull/6) `cursor/fe-11-manager-routing-9883`, merge `e96ea3c`.
+
+შემოწმება ამ hotfix-ზე: gewash lint 0, vitest 85/85 (24 ფაილი), `build:check` 0. დეპლოი არ ყოფილა.
+
+## 2026-10-14 — Revocation + audit helpers
+- App\Support\SessionRevoker::{user,partner,corporate} is the one way to kill live credentials (version bump + DB sessions for users).
+- App\Support\AdminAudit::record() writes admin_audit_logs; old/new values are masked (email first char + domain, phone last 2 digits).
+
+## 2026-10-14 — merge main into PR #24
+- `origin/main` (`f751751`, PR #22) შერწყმულია `cursor/i18n-npm-car-ids-cf00`-ში. კონფლიქტი მხოლოდ `docs/MEMORY.md` და `docs/TASKS.md` იყო. Backend ემთხვევა `main`-ს, გარდა `backend/public/lang`-ისა (ამ PR-ის i18n ასლი). `{PublicAuthRoutes()}` დარჩა `main`-ის hotfix-იდან.
+- gewash `AddCar` აგზავნის `{ plate, source, model_id, brand_id, year? }` (`myCarAddBody`). კონტრაქტი არის `docs/gewash-frontend-integration.md` (`docs/API_CONTRACT*` რეპოში არ დევს). `source=carapi`-ს სჭირდება `brand_id`. `year` არასავალდებულოა და მოდის `GET /api/cars/years`-დან.

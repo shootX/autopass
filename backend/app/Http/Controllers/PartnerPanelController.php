@@ -10,6 +10,7 @@ use App\Models\CorporateClient;
 use App\Models\FleetCar;
 use App\Services\FleetCars;
 use App\Services\WashReportQuery;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
@@ -36,6 +37,12 @@ class PartnerPanelController extends Controller
 
         $client = CorporateClient::query()->where('username', $data['username'])->first();
         if (! $client || ! Hash::check($data['password'], (string) $client->password)) {
+            return back()->withInput($request->only('username'))->withErrors([
+                'username' => __('admin.partner_login_failed'),
+            ]);
+        }
+
+        if ($client->ban) {
             return back()->withInput($request->only('username'))->withErrors([
                 'username' => __('admin.partner_login_failed'),
             ]);
@@ -126,10 +133,10 @@ class PartnerPanelController extends Controller
         ]);
 
         $plates = $corporate->cars()->pluck('plate')->all();
-        if (!empty($filters['plate'])) {
+        if (! empty($filters['plate'])) {
             $asked = FleetCars::plate($filters['plate']);
             $own = array_map(fn ($plate) => FleetCars::plate((string) $plate), $plates);
-            if (!in_array($asked, $own, true)) {
+            if (! in_array($asked, $own, true)) {
                 $plates = [];
             }
         }
@@ -181,12 +188,12 @@ class PartnerPanelController extends Controller
             'password' => ['nullable', 'string', 'min:6', 'confirmed'],
         ]);
 
-        if (!empty($data['password']) && !Hash::check((string) $data['current_password'], (string) $corporate->password)) {
+        if (! empty($data['password']) && ! Hash::check((string) $data['current_password'], (string) $corporate->password)) {
             return back()->withErrors(['current_password' => __('admin.partner_password_wrong')]);
         }
 
         $corporate->username = $data['username'];
-        if (!empty($data['password'])) {
+        if (! empty($data['password'])) {
             $corporate->password = $data['password'];
             $corporate->password_must_change = false;
             $corporate->temp_password_expires_at = null;
@@ -207,6 +214,10 @@ class PartnerPanelController extends Controller
     public function savePassword(Request $request)
     {
         $corporate = $this->client($request);
+        // First-login change only; a normal change goes through /partner/account with the current password.
+        if (! $corporate->password_must_change) {
+            return redirect()->route('partner.account')->withErrors(['password' => __('admin.partner_password_wrong')]);
+        }
         $data = $request->validate([
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
@@ -229,7 +240,7 @@ class PartnerPanelController extends Controller
     {
         $corporate = $this->client($request);
         $data = $this->carFields($request);
-        if ($data instanceof \Illuminate\Http\RedirectResponse) {
+        if ($data instanceof RedirectResponse) {
             return $data;
         }
 
@@ -278,12 +289,12 @@ class PartnerPanelController extends Controller
     public function token(Request $request)
     {
         $corporate = $this->client($request);
-        $corporate->update(['api_token' => CorporateClient::makeToken()]);
+        $corporate->forceFill(['api_token' => CorporateClient::makeToken()])->save();
 
         return redirect()->route('partner.fleet')->with('message', __('admin.corporate_token_reset'));
     }
 
-    private function carFields(Request $request): array|\Illuminate\Http\RedirectResponse
+    private function carFields(Request $request): array|RedirectResponse
     {
         $data = $request->validate([
             'plate' => ['required', 'string', 'max:20'],
@@ -291,7 +302,7 @@ class PartnerPanelController extends Controller
             'model_id' => ['required', 'integer', Rule::exists('car_models', 'id')->where(fn ($query) => $query->where('brand_id', $request->integer('brand_id')))],
         ]);
 
-        if (!FleetCars::validPlate($data['plate'])) {
+        if (! FleetCars::validPlate($data['plate'])) {
             return back()->withInput()->withErrors(['plate' => __('admin.fleet_plate_format')]);
         }
 

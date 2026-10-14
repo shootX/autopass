@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\CorporateClient;
 use App\Models\FleetCar;
 use App\Services\FleetCars;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class CorporateFleetController extends Controller
@@ -13,7 +14,7 @@ class CorporateFleetController extends Controller
     public function index(Request $request)
     {
         $client = $this->client($request);
-        if ($client instanceof \Illuminate\Http\JsonResponse) {
+        if ($client instanceof JsonResponse) {
             return $client;
         }
 
@@ -25,12 +26,12 @@ class CorporateFleetController extends Controller
     public function store(Request $request)
     {
         $client = $this->client($request);
-        if ($client instanceof \Illuminate\Http\JsonResponse) {
+        if ($client instanceof JsonResponse) {
             return $client;
         }
 
         $payload = $request->input('vehicles');
-        if (!is_array($payload)) {
+        if (! is_array($payload)) {
             $payload = [[
                 'plate' => $request->input('plate'),
                 'brand' => $request->input('brand'),
@@ -45,8 +46,9 @@ class CorporateFleetController extends Controller
         $added = 0;
         $skipped = [];
         foreach ($payload as $row) {
-            if (!is_array($row)) {
+            if (! is_array($row)) {
                 $skipped[] = ['plate' => '', 'reason' => 'invalid'];
+
                 continue;
             }
             $plate = (string) ($row['plate'] ?? '');
@@ -64,7 +66,7 @@ class CorporateFleetController extends Controller
     public function destroy(Request $request, string $plate)
     {
         $client = $this->client($request);
-        if ($client instanceof \Illuminate\Http\JsonResponse) {
+        if ($client instanceof JsonResponse) {
             return $client;
         }
 
@@ -73,7 +75,7 @@ class CorporateFleetController extends Controller
             ->where('plate', FleetCars::plate($plate))
             ->first();
 
-        if (!$car) {
+        if (! $car) {
             return response()->json(['ok' => false, 'message' => 'Not found'], 404);
         }
 
@@ -82,16 +84,20 @@ class CorporateFleetController extends Controller
         return response()->json(['ok' => true]);
     }
 
-    private function client(Request $request): CorporateClient|\Illuminate\Http\JsonResponse
+    private function client(Request $request): CorporateClient|JsonResponse
     {
         $key = $request->bearerToken() ?: $request->header('X-Api-Key');
-        if (!$key) {
+        if (! $key) {
             return response()->json(['ok' => false, 'message' => 'Unauthorized'], 401);
         }
 
         $client = CorporateClient::query()->where('api_token', $key)->first();
-        if (!$client) {
+        if (! $client) {
             return response()->json(['ok' => false, 'message' => 'Unauthorized'], 401);
+        }
+
+        if ($client->ban) {
+            return response()->json(['ok' => false, 'message' => 'Account is blocked'], 403);
         }
 
         if ($client->password_must_change) {
