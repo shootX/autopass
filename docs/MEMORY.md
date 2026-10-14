@@ -223,10 +223,10 @@ voucher-checker-ში `useVoucher`/`usePath` სახელები შეი
 
 `users.pending_email`: `/email/set` ახალ მისამართს `pending_email`-ში ინახავს, ხოლო `/email/verify` ამ მისამართს `email`-ში გადაიტანს. ban-ს ამოწმებს EnsureApiSession, EnsurePartnerReady, CorporatePanel და AdminMiddleware; ადმინის ban ასევე ზრდის `token_version`-ს. ვებ-შესვლა ban-ს ამოწმებს `LoginController::credentials()`-ში. პარტნიორის/კომპანიის ban-ის ადმინ UI ჯერ არ არის, მხოლოდ სვეტია. ადმინის რედაქტირებიდან (clients/partners edit) ტელეფონისა და ელფოსტის შეცვლა შენარჩუნებულია, როგორც ადმინის ფუნქცია.
 
-## 2026-10-14 — Mass assignment policy
-- Privileged columns (role, ban, points, token/session versions, credentials, api_token, phone_verified_at, referral ids) are NOT in $fillable. Set them with forceFill/forceCreate in trusted code only. DatabaseSeeder runs Model::unguard().
-- All points mutations (vouchers, tickets, packages, TBC settle) run in DB::transaction with lockForUpdate on the user row.
-
 ## 2026-10-14 — Car ids and voucher SMS dedupe
 - car_models.id is always local. CarAPI ids live in external_model_id / external_brand_id with source='carapi'. Never look up a client model_id unless it comes with a source.
 - Voucher check SMS: dedupe key voucher-check:{user_voucher_id}:{user_id}; within the window the open SmsTemp public_id is returned (deduplicated: true).
+
+## 2026-10-14 — Mass assignment policy
+- Privileged columns (role, ban, points, token/session versions, credentials, api_token, phone_verified_at, referral ids) are NOT in $fillable. Set them with forceFill/forceCreate in trusted code only. DatabaseSeeder runs Model::unguard().
+- All points mutations (vouchers, tickets, packages, TBC settle) run in DB::transaction with lockForUpdate on the user row.
