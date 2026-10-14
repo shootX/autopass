@@ -256,3 +256,4 @@ voucher-checker-ში `useVoucher`/`usePath` სახელები შეი
 ## 2026-10-14 — merge main into PR #24
 - `origin/main` (`f751751`, PR #22) შერწყმულია `cursor/i18n-npm-car-ids-cf00`-ში. კონფლიქტი მხოლოდ `docs/MEMORY.md` და `docs/TASKS.md` იყო. Backend ემთხვევა `main`-ს, გარდა `backend/public/lang`-ისა (ამ PR-ის i18n ასლი). `{PublicAuthRoutes()}` დარჩა `main`-ის hotfix-იდან.
 - gewash `AddCar` აგზავნის `{ plate, source, model_id, brand_id, year? }` (`myCarAddBody`). კონტრაქტი არის `docs/gewash-frontend-integration.md` (`docs/API_CONTRACT*` რეპოში არ დევს). `source=carapi`-ს სჭირდება `brand_id`. `year` არასავალდებულოა და მოდის `GET /api/cars/years`-დან.
+- შემოწმება: Pest 111/111 (637 assertions), gewash vitest 100/100, `npm run build` გავიდა. PR #24 თავად არ შერწყმულა ამ ჩანაწერიდან.

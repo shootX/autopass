@@ -226,3 +226,4 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 ## 2026-10-14 — merge main into PR #24
 - [x] `origin/main` (`f751751`, PR #22) შერწყმულია `cursor/i18n-npm-car-ids-cf00`-ში. Backend დარჩა `main`-ის, frontend ამ PR-ის. კონფლიქტი მხოლოდ docs-ში იყო.
 - [x] gewash AddCar აგზავნის `source`, `brand_id`, `model_id` და არასავალდებულო `year`-ს (`docs/gewash-frontend-integration.md`). `source=carapi` 422-ს იღებს `brand_id`-ის გარეშე.
+- [x] Pest 111/111 (637 assertions), gewash `npm test` 100/100, `npm run build` გავიდა.
