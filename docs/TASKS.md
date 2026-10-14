@@ -195,3 +195,6 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 - [x] /api/ref/save-hash + check-hash: hash must be 64 hex, code must be an existing 5-char ref_code; `throttle:referral` 10/min/IP.
 - [x] Admin ban/unban partner (POST /dashboard/partners/{id}/ban, button on partner edit page) and company (POST /dashboard/corporate/{id}/ban, button in corporate list). Partner JWTs revoked via token_version, company panel sessions via session_version, company API key refused (403) while banned.
 - [x] Admin edit of user phone/email: admin role only, admin_audit_logs entry per field (masked), user's JWTs + DB sessions revoked. Bans are audited too.
+
+## 2026-10-14 — QA fix on #21
+- [x] Sandbox payment confirm re-checks the owner: TestPayments::allowed() is false for banned users, and SettleTbcPayment::grantNow() re-checks allowed() on the locked owner row for test_mode payments (marks the payment Failed, credits nothing).
