@@ -31,7 +31,7 @@ Ids from the catalog live in two id spaces. Every catalog item now says which on
 - `GET /api/cars/years` (new, auth) → `years: number[]`, newest first, from current year + 1 down to 1950.
 - `POST /api/mycars/add` body: `{ plate, source, model_id, brand_id?, year? }`
   - `source` is **required** whenever `model_id` is sent; copy it from the picked model.
-  - `brand_id` is required when `source = "carapi"` (the picked brand's `id`).
+  - `brand_id` is required when `source = "carapi"` (the picked brand's `id`). With `source = "local"` it is optional, but if sent the model must belong to that brand (else 422). If CarAPI is down, a CarAPI pick is accepted only if it was mapped before under the same brand.
   - `year` optional integer 1950..current+1.
   - `model_id` without `source` → 422. Unknown model → 422 (was 400).
   - Legacy `{ brand_name, model_name }` still works.

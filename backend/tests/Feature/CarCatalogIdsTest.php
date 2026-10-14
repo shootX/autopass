@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\UserCar;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
@@ -124,5 +125,62 @@ class CarCatalogIdsTest extends TestCase
         $this->assertSame('local', $niva->fresh()->source);
         $this->assertNull($niva->fresh()->external_model_id);
         $this->assertSame('local', $niva->brand->fresh()->source);
+    }
+
+    public function test_local_model_must_belong_to_the_given_local_brand(): void
+    {
+        $niva = $this->localModelWithId7();
+        $other = CarBrand::query()->create(['name' => 'Opel']);
+
+        $this->withToken($this->token)->postJson('/api/mycars/add', [
+            'source' => 'local', 'brand_id' => $other->id, 'model_id' => $niva->id, 'plate' => 'AA130BB',
+        ])->assertStatus(422);
+        $this->withToken($this->token)->postJson('/api/mycars/add', [
+            'source' => 'local', 'brand_id' => $niva->brand_id, 'model_id' => $niva->id, 'plate' => 'AA130BB',
+        ])->assertOk();
+    }
+
+    public function test_offline_fallback_checks_the_external_brand(): void
+    {
+        $this->withToken($this->token)->postJson('/api/mycars/add', [
+            'source' => 'carapi', 'brand_id' => 501, 'model_id' => 7, 'plate' => 'AA131BB',
+        ])->assertOk();
+
+        // CarAPI goes down: a known external model may only be reused under its own external brand.
+        config(['services.carapi.secret' => '']);
+        Cache::flush();
+        $this->withToken($this->token)->postJson('/api/mycars/add', [
+            'source' => 'carapi', 'brand_id' => 999, 'model_id' => 7, 'plate' => 'AA132BB',
+        ])->assertStatus(422);
+        $this->withToken($this->token)->postJson('/api/mycars/add', [
+            'source' => 'carapi', 'brand_id' => 501, 'model_id' => 7, 'plate' => 'AA132BB',
+        ])->assertOk();
+    }
+
+    public function test_parallel_add_of_the_same_new_external_model_does_not_500(): void
+    {
+        // Simulate the other request winning the insert between our lookup and our create.
+        $raced = false;
+        CarModel::creating(function (CarModel $model) use (&$raced) {
+            if ($raced || $model->external_model_id === null) {
+                return;
+            }
+            $raced = true;
+            DB::table('car_models')->insert([
+                'name' => 'Camry', 'type' => $model->type, 'brand_id' => $model->brand_id,
+                'source' => 'carapi', 'external_model_id' => $model->external_model_id,
+                'created_at' => now(), 'updated_at' => now(),
+            ]);
+        });
+
+        $this->withToken($this->token)->postJson('/api/mycars/add', [
+            'source' => 'carapi', 'brand_id' => 501, 'model_id' => 7, 'plate' => 'AA133BB',
+        ])->assertOk();
+        $this->assertTrue($raced);
+        $this->assertSame(1, CarModel::query()->where('source', 'carapi')->where('external_model_id', 7)->count());
+        $this->assertSame(
+            (int) CarModel::query()->where('external_model_id', 7)->value('id'),
+            (int) UserCar::query()->where('plate', 'AA133BB')->value('model_id'),
+        );
     }
 }
