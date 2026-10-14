@@ -1,10 +1,11 @@
-import React, { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { useDrag } from "@use-gesture/react";
 import { Calendar } from "@/components/ui/calendar";
 import { addMonths, format, subMonths } from "date-fns";
 import type { DateRange } from "react-day-picker";
 import { leftArrowUrl, rightArrowUrl } from "@/assets/staticUrls";
+import { dragY } from "@/lib/dragOffset";
 
 
 export function CalendarMobileSheet({
@@ -58,11 +59,11 @@ export function CalendarMobileSheet({
       <motion.div
         drag="y"
         dragMomentum={false}
-        onDragEnd={(e, info) => {
-          if (info.offset.y > 60) setOpen(false);
+        onDragEnd={(_e, info) => {
+          if (dragY(info.offset.y) > 60) setOpen(false);
         }}
         onUpdate={(latest) => {
-          if (latest.y < 0) latest.y = 0;
+          if (dragY(latest.y) < 0) latest.y = 0;
         }}
         style={{
           position: "fixed",

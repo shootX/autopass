@@ -1,5 +1,8 @@
 import { getToken } from "./session";
 import { authJsonHeaders } from "./apiHeaders";
+import { assertPartnerAccess } from "./partnerGate";
+
+const OPAQUE_TEMP_CODE = /^[a-f0-9]{32}$/i;
 
 export type VoucherCheckResponse = {
   success?: boolean;
@@ -8,7 +11,8 @@ export type VoucherCheckResponse = {
   error?: string;
   data?: unknown;
   voucher?: unknown;
-  temp_code?: number | string;
+  temp_code?: string;
+  delivery?: string;
 };
 
 export type VoucherUseResponse = {
@@ -44,7 +48,7 @@ function checkPath(): string {
   return p.startsWith("/") ? p : `/${p}`;
 }
 
-function usePath(): string {
+function voucherUsePath(): string {
   const p = String(import.meta.env.VITE_VOUCHER_USE_PATH || "/partner/voucher/use").trim();
   return p.startsWith("/") ? p : `/${p}`;
 }
@@ -64,14 +68,17 @@ function asRecord(v: unknown): Record<string, unknown> | null {
   return v && typeof v === "object" && !Array.isArray(v) ? (v as Record<string, unknown>) : null;
 }
 
+export function opaqueTempCode(raw: unknown): string | null {
+  if (typeof raw !== "string") return null;
+  const value = raw.trim();
+  return OPAQUE_TEMP_CODE.test(value) ? value : null;
+}
+
 function pickTempCode(json: unknown): string | null {
   if (!json || typeof json !== "object") return null;
   const o = json as Record<string, unknown>;
   const data = asRecord(o.data);
-  const raw = o.temp_code ?? data?.temp_code;
-  if (typeof raw === "number" && Number.isFinite(raw)) return String(raw);
-  if (typeof raw === "string" && raw.trim()) return raw.trim();
-  return null;
+  return opaqueTempCode(o.temp_code ?? data?.temp_code);
 }
 
 export type VoucherCheckResult =
@@ -103,8 +110,14 @@ export async function checkVoucher(rawCode: string): Promise<CheckVoucherResult>
     return {
       code,
       ok: true,
-      tempCode: "mock-temp-code",
-      payload: { success: true, valid: true, message: "OK (mock)", temp_code: "mock-temp-code" },
+      tempCode: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      payload: {
+        success: true,
+        valid: true,
+        message: "OK (mock)",
+        delivery: "simulated",
+        temp_code: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      },
     };
   }
 
@@ -127,8 +140,19 @@ export async function checkVoucher(rawCode: string): Promise<CheckVoucherResult>
     ? (json as VoucherCheckResponse)
     : { success: false, error: "Bad response" };
 
+  assertPartnerAccess(res.status, json, Boolean(token));
+
   const tempCodeStr = pickTempCode(json);
   const successFlag = parseBool(payload.success);
+
+  if (payload.delivery === "unknown" && tempCodeStr) {
+    return {
+      code,
+      ok: true,
+      tempCode: tempCodeStr,
+      payload: { ...payload, delivery: "unknown", temp_code: tempCodeStr, success: false },
+    };
+  }
 
   if (!res.ok) {
     const msg = payload.message || payload.error || `Request failed (${res.status})`;
@@ -149,17 +173,17 @@ export async function checkVoucher(rawCode: string): Promise<CheckVoucherResult>
     code,
     ok: true,
     tempCode: tempCodeStr ?? undefined,
-    payload: { ...payload, success: successFlag ?? true, temp_code: tempCodeStr ?? payload.temp_code },
+    payload: { ...payload, success: successFlag ?? true, temp_code: tempCodeStr ?? undefined },
   };
 }
 
 export type UseVoucherResult = { ok: boolean; payload: VoucherUseResponse };
 
 /** Confirm SMS: POST { temp_code, code } — code is the SMS digits the user entered. */
-export async function useVoucher(tempCode: string | number, smsCode: string): Promise<UseVoucherResult> {
+export async function confirmVoucherUse(tempCode: string, smsCode: string): Promise<UseVoucherResult> {
   const sms = smsCode.replace(/\D/g, "").trim();
-  const tcRaw = String(tempCode).trim();
-  if (!tcRaw) throw new Error("Session expired. Request the code again.");
+  const tc = opaqueTempCode(tempCode);
+  if (!tc) throw new Error("Session expired. Request the code again.");
   if (!sms) throw new Error("Enter the SMS code");
 
   if (voucherCheckMockEnabled()) {
@@ -167,20 +191,12 @@ export async function useVoucher(tempCode: string | number, smsCode: string): Pr
     return { ok: true, payload: { success: true } };
   }
 
-  const url = `${apiUrl()}${usePath()}`;
+  const url = `${apiUrl()}${voucherUsePath()}`;
   const token = getToken();
-  const body: Record<string, unknown> = { code: sms };
-  if (/^\d+$/.test(tcRaw)) {
-    const n = Number(tcRaw);
-    body.temp_code = n <= Number.MAX_SAFE_INTEGER ? n : tcRaw;
-  } else {
-    body.temp_code = tcRaw;
-  }
-
   const res = await fetch(url, {
     method: "POST",
     headers: authJsonHeaders(token),
-    body: JSON.stringify(body),
+    body: JSON.stringify({ temp_code: tc, code: sms }),
   });
 
   let json: unknown = null;
@@ -193,6 +209,8 @@ export async function useVoucher(tempCode: string | number, smsCode: string): Pr
   const payload: VoucherUseResponse = asRecord(json)
     ? (json as VoucherUseResponse)
     : { success: false, error: "Bad response" };
+
+  assertPartnerAccess(res.status, json, Boolean(token));
 
   const success = parseBool(payload.success) === true;
 

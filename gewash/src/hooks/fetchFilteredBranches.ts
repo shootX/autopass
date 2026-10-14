@@ -2,23 +2,58 @@ import { type Branch } from "@/hooks/useFetchBranches";
 import { branchIsOpen, formatHm } from "@/lib/format";
 import { customFetch } from "@/utils/customFetch";
 
-export function parseBranch(b: any): Branch {
-  const [latStr, lngStr] = String(b.location ?? "0,0").split(",");
-  const workStart = formatHm(b.work_start);
-  const workEnd = formatHm(b.work_end);
+function asRecord(value: unknown): Record<string, unknown> | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  return value as Record<string, unknown>;
+}
+
+function readText(value: unknown, fallback = ""): string {
+  return typeof value === "string" ? value : fallback;
+}
+
+function readManager(value: unknown): Branch["manager"] {
+  const manager = asRecord(value);
+  if (!manager) return null;
+  const id = typeof manager.id === "number" ? manager.id : Number(manager.id);
   return {
-    id: b.id,
-    name: b.name,
-    address: b.address,
+    id: Number.isFinite(id) ? id : 0,
+    name: readText(manager.name),
+    surname: readText(manager.surname),
+    email: readText(manager.email),
+    phone: readText(manager.phone),
+  };
+}
+
+function readServices(value: unknown): Branch["services"] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((item) => {
+    const service = asRecord(item);
+    if (!service) return [];
+    const id = typeof service.id === "number" ? service.id : Number(service.id);
+    if (!Number.isFinite(id)) return [];
+    return [{ id, name: readText(service.name) }];
+  });
+}
+
+export function parseBranch(raw: unknown): Branch {
+  const b = asRecord(raw) ?? {};
+  const [latStr, lngStr] = String(b.location ?? "0,0").split(",");
+  const workStart = formatHm(typeof b.work_start === "string" ? b.work_start : null);
+  const workEnd = formatHm(typeof b.work_end === "string" ? b.work_end : null);
+  const id = typeof b.id === "number" ? b.id : Number(b.id);
+  return {
+    id: Number.isFinite(id) ? id : 0,
+    name: readText(b.name),
+    address: readText(b.address),
     lat: parseFloat(latStr),
     lng: parseFloat(lngStr),
-    phone: b.phone ?? b.manager?.phone ?? "",
+    phone: readText(b.phone) || readText(asRecord(b.manager)?.phone),
     workStart,
     workEnd,
     isOpen: branchIsOpen(workStart, workEnd),
-    manager: b.manager ?? null,
-    services: b.services ?? [],
-    image: b.image || b.photo || b.picture || null,
+    manager: readManager(b.manager),
+    services: readServices(b.services),
+    image: readText(b.image) || readText(b.photo) || readText(b.picture) || null,
   };
 }
 

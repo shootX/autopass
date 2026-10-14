@@ -23,7 +23,7 @@
                     <x-form-input value="{{old('description', $client->description)}}" required type="textarea" rows="5" title="{{ __('admin.description') }}" name="description"/>
 
                     <x-form-input value="{{old('login', $client->login)}}" required type="text" title="{{ __('admin.login_name') }}" name="login"/>
-                    <x-form-input type="password" title="{{ __('admin.password') }}" name="password"/>
+                    <x-form-input value="{{old('email', $client->email)}}" type="email" title="{{ __('admin.email') }}" name="email"/>
 
                     <button type="submit" class="btn btn-primary mt-4">{{ __('admin.save') }}</button>
                     @if($errors->any())
@@ -35,6 +35,10 @@
                             </ul>
                         </div>
                     @endif
+                </form>
+                <form action="{{ route('admin.partners.temporary_password', $client) }}" method="post" class="mt-3">
+                    @csrf
+                    <button class="btn btn-outline-secondary" type="submit">{{ __('admin.temp_password_sent') }}</button>
                 </form>
             </div>
         </div>

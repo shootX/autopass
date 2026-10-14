@@ -1,35 +1,41 @@
 import { describe, expect, it } from "vitest";
-import { buildSetPasswordBody, tempCodeFromRegister } from "./registerPassword";
+import { buildSetPasswordBody, readSmsChallenge, tempCodeFromRegister } from "./registerPassword";
+
+const ID = "0123456789abcdef0123456789abcdef";
 
 describe("set_password body", () => {
-  it("sends the verify code next to temp_code", () => {
-    const body = buildSetPasswordBody({
-      password: "secret1",
-      tempCode: 42,
-      code: "123456",
-    });
-
-    expect(body).toEqual({
-      password: "secret1",
-      temp_code: 42,
-      code: "123456",
-    });
-    expect(body).not.toHaveProperty("sms_code");
+  it("sends only password and setup_token", () => {
+    const body = buildSetPasswordBody({ password: "secret1", setupToken: "tok_abcdefghijklmnopqrstuvwxyz" });
+    expect(body).toEqual({ password: "secret1", setup_token: "tok_abcdefghijklmnopqrstuvwxyz" });
+    expect(body).not.toHaveProperty("code");
+    expect(body).not.toHaveProperty("temp_code");
   });
 });
 
 describe("register response", () => {
-  it("keeps temp_code and ignores sms_code", () => {
-    const temp = tempCodeFromRegister({
-      success: true,
-      temp_code: 7,
-      sms_code: "999999",
-    });
-
-    expect(temp).toBe(7);
+  it("keeps the opaque temp_code", () => {
+    expect(tempCodeFromRegister({ success: true, temp_code: ID, delivery: "simulated" })).toBe(ID);
   });
 
-  it("returns null when register failed", () => {
-    expect(tempCodeFromRegister({ success: false, temp_code: 1, sms_code: "1" })).toBeNull();
+  it("keeps temp_code when delivery is unknown", () => {
+    expect(tempCodeFromRegister({ success: false, temp_code: ID, delivery: "unknown" })).toBe(ID);
+  });
+
+  it("rejects the old numeric contract", () => {
+    expect(tempCodeFromRegister({ success: true, temp_code: 7 })).toBeNull();
+  });
+
+  it("returns null on failed delivery", () => {
+    expect(tempCodeFromRegister({ success: false, temp_code: ID, delivery: "failed" })).toBeNull();
+  });
+
+  it("does not keep an OTP that arrived in the status text", () => {
+    const challenge = readSmsChallenge({
+      success: false,
+      delivery: "failed",
+      error: "code 123456",
+    });
+    expect(challenge.detail).toBeNull();
+    expect(challenge.tempCode).toBeNull();
   });
 });

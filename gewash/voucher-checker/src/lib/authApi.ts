@@ -1,4 +1,6 @@
-import { jsonHeaders } from "./apiHeaders";
+import { assertPartnerAccess } from "./partnerGate";
+import { getToken } from "./session";
+import { authJsonHeaders, jsonHeaders } from "./apiHeaders";
 
 export type LoginResponse = {
   access_token?: string;
@@ -6,6 +8,7 @@ export type LoginResponse = {
   success?: boolean;
   message?: string;
   error?: string;
+  must_change_password?: boolean;
 };
 
 function apiUrl(): string {
@@ -68,5 +71,27 @@ export async function login(loginValue: string, password: string): Promise<{ tok
   }
 
   return { token, payload };
+}
+
+export async function changePassword(password: string): Promise<string> {
+  const token = getToken();
+  const res = await fetch(`${apiUrl()}/partner/password`, {
+    method: "POST",
+    headers: authJsonHeaders(token),
+    body: JSON.stringify({ password, password_confirmation: password }),
+  });
+  let json: unknown = null;
+  try {
+    json = await res.json();
+  } catch {
+    // ignore
+  }
+  const next = pickToken(json);
+  assertPartnerAccess(res.status, json, Boolean(token));
+  if (!res.ok || !next) {
+    const payload = json && typeof json === "object" ? (json as LoginResponse) : {};
+    throw new Error(payload.error || payload.message || `Password change failed (${res.status})`);
+  }
+  return next;
 }
 

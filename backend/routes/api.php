@@ -61,7 +61,7 @@ Route::post('/change_password', [AuthController::class, 'changePassword'])->midd
 Route::post('/change_password/verify', [AuthController::class, 'changePasswordVerify'])->middleware('throttle:otp');
 Route::post('/change_password/verify_submit', [AuthController::class, 'changePasswordVerifySubmit'])->middleware('throttle:otp');
 
-Route::middleware(['auth:api', CorsMiddleware::class])->group(function () {
+Route::middleware(['auth:api', CorsMiddleware::class, \App\Http\Middleware\EnsureApiSession::class])->group(function () {
 
     Route::post('/device/push', [AuthController::class, 'setDevicePushId']);
 
@@ -162,6 +162,8 @@ Route::middleware(['auth:api', CorsMiddleware::class])->group(function () {
         Route::get('/testpay', [PaymentsController::class, 'testpay']);
     }
 
+    Route::get('/admin/sms-inbox', [\App\Http\Controllers\Admin\SmsInboxController::class, 'messages']);
+
 });
 
 Route::middleware('throttle:public')->get('/promo', function(){
@@ -177,11 +179,16 @@ Route::prefix('/corporate')->group(function () {
 });
 
 Route::prefix('/partner')->middleware([CorsMiddleware::class])->group(function () {
+    Route::post('/login', [\App\Http\Controllers\Api\Partners\AuthController::class, 'login'])
+        ->middleware('throttle:login')
+        ->name('partner.api.login');
 
-    Route::post('/login', [\App\Http\Controllers\Api\Partners\AuthController::class, 'login'])->middleware('throttle:login');
-
-    Route::middleware(['auth:partners', 'throttle:voucher'])->group(function () {
-        Route::post('/voucher/check', [\App\Http\Controllers\Api\Partners\VouchersController::class, 'checkVoucher']);
-        Route::post('/voucher/use', [\App\Http\Controllers\Api\Partners\VouchersController::class, 'useVoucher']);
+    Route::middleware(['auth:partners', \App\Http\Middleware\EnsurePartnerReady::class])->group(function () {
+        Route::post('/logout', [\App\Http\Controllers\Api\Partners\AuthController::class, 'logout'])->name('partner.api.logout');
+        Route::post('/password', [\App\Http\Controllers\Api\Partners\AuthController::class, 'password'])->name('partner.api.password');
+        Route::middleware('throttle:voucher')->group(function () {
+            Route::post('/voucher/check', [\App\Http\Controllers\Api\Partners\VouchersController::class, 'checkVoucher'])->name('partner.api.voucher.check');
+            Route::post('/voucher/use', [\App\Http\Controllers\Api\Partners\VouchersController::class, 'useVoucher'])->name('partner.api.voucher.use');
+        });
     });
 });

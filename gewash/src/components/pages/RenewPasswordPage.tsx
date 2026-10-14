@@ -2,12 +2,12 @@ import React, { useState } from "react";
 import OTPVerification from "../OTPVerification";
 import { Link, useNavigate } from "react-router-dom";
 import { customFetch } from "@/utils/customFetch";
-import { fetchUserData } from "@/lib/fetchUserData";
-import { useDispatch } from "react-redux";
-import type { AppDispatch } from "@/store";
 import { useTranslation } from "@/hooks/useTranslation";
 import { logoUrl } from "@/assets/staticUrls";
-import { saveAccessToken } from "@/lib/accessToken";
+import { georgianLocalDigits } from "@/lib/format";
+import { readSmsChallenge } from "@/lib/registerPassword";
+import SmsStatusNotice from "@/components/SmsStatusNotice";
+import type { SmsDelivery } from "@/lib/smsDelivery";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -19,47 +19,56 @@ export default function PasswordChangePage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");  
   const [showPassword, setShowPassword] = useState(false);
-  const [tempCode, setTempCode] = useState<number | null>(null);
-  const dispatch = useDispatch<AppDispatch>();
+  const [tempCode, setTempCode] = useState<string | null>(null);
+  const [setupToken, setSetupToken] = useState<string | null>(null);
+  const [sending, setSending] = useState(false);
+  const [smsDelivery, setSmsDelivery] = useState<SmsDelivery | null>(null);
+  const [smsDetail, setSmsDetail] = useState<string | null>(null);
   const navigate = useNavigate();
-  const [smsCode, setSmsCode] = useState<string>("");
 
   const togglePassword = () => setShowPassword((prev) => !prev);
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const raw = e.target.value.replace(/[^\d]/g, "").slice(0, 9);
-    setPhone(raw);
+    setPhone(georgianLocalDigits(e.target.value));
     if (error.phone) setError((prev) => ({ ...prev, phone: undefined }));
   };
 
   const handleRequestPasswordChange = async () => {
-    const fullPhone = "995" + phone;
-
     if (!phone) {
       setError({ phone: "empty" });
       return;
     }
 
     try {
+      setSending(true);
       const res = await customFetch(`${API_URL}/change_password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Accept": "application/json",
         },
-        body: JSON.stringify({ phone: fullPhone }),
+        body: JSON.stringify({ phone }),
       });
 
       const data = await res.json();
+      const challenge = readSmsChallenge(data);
 
-      if (data.success) {
-        setTempCode(data.temp_code);
+      if (challenge.tempCode) {
+        setTempCode(challenge.tempCode);
+        setSmsDelivery(challenge.delivery);
+        setSmsDetail(challenge.detail);
         setStage("verify");
+      } else if (challenge.delivery) {
+        setSmsDelivery(challenge.delivery);
+        setSmsDetail(challenge.detail);
+        setError({ phone: "sms" });
       } else {
-        setError({ phone: data.error });
+        setError({ phone: typeof data.error === "string" ? data.error : "unknown" });
       }
     } catch (err) {
       console.error("Ошибка запроса:", err);
+    } finally {
+      setSending(false);
     }
   };
 
@@ -73,9 +82,8 @@ export default function PasswordChangePage() {
   
       const data = await res.json();
   
-      if (data.success && data.verify_code) {
-        saveAccessToken(data.access_token, typeof data.expires_in === "number" ? data.expires_in : undefined);
-        setSmsCode(code); 
+      if (data.success && data.setup_token) {
+        setSetupToken(data.setup_token);
         setStage("set-password");
       } else {
         setError({ phone: data.error || "invalid-code" }); // сохраняем текст ошибки
@@ -106,15 +114,14 @@ export default function PasswordChangePage() {
         },
         body: JSON.stringify({
           password,
-          verify_code: smsCode,
+          setup_token: setupToken,
         }),
       });
   
       const data = await res.json();
   
       if (data.success) {
-        saveAccessToken(data.access_token, typeof data.expires_in === "number" ? data.expires_in : undefined);
-        await fetchUserData(dispatch);
+        // Reset never issues a session; the user signs in with the new password.
         navigate("/auth");
       } else {
         setError({ password: "server-error" });
@@ -129,7 +136,10 @@ export default function PasswordChangePage() {
   if (stage === "verify" && tempCode) {
     return (
       <>
-        <OTPVerification onVerify={handleVerifyCode} />
+        <OTPVerification
+          onVerify={handleVerifyCode}
+          notice={<SmsStatusNotice delivery={smsDelivery} detail={smsDetail} />}
+        />
         {error.phone && (
           <div className="phone-number-error">
             <p>{typeof error.phone === "string" ? error.phone : "Ошибка подтверждения"}</p>
@@ -270,11 +280,13 @@ export default function PasswordChangePage() {
         <p>{t("PasswordChange.request.subtitle")}</p>
       </div>
 
-      {error.phone && (
+      {error.phone === "sms" ? (
+        <SmsStatusNotice delivery={smsDelivery} detail={smsDetail} />
+      ) : error.phone ? (
         <div className="phone-number-error">
           <p>{t(`PasswordChange.request.errors.${error.phone}`)}</p>
         </div>
-      )}
+      ) : null}
 
       <div className="auth-input-block">
         <div className="auth-phone-input">
@@ -295,7 +307,7 @@ export default function PasswordChangePage() {
           </div>
         </div>
 
-        <button className="sign-in" onClick={handleRequestPasswordChange}>
+        <button className="sign-in" onClick={handleRequestPasswordChange} disabled={sending}>
           {t("PasswordChange.request.button")}
         </button>
       </div>

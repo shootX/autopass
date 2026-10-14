@@ -1,12 +1,13 @@
 import { motion } from "framer-motion";
 import { hatchbackIconUrl } from "@/assets/staticUrls";
-import type { CarPreview } from "@/store/carSlice";
+import type { Car } from "@/store/carSlice";
+import { dragY } from "@/lib/dragOffset";
 type Props = {
   open: boolean;
   setOpen: (v: boolean) => void;
-  applyCar: (car: CarPreview) => void;
-  selectedCar: CarPreview;
-  cars: CarPreview[];
+  applyCar: (car: Car) => void;
+  selectedCar: Car;
+  cars: Car[];
 };
 
 export function CarDropDown({
@@ -33,11 +34,11 @@ export function CarDropDown({
       <motion.div
         drag='y'
         dragMomentum={false}
-        onDragEnd={(e, info) => {
-          if (info.offset.y > 60) setOpen(false);
+        onDragEnd={(_e, info) => {
+          if (dragY(info.offset.y) > 60) setOpen(false);
         }}
         onUpdate={(latest) => {
-          if (latest.y < 0) latest.y = 0;
+          if (dragY(latest.y) < 0) latest.y = 0;
         }}
         style={{
           position: "fixed",

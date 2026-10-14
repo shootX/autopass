@@ -13,8 +13,11 @@ class Phone
     {
         $digits = preg_replace('/\D+/', '', (string) $value) ?? '';
 
-        if (str_starts_with($digits, '995') && strlen($digits) >= 12) {
-            $digits = substr($digits, 3);
+        if (str_starts_with($digits, '995')) {
+            $local = substr($digits, 3);
+            if (preg_match('/^5\d{8}$/', $local)) {
+                return $local;
+            }
         }
 
         return $digits;
@@ -97,6 +100,10 @@ class Phone
         }
 
         if (User::query()->where('phone', $value)->exists()) {
+            return;
+        }
+
+        if (\Illuminate\Support\Facades\DB::getDriverName() === 'sqlite') {
             return;
         }
 

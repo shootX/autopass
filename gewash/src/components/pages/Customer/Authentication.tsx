@@ -60,7 +60,7 @@ export default function Authentication() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          phone: fullPhone.replace("+", ""), // сервер ожидает без "+"
+          phone: fullPhone,
           password: trimmedPassword,
         }),
       });

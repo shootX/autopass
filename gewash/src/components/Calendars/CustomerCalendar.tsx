@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   addMonths,
   subMonths,
@@ -16,7 +16,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { type RootState } from "@/store";
 import "../../styles/customer_styles/customer-calendar.scss";
 import Header from "../Header";
-import { removeAppointment } from "@/store/appointmentsSlice";
+import { removeAppointment, type Appointment } from "@/store/appointmentsSlice";
 import { useLoadAppointmentsFromBackend } from "@/hooks/useLoadAppointmentsFromBackend";
 import { customFetch } from "@/utils/customFetch";
 import { useFetchBranches, type Branch } from "@/hooks/useFetchBranches";
@@ -30,16 +30,6 @@ import {
   pathIconUrl,
   qrIconYellowUrl,
 } from "@/assets/staticUrls";
-
-type Appointment = {
-  id: number;
-  branchId: string;
-  branchName: string;
-  branchAddress: string;
-  date: string;
-  time: string;
-  type: string;
-};
 
 export default function WashAppointmentsCalendar() {
   const t = useTranslation();
@@ -122,7 +112,7 @@ export default function WashAppointmentsCalendar() {
   const locale = locales[currentLang] ?? enUS;
   const weekStart = startOfWeek(new Date(), { locale });
 
-  const handleRouteClick = async (selectedBranch: any) => {
+  const handleRouteClick = (selectedBranch: Branch | undefined) => {
     if (!selectedBranch) return;
 
     window.ReactNativeWebView?.postMessage(JSON.stringify({

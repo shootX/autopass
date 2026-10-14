@@ -66,7 +66,16 @@ export const carSlice = createSlice({
       const { id, brand, model, plate } = action.payload;
       const index = state.cars.findIndex((c) => c.id === id);
       if (index !== -1) {
-        state.cars[index] = { id, brand, model, plate };
+        const current = state.cars[index];
+        state.cars[index] = {
+          id,
+          plate,
+          model: {
+            name: model.name,
+            type: current.model.type,
+            brand: { name: brand.name },
+          },
+        };
       }
     },    
     removeCar: (state, action: PayloadAction<number>) => {

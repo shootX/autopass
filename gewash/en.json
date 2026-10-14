@@ -967,5 +967,23 @@
     "NotFound": {
         "title": "Page not found",
         "home": "Back to home"
+    },
+    "SmsStatus": {
+        "simulated": {
+            "title": "Test mode",
+            "body": "The code was created in test mode. The message is not sent to the phone."
+        },
+        "accepted": {
+            "title": "Accepted",
+            "body": "The request was accepted. Enter the code when the message arrives. Accepted does not mean delivered."
+        },
+        "failed": {
+            "title": "Not sent",
+            "body": "The message was not sent. Try again in a moment."
+        },
+        "unknown": {
+            "title": "Result unknown",
+            "body": "The send result could not be confirmed. If the code arrives, use it. It is not sent again automatically."
+        }
     }
 }

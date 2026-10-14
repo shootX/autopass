@@ -4,6 +4,7 @@ import { useDrag } from "@use-gesture/react";
 import { Calendar } from "@/components/ui/calendar";
 import { addMonths, format, subMonths } from "date-fns";
 import { leftArrowUrl, rightArrowUrl } from "@/assets/staticUrls";
+import { dragY } from "@/lib/dragOffset";
 
 export function SingleCalendarMobileSheet({
   open,
@@ -16,16 +17,16 @@ export function SingleCalendarMobileSheet({
   open: boolean;
   setOpen: (v: boolean) => void;
   applyDate: (date: Date) => void;
-  initialDate?: Date;
+  initialDate?: Date | null;
   title?: string;
   disabled?: boolean;
 }) {
   const [month, setMonth] = useState(new Date());
-  const [selected, setSelected] = useState<Date | undefined>(initialDate);
+  const [selected, setSelected] = useState<Date | undefined>(initialDate ?? undefined);
   const calendarRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setSelected(initialDate);
+    setSelected(initialDate ?? undefined);
   }, [initialDate]);
 
   useDrag(
@@ -49,12 +50,6 @@ export function SingleCalendarMobileSheet({
     }
   );
 
-  const handleYearChange = (year: number) => {
-    const newDate = new Date(month);
-    newDate.setFullYear(year);
-    setMonth(newDate);
-  };
-
   if (!open) return null;
 
   return (
@@ -71,11 +66,11 @@ export function SingleCalendarMobileSheet({
       <motion.div
         drag='y'
         dragMomentum={false}
-        onDragEnd={(e, info) => {
-          if (info.offset.y > 60) setOpen(false);
+        onDragEnd={(_e, info) => {
+          if (dragY(info.offset.y) > 60) setOpen(false);
         }}
         onUpdate={(latest) => {
-          if (latest.y < 0) latest.y = 0;
+          if (dragY(latest.y) < 0) latest.y = 0;
         }}
         style={{
           position: "fixed",

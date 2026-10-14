@@ -18,6 +18,15 @@ export function invalidateCarsCache() {
   carsInflight = null;
 }
 
+function asRecord(value: unknown): Record<string, unknown> | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  return value as Record<string, unknown>;
+}
+
+function readString(value: unknown, fallback: string): string {
+  return typeof value === "string" && value.trim() ? value : fallback;
+}
+
 function loadCars(): Promise<EnrichedCar[]> {
   if (carsCache) return Promise.resolve(carsCache);
   if (carsInflight) return carsInflight;
@@ -34,15 +43,23 @@ function loadCars(): Promise<EnrichedCar[]> {
       if (!res.ok) throw new Error("Failed to fetch cars");
       return res.json();
     })
-    .then((data) => {
-      const enriched: EnrichedCar[] = data.cars.map((car: any) => ({
-        id: car.id,
-        plate: car.plate,
-        type: car.model?.type ?? "Unknown",
-        model: car.model?.name ?? "Unknown",
-        brand: car.model?.brand?.name ?? "Unknown",
-        image: car.image ?? null,
-      }));
+    .then((data: unknown) => {
+      const body = asRecord(data);
+      const list = Array.isArray(body?.cars) ? body.cars : [];
+      const enriched: EnrichedCar[] = list.map((item) => {
+        const car = asRecord(item);
+        const model = asRecord(car?.model);
+        const brand = asRecord(model?.brand);
+        const id = typeof car?.id === "number" ? car.id : Number(car?.id);
+        return {
+          id: Number.isFinite(id) ? id : 0,
+          plate: readString(car?.plate, ""),
+          type: readString(model?.type, "Unknown"),
+          model: readString(model?.name, "Unknown"),
+          brand: readString(brand?.name, "Unknown"),
+          image: typeof car?.image === "string" ? car.image : null,
+        };
+      });
       carsCache = enriched;
       return enriched;
     })

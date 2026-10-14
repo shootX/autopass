@@ -3,7 +3,9 @@ import OTPVerification from "../../OTPVerification";
 import { Link, useNavigate } from "react-router-dom";
 import { customFetch } from "@/utils/customFetch";
 import { fetchUserData } from "@/lib/fetchUserData";
-import { buildSetPasswordBody, tempCodeFromRegister } from "@/lib/registerPassword";
+import { buildSetPasswordBody, readSmsChallenge } from "@/lib/registerPassword";
+import SmsStatusNotice from "@/components/SmsStatusNotice";
+import type { SmsDelivery } from "@/lib/smsDelivery";
 import { referralIpUrl } from "@/lib/referralIp";
 import { useDispatch } from "react-redux";
 import type { AppDispatch } from "@/store";
@@ -56,8 +58,11 @@ export default function Registration() {
   const dispatch = useDispatch<AppDispatch>();
 
   const togglePassword = () => setShowPassword((prev) => !prev);
-  const [tempCode, setTempCode] = useState<number | null>(null);
-  const [verifyCode, setVerifyCode] = useState<string | null>(null);
+  const [tempCode, setTempCode] = useState<string | null>(null);
+  const [setupToken, setSetupToken] = useState<string | null>(null);
+  const [sending, setSending] = useState(false);
+  const [smsDelivery, setSmsDelivery] = useState<SmsDelivery | null>(null);
+  const [smsDetail, setSmsDetail] = useState<string | null>(null);
   const navigate = useNavigate();
 
   // Запрос при открытии страницы (монтировании компонента)
@@ -97,7 +102,7 @@ export default function Registration() {
   };
 
   const handleRegister = async () => {
-    const fullPhone = "995" + phone;
+    const fullPhone = phone;
 
     if (!phone) {
       setError({ phone: "empty" });
@@ -112,6 +117,7 @@ export default function Registration() {
     }
 
     try {
+      setSending(true);
       const res = await fetch(`${API_URL}/register`, {
         method: "POST",
         headers: {
@@ -126,12 +132,17 @@ export default function Registration() {
       });
 
       const data = await res.json();
-      const ticket = tempCodeFromRegister(data);
+      const challenge = readSmsChallenge(data);
 
-      if (ticket != null) {
-        setTempCode(ticket);
-        setVerifyCode(null);
+      if (challenge.tempCode != null) {
+        setTempCode(challenge.tempCode);
+        setSmsDelivery(challenge.delivery);
+        setSmsDetail(challenge.detail);
         setStage("verify");
+      } else if (challenge.delivery) {
+        setSmsDelivery(challenge.delivery);
+        setSmsDetail(challenge.detail);
+        setError({ phone: "sms" });
       } else {
         const serverPhoneError = data.error?.phone?.[0] || "";
 
@@ -145,6 +156,8 @@ export default function Registration() {
       }
     } catch (err) {
       console.error("Ошибка запроса:", err);
+    } finally {
+      setSending(false);
     }
   };
 
@@ -162,9 +175,8 @@ export default function Registration() {
 
       const data = await res.json();
 
-      if (data.success && data.access_token) {
-        saveAccessToken(data.access_token, typeof data.expires_in === "number" ? data.expires_in : undefined);
-        setVerifyCode(code);
+      if (data.success && data.setup_token) {
+        setSetupToken(data.setup_token);
         handleOTPVerified();
       } else {
         throw new Error("Invalid code");
@@ -181,7 +193,7 @@ export default function Registration() {
       return;
     }
 
-    if (tempCode == null || !verifyCode) {
+    if (!setupToken) {
       setError({ password: "code-missing" });
       return;
     }
@@ -192,17 +204,13 @@ export default function Registration() {
         headers: {
           "Content-Type": "application/json",
           "Accept": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("access_token")}`,
         },
-        body: JSON.stringify(buildSetPasswordBody({
-          password,
-          tempCode,
-          code: verifyCode,
-        })),
+        body: JSON.stringify(buildSetPasswordBody({ password, setupToken })),
       });
 
       const data = await res.json();
-      if (data.success) {
+      if (data.success && data.access_token) {
+        saveAccessToken(data.access_token, typeof data.expires_in === "number" ? data.expires_in : undefined);
         await fetchUserData(dispatch);
         navigate("/add-car");
       } else {
@@ -216,7 +224,14 @@ export default function Registration() {
 
 
   if (stage === "verify" && tempCode) {
-    return <OTPVerification onVerify={handleVerifyOTP} phone={phone} step="2 / 3" />;
+    return (
+      <OTPVerification
+        onVerify={handleVerifyOTP}
+        phone={phone}
+        step="2 / 3"
+        notice={<SmsStatusNotice delivery={smsDelivery} detail={smsDetail} />}
+      />
+    );
   }
 
   if (stage === "set-password") {
@@ -305,6 +320,8 @@ export default function Registration() {
         <p>{t("Registration.stage.register.subtitle")}</p>
       </div>
 
+      <SmsStatusNotice delivery={error.phone === "sms" ? smsDelivery : null} detail={smsDetail} />
+
       {error.phone === "empty" && (
         <div className='incorrect-password-error'>
           <p>{t("Registration.stage.register.errors.empty")}</p>
@@ -358,7 +375,7 @@ export default function Registration() {
           <label htmlFor='accept-policy'>{t("Registration.stage.policy")}</label> <Link className="ap-link" to='/privacy'>{t("Registration.stage.policyLink")}</Link>
         </div>
 
-        <button className='sign-in' onClick={handleRegister}>
+        <button className='sign-in' onClick={handleRegister} disabled={sending}>
           {t("Registration.stage.register.button")}
         </button>
       </div>

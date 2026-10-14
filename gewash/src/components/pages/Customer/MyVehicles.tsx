@@ -1,13 +1,10 @@
-import React from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAppSelector } from "@/hooks/hooks";
 import { useFetchCars } from "@/hooks/useFetchCars";
 import { useTranslation } from "@/hooks/useTranslation";
 import { defaultCarPlaceholderUrl, editNoteIconUrl } from "@/assets/staticUrls";
 const NO_API_URL = import.meta.env.VITE_NO_API_URL;
 
 export default function MyVehicles() {
-  const vehicles = useAppSelector((state) => state.car.cars);
   const navigate = useNavigate();
   const { cars, loading, error } = useFetchCars();
   const t = useTranslation();

@@ -75,7 +75,7 @@ class CarsController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'error' => $e->getMessage()
+                'error' => 'Request failed'
             ], 400);
         }
     }

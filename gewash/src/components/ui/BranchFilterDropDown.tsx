@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import "../../../src/styles/dropdowns/branch-filter.scss";
 import { useFetchServices } from "@/hooks/useFetchServices";
 import { useTranslation } from "@/hooks/useTranslation";
+import { dragY } from "@/lib/dragOffset";
 
 
 type BranchFilterProps = {
@@ -28,7 +29,7 @@ export function BranchFilterDropDown({
   onApplyFilters,
 }: BranchFilterProps) {
   const t = useTranslation();
-  const { services, loading } = useFetchServices();
+  const { services } = useFetchServices();
   if (!open) return null;
 
   const toggleService = (id: number) => {
@@ -52,11 +53,11 @@ export function BranchFilterDropDown({
       <motion.div
         drag='y'
         dragMomentum={false}
-        onDragEnd={(e, info) => {
-          if (info.offset.y > 60) setOpen(false);
+        onDragEnd={(_e, info) => {
+          if (dragY(info.offset.y) > 60) setOpen(false);
         }}
         onUpdate={(latest) => {
-          if (latest.y < 0) latest.y = 0;
+          if (dragY(latest.y) < 0) latest.y = 0;
         }}
         className='add-car-sheet full-height'
       >

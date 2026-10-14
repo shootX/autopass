@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
+import { dragY } from "@/lib/dragOffset";
 
 const TIME_OPTIONS = [
   "09:00", "11:00", "13:00", "15:00", "17:00", "19:00",
@@ -9,15 +10,17 @@ export function TimePickerMobileSheet({
   open,
   setOpen,
   applyTime,
-  ...props
+  disabled,
+  toDate,
 }: {
   open: boolean;
   setOpen: (v: boolean) => void;
   applyTime: (time: string) => void;
+  disabled?: boolean;
+  toDate?: Date;
 }) {
   const [selectedTime, setSelectedTime] = useState("");
-console.log('props', props);
-  if (props.disabled) {
+  if (disabled) {
     return null;
   }
   if (!open) return null;
@@ -25,10 +28,10 @@ console.log('props', props);
   const now = new Date();
 
   const isToday =
-    props.toDate &&
-    props.toDate.getFullYear() === now.getFullYear() &&
-    props.toDate.getMonth() === now.getMonth() &&
-    props.toDate.getDate() === now.getDate();
+    toDate &&
+    toDate.getFullYear() === now.getFullYear() &&
+    toDate.getMonth() === now.getMonth() &&
+    toDate.getDate() === now.getDate();
 
   return (
     <>
@@ -44,11 +47,11 @@ console.log('props', props);
       <motion.div
         drag='y'
         dragMomentum={false}
-        onDragEnd={(e, info) => {
-          if (info.offset.y > 60) setOpen(false);
+        onDragEnd={(_e, info) => {
+          if (dragY(info.offset.y) > 60) setOpen(false);
         }}
         onUpdate={(latest) => {
-          if (latest.y < 0) latest.y = 0;
+          if (dragY(latest.y) < 0) latest.y = 0;
         }}
         style={{
           position: "fixed",

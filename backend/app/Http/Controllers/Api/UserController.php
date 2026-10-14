@@ -3,10 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Mail\VerificationMail;
+use App\Services\Security\AuthChallengeException;
+use App\Services\Security\EmailChallengeService;
+use App\Services\Security\SmsDeliveryException;
 use App\Support\Phone;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
@@ -72,63 +73,42 @@ class UserController extends Controller
         return response()->json(['success' => true, 'transactions' => auth()->user()->transactions]);
     }
 
-    public function emailSet(Request $request)
+    public function emailSet(Request $request, EmailChallengeService $emailChallenges)
     {
         $validator = Validator::make($request->all(), [
-            'email' => 'required|email|unique:users',
+            'email' => 'required|email|unique:users,email,'.auth()->id(),
         ]);
 
-        if($validator->fails()) {
+        if ($validator->fails()) {
             return response()->json(['success' => false, 'errors' => 'email not valid or already exists'], 422);
         }
 
-        $user = auth()->user();
-
-        //Check last 10 minutes
-        $check = $user->verificationCodes()->where('created_at', '>', now()->subMinutes(10))->first();
-        if($check)
-        {
-            return response()->json(['success' => false, 'errors' => 'Email verification code already sent. Please check your email or wait 10 minutes'], 422);
+        try {
+            $emailChallenges->issue(auth()->user(), (string) $request->input('email'));
+        } catch (AuthChallengeException) {
+            return response()->json(['success' => false, 'errors' => 'Email verification code already sent. Please check your email or wait before requesting another'], 422);
+        } catch (SmsDeliveryException) {
+            return response()->json(['success' => false, 'errors' => 'Email could not be sent'], 503);
         }
-
-        $user->email = $request->input('email');
-        $user->email_verified_at = null;
-        $user->save();
-
-        $code = rand(100000, 999999);
-
-        $user->verificationCodes()->create([
-            'code' => $code
-        ]);
-
-        Mail::to($user->email)->send(
-            new VerificationMail($code)
-        );
 
         return response()->json(['success' => true, 'message' => 'Verification code sent']);
     }
 
-    public function emailVerify(Request $request)
+    public function emailVerify(Request $request, EmailChallengeService $emailChallenges)
     {
-        $validator = Validator::make($request->all(),[
-            'code' => 'required|integer|digits:6'
+        $validator = Validator::make($request->all(), [
+            'code' => 'required|digits:6',
         ]);
 
-        if($validator->fails()) {
+        if ($validator->fails()) {
             return response()->json(['success' => false, 'errors' => 'code validation failed'], 422);
         }
 
-        $user = auth()->user();
-        $code = $request->input('code');
-
-        $verificationCode = $user->verificationCodes()->where('code', $code)->first();
-
-        if (!$verificationCode) {
+        try {
+            $emailChallenges->verify(auth()->user(), (string) $request->input('code'));
+        } catch (AuthChallengeException) {
             return response()->json(['success' => false, 'errors' => 'Invalid verification code'], 422);
         }
-
-        $user->markEmailAsVerified();
-        $verificationCode->delete();
 
         return response()->json(['success' => true, 'message' => 'Email verified successfully']);
     }

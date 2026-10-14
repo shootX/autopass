@@ -1,5 +1,8 @@
 import { useState } from "react";
-import { checkVoucher, formatCodeForDisplay, useVoucher, type VoucherCheckResult } from "../lib/voucherApi";
+import { checkVoucher, confirmVoucherUse, formatCodeForDisplay, type VoucherCheckResult } from "../lib/voucherApi";
+import { PartnerFlowError } from "../lib/partnerGate";
+import { parseSmsDelivery, publicSmsDetail, type SmsDelivery } from "../../../src/lib/smsDelivery";
+import SmsStatusNotice from "../components/SmsStatusNotice";
 import Spinner from "../components/Spinner";
 import logOutIconUrl from "../assets/log_out_icon.svg";
 
@@ -15,6 +18,7 @@ function delay(ms: number): Promise<void> {
 
 type Props = {
   onLogout: () => void;
+  onMustChange: () => void;
 };
 
 type StageVisual = "done" | "active" | "pending";
@@ -44,18 +48,31 @@ function StageBar({ discount, sms, bonus }: { discount: StageVisual; sms: StageV
   );
 }
 
-export default function CodeVerificationPage({ onLogout }: Props) {
+export default function CodeVerificationPage({ onLogout, onMustChange }: Props) {
   /** 1 = voucher, 2 = SMS only, 3 = redeem (POST /use) */
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [rawDiscount, setRawDiscount] = useState("");
   const [smsCode, setSmsCode] = useState("");
   const [storedDiscountDisplay, setStoredDiscountDisplay] = useState("");
   const [tempCode, setTempCode] = useState<string | null>(null);
+  const [smsDelivery, setSmsDelivery] = useState<SmsDelivery | null>(null);
+  const [smsDetail, setSmsDetail] = useState<string | null>(null);
   const [result, setResult] = useState<VoucherCheckResult>({ status: "idle" });
   const [resendBusy, setResendBusy] = useState(false);
   const [successBurst, setSuccessBurst] = useState(false);
-
   const busy = result.status === "loading";
+
+  function consumeFlow(err: unknown): boolean {
+    if (!(err instanceof PartnerFlowError)) return false;
+    if (err.kind === "must_change") onMustChange();
+    else onLogout();
+    return true;
+  }
+
+  function rememberSms(payload: { delivery?: string; message?: string; error?: string }) {
+    setSmsDelivery(parseSmsDelivery(payload.delivery));
+    setSmsDetail(publicSmsDetail(payload.message ?? payload.error));
+  }
 
   const stagesStep1: { discount: StageVisual; sms: StageVisual; bonus: StageVisual } = {
     discount: "active",
@@ -91,12 +108,15 @@ export default function CodeVerificationPage({ onLogout }: Props) {
       if (ok && tc) {
         setStoredDiscountDisplay(formatCodeForDisplay(cleaned) || formatCodeForDisplay(code));
         setTempCode(tc);
+        rememberSms(payload);
         setStep(2);
         setResult({ status: "idle" });
       } else {
+        rememberSms(payload);
         setResult({ status: "invalid", code: cleaned, payload });
       }
     } catch (err) {
+      if (consumeFlow(err)) return;
       const msg = err instanceof Error ? err.message : "Unexpected error";
       setResult({ status: "error", code, message: msg });
     }
@@ -125,7 +145,7 @@ export default function CodeVerificationPage({ onLogout }: Props) {
     if (!tempCode || smsCode.trim().length < 4) return;
     setResult({ status: "loading", code: smsCode });
     try {
-      const { ok, payload } = await useVoucher(tempCode, smsCode);
+      const { ok, payload } = await confirmVoucherUse(tempCode, smsCode);
       if (ok) {
         setSuccessBurst(true);
         await delay(3000);
@@ -141,6 +161,7 @@ export default function CodeVerificationPage({ onLogout }: Props) {
         setResult({ status: "error", code: smsCode, message: msg });
       }
     } catch (err) {
+      if (consumeFlow(err)) return;
       const msg = err instanceof Error ? err.message : "Unexpected error";
       setResult({ status: "error", code: smsCode, message: msg });
     }
@@ -154,11 +175,14 @@ export default function CodeVerificationPage({ onLogout }: Props) {
       const { ok, tempCode: tc, payload } = await checkVoucher(rawDiscount);
       if (ok && tc) {
         setTempCode(tc);
+        rememberSms(payload);
         setSmsCode("");
       } else {
+        rememberSms(payload);
         setResult({ status: "invalid", code: rawDiscount, payload });
       }
     } catch (err) {
+      if (consumeFlow(err)) return;
       const msg = err instanceof Error ? err.message : "Unexpected error";
       setResult({ status: "error", code: rawDiscount, message: msg });
     } finally {
@@ -249,6 +273,7 @@ export default function CodeVerificationPage({ onLogout }: Props) {
                   {step1ErrorText}
                 </div>
               ) : null}
+              <SmsStatusNotice delivery={smsDelivery} detail={smsDetail} />
 
               <label className={`cv-label${step1HasError ? " cv-label--error" : ""}`} htmlFor="cv-discount">
                 Discount code
@@ -285,6 +310,7 @@ export default function CodeVerificationPage({ onLogout }: Props) {
               className={`cv-form cv-form--step2${step2HasError ? " cv-form--error" : ""}`}
               onSubmit={(e) => e.preventDefault()}
             >
+              <SmsStatusNotice delivery={smsDelivery} detail={smsDetail} />
               {step2HasError && step2ErrorText ? (
                 <div className="cv-error-banner" role="alert">
                   {step2ErrorText}

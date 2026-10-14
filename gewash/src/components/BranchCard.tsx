@@ -10,7 +10,7 @@ export function BranchCard({ branch, onClick, isActive }: {
 }) {
   const navigate = useNavigate();
 
-  const handleCalendarClick = (e) => {
+  const handleCalendarClick = (e: { stopPropagation: () => void }) => {
     e.stopPropagation();
     navigate("/wash-appointment", {
       state: {
@@ -19,7 +19,7 @@ export function BranchCard({ branch, onClick, isActive }: {
     });
   };
 
-  const handleGoToMap = (e) => {
+  const handleGoToMap = (e: { stopPropagation: () => void }) => {
     e.stopPropagation();
     navigate("/branches", {
       state: {

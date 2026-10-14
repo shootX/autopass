@@ -1,12 +1,10 @@
 <?php
 
 use App\Models\SmsTemp;
-use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Str;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 // BE-01
@@ -54,30 +52,19 @@ it('forbids deleting another user\'s package', function () {
     expect(DB::table('user_packages')->where('id', $id)->exists())->toBeTrue();
 });
 
-// BE-12
-it('requires the OTP to set a password and makes it single use', function () {
+// BE-12 (stage 1): the old temp_code+code / verify_code contract is gone; only a one-time setup_token works.
+it('rejects the old numeric temp_code + raw OTP contract on set_password', function () {
     $user = makeUser('+995555000003');
     $sms = SmsTemp::create(['type' => 'verify', 'user_id' => $user->id, 'code' => '654321']);
-
-    $this->postJson('/api/register/set_password', ['temp_code' => $sms->id, 'password' => 'secret123'])->assertStatus(422);
-    $this->postJson('/api/register/set_password', ['temp_code' => $sms->id, 'code' => '000000', 'password' => 'secret123'])->assertStatus(422);
-    $this->postJson('/api/register/set_password', ['temp_code' => $sms->id, 'code' => '654321', 'password' => 'secret123'])->assertOk();
-    expect(Hash::check('secret123', $user->fresh()->password))->toBeTrue();
-    $this->postJson('/api/register/set_password', ['temp_code' => $sms->id, 'code' => '654321', 'password' => 'hacked123'])->assertStatus(422);
+    $this->postJson('/api/register/set_password', ['temp_code' => $sms->id, 'code' => '654321', 'password' => 'secret123'])->assertStatus(422);
+    expect(Hash::check('secret123', $user->fresh()->password))->toBeFalse();
 });
 
-it('rejects an expired set_password OTP', function () {
-    $user = makeUser('+995555000004');
-    $sms = SmsTemp::create(['type' => 'verify', 'user_id' => $user->id, 'code' => '111222']);
-    SmsTemp::whereKey($sms->id)->update(['created_at' => now()->subMinutes(16)]);
-    $this->postJson('/api/register/set_password', ['temp_code' => $sms->id, 'code' => '111222', 'password' => 'secret123'])->assertStatus(422);
-});
-
-it('makes the password reset verify code single use', function () {
+it('rejects the old verify_code contract on password reset', function () {
     $user = makeUser('+995555000005');
     SmsTemp::create(['type' => 'reset', 'user_id' => $user->id, 'code' => '333444']);
-    $this->postJson('/api/change_password/verify_submit', ['verify_code' => '333444', 'password' => 'newpass1'])->assertOk();
-    $this->postJson('/api/change_password/verify_submit', ['verify_code' => '333444', 'password' => 'newpass2'])->assertStatus(422);
+    $this->postJson('/api/change_password/verify_submit', ['verify_code' => '333444', 'password' => 'newpass1'])->assertStatus(422);
+    expect(Hash::check('newpass1', $user->fresh()->password))->toBeFalse();
 });
 
 // BE-13

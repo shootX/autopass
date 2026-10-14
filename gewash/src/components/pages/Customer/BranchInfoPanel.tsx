@@ -1,26 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import CallIcon from '@/assets/icons/ManagerOrder/call_icon.svg?react';
 import PathIcon from '@/assets/icons/path-icon.svg?react';
 import GeoIconYellow from '@/assets/icons/geo-icon-yellow.svg?react';
-import CalendarIconYellow from '@/assets/icons/calendar-icon-yellow.svg?react';
 import { useTranslation } from '@/hooks/useTranslation';
 
 type Branch = {
-  id: string;
+  id: number | string;
   name: string;
   address: string;
-  isOpen: boolean;
+  isOpen?: boolean | null;
   lat: number | string;
   lng: number | string;
-  manager: {
-    phone: string;
-  };
+  manager?: {
+    phone?: string | null;
+  } | null;
 };
 
 type Props = {
   branch: Branch;
-  onGoToMap?: () => void;
-  onGoToCalendar?: () => void;
+  onGoToMap?: (event: { stopPropagation: () => void }) => void;
+  onGoToCalendar?: (event: { stopPropagation: () => void }) => void;
 };
 
 type MapMenuState = {
@@ -30,7 +29,7 @@ type MapMenuState = {
   lng: number | string | null;
 };
 
-export function BranchInfoPanel({ branch, onGoToMap, onGoToCalendar }: Props) {
+export function BranchInfoPanel({ branch, onGoToMap }: Props) {
   const t = useTranslation();
 
   // Состояние для отображения меню навигаторов
@@ -60,7 +59,7 @@ export function BranchInfoPanel({ branch, onGoToMap, onGoToCalendar }: Props) {
             lng,
           });
         }
-      } catch (e) {
+      } catch {
         // Игнорируем нерелевантные сообщения от сторонних скриптов
       }
     };
@@ -70,7 +69,7 @@ export function BranchInfoPanel({ branch, onGoToMap, onGoToCalendar }: Props) {
   }, [branch.id]); // Добавлена зависимость по id для точечной фильтрации
 
   // 1. Инициирует проверку карт в нативном приложении Expo
-  const handleRouteClick = (selectedBranch: any) => {
+  const handleRouteClick = (selectedBranch: Branch) => {
     if (!selectedBranch) return;
 
     // Записываем уникальный маркер нажатия для конкретной карточки

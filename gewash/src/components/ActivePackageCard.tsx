@@ -78,7 +78,10 @@ export function ActivePackageCard({
   const isExpired = computedEnd < today;
   const isExpiringSoon = daysLeft <= 7 && !isExpired;
 
+  const matched = cars.find((car) => car.plate === plate);
   const initialPackage: PackageData = {
+    id,
+    car_id: matched?.id ?? 0,
     plate,
     model,
     washes,
@@ -86,8 +89,6 @@ export function ActivePackageCard({
     startDate,
     autoRenewal,
   };
-
-  const matched = cars.find((car) => car.plate === plate);
   const parts = carParts(matched);
   const remaining = washes === "infinity" ? null : washes;
   const total = totalWashes ?? (typeof washes === "number" ? washes : 0);

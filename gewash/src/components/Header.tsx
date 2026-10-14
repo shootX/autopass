@@ -10,7 +10,7 @@ export type HeaderTitleTag = "text" | "h1" | "h2" | "h3" | "p" | "span";
 
 type Props = {
   variant?: HeaderVariant;
-  logoVariant?: "image" | "calendar " | "qr";
+  logoVariant?: "image" | "calendar" | "qr";
   title?: ReactNode;
   titleAs?: HeaderTitleTag;
   titleClassName?: string;

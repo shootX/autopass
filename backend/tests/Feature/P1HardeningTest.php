@@ -1,12 +1,14 @@
 <?php
 
+use App\Models\Partner;
+use App\Models\SmsTemp;
 use App\Models\User;
+use App\Services\Sms\MockSmsGateway;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
-use Illuminate\Support\Facades\RateLimiter;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 beforeEach(function () {
@@ -49,7 +51,8 @@ function userPackage(int $userId, int $carId, array $extra = []): int
 function partnerToken(string $login): array
 {
     $id = row('partners', ['login' => $login, 'password' => Hash::make('pw-'.$login), 'name' => $login, 'description' => 'd']);
-    return [$id, JWTAuth::fromUser(\App\Models\Partner::find($id))];
+
+    return [$id, JWTAuth::fromUser(Partner::find($id))];
 }
 
 // BE-04
@@ -65,7 +68,6 @@ it('no longer deletes via GET in the admin dashboard', function () {
     $this->get('/dashboard/clients/1/delete')->assertStatus(405);
     $this->get('/partner/cars/1/delete')->assertStatus(405);
 });
-
 
 // BE-09 / BE-11
 it('returns 403 to non-managers on package approve', function () {
@@ -200,12 +202,13 @@ it('lets only the owning partner check and use a voucher', function () {
     freshAuth();
     $this->withToken($t1)->postJson('/api/partner/voucher/check', ['code' => 'CODE0001'])->assertOk()->assertJson(['success' => true]);
 
-    $sms = \App\Models\SmsTemp::where('user_voucher_id', $uv)->first();
+    $sms = SmsTemp::where('user_voucher_id', $uv)->first();
+    $code = app(MockSmsGateway::class)->latestCode();
     freshAuth();
-    $this->withToken($t2)->postJson('/api/partner/voucher/use', ['temp_code' => $sms->id, 'code' => $sms->code])->assertForbidden();
-    expect(DB::table('user_vouchers')->where('id', $uv)->exists())->toBeTrue();
+    $this->withToken($t2)->postJson('/api/partner/voucher/use', ['temp_code' => $sms->public_id, 'code' => $code])->assertForbidden();
+    expect(DB::table('user_vouchers')->find($uv)->used_at)->toBeNull();
     freshAuth();
-    $this->withToken($t1)->postJson('/api/partner/voucher/use', ['temp_code' => $sms->id, 'code' => $sms->code])->assertOk()->assertJson(['success' => true]);
+    $this->withToken($t1)->postJson('/api/partner/voucher/use', ['temp_code' => $sms->public_id, 'code' => $code])->assertOk()->assertJson(['success' => true]);
     $row = DB::table('user_vouchers')->find($uv);
     expect($row->used_at)->not->toBeNull()->and((int) $row->used_by_partner_id)->toBe($p1);
 });
@@ -230,12 +233,15 @@ it('burns the voucher SMS code after 5 wrong attempts', function () {
     $cat = row('voucher_categories', ['name' => 'c']);
     $v = row('vouchers', ['name' => 'v', 'description' => 'd', 'photo' => 'p', 'category_id' => $cat, 'price' => 1, 'partner_id' => $p1]);
     $uv = row('user_vouchers', ['user_id' => $client->id, 'voucher_id' => $v, 'code' => 'CODEBF01']);
-    $sms = \App\Models\SmsTemp::create(['type' => 'use_voucher', 'user_id' => $client->id, 'code' => '424242', 'user_voucher_id' => $uv]);
+    $this->withToken($t1)->postJson('/api/partner/voucher/check', ['code' => 'CODEBF01'])->assertOk();
+    $sms = SmsTemp::where('user_voucher_id', $uv)->first();
+    $right = app(MockSmsGateway::class)->latestCode();
+    $wrong = $right === '000000' ? '111111' : '000000';
     foreach (range(1, 5) as $i) {
-        $this->withToken($t1)->postJson('/api/partner/voucher/use', ['temp_code' => $sms->id, 'code' => '000000'])->assertJson(['success' => false]);
+        $this->withToken($t1)->postJson('/api/partner/voucher/use', ['temp_code' => $sms->public_id, 'code' => $wrong])->assertJson(['success' => false]);
     }
-    $this->withToken($t1)->postJson('/api/partner/voucher/use', ['temp_code' => $sms->id, 'code' => '424242'])->assertStatus(429);
-    expect(\App\Models\SmsTemp::find($sms->id))->toBeNull();
+    $this->withToken($t1)->postJson('/api/partner/voucher/use', ['temp_code' => $sms->public_id, 'code' => $right])->assertStatus(422);
+    expect(SmsTemp::find($sms->id)->consumed_at)->not->toBeNull();
     expect(DB::table('user_vouchers')->find($uv)->used_at)->toBeNull();
 });
 

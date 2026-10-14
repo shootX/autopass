@@ -57,7 +57,8 @@ class PackagesController extends Controller
 
             return response()->json(['success' => true, 'packages' => $packages]);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'error' => $e->getMessage()]);
+            \Illuminate\Support\Facades\Log::warning('package_request_failed', ['exception' => $e::class]);
+            return response()->json(['success' => false, 'error' => 'Request failed']);
         }
     }
 
@@ -130,7 +131,8 @@ class PackagesController extends Controller
             return response()->json(['success' => true, 'url' => $url]);
 
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'error' => $e->getMessage()]);
+            \Illuminate\Support\Facades\Log::warning('package_request_failed', ['exception' => $e::class]);
+            return response()->json(['success' => false, 'error' => 'Request failed']);
         }
     }
 
@@ -159,7 +161,8 @@ class PackagesController extends Controller
 
             return response()->json(['success' => true, 'packages' => $packages]);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'error' => $e->getMessage()]);
+            \Illuminate\Support\Facades\Log::warning('package_request_failed', ['exception' => $e::class]);
+            return response()->json(['success' => false, 'error' => 'Request failed']);
         }
     }
 
@@ -170,6 +173,9 @@ class PackagesController extends Controller
             $user = Auth::user();
 
             $package = $user->packages()->where('id', $id)->first();
+            if (! $package) {
+                return response()->json(['success' => false, 'error' => 'Not found'], 404);
+            }
 
             $package->update([
                 'qr_code' => Str::random(16)
@@ -181,35 +187,38 @@ class PackagesController extends Controller
                 ->header('Content-Type', 'image/svg+xml');
         } catch (\Exception $e)
         {
-            return response()->json(['success' => false, 'error' => $e->getMessage()]);
+            \Illuminate\Support\Facades\Log::warning('package_request_failed', ['exception' => $e::class]);
+            return response()->json(['success' => false, 'error' => 'Request failed']);
         }
     }
 
     public function removePackage(Request $request, UserPackage $userPackage)
     {
-        if ((int) $userPackage->user_id !== (int) Auth::id()) {
+        if ((int) $userPackage->user_id !== (int) $request->user()->id) {
             return response()->json(['success' => false, 'error' => 'Forbidden'], 403);
         }
 
-        try{
-            $userPackage->delete();
-            return response()->json(['success' => true, 'msg' => 'Пакет успешно удалён.']);
-        } catch (\Exception $e) {
-            return response()->json(['success' => false, 'error' => $e->getMessage()]);
-        }
+        $userPackage->delete();
+
+        return response()->json(['success' => true, 'msg' => 'Пакет успешно удалён.']);
     }
 
     public function managerApprove(Request $request, $id)
     {
         $user = Auth::user();
 
-        if ((int) $user->role !== User::ROLE_MANAGER) {
+        if (! $user || (int) $user->role !== User::ROLE_MANAGER) {
             return response()->json(['success' => false, 'error' => 'Forbidden'], 403);
         }
 
         $washId = $user->washing?->id;
         if (! $washId) {
             return response()->json(['success' => false, 'error' => 'Manager has no branch'], 403);
+        }
+
+        $requestedBranch = $request->input('car_wash_id', $request->input('branch_id'));
+        if ($requestedBranch !== null && (int) $requestedBranch !== (int) $washId) {
+            return response()->json(['success' => false, 'error' => 'Forbidden'], 403);
         }
 
         $userPackage = UserPackage::find($id);
@@ -228,6 +237,9 @@ class PackagesController extends Controller
             return response()->json(['success' => false, 'error' => 'Appointment belongs to another branch'], 403);
         }
 
+        if ($userPackage->start_date && now()->lessThan(\Carbon\Carbon::parse($userPackage->start_date)->startOfDay())) {
+            return response()->json(['success' => false, 'error' => 'Package is not active'], 422);
+        }
         if ($userPackage->end_date && now()->greaterThan($userPackage->end_date)) {
             return response()->json(['success' => false, 'error' => 'Package expired'], 422);
         }
@@ -235,8 +247,12 @@ class PackagesController extends Controller
             return response()->json(['success' => false, 'error' => 'No washes left'], 422);
         }
 
-        DB::transaction(function () use ($userPackage, $washId, $user, $hereAppointment) {
-            $userPackage->increment('used_washes');
+        $approved = DB::transaction(function () use ($userPackage, $washId, $user, $hereAppointment) {
+            $locked = UserPackage::query()->whereKey($userPackage->id)->lockForUpdate()->first();
+            if (! $locked || (int) $locked->used_washes >= (int) $locked->number_of_washes) {
+                return false;
+            }
+            $locked->increment('used_washes');
             PackageWash::create([
                 'user_package_id' => $userPackage->id,
                 'car_wash_id' => $washId,
@@ -244,9 +260,15 @@ class PackagesController extends Controller
                 'appointment_id' => $hereAppointment?->id,
                 'walk_in' => $hereAppointment === null,
             ]);
+
+            return true;
         });
 
-        $userPackage->user->sendPush([
+        if (! $approved) {
+            return response()->json(['success' => false, 'error' => 'No washes left'], 422);
+        }
+
+        $userPackage->user?->sendPush([
             'en' => 'The wash has begun',
             'ru' => 'Мойка началась',
             'ka' => 'სარეცხი დაიწყო',

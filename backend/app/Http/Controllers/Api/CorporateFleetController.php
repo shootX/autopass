@@ -94,6 +94,10 @@ class CorporateFleetController extends Controller
             return response()->json(['ok' => false, 'message' => 'Unauthorized'], 401);
         }
 
+        if ($client->password_must_change) {
+            return response()->json(['ok' => false, 'message' => 'Password change required'], 403);
+        }
+
         return $client;
     }
 }

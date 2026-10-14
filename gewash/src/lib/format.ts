@@ -1,7 +1,16 @@
+export function georgianLocalDigits(raw: string): string {
+  const digits = raw.replace(/\D/g, "");
+  if (digits.startsWith("995")) {
+    const local = digits.slice(3);
+    if (/^5\d{8}$/.test(local)) return local;
+  }
+  return digits.slice(0, 9);
+}
+
 export function formatPhone(raw?: string | null): string {
   if (!raw) return "";
   const digits = raw.replace(/\D/g, "");
-  const local = digits.startsWith("995") ? digits.slice(3) : digits;
+  const local = digits.startsWith("995") && /^5\d{8}$/.test(digits.slice(3)) ? digits.slice(3) : digits;
   if (local.length === 9) {
     return `+995 ${local.slice(0, 3)} ${local.slice(3, 5)} ${local.slice(5, 7)} ${local.slice(7)}`;
   }
