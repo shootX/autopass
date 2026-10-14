@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import PercentBar from '../../PercentBar';
 import { MobileDropdownSheet } from '../../ui/MobileDropdown';
 import { CalendarMobileSheet } from '../../Calendars/CalendarDropDownSheet';
 import { useTranslation } from '@/hooks/useTranslation';
 import Header from '@/components/Header';
-import { format } from 'date-fns';
 import { customFetch } from '@/utils/customFetch';
 import { WorkloadGraph } from '@/components/WorkloadGraph';
 import {
@@ -20,16 +19,91 @@ import {
 } from '@/assets/staticUrls';
 import PageSkeleton from '@/components/Skeletons/PageSkeleton';
 
+type CountMap = Record<string, number | string>;
+type GraphMap = Record<string, number>;
+
+type WashStats = {
+  data: {
+    graph?: GraphMap | null;
+    whashes?: number | string;
+  };
+  graph?: GraphMap | null;
+  packages?: CountMap;
+  car_types?: CountMap;
+};
+
+type ManagerBranch = {
+  id?: number | string;
+  name?: string;
+  address?: string;
+  work_time_start?: string;
+  work_time_end?: string;
+};
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  return value as Record<string, unknown>;
+}
+
+function readCountMap(value: unknown): CountMap | undefined {
+  const record = asRecord(value);
+  if (!record) return undefined;
+  const out: CountMap = {};
+  for (const [key, count] of Object.entries(record)) {
+    if (typeof count === "number" || typeof count === "string") out[key] = count;
+  }
+  return out;
+}
+
+function readGraph(value: unknown): GraphMap | null {
+  const record = asRecord(value);
+  if (!record) return null;
+  const out: GraphMap = {};
+  for (const [key, count] of Object.entries(record)) {
+    const amount = typeof count === "number" ? count : Number(count);
+    if (Number.isFinite(amount)) out[key] = amount;
+  }
+  return out;
+}
+
+function readWashStats(value: unknown): WashStats | null {
+  const record = asRecord(value);
+  if (!record) return null;
+  const data = asRecord(record.data);
+  const whashes = data?.whashes ?? record.whashes;
+  return {
+    data: {
+      graph: readGraph(data?.graph),
+      whashes: typeof whashes === "number" || typeof whashes === "string" ? whashes : undefined,
+    },
+    graph: readGraph(record.graph),
+    packages: readCountMap(record.packages),
+    car_types: readCountMap(record.car_types),
+  };
+}
+
+function readBranch(value: unknown): ManagerBranch | null {
+  const row = asRecord(value);
+  if (!row) return null;
+  return {
+    id: typeof row.id === "number" || typeof row.id === "string" ? row.id : undefined,
+    name: typeof row.name === "string" ? row.name : undefined,
+    address: typeof row.address === "string" ? row.address : undefined,
+    work_time_start: typeof row.work_time_start === "string" ? row.work_time_start : undefined,
+    work_time_end: typeof row.work_time_end === "string" ? row.work_time_end : undefined,
+  };
+}
+
 export default function CarwashStatistics() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [selectedPeriod, setSelectedPeriod] = useState('week');
-  const [range, setRange] = useState<{ from: Date; to: Date }>();
-  const [stats, setStats] = useState<any>(null);
+  const [, setRange] = useState<{ from: Date; to: Date }>();
+  const [stats, setStats] = useState<WashStats | null>(null);
   const [isStatsLoading, setIsStatsLoading] = useState<boolean>(false);
 
   const t = useTranslation();
-  const [branch, setBranch] = useState(null);
+  const [branch, setBranch] = useState<ManagerBranch | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem('access_token');
@@ -41,9 +115,8 @@ export default function CarwashStatistics() {
     })
       .then(async (res) => {
         if (!res.ok) throw new Error('Failed to fetch wash info');
-        const data = await res.json();
-
-        const wash = data['my_wash'];
+        const data: unknown = await res.json();
+        const wash = readBranch(asRecord(data)?.my_wash);
         if (wash) setBranch(wash);
       })
       .catch((err) => console.error('Wash fetch error:', err));
@@ -65,9 +138,9 @@ export default function CarwashStatistics() {
     )
       .then(async (res) => {
         if (!res.ok) throw new Error('Failed to fetch wash stats');
-        const data = await res.json();
-
-        setStats(data);
+        const data: unknown = await res.json();
+        const parsed = readWashStats(data);
+        if (parsed) setStats(parsed);
       })
       .catch((err) => console.error('Stats fetch error:', err))
       .finally(() => setIsStatsLoading(false));
@@ -253,7 +326,7 @@ export default function CarwashStatistics() {
           const packages = stats?.packages || {};
           const entries = Object.entries(packages);
 
-          const totalPackagesCount = entries.reduce((acc, [_, count]) => acc + Number(count), 0);
+          const totalPackagesCount = entries.reduce((acc, [, count]) => acc + Number(count), 0);
 
           if (entries.length === 0) {
             return <p>No packages data</p>;
@@ -291,8 +364,8 @@ export default function CarwashStatistics() {
           {(() => {
             const carTypes = stats?.car_types || {};
 
-            const totalCars = Object.values(carTypes).reduce(
-              (acc: number, val: any) => acc + Number(val),
+            const totalCars = Object.values(carTypes).reduce<number>(
+              (acc, val) => acc + Number(val),
               0,
             );
 

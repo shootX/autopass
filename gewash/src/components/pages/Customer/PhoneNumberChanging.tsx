@@ -6,6 +6,9 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { leftArrowUrl } from "@/assets/staticUrls";
 import Header from "@/components/Header";
 import { georgianLocalDigits } from "@/lib/format";
+import { readSmsChallenge } from "@/lib/registerPassword";
+import SmsStatusNotice from "@/components/SmsStatusNotice";
+import type { SmsDelivery } from "@/lib/smsDelivery";
 
 export default function PhoneNumberChanging() {
   const [phoneDigits, setPhoneDigits] = useState("");
@@ -13,7 +16,8 @@ export default function PhoneNumberChanging() {
   const [error, setError] = useState(false);
   const [stage, setStage] = useState<"change" | "verify">("change");
   const [tempCode, setTempCode] = useState<string | null>(null);
-  const [smsNotice, setSmsNotice] = useState<string | null>(null);
+  const [smsDelivery, setSmsDelivery] = useState<SmsDelivery | null>(null);
+  const [smsDetail, setSmsDetail] = useState<string | null>(null);
   const navigate = useNavigate();
   const t = useTranslation();
 
@@ -51,21 +55,18 @@ export default function PhoneNumberChanging() {
       });
 
       const data = await response.json();
+      const challenge = readSmsChallenge(data);
 
-      if (!response.ok || !data.success) {
-        if (!(data.temp_code && data.delivery === "unknown")) {
-          throw new Error(data.message || data.error || "Failed to initiate phone change");
-        }
+      if (!challenge.tempCode) {
+        setSmsDelivery(challenge.delivery);
+        setSmsDetail(challenge.detail);
+        throw new Error(challenge.detail || "Failed to initiate phone change");
       }
 
-      setTempCode(data.temp_code);
-      setSmsNotice(data.delivery === "simulated"
-        ? "SMS-ის სატესტო რეჟიმია — შეტყობინება ტელეფონზე არ იგზავნება."
-        : null);
+      setTempCode(challenge.tempCode);
+      setSmsDelivery(challenge.delivery);
+      setSmsDetail(challenge.detail);
       setStage("verify");
-
-      sessionStorage.setItem("temp_code", String(data.temp_code));
-      sessionStorage.setItem("new_phone", georgianLocalDigits(phoneDigits));
     } catch (err) {
       console.error(err);
       setError(true);
@@ -94,7 +95,6 @@ export default function PhoneNumberChanging() {
 
       if (data.success) {
         alert(t("PhoneNumberChanging.verification.success"));
-        sessionStorage.removeItem("new_phone");
         navigate("/profile");
       } else {
         throw new Error(data.message || "Verification failed");
@@ -108,7 +108,12 @@ export default function PhoneNumberChanging() {
   const isValid = phoneDigits.replace(/\D/g, "").length === 9;
 
   if (stage === "verify" && tempCode !== null) {
-    return <OTPVerification onVerify={handleVerifyOTP} notice={smsNotice} />;
+    return (
+      <OTPVerification
+        onVerify={handleVerifyOTP}
+        notice={<SmsStatusNotice delivery={smsDelivery} detail={smsDetail} />}
+      />
+    );
   }
 
   return (
@@ -157,11 +162,13 @@ export default function PhoneNumberChanging() {
           {t("PhoneNumberChanging.form.title")}
         </h2>
 
-        {error && (
+        {smsDelivery ? (
+          <SmsStatusNotice delivery={smsDelivery} detail={smsDetail} />
+        ) : error ? (
           <div className="phone-number-doesnt-exist-error" style={{ color: "#FF6B6B" }}>
             <p>{t("PhoneNumberChanging.form.error")}</p>
           </div>
-        )}
+        ) : null}
 
         <div className='auth-phone-input'>
           <label>{t("PhoneNumberChanging.form.label")}</label>

@@ -1,6 +1,6 @@
 type Stoppable = {
-  stop: () => Promise<void>;
-  clear: () => Promise<void>;
+  stop: () => Promise<void> | void;
+  clear: () => Promise<void> | void;
 };
 
 /** Stop the camera and clear the preview. Safe if start() never finished. */

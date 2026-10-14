@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { carWashTypeIconUrl } from "@/assets/staticUrls";
+import { dragY } from "@/lib/dragOffset";
 
 export type Service = {
   id: number;
@@ -38,8 +39,8 @@ export function TypeWashingDropDown({
       <motion.div
         drag='y'
         dragMomentum={false}
-        onDragEnd={(e, info) => {
-          if (info.offset.y > 60) setOpen(false);
+        onDragEnd={(_e, info) => {
+          if (dragY(info.offset.y) > 60) setOpen(false);
         }}
         style={{
           position: "fixed",

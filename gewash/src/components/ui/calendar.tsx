@@ -9,7 +9,8 @@ import {
 import { DayButton, DayPicker, getDefaultClassNames } from "react-day-picker"
 
 import { cn } from "@/lib/utils"
-import { Button, buttonVariants } from "@/components/ui/button"
+import { Button } from "@/components/ui/button"
+import { buttonVariants } from "@/components/ui/button-variants"
 function Calendar({
   className,
   classNames,
@@ -18,16 +19,19 @@ function Calendar({
   captionLayout = "label",
   formatters,
   components,
+  disableBefore,
   ...props
 }: React.ComponentProps<typeof DayPicker> & {
   buttonVariant?: React.ComponentProps<typeof Button>["variant"]
+  disableBefore?: boolean
 }) {
+  void captionLayout;
   const defaultClassNames = getDefaultClassNames()
 
   return (
     <DayPicker
         disabled={
-        props.disableBefore
+        disableBefore
           ? { before: new Date(new Date().setHours(0, 0, 0, 0)) }
           : props.disabled
       }
@@ -129,7 +133,6 @@ function CalendarDayButton({
   modifiers,
   ...props
 }: React.ComponentProps<typeof DayButton>) {
-  const defaultClassNames = getDefaultClassNames()
   const ref = React.useRef<HTMLButtonElement>(null)
 
   React.useEffect(() => {

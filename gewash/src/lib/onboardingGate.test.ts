@@ -4,6 +4,7 @@ import { shouldShowOnboarding } from "./onboardingGate";
 describe("shouldShowOnboarding", () => {
   it("blocks the carousel on auth deep links", () => {
     expect(shouldShowOnboarding(true, false, "/auth")).toBe(false);
+    expect(shouldShowOnboarding(true, false, "/manager-auth")).toBe(false);
     expect(shouldShowOnboarding(true, false, "/register")).toBe(false);
     expect(shouldShowOnboarding(true, false, "/renew-password")).toBe(false);
   });

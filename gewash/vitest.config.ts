@@ -12,5 +12,6 @@ export default defineConfig({
   },
   test: {
     environment: "jsdom",
+    exclude: ["voucher-checker/**", "node_modules/**", "dist/**"],
   },
 });

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import DeleteReasonPopup from "../../DeleteReasonPopup";
 import ManagerOrdersList from "./ManagerOrdersList";
 import { useManagerActions } from "@/hooks/useManagerActions";
@@ -11,7 +11,7 @@ const filters: Filter[] = ["New", "Confirmed", "Sheduled", "All"];
 
 export default function Booking() {
   const [activeStatus, setActiveStatus] = useState<Filter>("New");
-  const [refreshFlag, setRefreshFlag] = useState(0);
+  const [, setRefreshFlag] = useState(0);
   const { appointments, refetch } = useAllRecords();
   const t = useTranslation();
   const managerActions = useManagerActions({

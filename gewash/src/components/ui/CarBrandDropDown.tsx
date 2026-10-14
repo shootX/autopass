@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import "../../../src/styles/dropdowns/car-brands-dropdown.scss";
 import type { Brand } from "@/store/carSlice";
 import { searchIconUrl } from "@/assets/staticUrls";
+import { dragY } from "@/lib/dragOffset";
 
 
 export function CarBrandDropDown({
@@ -41,15 +42,15 @@ export function CarBrandDropDown({
       <motion.div
         drag='y'
         dragMomentum={false}
-onDragEnd={(e, info) => {
-    console.log(info.offset.y, info.velocity.y);
+onDragEnd={(_e, info) => {
+    console.log(dragY(info.offset.y), dragY(info.velocity.y));
 
-    if (info.offset.y > 60) {
+    if (dragY(info.offset.y) > 60) {
         setOpen(false);
     }
 }}
         onUpdate={(latest) => {
-          if (latest.y < 0) latest.y = 0;
+          if (dragY(latest.y) < 0) latest.y = 0;
         }}
         className='add-car-sheet'
       >

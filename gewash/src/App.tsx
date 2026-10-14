@@ -11,7 +11,8 @@ import { useUser, useRefreshUserOnBfcacheRestore } from "@/hooks/useUser";
 import { selectAppRoute } from "@/lib/sessionRouting";
 import { lazy, Suspense, useEffect, useState } from "react";
 import { setTranslations } from "./store/langSlice";
-import { setRole, setUser } from "./store/userSlice";
+import { resetSession, setRole, setUser } from "./store/userSlice";
+import { loginPathForRole, onSessionExpired, readSessionRole } from "./lib/session";
 import { ensureDeviceToken } from "./hooks/useDeviceToken";
 
 import ManagerLayout from "./components/Layouts/ManagerLayout";
@@ -67,6 +68,7 @@ function PublicAuthRoutes() {
   return (
     <>
       <Route path="/auth" element={<Authentication />} />
+      <Route path="/manager-auth" element={<Authentication />} />
       <Route path="/payment-success" element={<PaymentSuccess />} />
       <Route path="/register" element={<Registration />} />
       <Route path="/renew-password" element={<RenewPasswordPage />} />
@@ -97,6 +99,10 @@ function AppRoutes() {
   useUser();
   useRefreshUserOnBfcacheRestore();
 
+  useEffect(() => onSessionExpired(() => {
+    dispatch(resetSession());
+  }), [dispatch]);
+
   useEffect(() => {
     const left = SPLASH_MAX_MS - (Date.now() - splashStarted);
     if (left <= 0) return;
@@ -117,7 +123,7 @@ function AppRoutes() {
     ensureDeviceToken().then((token) => {
       if (token) {
         const webview = document.querySelector("iframe, webview");
-        if (webview) {
+        if (webview && "src" in webview && typeof webview.src === "string") {
           const url = new URL(webview.src);
           url.searchParams.set("token", token);
           webview.src = url.toString();
@@ -201,7 +207,7 @@ function AppRoutes() {
       <Suspense fallback={<SplashScreen />}>
         <Routes>
           <PublicAuthRoutes />
-          <Route path="*" element={<Navigate to="/auth" replace />} />
+          <Route path="*" element={<Navigate to={loginPathForRole(readSessionRole())} replace />} />
         </Routes>
       </Suspense>
     );

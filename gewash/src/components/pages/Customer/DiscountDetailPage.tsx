@@ -18,6 +18,7 @@ import {
 } from "@/lib/shopApi";
 import { refreshCurrentUser } from "@/hooks/useUser";
 import ShopAsyncLoader from "@/components/ui/ShopAsyncLoader";
+import { dragY } from "@/lib/dragOffset";
 
 type SheetState = "closed" | "confirm" | "not_enough";
 
@@ -95,8 +96,10 @@ export default function DiscountDetailPage() {
     if (typeof userPoints === "number") setBalance(userPoints);
   }, [userPoints]);
 
+  const catalogReady = isCatalogComplete(passed);
+
   useEffect(() => {
-    if (isCatalogComplete(passed)) {
+    if (catalogReady) {
       setCatalogLoading(false);
       return;
     }
@@ -134,7 +137,7 @@ export default function DiscountDetailPage() {
     return () => {
       cancelled = true;
     };
-  }, [passed?.title, passed?.coins, routeId]);
+  }, [catalogReady, routeId]);
 
   // Только из My Area без кода в state — подтянуть код из API (не помечаем «куплен» для витрины)
   useEffect(() => {
@@ -208,7 +211,7 @@ export default function DiscountDetailPage() {
 
   const handleSheetDragEnd = (_: unknown, info: { offset: { y: number } }) => {
     // Drag down enough -> close, otherwise snap back.
-    if (info.offset.y > 90) setSheet("closed");
+    if (dragY(info.offset.y) > 90) setSheet("closed");
   };
 
   if (catalogLoading) {

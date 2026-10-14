@@ -1,10 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Switch } from "./ui/switch";
 import type { PackageData } from "@/types";
 import { CarDropDown } from "./ui/CarDropDown";
 import type { Car } from "@/store/carSlice";
-import { useMemo } from "react";
 import { useActivatePackage } from "@/hooks/useActivatePackage";
 import { useFetchPackagePricing } from "@/hooks/useFetchPackagePricing";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -71,7 +70,10 @@ export function WashingPackageForm({
     return pricingPackages[0];
   }, [pricingPackages, selectedWashCount]);
 
-  const availableTerms = pricedPackage?.prices.map((p) => p.month) ?? [];
+  const availableTerms = useMemo(
+    () => pricedPackage?.prices.map((p) => p.month) ?? [],
+    [pricedPackage],
+  );
 
   useEffect(() => {
     if (mode !== "create" || selectedWashCount != null || !pricingPackages.length) return;

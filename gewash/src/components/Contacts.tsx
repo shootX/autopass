@@ -1,4 +1,3 @@
-import React from "react";
 import "../styles/Contacts.scss";
 import { useNavigate } from "react-router-dom";
 import { useFetchContacts } from "@/hooks/useFetchContacts";

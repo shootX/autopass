@@ -24,7 +24,7 @@ export default function SettingsPage() {
   const [selectedLang, setSelectedLang] = useState<RootState['lang']['currentLang']>(currentLang);
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const userRole = useSelector((s: RootState) => (s as any).user?.role);
+  const userRole = useSelector((s: RootState) => s.user.role);
   const isManager = userRole === 'manager';
 
   useEffect(() => {

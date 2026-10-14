@@ -73,13 +73,14 @@ export function useCreateAppointment() {
           date: payload.date, 
           time: payload.time,
           type: payload.type,
+          carId: payload.car_id,
         })
       );
 
       setSuccess(true);
       setError(null);
-    } catch (err: any) {
-      setError(err.message || "Unknown error");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unknown error");
     } finally {
       setLoading(false);
     }

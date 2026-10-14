@@ -11,10 +11,10 @@ export function useManagerActions({
     refetch: () => void;
   }) {
   const [popupVisible, setPopupVisible] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<{ id: number } | null>(null);
   const [deleteReason, setDeleteReason] = useState("");
   const navigate = useNavigate();
-  const handleDelete = (order: any) => {
+  const handleDelete = (order: { id: number }) => {
     setSelectedOrder(order);
     setPopupVisible(true);
   };

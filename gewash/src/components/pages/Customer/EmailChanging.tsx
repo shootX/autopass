@@ -56,9 +56,9 @@ export default function EmailChanging() {
       }
 
       setStep('VERIFY');
-    } catch (err: any) {
+    } catch (err) {
       setError(
-        err.message || t('EmailChanging.form.errors.somethingWentWrong') || 'Something went wrong',
+        (err instanceof Error ? err.message : "") || t('EmailChanging.form.errors.somethingWentWrong') || 'Something went wrong',
       );
     } finally {
       setIsSubmitting(false);
@@ -94,8 +94,10 @@ export default function EmailChanging() {
           '🎉 Email successfully verified and updated!',
       );
       navigate(-1);
-    } catch (err: any) {
-      setError(err.message || t('EmailChanging.verification.failed') || 'Verification failed');
+    } catch (err) {
+      setError(
+        (err instanceof Error ? err.message : "") || t('EmailChanging.verification.failed') || 'Verification failed',
+      );
     } finally {
       setIsSubmitting(false);
     }
