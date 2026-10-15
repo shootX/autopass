@@ -14,6 +14,7 @@ use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
@@ -193,6 +194,12 @@ class PackagesController extends Controller
             return response()->json(['success' => false, 'error' => 'Appointment belongs to another branch'], 403);
         }
 
+        // A bare package id is not enough: the car must be booked here today, or the manager
+        // must present the scanned QR code (or the one-time token checkqr issued to them).
+        if (! $hereAppointment && ! $this->presentedPackage($request, $userPackage, (int) $user->id)) {
+            return response()->json(['success' => false, 'error' => 'Scan the package QR code'], 403);
+        }
+
         if ($userPackage->start_date && now()->lessThan(Carbon::parse($userPackage->start_date)->startOfDay())) {
             return response()->json(['success' => false, 'error' => 'Package is not active'], 422);
         }
@@ -235,5 +242,23 @@ class PackagesController extends Controller
         ]);
 
         return response()->json(['success' => true, 'package' => $userPackage->fresh()]);
+    }
+
+    private function presentedPackage(Request $request, UserPackage $userPackage, int $managerId): bool
+    {
+        $qr = (string) $request->input('qr_code', '');
+        if ($qr !== '' && is_string($userPackage->qr_code) && hash_equals($userPackage->qr_code, $qr)) {
+            return true;
+        }
+
+        $token = (string) $request->input('approve_token', '');
+        if ($token === '') {
+            return false;
+        }
+        $grant = Cache::pull('package-approve:'.hash('sha256', $token));
+
+        return is_array($grant)
+            && (int) ($grant['manager_id'] ?? 0) === $managerId
+            && (int) ($grant['package_id'] ?? 0) === (int) $userPackage->id;
     }
 }

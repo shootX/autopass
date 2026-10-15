@@ -2,10 +2,12 @@
 
 use App\Http\Middleware\SetApiLocale;
 use App\Http\Middleware\SetLocale;
+use App\Http\Middleware\TrustConfiguredProxies;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
@@ -24,6 +26,7 @@ return Application::configure(basePath: dirname(__DIR__))
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->replace(TrustProxies::class, TrustConfiguredProxies::class);
         $middleware->api(append: [SetApiLocale::class]);
         $middleware->web(append: [
             SetLocale::class,

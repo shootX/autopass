@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Exports\CreatedTicketsExport;
 use App\Exports\CreatedVouchersCategoryExport;
 use App\Exports\CreatedVouchersExport;
 use App\Http\Controllers\Controller;
@@ -17,14 +16,14 @@ class VouchersController extends Controller
 {
     public function index(Request $request)
     {
-        if($request->has('export'))
-        {
+        if ($request->has('export')) {
             return Excel::download(
-                new CreatedVouchersExport(),
+                new CreatedVouchersExport,
                 'vouchers.xlsx'
             );
         }
         $vouchers = Voucher::paginate(10);
+
         return view('admin.vouchers.index', compact('vouchers'));
     }
 
@@ -32,6 +31,7 @@ class VouchersController extends Controller
     {
         $categories = VoucherCategory::all();
         $partners = Partner::query()->orderBy('name')->get(['id', 'name']);
+
         return view('admin.vouchers.add', compact('categories', 'partners'));
     }
 
@@ -43,7 +43,7 @@ class VouchersController extends Controller
             'name' => 'required|string|min:3',
             'voucher_type' => 'required|in:1,2',
             'description' => 'required|min:5',
-            'photo' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'photo' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'price' => 'required|numeric',
             'percent' => 'sometimes|numeric|min:0|max:100|nullable',
             'conditions' => 'sometimes',
@@ -52,7 +52,7 @@ class VouchersController extends Controller
             'count' => 'nullable|numeric',
         ]);
 
-        if($validate->fails()) {
+        if ($validate->fails()) {
             return redirect()->back()->withErrors($validate)->withInput();
         }
 
@@ -63,9 +63,8 @@ class VouchersController extends Controller
 
         $data = $validate->validated();
 
-        if($data["count"] == null)
-        {
-            $data["count"] = 0;
+        if ($data['count'] == null) {
+            $data['count'] = 0;
         }
 
         $data['photo'] = $photoPath;
@@ -82,22 +81,23 @@ class VouchersController extends Controller
     {
         $voucher->update(
             [
-            'deleted' => true
+                'deleted' => true,
             ]
         );
+
         return redirect()->back()->with('message', __('admin.voucher_disabled'));
     }
 
     public function categoriesIndex(Request $request)
     {
-        if($request->has('export'))
-        {
+        if ($request->has('export')) {
             return Excel::download(
-                new CreatedVouchersCategoryExport(),
+                new CreatedVouchersCategoryExport,
                 'vouchers_categories.xlsx'
             );
         }
         $categories = VoucherCategory::paginate(10);
+
         return view('admin.vouchers.categories.index', compact('categories'));
     }
 
@@ -112,7 +112,7 @@ class VouchersController extends Controller
             'name' => 'required|string|min:3',
         ]);
 
-        if($validator->fails()) {
+        if ($validator->fails()) {
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
@@ -125,6 +125,7 @@ class VouchersController extends Controller
     public function categorieDelete(Request $request, VoucherCategory $categorie)
     {
         $categorie->delete();
+
         return redirect()->back()->with('message', __('admin.category_deleted'));
     }
 
@@ -139,7 +140,7 @@ class VouchersController extends Controller
             'name' => 'required|string|min:3',
         ]);
 
-        if($validator->fails()) {
+        if ($validator->fails()) {
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
@@ -153,6 +154,7 @@ class VouchersController extends Controller
     {
         $categories = VoucherCategory::all();
         $partners = Partner::query()->orderBy('name')->get(['id', 'name']);
+
         return view('admin.vouchers.edit', compact('voucher', 'categories', 'partners'));
     }
 
@@ -164,7 +166,7 @@ class VouchersController extends Controller
             'name' => 'required|string|min:3',
             'voucher_type' => 'required|in:1,2',
             'description' => 'required|min:5',
-            'photo' => 'sometimes|nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'photo' => 'sometimes|nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'price' => 'required|numeric',
             'percent' => 'sometimes|numeric|min:0|max:100|nullable',
             'conditions' => 'sometimes',
@@ -173,7 +175,7 @@ class VouchersController extends Controller
             'count' => 'nullable|numeric',
         ]);
 
-        if($validate->fails()) {
+        if ($validate->fails()) {
             return redirect()->back()->withErrors($validate)->withInput();
         }
 
@@ -186,11 +188,9 @@ class VouchersController extends Controller
 
         unset($data['voucher_type']);
 
-        if($photoPath)
-        {
+        if ($photoPath) {
             $data['photo'] = $photoPath;
-        } else
-        {
+        } else {
             unset($data['photo']);
         }
 

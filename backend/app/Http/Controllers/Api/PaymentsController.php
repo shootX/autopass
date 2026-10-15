@@ -22,8 +22,9 @@ class PaymentsController extends Controller
         }
 
         $points = (int) $request->input('amount', 1);
-        if ($points < 1) {
-            return response()->json(['success' => false, 'error' => 'The amount must be at least 1.'], 422);
+        $max = (int) config('security.test_payment_max_amount', 100);
+        if ($points < 1 || $points > $max || ! ctype_digit((string) $request->input('amount', '1'))) {
+            return response()->json(['success' => false, 'error' => 'The amount must be between 1 and '.$max.'.'], 422);
         }
 
         $access = bin2hex(random_bytes(32));

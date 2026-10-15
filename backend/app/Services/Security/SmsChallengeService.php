@@ -65,7 +65,7 @@ class SmsChallengeService
             SmsTemp::query()->create([
                 'type' => $type,
                 'user_id' => $user->id,
-                'code' => hash('sha256', $code),
+                'code' => self::codeHash($code, $publicId),
                 'public_id' => $publicId,
                 'attempts' => 0,
                 'expires_at' => now()->addMinutes((int) config('security.sms_ttl_minutes')),
@@ -109,7 +109,7 @@ class SmsChallengeService
             throw new AuthChallengeException('invalid', 422);
         }
 
-        if (! hash_equals((string) $row->code, hash('sha256', $code))) {
+        if (! hash_equals((string) $row->code, self::codeHash($code, (string) $row->public_id))) {
             $row->increment('attempts');
             if ((int) $row->fresh()->attempts >= $max) {
                 SmsTemp::query()->whereKey($row->id)->whereNull('consumed_at')->update(['consumed_at' => now()]);
@@ -160,5 +160,11 @@ class SmsChallengeService
             'use_voucher' => 'Voucher use code: '.$code,
             default => 'Code: '.$code,
         };
+    }
+
+    /** Keyed per challenge, so a leaked sms_temps row can't be brute-forced offline (10^6 codes). */
+    public static function codeHash(string $code, string $publicId): string
+    {
+        return hash_hmac('sha256', $code, (string) config('app.key').'|'.$publicId);
     }
 }

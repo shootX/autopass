@@ -63,9 +63,9 @@ class SecurityStage1Test extends TestCase
         $this->assertNull($user->phone_verified_at);
         $this->assertFalse(Hash::check('34rbb45i43jnv8493uh', $user->password));
 
+        // Unconfirmed state is only revealed after a correct password (audit M3); this one is wrong.
         $this->postJson('/api/login', ['phone' => $phone, 'password' => 'secret12'])
-            ->assertForbidden()
-            ->assertJsonPath('error', 'Account is not confirmed');
+            ->assertUnauthorized();
 
         $this->postJson('/api/register/set_password', [
             'temp_code' => $registered->json('temp_code'),
@@ -243,7 +243,9 @@ class SecurityStage1Test extends TestCase
         ])->assertRedirect(route('partner.password'));
         $this->assertSame(0, $client->cars()->count());
 
-        $this->withHeader('X-Api-Key', $client->api_token)
+        $apiKey = CorporateClient::makeToken();
+        $client->forceFill(['api_token' => $apiKey])->save();
+        $this->withHeader('X-Api-Key', $apiKey)
             ->postJson('/api/corporate/vehicles', ['plate' => 'AB123CD', 'brand' => 'Toyota', 'model' => 'Camry'])
             ->assertForbidden();
         $this->assertSame(0, $client->cars()->count());
@@ -447,7 +449,7 @@ class SecurityStage1Test extends TestCase
         $this->assertSame(0, (int) $active->fresh()->used_washes);
 
         $this->withToken(auth('api')->login($managerA))
-            ->postJson('/api/package/'.$active->id.'/approve')
+            ->postJson('/api/package/'.$active->id.'/approve', ['qr_code' => $active->qr_code])
             ->assertOk();
         $this->assertSame(1, (int) $active->fresh()->used_washes);
 

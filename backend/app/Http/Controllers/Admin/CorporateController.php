@@ -84,7 +84,7 @@ class CorporateController extends Controller
             return back()->withInput()->withErrors(['email' => __('admin.temp_password_email_failed')]);
         }
 
-        return redirect()->route('admin.corporate.show', $client)->with('message', __('admin.temp_password_sent'));
+        return redirect()->route('admin.corporate.show', $client)->with('message', __('admin.temp_password_sent'))->with('corporate_api_token', $client->api_token);
     }
 
     public function editPage(CorporateClient $corporate)
@@ -190,7 +190,10 @@ class CorporateController extends Controller
     {
         $corporate->forceFill(['api_token' => CorporateClient::makeToken()])->save();
 
-        return redirect()->route('admin.corporate.show', $corporate)->with('message', __('admin.corporate_token_reset'));
+        // Shown once on the next page; only the hash stays in the database.
+        return redirect()->route('admin.corporate.show', $corporate)
+            ->with('message', __('admin.corporate_token_reset'))
+            ->with('corporate_api_token', $corporate->api_token);
     }
 
     public function temporaryPassword(CorporateClient $corporate)

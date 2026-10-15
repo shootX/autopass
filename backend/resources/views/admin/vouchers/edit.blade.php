@@ -101,7 +101,7 @@
 @push('js')
     <script>
         $(document).ready(function(){
-            let voucher = {!! $voucher !!};
+            let voucher = @json($voucher);
             $("#conditions_field_id").parent().hide();
             $("#voucherType").change(function(){
                 let val = $(this).val();

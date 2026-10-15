@@ -36,7 +36,7 @@ class LoginController extends Controller
     /** Banned accounts can't sign in to the web panel even with the right password. */
     protected function credentials(Request $request): array
     {
-        return $request->only($this->username(), 'password') + ['ban' => false];
+        return $request->only($this->username(), 'password') + ['ban' => false, 'password_reset_required' => false];
     }
 
     public function __construct()

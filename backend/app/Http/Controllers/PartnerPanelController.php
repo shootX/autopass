@@ -291,7 +291,9 @@ class PartnerPanelController extends Controller
         $corporate = $this->client($request);
         $corporate->forceFill(['api_token' => CorporateClient::makeToken()])->save();
 
-        return redirect()->route('partner.fleet')->with('message', __('admin.corporate_token_reset'));
+        return redirect()->route('partner.fleet')
+            ->with('message', __('admin.corporate_token_reset'))
+            ->with('corporate_api_token', $corporate->api_token);
     }
 
     private function carFields(Request $request): array|RedirectResponse

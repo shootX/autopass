@@ -29,9 +29,11 @@ class CorporateClient extends Model
 
     protected $hidden = [
         'password',
+        'api_token_hash',
     ];
 
     protected $casts = [
+        'api_token_used_at' => 'datetime',
         'vat_payer' => 'boolean',
         'credentials_custom' => 'boolean',
         'password' => 'hashed',
@@ -47,6 +49,33 @@ class CorporateClient extends Model
 
     public static function makeToken(): string
     {
-        return Str::random(40);
+        return Str::random(48);
+    }
+
+    /** Plain key of a just-issued token; lives only in memory, never in the database. */
+    private ?string $plainApiToken = null;
+
+    /** Assigning api_token stores only its sha256 and last 4 chars. */
+    public function setApiTokenAttribute(?string $plain): void
+    {
+        $this->plainApiToken = $plain;
+        $this->attributes['api_token'] = null;
+        $this->attributes['api_token_hash'] = $plain === null ? null : self::hashToken($plain);
+        $this->attributes['api_token_last4'] = $plain === null ? null : substr($plain, -4);
+    }
+
+    public function getApiTokenAttribute(): ?string
+    {
+        return $this->plainApiToken;
+    }
+
+    public static function hashToken(string $plain): string
+    {
+        return hash('sha256', $plain);
+    }
+
+    public static function findByToken(string $plain): ?self
+    {
+        return self::query()->where('api_token_hash', self::hashToken($plain))->first();
     }
 }

@@ -16,11 +16,12 @@ use App\Http\Controllers\Admin\TicketsController;
 use App\Http\Controllers\Admin\VouchersController;
 use App\Http\Controllers\Admin\WashingController;
 use App\Http\Middleware\AdminMiddleware;
+use App\Http\Middleware\AuditAdminRequests;
 use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('dashboard')
-    ->middleware(Authenticate::class, AdminMiddleware::class)
+    ->middleware(Authenticate::class, AdminMiddleware::class, AuditAdminRequests::class)
     ->group(function () {
 
         Route::post('/logout', function () {
@@ -96,7 +97,7 @@ Route::prefix('dashboard')
             Route::delete('/{washing}/delete', [WashingController::class, 'remove'])->name('admin.washings.delete');
 
             Route::get('/{washing}/reviews', [WashingController::class, 'reviews'])->name('admin.washings.reviews');
-            Route::get('/{washing}/reviews/{review}/toggle', [WashingController::class, 'toggleReview'])->name('admin.washings.reviews.toggle');
+            Route::post('/{washing}/reviews/{review}/toggle', [WashingController::class, 'toggleReview'])->name('admin.washings.reviews.toggle');
             Route::delete('/{washing}/reviews/{review}/delete', [WashingController::class, 'deleteReview'])->name('admin.washings.review_delete');
             Route::get('/{washing}/reviews/add', [WashingController::class, 'addReview'])->name('admin.washings.review_add');
             Route::post('/{washing}/reviews/store', [WashingController::class, 'storeReview'])->name('admin.washings.store_review');

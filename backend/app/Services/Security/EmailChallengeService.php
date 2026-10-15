@@ -30,7 +30,7 @@ class EmailChallengeService
             $user->save();
             $user->verificationCodes()->create([
                 'code' => null,
-                'code_hash' => hash('sha256', $code),
+                'code_hash' => SmsChallengeService::codeHash($code, 'email:'.$user->id),
                 'attempts' => 0,
                 'expires_at' => now()->addMinutes((int) config('security.sms_ttl_minutes')),
             ]);
@@ -63,7 +63,7 @@ class EmailChallengeService
             throw new AuthChallengeException('invalid', 422);
         }
 
-        if (! hash_equals((string) $row->code_hash, hash('sha256', trim($code)))) {
+        if (! hash_equals((string) $row->code_hash, SmsChallengeService::codeHash(trim($code), 'email:'.$user->id))) {
             $row->increment('attempts');
             if ((int) $row->fresh()->attempts >= $max) {
                 VerificationCode::query()->whereKey($row->id)->whereNull('consumed_at')->update(['consumed_at' => now()]);
