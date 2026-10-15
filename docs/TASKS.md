@@ -313,4 +313,12 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 - [x] D15 public `POST /api/refresh/logout` (under the cookie Path) revokes the session by cookie with an expired access token and clears the cookie.
 - [x] D16 parallel /register of one new number: unique violation caught, normal answer (no 500).
 - [x] SendSms: tries=3, backoff [5, 20] s.
-- [ ] PR #29 (frontend): Sign out → `POST /api/refresh/logout` with `credentials: 'include'`.
+- [x] PR #29 (frontend): Sign out → `POST /api/refresh/logout` with `credentials: 'include'`.
+
+## 2026-10-15 — Frontend for #28 `806db9a`
+
+- [x] `security/audit-fixes` (`806db9a`) შერწყმულია merge commit-ით. Rebase და force-push არ ყოფილა.
+- [x] გამოსვლა იძახებს `POST /api/refresh/logout`-ს (`credentials: 'include'`, bearer თუ მეხსიერებაში ტოკენია). შემდეგ შლის მეხსიერების ტოკენს და ხსნის `/auth`-ს. ქსელის შეცდომაზეც სრულდება. ტესტი: `sessionRefresh.test.ts`.
+- refresh უცვლელია: 409 ერთხელ, ქსელის შეცდომა სესიას არ წყვეტს. ტაბების lock არ დაემატა.
+- login, set_password, approve და cookie refresh უცვლელია.
+- main-ში შერწყმა და ცოცხალი სერვერი არ შეხებია.

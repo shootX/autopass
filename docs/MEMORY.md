@@ -324,3 +324,11 @@ JWT httpOnly cookie არ არის: `access_token` რჩება მე�
 - Refresh reuse inside the grace window is a tab race, not theft: a fresh token in the same family; the first use alone sets `used_at`.
 - Logout that must work without a valid JWT lives under the cookie Path: `/api/refresh/logout`.
 - `User::forceCreate` in /register can lose a race: catch `UniqueConstraintViolationException` and continue with the existing row.
+
+## 2026-10-15 — Frontend for 806db9a
+
+`security/audit-fixes` (`806db9a`) შევიდა `security/frontend-audit-fixes`-ში merge commit-ით.
+
+გამოსვლა არის `POST /api/refresh/logout` (`credentials: 'include'`). Bearer ემატება მხოლოდ მაშინ, როცა `access_token` მეხსიერებაშია. პასუხის შემდეგ ტოკენი იშლება და იხსნება `/auth`. მოთხოვნის წარუმატებლობაც იგივე ლოკალურ გამოსვლას აკეთებს. `/api/logout` აღარ იძახება.
+
+`POST /api/refresh` უცვლელია: 409 ერთხელ მეორდება, ქსელის შეცდომა `expireSession`-ს არ იძახებს. 30 წამიანი ტაბების grace კლიენტში ცალკე არ იმუშავა. login, `set_password` და approve უცვლელია. main-ში შერწყმა და დეპლოი არ ყოფილა.

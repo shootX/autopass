@@ -117,7 +117,7 @@ export function scheduleAccessRefresh(expiresInSeconds: number | undefined): voi
 export async function logoutSession(): Promise<void> {
   const token = readAccessToken();
   try {
-    await fetch(`${import.meta.env.VITE_API_URL}/logout`, {
+    await fetch(`${import.meta.env.VITE_API_URL}/refresh/logout`, {
       method: "POST",
       credentials: "include",
       headers: {

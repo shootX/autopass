@@ -128,8 +128,8 @@ describe("POST /api/refresh cookie", () => {
   });
 });
 
-describe("POST /api/logout", () => {
-  it("sends the refresh cookie and then drops the memory token", async () => {
+describe("POST /api/refresh/logout", () => {
+  it("sends the refresh cookie and the memory token, then opens /auth", async () => {
     vi.stubEnv("VITE_API_URL", "https://api.example/api");
     const redirect = vi.fn();
     setSessionRedirect(redirect);
@@ -141,10 +141,43 @@ describe("POST /api/logout", () => {
     await logoutSession();
 
     const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
-    expect(url).toBe("https://api.example/api/logout");
+    expect(url).toBe("https://api.example/api/refresh/logout");
+    expect(url).not.toBe("https://api.example/api/logout");
     expect(init.method).toBe("POST");
     expect(init.credentials).toBe("include");
     expect(new Headers(init.headers).get("Authorization")).toBe("Bearer current");
+    expect(readAccessToken()).toBeNull();
+    expect(redirect).toHaveBeenCalledWith("/auth");
+  });
+
+  it("omits the bearer header when the memory token is already gone", async () => {
+    vi.stubEnv("VITE_API_URL", "https://api.example/api");
+    const redirect = vi.fn();
+    setSessionRedirect(redirect);
+    const fetchMock = vi.fn(async () => json({ success: true }, 200));
+    vi.stubGlobal("fetch", fetchMock);
+    window.history.pushState({}, "", "/settings");
+
+    await logoutSession();
+
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(init.credentials).toBe("include");
+    expect(new Headers(init.headers).has("Authorization")).toBe(false);
+    expect(redirect).toHaveBeenCalledWith("/auth");
+  });
+
+  it("still leaves for /auth when the logout request fails", async () => {
+    vi.stubEnv("VITE_API_URL", "https://api.example/api");
+    const redirect = vi.fn();
+    setSessionRedirect(redirect);
+    vi.stubGlobal("fetch", vi.fn(async () => {
+      throw new TypeError("offline");
+    }));
+    saveAccessToken("current", 86400);
+    window.history.pushState({}, "", "/settings");
+
+    await logoutSession();
+
     expect(readAccessToken()).toBeNull();
     expect(redirect).toHaveBeenCalledWith("/auth");
   });
