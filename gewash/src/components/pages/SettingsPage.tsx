@@ -15,7 +15,7 @@ import {
   deleteSettingsIconUrl,
 } from '@/assets/staticUrls';
 import Header from '@/components/Header';
-import { clearAccessToken } from "@/lib/accessToken";
+import { logoutSession } from "@/lib/sessionRefresh";
 
 export default function SettingsPage() {
   const navigate = useNavigate();
@@ -42,8 +42,7 @@ export default function SettingsPage() {
   };
 
   const handleLogout = () => {
-    clearAccessToken();
-    location.reload();
+    void logoutSession();
   };
 
   const t = useTranslation();

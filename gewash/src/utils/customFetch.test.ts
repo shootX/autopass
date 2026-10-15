@@ -67,4 +67,16 @@ describe("customFetch 401", () => {
 
     expect(redirect).not.toHaveBeenCalled();
   });
+
+  it("includes cookies on login, set_password, refresh and logout", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => new Response("{}", { status: 200 })));
+    for (const path of ["/login", "/register/set_password", "/refresh", "/logout"]) {
+      await customFetch(`https://api.example${path}`, { method: "POST" });
+    }
+    await customFetch("https://api.example/me");
+    const fetchMock = vi.mocked(fetch);
+    const credentialed = fetchMock.mock.calls.slice(0, 4).map((call) => (call[1] as RequestInit).credentials);
+    expect(credentialed).toEqual(["include", "include", "include", "include"]);
+    expect((fetchMock.mock.calls[4][1] as RequestInit | undefined)?.credentials).toBeUndefined();
+  });
 });

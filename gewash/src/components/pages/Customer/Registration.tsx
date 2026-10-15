@@ -3,7 +3,7 @@ import OTPVerification from "../../OTPVerification";
 import { Link, useNavigate } from "react-router-dom";
 import { customFetch } from "@/utils/customFetch";
 import { fetchUserData } from "@/lib/fetchUserData";
-import { buildSetPasswordBody, readSmsChallenge } from "@/lib/registerPassword";
+import { buildSetPasswordBody, readSmsChallenge, smsChallengeContinues } from "@/lib/registerPassword";
 import SmsStatusNotice from "@/components/SmsStatusNotice";
 import type { SmsDelivery } from "@/lib/smsDelivery";
 import { referralIpUrl } from "@/lib/referralIp";
@@ -134,7 +134,7 @@ export default function Registration() {
       const data = await res.json();
       const challenge = readSmsChallenge(data);
 
-      if (challenge.tempCode != null) {
+      if (smsChallengeContinues(data) && challenge.tempCode != null) {
         setTempCode(challenge.tempCode);
         setSmsDelivery(challenge.delivery);
         setSmsDetail(challenge.detail);

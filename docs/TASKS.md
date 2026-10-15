@@ -266,7 +266,7 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 - [x] `VITE_BYPASS_AUTH` და `VITE_MOCK_VOUCHER_CHECK` production ბილდში ვერ ირთვება. ტესტი: `productionFlags.test.ts` ორივე პაკეტში.
 - [x] `/payment/sandbox` არის NotFound, სანამ `VITE_TEST_PAYMENTS=true` არ არის. ბარათის ფორმა არ დაემატა. ტესტი: `App.routes.test.tsx`.
 - [x] იგივე კლასი: device token აღარ ეწერება iframe-ში; checkout URL გადის `safeCheckoutUrl`-ში; `redirect`/`next` არ მოჰყვება; Viber აღარ იყენებს `geocar.ge/redirect.html`. ტესტი: `navigationTarget.test.ts`, `App.routes.test.tsx`.
-- [ ] რეგისტრაციის captcha: #28-ის `register` იღებს მხოლოდ `phone`-ს და არასავალდებულო რეფერალ `code`-ს. captcha-ს ველი, site key და შემოწმების endpoint არ არის. სერვერის იგნორირებული ვიჯეტი არ დაემატა.
+- captcha ამოცანიდან ამოღებულია. ვიჯეტი არ დაემატა.
 - შერწყმა main-ში, დეპლოი და ცოცხალი სერვერი არ შეხებია.
 
 ## 2026-10-15 — Frontend follow-up for #28 `104dfe8`
@@ -296,4 +296,14 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 - [x] Refresh: rotating httpOnly `ap_refresh` cookie (Path=/api/refresh, Secure, SameSite=Strict), reuse → family revoked; public `/api/refresh`; bearer flow kept as deprecated compat; CORS credentials for listed origins.
 - [x] Contract: `docs/auth-contract.md`.
 - [ ] Ops: production needs a queue worker for the `database` queue (SMS now goes through it).
-- [ ] Frontend: switch gewash to the cookie flow (`credentials: 'include'`), handle 409.
+- [x] Frontend: switch gewash to the cookie flow (`credentials: 'include'`), handle 409. See the section below.
+
+## 2026-10-15 — Frontend for #28 `f45eca0`
+
+- [x] `security/audit-fixes` (`f45eca0`) შერწყმულია merge commit-ით. Rebase და force-push არ ყოფილა.
+- [x] `ap_refresh` (HttpOnly, path `/api/refresh`). `credentials: 'include'` არის `/api/login`, `/api/register/set_password`, `/api/refresh`, `/api/logout`-ზე. ტესტი: `customFetch.test.ts`, `Authentication.integration.test.tsx`, `sessionRefresh.test.ts`.
+- [x] გვერდის ჩატვირთვა იძახებს `POST /api/refresh`-ს Authorization-ის გარეშე. სანამ პასუხი არ მოვა, ჩანს splash და დაცული გვერდი შესვლაზე არ გადადის. 200 ინახავს `access_token`-ს მხოლოდ მეხსიერებაში. 401 ხსნის შესვლას. 409 ერთხელ მეორდება და სესიას არ წყვეტს. ქსელის შეცდომა სესიას არ წყვეტს. პარალელური refresh ერთია. Bearer refresh აღარ იგზავნება. ტესტი: `App.routes.test.tsx`, `sessionRefresh.test.ts`.
+- [x] Approve სხეული არის მხოლოდ `{approve_token}`. 403 აჩვენებს შეცდომას და აბრუნებს სკანერზე. 409 აბრუნებს სკანერზე. ტესტი: `packageApprove.test.ts`.
+- [x] `/register`, `/change_password`, `/change_phone` პასუხი `delivery: accepted|simulated` აღარ ითვლება შეცდომად. სატესტო შეტყობინება ჩანს მხოლოდ არა-production ბილდში. ტესტი: `registerPassword.test.ts`, `smsDelivery.test.ts`.
+- captcha ამოცანიდან ამოღებულია.
+- main-ში შერწყმა და ცოცხალი სერვერი არ შეხებია.

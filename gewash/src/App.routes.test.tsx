@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import App from "./App";
 import { invalidatePackagesCache } from "./hooks/useActivePackages";
@@ -6,6 +6,7 @@ import { invalidateCarsCache } from "./hooks/useFetchCars";
 import { store } from "./store";
 import { resetSession, setRole, setSession } from "./store/userSlice";
 import { clearAccessToken, saveAccessToken } from "@/lib/accessToken";
+import { resetSessionBootForTests } from "@/lib/sessionRefresh";
 
 vi.mock("./components/BranchMap", () => ({
   BranchMap: () => null,
@@ -88,6 +89,7 @@ function installFetch(): void {
 }
 
 beforeEach(() => {
+  resetSessionBootForTests();
   clearAccessToken();
   localStorage.clear();
   sessionStorage.clear();
@@ -168,5 +170,68 @@ describe("app router", () => {
     expect(frame.src).not.toContain("device-token");
     expect(frame.src).not.toContain("token=");
     frame.remove();
+  }, 20000);
+
+  it("restores a reloaded or new tab from the refresh cookie before login", async () => {
+    let release: (response: Response) => void = () => {};
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+      const url = requestUrl(input);
+      if (url.includes("/refresh")) {
+        expect(init?.credentials).toBe("include");
+        expect(new Headers(init?.headers).has("Authorization")).toBe(false);
+        return new Promise((resolve) => {
+          release = resolve;
+        });
+      }
+      if (url.includes("/lang/")) return json(translations);
+      if (url.includes("/device/register")) return json({ token: "device-token" });
+      if (url.includes("/me")) {
+        return json({
+          success: true,
+          user: { id: 1, name: "ნინო", surname: "ბერიძე", role: 0, phone: "555112233", points: 12, referrals_count: 0 },
+        });
+      }
+      if (url.includes("/mycars")) {
+        return json({ cars: [{ id: 7, plate: "AA001BB", model: { name: "Camry", type: "sedan", brand: { name: "Toyota" } } }] });
+      }
+      if (url.includes("/packages/my")) return json({ success: true, packages: [] });
+      if (url.includes("/myappointments")) return json({ appointments: [] });
+      if (url.includes("/branches")) return json({ branches: [] });
+      if (url.includes("/shop/home")) return json({ vouchers: [], tickets: [] });
+      if (url.includes("/promo")) return json({ success: false });
+      return json({});
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    window.history.pushState({}, "", "/");
+
+    render(<App />);
+
+    expect(screen.queryByRole("heading", { name: "შესვლა" })).toBeNull();
+    expect(screen.queryByText("AA001BB")).toBeNull();
+    await waitFor(() => expect(fetchMock.mock.calls.some((call) => requestUrl(call[0] as RequestInfo | URL).includes("/refresh"))).toBe(true));
+    release(json({ access_token: "restored-token", expires_in: 3600 }));
+
+    expect((await screen.findAllByText("AA001BB", {}, { timeout: 8000 })).length).toBeGreaterThan(0);
+    expect(screen.queryByRole("heading", { name: "შესვლა" })).toBeNull();
+    expect(localStorage.getItem("access_token")).toBeNull();
+  }, 20000);
+
+  it("shows login when the refresh cookie is rejected", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL): Promise<Response> => {
+        const url = requestUrl(input);
+        if (url.includes("/refresh")) return json({ success: false }, 401);
+        if (url.includes("/lang/")) return json(translations);
+        if (url.includes("/device/register")) return json({ token: "device-token" });
+        return json({});
+      }),
+    );
+    window.history.pushState({}, "", "/");
+
+    render(<App />);
+
+    expect(await screen.findByRole("heading", { name: "შესვლა" }, { timeout: 8000 })).toBeTruthy();
+    expect(screen.queryByText("AA001BB")).toBeNull();
   }, 20000);
 });

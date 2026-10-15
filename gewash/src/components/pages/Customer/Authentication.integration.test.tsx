@@ -37,6 +37,8 @@ describe("authentication failure and credential privacy", () => {
     mock.fetch.mockResolvedValue(new Response(JSON.stringify({ access_token: "fixture-access-token", expires_in: 3600 })));
     submit();
     await waitFor(() => expect(readAccessToken()).toBe("fixture-access-token"));
+    const init = mock.fetch.mock.calls[0]?.[1] as RequestInit;
+    expect(init.credentials).toBe("include");
     expect(localStorage.getItem("access_token")).toBeNull();
     expect(log.mock.calls.some((args) => JSON.stringify(args).includes("fixture-access-token"))).toBe(false);
   });

@@ -283,7 +283,7 @@ JWT httpOnly cookie არ არის: `access_token` რჩება მე�
 
 `VITE_BYPASS_AUTH` და `VITE_MOCK_VOUCHER_CHECK` production ბილდს აგდებს და runtime-ზეც გამორთულია. `VITE_TEST_PAYMENTS=true` რთავს მხოლოდ შეტყობინებას `/payment/sandbox`-ზე. ბარათი რჩება სერვერის გვერდზე. CSP არის `docs/CSP.md`. nginx არ შეცვლილა.
 
-რეგისტრაციას captcha არ აქვს: #28 იღებს ტელეფონს და არასავალდებულო რეფერალ კოდს. ვიჯეტი არ დაემატა.
+რეგისტრაციის captcha ამოცანიდან ამოღებულია. ვიჯეტი არ დაემატა.
 
 `npm audit --omit=dev` სუფთაა gewash-სა და voucher-checker-ში (`maplibre-gl` 6.14.0, `react-router-dom` 7.18.4, vite 7.3.7 / 8.3.4). `npm ci` გადის npm 10.9.9-ზეც და 11.17.0-ზეც. main-ში შერწყმა და დეპლოი არ ყოფილა.
 
@@ -307,3 +307,15 @@ JWT httpOnly cookie არ არის: `access_token` რჩება მე�
 - Refresh tokens: table `refresh_tokens` (sha256 only), family = JWT claim `sid`, session start = `sess`. JSON test requests need `->withCredentials()` to send cookies.
 - Laravel's CORS with one allowed origin always returns that origin (not the caller's); assert "not echoed", not "missing".
 - Query builder has no `whereKey` (it becomes `where key = …`); use `where('id', …)` on `DB::table`.
+
+## 2026-10-15 — Frontend for f45eca0
+
+`security/audit-fixes` (`f45eca0`) შევიდა `security/frontend-audit-fixes`-ში merge commit-ით. კონტრაქტი არის `docs/auth-contract.md`.
+
+სესია გვერდის განახლებასა და ახალ ტაბზე ბრუნდება `POST /api/refresh`-ით (`credentials: 'include'`, Authorization-ის გარეშე). `ap_refresh` არის HttpOnly და JS-ს არ ეჭირება. `access_token` რჩება მხოლოდ მეხსიერებაში. სანამ refresh არ დასრულდება, დაცული მარშრუტი შესვლაზე არ გადადის. 401 ხსნის შესვლას. 409 ერთხელ მეორდება. ქსელის შეცდომა და მეორე 409 სესიას არ წყვეტს. პარალელური გამოძახება ერთია. ძველი bearer refresh აღარ იგზავნება.
+
+`POST /api/login`, `/api/register/set_password`, `/api/refresh` და `/api/logout` აგზავნის cookie-ს. გამოსვლა ჯერ `/api/logout`-ს იძახებს.
+
+პაკეტის approve არის მხოლოდ `{approve_token}`. 403 აჩვენებს შეცდომას და სკანერს ხსნის. 409 მხოლოდ სკანერს ხსნის.
+
+`/register`, `/change_password` და `/change_phone` წარმატებაა `delivery` `accepted` ან `simulated`. სატესტო ტექსტი production ბილდში არ ჩანს. captcha ამოცანიდან ამოღებულია. main-ში შერწყმა და დეპლოი არ ყოფილა.

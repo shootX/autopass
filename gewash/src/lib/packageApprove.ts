@@ -4,8 +4,7 @@ export type ApprovePackageInput = {
 };
 
 export type ApprovePackageBody = {
-  qr_code?: string;
-  approve_token?: string;
+  approve_token: string;
 };
 
 /** The checkqr grant is single-use. Callers must keep `remaining`, which is always empty. */
@@ -14,20 +13,20 @@ export function spendApproveToken(token: string | null | undefined): { token: st
   return { token: trimmed || null, remaining: null };
 }
 
-/** A rejected grant cannot be posted again. The manager scans a new code. */
+/** 403 shows an error and rescans. 409 only rescans. */
 export function approveShouldRescan(status: number): boolean {
-  return status === 403 || status === 409 || status === 422;
+  return status === 403 || status === 409;
 }
 
-/** Bare package id is rejected by the API. Require the scanned QR or the checkqr token. */
+export function approveShowsError(status: number): boolean {
+  return status === 403;
+}
+
+/** The API accepts `{approve_token}` only. A package id or static QR is not a grant. */
 export function approvePackageBody(input: ApprovePackageInput): ApprovePackageBody | null {
-  const qr = input.qrCode?.trim() ?? "";
   const token = input.approveToken?.trim() ?? "";
-  if (!qr && !token) return null;
-  const body: ApprovePackageBody = {};
-  if (qr) body.qr_code = qr;
-  if (token) body.approve_token = token;
-  return body;
+  if (!token) return null;
+  return { approve_token: token };
 }
 
 export type CheckedPackage = {
@@ -56,6 +55,6 @@ export function packageQrReady(result: CheckedPackage | null | undefined): boole
       typeof meta?.used_washes === "number" &&
       typeof meta?.created_at === "string" &&
       typeof meta?.end_date === "string" &&
-      (typeof result.approve_token === "string" || typeof meta?.id === "number"),
+      typeof result.approve_token === "string" && result.approve_token.trim() !== "",
   );
 }

@@ -10,7 +10,7 @@ import Header from "@/components/Header";
 import { releaseScanner } from "@/lib/releaseScanner";
 import { useTranslation } from "@/hooks/useTranslation";
 import { readAccessToken } from "@/lib/accessToken";
-import { approvePackageBody, approveShouldRescan, packageQrReady, spendApproveToken } from "@/lib/packageApprove";
+import { approvePackageBody, approveShouldRescan, approveShowsError, packageQrReady, spendApproveToken } from "@/lib/packageApprove";
 
 const SCAN_CONFIG = {
   fps: 10,
@@ -109,7 +109,7 @@ export default function ManagerScanner(): React.JSX.Element {
 
       if (!res.ok) {
         if (approveShouldRescan(res.status)) {
-          setRescanNote(true);
+          if (approveShowsError(res.status)) setRescanNote(true);
           scanAgain();
           return;
         }

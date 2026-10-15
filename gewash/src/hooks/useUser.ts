@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { bootSession, readSessionBoot, subscribeSessionBoot, type SessionBoot } from "@/lib/sessionRefresh";
 import { useDispatch } from "react-redux";
 import { customFetch } from "@/utils/customFetch";
 import {
@@ -105,6 +106,12 @@ export async function refreshCurrentUser(
   }
 }
 
+export function useSessionBoot(): SessionBoot {
+  const [phase, setPhase] = useState(readSessionBoot);
+  useEffect(() => subscribeSessionBoot(setPhase), []);
+  return phase;
+}
+
 export function useUser() {
   const [error, setError] = useState<Error | null>(null);
   const dispatch = useDispatch<AppDispatch>();
@@ -112,11 +119,26 @@ export function useUser() {
   useEffect(() => {
     let cancelled = false;
 
-    refreshCurrentUser(dispatch, "establish").catch((err) => {
+    void (async () => {
+      const phase = await bootSession();
       if (cancelled) return;
-      console.error("Failed to fetch /me:", err);
-      setError(err as Error);
-    });
+      if (phase === "anonymous") {
+        dispatch(rejectSession());
+        return;
+      }
+      if (phase === "hold") {
+        dispatch(setSession("error"));
+        return;
+      }
+      dispatch(setSession("pending"));
+      try {
+        await refreshCurrentUser(dispatch, "establish");
+      } catch (err) {
+        if (cancelled) return;
+        console.error("Failed to fetch /me:", err);
+        setError(err as Error);
+      }
+    })();
 
     return () => {
       cancelled = true;

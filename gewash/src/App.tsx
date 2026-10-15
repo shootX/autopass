@@ -7,7 +7,7 @@ import type { RootState } from "./store";
 import { store } from "./store";
 import { useUserRole } from "./hooks/useUserRole";
 import { ProtectedRoute } from "./components/ProtectedRoute";
-import { useUser, useRefreshUserOnBfcacheRestore } from "@/hooks/useUser";
+import { useUser, useRefreshUserOnBfcacheRestore, useSessionBoot } from "@/hooks/useUser";
 import { selectAppRoute } from "@/lib/sessionRouting";
 import { lazy, Suspense, useEffect, useState } from "react";
 import { setTranslations } from "./store/langSlice";
@@ -113,6 +113,7 @@ function AppRoutes() {
   const { pathname } = useLocation();
   useUser();
   useRefreshUserOnBfcacheRestore();
+  const boot = useSessionBoot();
 
   useEffect(() => onSessionExpired(() => {
     dispatch(resetSession());
@@ -196,6 +197,10 @@ function AppRoutes() {
       window.clearTimeout(timer);
     };
   }, [langLoading]);
+
+  if (boot === "pending" || boot === "hold") {
+    return <SplashScreen />;
+  }
 
   if (
     decision === "hold" ||

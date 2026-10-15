@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { approvePackageBody, approveShouldRescan, packageQrReady, spendApproveToken } from "./packageApprove";
+import { approvePackageBody, approveShouldRescan, approveShowsError, packageQrReady, spendApproveToken } from "./packageApprove";
 
 describe("package approve", () => {
   it("does not approve with a package id alone", () => {
@@ -7,11 +7,11 @@ describe("package approve", () => {
     expect(approvePackageBody({ qrCode: "  ", approveToken: "" })).toBeNull();
   });
 
-  it("sends the scanned qr_code and the checkqr approve_token", () => {
+  it("sends only the checkqr approve_token", () => {
     expect(approvePackageBody({ qrCode: "QR123", approveToken: "tok" })).toEqual({
-      qr_code: "QR123",
       approve_token: "tok",
     });
+    expect(approvePackageBody({ qrCode: "QR123" })).toBeNull();
   });
 
   it("uses an approve_token once and then forgets it", () => {
@@ -19,13 +19,15 @@ describe("package approve", () => {
     expect(first.token).toBe("tok");
     expect(first.remaining).toBeNull();
     expect(spendApproveToken(first.remaining)).toEqual({ token: null, remaining: null });
-    expect(approvePackageBody({ qrCode: "QR123", approveToken: first.remaining })).toEqual({ qr_code: "QR123" });
+    expect(approvePackageBody({ qrCode: "QR123", approveToken: first.remaining })).toBeNull();
   });
 
-  it("sends the manager back to the camera when the token is rejected", () => {
+  it("shows an error and rescans on 403, and rescans on 409", () => {
     expect(approveShouldRescan(403)).toBe(true);
+    expect(approveShowsError(403)).toBe(true);
     expect(approveShouldRescan(409)).toBe(true);
-    expect(approveShouldRescan(422)).toBe(true);
+    expect(approveShowsError(409)).toBe(false);
+    expect(approveShouldRescan(422)).toBe(false);
     expect(approveShouldRescan(200)).toBe(false);
     expect(approveShouldRescan(500)).toBe(false);
   });
