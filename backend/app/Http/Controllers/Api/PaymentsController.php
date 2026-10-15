@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\TbcPayment;
+use App\Models\User;
+use App\Support\AdminAudit;
 use App\Support\TestPayments;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -21,10 +23,23 @@ class PaymentsController extends Controller
             return response()->json(['success' => false, 'error' => 'Forbidden'], 403);
         }
 
-        $points = (int) $request->input('amount', 1);
         $max = (int) config('security.test_payment_max_amount', 100);
-        if ($points < 1 || $points > $max || ! ctype_digit((string) $request->input('amount', '1'))) {
+        $raw = $request->input('amount', '1');
+        if (! is_scalar($raw) || ! ctype_digit((string) $raw) || (int) $raw < 1 || (int) $raw > $max) {
             return response()->json(['success' => false, 'error' => 'The amount must be between 1 and '.$max.'.'], 422);
+        }
+        $points = (int) $raw;
+
+        // Daily budget per user across all sandbox payments that weren't declined.
+        $daily = (int) config('security.test_payment_daily_max', 300);
+        $today = (int) TbcPayment::query()
+            ->where('user_id', $user->id)
+            ->where('test_mode', true)
+            ->where('created_at', '>=', now()->startOfDay())
+            ->whereNotIn('status', ['Failed', 'Expired'])
+            ->sum('amount');
+        if ($today + $points > $daily) {
+            return response()->json(['success' => false, 'error' => 'Daily test payment limit reached ('.$daily.').'], 422);
         }
 
         $access = bin2hex(random_bytes(32));
@@ -43,6 +58,10 @@ class PaymentsController extends Controller
             'access_hash' => hash('sha256', $access),
             'access_expires_at' => now()->addMinutes((int) config('security.payment_access_minutes')),
         ]);
+
+        if ((int) $user->role === User::ROLE_ADMIN) {
+            AdminAudit::record('tbc_payment', (int) $payment->id, 'testpay', 'amount', null, (string) $points, (int) $user->id);
+        }
 
         $url = route('payment.sandbox', [
             'order' => $payment->merchant_payment_id,

@@ -272,3 +272,9 @@ voucher-checker-ში `useVoucher`/`usePath` სახელები შეი
 - Corporate API keys: only `api_token_hash` is stored; assigning `api_token` on the model hashes it, the plain key exists only in memory and in a one-time flash (`corporate_api_token`).
 - OTP/email codes: `SmsChallengeService::codeHash()` (HMAC with APP_KEY + challenge id). Rotating APP_KEY invalidates open codes only.
 - Every admin POST/PUT/DELETE is audited by middleware; add explicit `AdminAudit::record` only when field-level old/new values matter.
+
+## 2026-10-15 — QA fixes on PR #28
+- Spendable points for partner goods = `points - test_points` (`User::realPoints()`); `test_points` is clamped to `points` on save.
+- One-time grants (approve_token, refresh) are consumed under `Cache::lock`; a busy lock answers 409, never a second consume.
+- Refreshed JWTs carry `sess` (first login time); `security.session_max_minutes` bounds the whole chain.
+- `AdminAudit::record(..., adminId:)` — pass it explicitly from API (JWT) routes; the default guard is web.

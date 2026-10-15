@@ -253,3 +253,14 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 - [x] L2 uniform partner voucher answers; L3 no SVG uploads; L4 `@json($voucher)`; L5 review toggle is POST+CSRF; L6 `TRUSTED_PROXIES`; L7 OTP/email codes HMAC-keyed per challenge; L8 account deletion erases personal data with a unique tombstone phone.
 - [ ] Frontend: manager approve must send `qr_code`/`approve_token`; call `/api/refresh` before expiry; M4 CSP list; npm audit (maplibre-gl, react-router-dom, vite).
 - [ ] DevOps (Shota): deploy, security headers (M4), APP_ENV=production, TEST_PAYMENT_ALLOW_PRODUCTION off, TRUSTED_PROXIES, check live accounts after migrate (C1).
+
+## 2026-10-15 — QA fixes on PR #28 (D1–D9, `tests/Feature/AuditQaFixesTest.php`)
+- [x] D1 client accounts on client123/known defaults locked too (migration 000003 reruns RetireDefaultPasswords incl. role USER).
+- [x] D2 approve_token consume under `Cache::lock` (parallel → 409, single deduction).
+- [x] D3 array `qr_code`/`approve_token`/`amount` → 422 instead of 500.
+- [x] D4 a booking allows only one bare-id approve; later washes need QR/token.
+- [x] D5 daily per-user test-payment cap (`TEST_PAYMENT_DAILY_MAX`); sandbox points tracked in `users.test_points` and not spendable on vouchers/tickets.
+- [x] D6 refresh: per-jti lock (409 on parallel), blacklist recheck, absolute session lifetime via `sess` claim (`SECURITY_SESSION_MAX_MINUTES`).
+- [x] D7 decoy path does a bcrypt so timing matches (SMS gateway latency not equalized).
+- [x] D8 change_phone to a taken number answers like a free one, no SMS; verify still enforces unique.
+- [x] D9 failed-validation redirects not audited; admin testpay audited with explicit admin id.

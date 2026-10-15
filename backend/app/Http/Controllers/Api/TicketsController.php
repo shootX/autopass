@@ -41,7 +41,7 @@ class TicketsController extends Controller
                 $user = User::query()->whereKey($userId)->lockForUpdate()->firstOrFail();
                 $total = (int) $ticket->price * $qty;
 
-                if ((int) $user->points < $total) {
+                if ($user->realPoints() < $total) {
                     return 'Not enough points';
                 }
 
