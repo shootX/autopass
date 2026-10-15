@@ -10,7 +10,7 @@ import Header from "@/components/Header";
 import { releaseScanner } from "@/lib/releaseScanner";
 import { useTranslation } from "@/hooks/useTranslation";
 import { readAccessToken } from "@/lib/accessToken";
-import { approvePackageBody, packageQrReady } from "@/lib/packageApprove";
+import { approvePackageBody, approveShouldRescan, packageQrReady, spendApproveToken } from "@/lib/packageApprove";
 
 const SCAN_CONFIG = {
   fps: 10,
@@ -28,6 +28,8 @@ export default function ManagerScanner(): React.JSX.Element {
   const [approvalSuccess, setApprovalSuccess] = useState(false);
   const [showResultCard, setShowResultCard] = useState(true);
   const [approvedOffset, setApprovedOffset] = useState(0);
+  const [grant, setGrant] = useState<string | null>(null);
+  const [rescanNote, setRescanNote] = useState(false);
 
 
   const qrRef = useRef<HTMLDivElement>(null);
@@ -77,14 +79,18 @@ export default function ManagerScanner(): React.JSX.Element {
 
   useEffect(() => {
     if (result) setShowResultCard(true);
+    setGrant(result?.approve_token ?? null);
+    if (result) setRescanNote(false);
   }, [result]);
 
 
 
   const handleApprove = async () => {
+    const spent = spendApproveToken(grant);
+    setGrant(spent.remaining);
     const body = approvePackageBody({
       qrCode: scannedCode,
-      approveToken: result?.approve_token,
+      approveToken: spent.token,
     });
     if (!body || !pkgMeta?.id) return;
     setIsApproved(true);
@@ -101,13 +107,21 @@ export default function ManagerScanner(): React.JSX.Element {
         body: JSON.stringify(body),
       });
 
-      if (!res.ok) throw new Error("Approval failed");
+      if (!res.ok) {
+        if (approveShouldRescan(res.status)) {
+          setRescanNote(true);
+          scanAgain();
+          return;
+        }
+        throw new Error("Approval failed");
+      }
 
       await res.json();
       setApprovalSuccess(true);
       setApprovedOffset(1);
     } catch (err) {
       console.error("Approve error:", err);
+      setIsApproved(false);
     }
   };
 
@@ -141,6 +155,7 @@ export default function ManagerScanner(): React.JSX.Element {
             <button type="button" onClick={scanAgain}>{t("Scanner.retry")}</button>
           </div>
         )}
+        {rescanNote && <p className="warning">{t("Scanner.rescan")}</p>}
         {showScannerUI && (
           <div className='image-upload'>
             {/* <label htmlFor='qr-image'>

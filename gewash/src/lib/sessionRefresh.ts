@@ -11,7 +11,7 @@ function clearTimer(): void {
   }
 }
 
-export async function refreshAccessToken(): Promise<boolean> {
+export async function refreshAccessToken(attempt = 0): Promise<boolean> {
   const current = readAccessToken();
   if (!current) return false;
   try {
@@ -22,6 +22,12 @@ export async function refreshAccessToken(): Promise<boolean> {
         Accept: "application/json",
       },
     });
+    if (res.status === 409 && attempt < 1) {
+      return refreshAccessToken(attempt + 1);
+    }
+    if (res.status === 409) {
+      return false;
+    }
     if (!res.ok) {
       expireSession();
       return false;

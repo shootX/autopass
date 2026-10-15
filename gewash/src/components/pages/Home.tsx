@@ -14,6 +14,7 @@ import { bodyLabel, carParts, carPhoto, washCells } from "@/lib/v4";
 import PageSkeleton from "@/components/Skeletons/PageSkeleton";
 import { ArrowRight, Bell, CalendarCheck, CalendarDays, Car, CarFront, ChevronRight, Clock3, MapPin, Plus, QrCode, Search, Star } from "lucide-react";
 import { readAccessToken } from "@/lib/accessToken";
+import { splitPoints } from "@/lib/pointBalance";
 
 const BranchMap = lazy(() => import("../BranchMap").then((m) => ({ default: m.BranchMap })));
 
@@ -21,6 +22,7 @@ type NextBooking = { label: string; branch?: string; rawDate: string; time: stri
 
 export default function Home() {
   const user = useSelector((state: RootState) => state.user.data);
+  const balance = splitPoints(user?.points, user?.testPoints);
   const { cars, loading: carsLoading } = useFetchCars();
   const { packages, isLoading: packagesLoading } = useMyPackages();
   const t = useTranslation();
@@ -272,7 +274,7 @@ export default function Home() {
               <button type="button" className="ap-stat" onClick={() => navigate("/my-points")}>
                 <span className="ic" style={{ background: "#FFF1D6", color: "#B87300" }}><Star size={19} /></span>
                 <small>ჩემი ქულები</small>
-                <b>{user?.points ?? 0} ქულა</b>
+                <b>{balance.real} ქულა{balance.test > 0 ? ` · ${balance.test} ${t("Points.test")}` : ""}</b>
               </button>
               <button type="button" className="ap-stat" onClick={() => navigate("/customer-my-data")}>
                 <span className="ic" style={{ background: "#E3EFFA", color: "var(--ap-info)" }}><CarFront size={19} /></span>

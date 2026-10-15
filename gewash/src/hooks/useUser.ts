@@ -83,6 +83,9 @@ export async function refreshCurrentUser(
       enablePushRenewalSubscription: Boolean(data.user.enable_push_renewal_subscription),
       enablePushSpecialPromotions: Boolean(data.user.enable_push_special_promotions),
       points: typeof raw.points === "number" ? raw.points : Number(raw.points) || 0,
+      testPoints: Object.prototype.hasOwnProperty.call(raw, "test_points")
+        ? (typeof raw.test_points === "number" ? raw.test_points : Number(raw.test_points) || 0)
+        : undefined,
       referralsCount:
         typeof raw.referrals_count === "number"
           ? raw.referrals_count

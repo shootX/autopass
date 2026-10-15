@@ -292,3 +292,11 @@ JWT httpOnly cookie არ არის: `access_token` რჩება მე�
 - One-time grants (approve_token, refresh) are consumed under `Cache::lock`; a busy lock answers 409, never a second consume.
 - Refreshed JWTs carry `sess` (first login time); `security.session_max_minutes` bounds the whole chain.
 - `AdminAudit::record(..., adminId:)` — pass it explicitly from API (JWT) routes; the default guard is web.
+
+## 2026-10-15 — Frontend for 104dfe8
+
+`security/audit-fixes` (`104dfe8`) შევიდა `security/frontend-audit-fixes`-ში merge commit-ით.
+
+`POST /api/refresh` 409-ზე ერთხელ მეორდება იმავე ტოკენით და სესიას არ წყვეტს. მეორე 409-იც ტოვებს სესიას. 401 წყვეტს. `approve_token` იგზავნება ერთხელ და იშლება; უარყოფა (403, 409, 422) აბრუნებს კამერაზე ახალი სკანისთვის.
+
+`GET /me`-ის `test_points` არის სანდბოქსის ქულა. ხარჯვადი რიცხვი არის `points - test_points`. ველი რომ არ მოვიდეს, ჩანს მთელი `points`. main-ში შერწყმა და დეპლოი არ ყოფილა.

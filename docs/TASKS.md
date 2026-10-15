@@ -269,6 +269,14 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 - [ ] რეგისტრაციის captcha: #28-ის `register` იღებს მხოლოდ `phone`-ს და არასავალდებულო რეფერალ `code`-ს. captcha-ს ველი, site key და შემოწმების endpoint არ არის. სერვერის იგნორირებული ვიჯეტი არ დაემატა.
 - შერწყმა main-ში, დეპლოი და ცოცხალი სერვერი არ შეხებია.
 
+## 2026-10-15 — Frontend follow-up for #28 `104dfe8`
+
+- [x] `security/audit-fixes` (`104dfe8`) შერწყმულია merge commit-ით. Rebase და force-push არ ყოფილა.
+- [x] `POST /api/refresh`: 409 ერთხელ მეორდება და სესია რჩება; 401 გამოდის სესიიდან. ტესტი: `sessionRefresh.test.ts`.
+- [x] `approve_token` ერთჯერადია: გაგზავნის შემდეგ აღარ ინახება. 403/409/422 აბრუნებს სკანერზე. ტესტი: `packageApprove.test.ts`.
+- [x] `test_points` ცალკე ჩანს ხარჯვადი ქულისგან (`points - test_points`), სადაც `/me` აბრუნებს ველს. ტესტი: `pointBalance.test.ts`.
+- main-ში შერწყმა და ცოცხალი სერვერი არ შეხებია.
+
 ## 2026-10-15 — QA fixes on PR #28 (D1–D9, `tests/Feature/AuditQaFixesTest.php`)
 - [x] D1 client accounts on client123/known defaults locked too (migration 000003 reruns RetireDefaultPasswords incl. role USER).
 - [x] D2 approve_token consume under `Cache::lock` (parallel → 409, single deduction).

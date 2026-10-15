@@ -8,6 +8,17 @@ export type ApprovePackageBody = {
   approve_token?: string;
 };
 
+/** The checkqr grant is single-use. Callers must keep `remaining`, which is always empty. */
+export function spendApproveToken(token: string | null | undefined): { token: string | null; remaining: null } {
+  const trimmed = token?.trim() ?? "";
+  return { token: trimmed || null, remaining: null };
+}
+
+/** A rejected grant cannot be posted again. The manager scans a new code. */
+export function approveShouldRescan(status: number): boolean {
+  return status === 403 || status === 409 || status === 422;
+}
+
 /** Bare package id is rejected by the API. Require the scanned QR or the checkqr token. */
 export function approvePackageBody(input: ApprovePackageInput): ApprovePackageBody | null {
   const qr = input.qrCode?.trim() ?? "";

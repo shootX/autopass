@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { approvePackageBody, packageQrReady } from "./packageApprove";
+import { approvePackageBody, approveShouldRescan, packageQrReady, spendApproveToken } from "./packageApprove";
 
 describe("package approve", () => {
   it("does not approve with a package id alone", () => {
@@ -12,6 +12,22 @@ describe("package approve", () => {
       qr_code: "QR123",
       approve_token: "tok",
     });
+  });
+
+  it("uses an approve_token once and then forgets it", () => {
+    const first = spendApproveToken(" tok ");
+    expect(first.token).toBe("tok");
+    expect(first.remaining).toBeNull();
+    expect(spendApproveToken(first.remaining)).toEqual({ token: null, remaining: null });
+    expect(approvePackageBody({ qrCode: "QR123", approveToken: first.remaining })).toEqual({ qr_code: "QR123" });
+  });
+
+  it("sends the manager back to the camera when the token is rejected", () => {
+    expect(approveShouldRescan(403)).toBe(true);
+    expect(approveShouldRescan(409)).toBe(true);
+    expect(approveShouldRescan(422)).toBe(true);
+    expect(approveShouldRescan(200)).toBe(false);
+    expect(approveShouldRescan(500)).toBe(false);
   });
 
   it("accepts a checkqr payload that no longer includes a phone number", () => {

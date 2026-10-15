@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { RootState } from "@/store";
+import { splitPoints } from "@/lib/pointBalance";
 import Sidebar from "@/components/ui/Sidebar";
 import Header from "@/components/Header";
 import ShopAsyncLoader from "@/components/ui/ShopAsyncLoader";
@@ -181,7 +182,8 @@ export default function ShopPage() {
   const navigate = useNavigate();
   const t = useTranslation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const points = useSelector((s: RootState) => s.user.data?.points);
+  const account = useSelector((s: RootState) => s.user.data);
+  const points = account ? splitPoints(account.points, account.testPoints) : null;
   const cachedShop = peekShopBundle();
   const [vouchers, setVouchers] = useState<ShopVoucher[]>(cachedShop?.vouchers ?? []);
   const [tickets, setTickets] = useState<ShopTicket[]>(cachedShop?.tickets ?? []);
@@ -245,7 +247,7 @@ export default function ShopPage() {
           </div>
           <div className="shop-balance__right">
             <span className="shop-balance__amount">
-              {typeof points === "number" ? points.toLocaleString() : "—"}
+              {points ? (points.test > 0 ? `${points.real.toLocaleString()} · ${points.test.toLocaleString()} ${t("Points.test")}` : points.real.toLocaleString()) : "—"}
             </span>
             <span className="shop-balance__unit">{t("Shop.balance.unit")}</span>
           </div>

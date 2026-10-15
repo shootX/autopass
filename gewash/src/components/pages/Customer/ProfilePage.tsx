@@ -9,6 +9,7 @@ import { useMyPackages } from "@/hooks/useActivePackages";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Bell, CarFront, ChevronRight, Settings, Share2, ShoppingBag, Star, Ticket } from "lucide-react";
 import { readAccessToken } from "@/lib/accessToken";
+import { splitPoints } from "@/lib/pointBalance";
 
 async function loadReferralLink(): Promise<string | null> {
   const token = readAccessToken();
@@ -36,6 +37,7 @@ export default function ProfilePage() {
   const navigate = useNavigate();
   const t = useTranslation();
   const user = useSelector((s: RootState) => s.user.data);
+  const balance = splitPoints(user?.points, user?.testPoints);
   const { cars } = useFetchCars();
   const { packages } = useMyPackages();
   const [shareNote, setShareNote] = useState("");
@@ -91,7 +93,12 @@ export default function ProfilePage() {
       <div className="v4-balance v4-dk">
         <div className="v4-kicker" style={{ color: "#A7B1AA" }}>{t("MyPoints.balance.label")}</div>
         <div style={{ marginTop: 4 }}>
-          <span className="n">{user?.points ?? 0}</span>
+          <span className="n">{balance.real}</span>
+          {balance.test > 0 && (
+            <div className="v4-kicker" style={{ color: "#A7B1AA" }}>
+              {balance.test} {t("Points.test")}
+            </div>
+          )}
           <span className="unit">{t("MyPoints.balance.unit")}</span>
         </div>
         <span className="v4-limeico" style={{ position: "absolute", right: 16, top: 16 }}>

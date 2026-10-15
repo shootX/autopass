@@ -23,6 +23,8 @@ export interface User {
   enablePushRenewalSubscription: boolean;
   enablePushSpecialPromotions: boolean;
   points: number;
+  /** Present only when GET /me includes `test_points`. */
+  testPoints?: number;
   referralsCount: number;
 };
 

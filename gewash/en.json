@@ -981,7 +981,8 @@
     },
     "Scanner": {
         "cameraRequired": "Camera access is required",
-        "retry": "Try again"
+        "retry": "Try again",
+        "rescan": "This code was already used. Scan again."
     },
     "Help": {
         "title": "Help",
@@ -1186,5 +1187,8 @@
     "Sandbox": {
         "title": "Test payment",
         "body": "Test payment is enabled in this build. Card details are not entered here."
+    },
+    "Points": {
+        "test": "Test"
     }
 }
