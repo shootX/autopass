@@ -3,29 +3,28 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Exports\CreatedTicketsExport;
-use App\Exports\PartnersExport;
 use App\Http\Controllers\Controller;
 use App\Models\Ticket;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use Maatwebsite\Excel\Facades\Excel;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
+use Maatwebsite\Excel\Facades\Excel;
 
 class TicketsController extends Controller
 {
     public function index(Request $request)
     {
-        if($request->has('export'))
-        {
+        if ($request->has('export')) {
             return Excel::download(
-                new CreatedTicketsExport(),
+                new CreatedTicketsExport,
                 'tickets.xlsx'
             );
         }
         $tickets = Ticket::paginate(10);
+
         return view('admin.tickets.index', compact('tickets'));
     }
 
@@ -39,13 +38,13 @@ class TicketsController extends Controller
         $validate = Validator::make($request->all(), [
             'name' => 'required|string|min:3',
             'description' => 'required|min:5',
-            'photo' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'photo' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'price' => 'required|numeric',
             'date_to' => 'required|date',
             'count' => 'nullable|numeric',
         ]);
 
-        if($validate->fails()) {
+        if ($validate->fails()) {
             return redirect()->back()->withErrors($validate)->withInput();
         }
 
@@ -56,9 +55,8 @@ class TicketsController extends Controller
 
         $data = $validate->validated();
 
-        if($data["count"] == null)
-        {
-            $data["count"] = 0;
+        if ($data['count'] == null) {
+            $data['count'] = 0;
         }
 
         $data['photo'] = $photoPath;
@@ -72,6 +70,7 @@ class TicketsController extends Controller
     public function delete(Request $request, Ticket $ticket)
     {
         $ticket->delete();
+
         return redirect()->back()->with('message', __('admin.ticket_deleted'));
     }
 
@@ -80,10 +79,9 @@ class TicketsController extends Controller
         $ticket->load('users');
         $users = $ticket->users;
 
-
         return Excel::download(
-            new class($ticket->users) implements FromCollection, WithHeadings, WithMapping {
-
+            new class($ticket->users) implements FromCollection, WithHeadings, WithMapping
+            {
                 public function __construct(private $items) {}
 
                 public function collection()
@@ -103,12 +101,10 @@ class TicketsController extends Controller
                         Carbon::parse($item->created_at)->format('d.m.Y H:i'),
                     ];
                 }
-
             },
             'users.xlsx'
         );
     }
-
 
     public function edit(Request $request, Ticket $ticket)
     {
@@ -120,13 +116,13 @@ class TicketsController extends Controller
         $validate = Validator::make($request->all(), [
             'name' => 'required|string|min:3',
             'description' => 'required|min:5',
-            'photo' => 'sometimes|nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'photo' => 'sometimes|nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'price' => 'required|numeric',
             'date_to' => 'required|date',
             'count' => 'nullable|numeric',
         ]);
 
-        if($validate->fails()) {
+        if ($validate->fails()) {
             return redirect()->back()->withErrors($validate)->withInput();
         }
 
@@ -137,13 +133,11 @@ class TicketsController extends Controller
 
         $data = $validate->validated();
 
-        if($data["count"] == null)
-        {
-            $data["count"] = 0;
+        if ($data['count'] == null) {
+            $data['count'] = 0;
         }
 
-        if($photoPath == null)
-        {
+        if ($photoPath == null) {
             unset($data['photo']);
         } else {
             $data['photo'] = $photoPath;
@@ -154,6 +148,4 @@ class TicketsController extends Controller
         return redirect()->route('admin.tickets')->with('message', __('admin.ticket_updated'));
 
     }
-
-
 }

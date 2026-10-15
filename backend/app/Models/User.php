@@ -250,4 +250,20 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasMany(VerificationCode::class, 'user_id');
     }
+
+    protected static function booted(): void
+    {
+        // Spending real points first can never leave more sandbox points than points overall.
+        static::saving(function (User $user) {
+            if ((int) $user->test_points > max(0, (int) $user->points)) {
+                $user->test_points = max(0, (int) $user->points);
+            }
+        });
+    }
+
+    /** Points that came from real payments/bonuses (sandbox top-ups excluded). */
+    public function realPoints(): int
+    {
+        return max(0, (int) $this->points - (int) $this->test_points);
+    }
 }

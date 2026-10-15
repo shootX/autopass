@@ -3,17 +3,24 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Middleware\EnsureApiSession;
+use App\Jobs\SendSms;
 use App\Models\User;
 use App\Models\UserPushToken;
 use App\Services\Security\ActionGrantService;
 use App\Services\Security\AuthChallengeException;
+use App\Services\Security\RefreshTokens;
 use App\Services\Security\SmsChallengeService;
 use App\Services\Sms\IssuedSms;
 use App\Services\Sms\SmsStatus;
 use App\Services\Sms\SmsUserMessage;
 use App\Support\Phone;
+use Illuminate\Contracts\Cache\LockTimeoutException;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
@@ -21,6 +28,8 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
 {
+    public function __construct(private RefreshTokens $refreshTokens) {}
+
     public function register(Request $request, SmsChallengeService $sms)
     {
         Phone::prepare($request);
@@ -37,10 +46,8 @@ class AuthController extends Controller
 
         $existing = User::query()->where('phone', $request->phone)->first();
         if ($existing && $existing->phone_verified_at) {
-            return response()->json([
-                'success' => false,
-                'error' => ['phone' => ['Номер уже существует']],
-            ], 422);
+            // Same answer as for a new number, so /register can't be used to list customers.
+            return $this->decoySmsJson(hashLikeNewUser: true);
         }
 
         $createdNow = false;
@@ -50,22 +57,34 @@ class AuthController extends Controller
                 $referralId = User::query()->where('ref_code', $request->code)->value('id');
             }
 
-            $existing = User::query()->forceCreate([
-                'name' => null,
-                'surname' => null,
-                'email' => null,
-                'phone' => $request->phone,
-                'password' => Str::password(40),
-                'date_of_birth' => null,
-                'role' => User::ROLE_USER,
-                'referral_id' => $referralId,
-                'ref_code' => substr(strtoupper(md5($request->phone.Str::random(8))), 0, 5),
-            ]);
-            $createdNow = true;
+            try {
+                $existing = User::query()->forceCreate([
+                    'name' => null,
+                    'surname' => null,
+                    'email' => null,
+                    'phone' => $request->phone,
+                    'password' => Str::password(40),
+                    'date_of_birth' => null,
+                    'role' => User::ROLE_USER,
+                    'referral_id' => $referralId,
+                    'ref_code' => substr(strtoupper(md5($request->phone.Str::random(8))), 0, 5),
+                ]);
+                $createdNow = true;
+            } catch (UniqueConstraintViolationException) {
+                // A parallel /register created this number first: continue with that row (its
+                // SMS lock / resend window answers this request), never a 500.
+                $existing = User::query()->where('phone', $request->phone)->first();
+                if (! $existing) {
+                    return response()->json(['success' => false, 'error' => 'Please try again.'], 409);
+                }
+                if ($existing->phone_verified_at) {
+                    return $this->decoySmsJson(hashLikeNewUser: true);
+                }
+            }
         }
 
         try {
-            $issued = $sms->issue($existing, 'verify');
+            $issued = $sms->issueQueued($existing, 'verify');
         } catch (AuthChallengeException $e) {
             return $this->challengeError($e);
         }
@@ -118,7 +137,8 @@ class AuthController extends Controller
         $user->token_version = (int) $user->token_version + 1;
         $user->save();
 
-        $token = JWTAuth::fromUser($user->fresh());
+        [$refresh, $family, $cookie] = $this->refreshTokens->start($user->fresh());
+        $token = JWTAuth::claims(['sess' => now()->timestamp, 'sid' => $family])->fromUser($user->fresh());
 
         return response()->json([
             'success' => true,
@@ -127,7 +147,7 @@ class AuthController extends Controller
             'token_type' => 'bearer',
             'expires_in' => auth('api')->factory()->getTTL() * 60,
             'user' => $user->fresh(),
-        ]);
+        ])->withCookie($cookie);
     }
 
     public function login(Request $request)
@@ -149,22 +169,32 @@ class AuthController extends Controller
             return response()->json(['success' => false, 'error' => 'Не верный логин либо пароль.'], 401);
         }
 
+        // Account state is only revealed after the password matched, so it can't be used to list numbers.
+        if (! Hash::check((string) $request->password, (string) $user->password)) {
+            return response()->json(['success' => false, 'error' => 'Не верный логин либо пароль.'], 401);
+        }
+
         if ((int) $user->role === User::ROLE_USER && $user->phone_verified_at === null) {
             return response()->json(['success' => false, 'error' => 'Account is not confirmed'], 403);
         }
 
         if ($user->ban) {
-            // Checked after the password so a ban doesn't reveal which numbers exist.
-            if (! Hash::check((string) $request->password, (string) $user->password)) {
-                return response()->json(['success' => false, 'error' => 'Не верный логин либо пароль.'], 401);
-            }
-
             return response()->json(['success' => false, 'error' => 'Account is blocked'], 403);
         }
 
-        if (! $token = JWTAuth::attempt($request->only('phone', 'password'))) {
+        if ($user->password_reset_required) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Password reset required',
+                'password_reset_required' => true,
+            ], 403);
+        }
+
+        $family = bin2hex(random_bytes(16));
+        if (! $token = JWTAuth::claims(['sess' => now()->timestamp, 'sid' => $family])->attempt($request->only('phone', 'password'))) {
             return response()->json(['success' => false, 'error' => 'Не верный логин либо пароль.'], 401);
         }
+        [, , $cookie] = $this->refreshTokens->start($user->fresh(), $family);
 
         return response()->json([
             'success' => true,
@@ -172,33 +202,162 @@ class AuthController extends Controller
             'token_type' => 'bearer',
             'expires_in' => auth('api')->factory()->getTTL() * 60,
             'user' => auth('api')->user(),
-        ]);
+        ])->withCookie($cookie);
+    }
+
+    /**
+     * POST /api/refresh. Preferred: the httpOnly refresh cookie (no Authorization header needed,
+     * works after the access token expired); the cookie is rotated on every call. Legacy
+     * fallback without the cookie: a still-valid bearer token is rotated as before.
+     * See docs/auth-contract.md.
+     */
+    public function refresh(Request $request)
+    {
+        $presented = $request->cookie(RefreshTokens::COOKIE);
+        if (is_string($presented) && $presented !== '') {
+            return $this->refreshFromCookie($presented);
+        }
+
+        auth()->shouldUse('api');
+        if (! auth('api')->check()) {
+            return response()->json(['success' => false, 'error' => 'Unauthorized'], 401);
+        }
+
+        return app(EnsureApiSession::class)->handle($request, fn () => $this->refreshFromBearer());
+    }
+
+    private function refreshFromCookie(string $presented): JsonResponse
+    {
+        // Parallel refreshes with one cookie (several tabs) wait for each other briefly; the
+        // later ones then take the grace path in RefreshTokens::consume().
+        $lock = Cache::lock('refresh-cookie:'.hash('sha256', $presented), 10);
+        try {
+            $lock->block(5);
+        } catch (LockTimeoutException) {
+            return response()->json(['success' => false, 'error' => 'Refresh already in progress'], 409);
+        }
+        try {
+            $consumed = $this->refreshTokens->consume($presented);
+            if (! $consumed) {
+                return response()->json(['success' => false, 'error' => 'Unauthorized'], 401)
+                    ->withCookie($this->refreshTokens->forget());
+            }
+            [$user, $family, $sess] = $consumed;
+            [, , $cookie] = $this->refreshTokens->start($user, $family, $sess);
+            $token = JWTAuth::claims(['sess' => $sess, 'sid' => $family])->fromUser($user);
+        } finally {
+            $lock->release();
+        }
+
+        return response()->json([
+            'success' => true,
+            'access_token' => $token,
+            'token_type' => 'bearer',
+            'expires_in' => auth('api')->factory()->getTTL() * 60,
+        ])->withCookie($cookie);
+    }
+
+    /**
+     * POST /api/refresh/logout (public). Sits under the cookie's path, so it works with an
+     * expired or missing access token: revokes the cookie's session and clears the cookie.
+     * Also blacklists a still-valid bearer token if one is sent.
+     */
+    public function logoutByCookie(Request $request): JsonResponse
+    {
+        $presented = $request->cookie(RefreshTokens::COOKIE);
+        if (is_string($presented)) {
+            $this->refreshTokens->revokeByToken($presented);
+        }
+        try {
+            if ($token = JWTAuth::getToken()) {
+                JWTAuth::setToken($token)->invalidate();
+            }
+        } catch (\Throwable) {
+            // Expired or malformed access token: nothing to blacklist.
+        }
+
+        return response()->json(['success' => true, 'message' => 'Успешный выход'])
+            ->withCookie($this->refreshTokens->forget());
+    }
+
+    /** Legacy body/bearer rotation (kept for clients that don't send the cookie yet). */
+    private function refreshFromBearer(): JsonResponse
+    {
+        $user = auth('api')->user();
+        $old = JWTAuth::getToken();
+        if (! $user || ! $old) {
+            return response()->json(['success' => false, 'error' => 'Unauthorized'], 401);
+        }
+        $payload = JWTAuth::setToken($old)->getPayload();
+
+        // The login's first issue time travels with every rotated token, so refreshing
+        // can't keep one stolen session alive forever.
+        $sess = (int) ($payload->get('sess') ?: $payload->get('iat'));
+        if (now()->timestamp - $sess > (int) config('security.session_max_minutes', 43200) * 60) {
+            JWTAuth::setToken($old)->invalidate();
+
+            return response()->json(['success' => false, 'error' => 'Session expired'], 401);
+        }
+
+        // One rotation per token: a parallel refresh of the same token is turned away, and
+        // one that comes after finds the old token blacklisted.
+        $lock = Cache::lock('jwt-refresh:'.$payload->get('jti'), 10);
+        if (! $lock->get()) {
+            return response()->json(['success' => false, 'error' => 'Refresh already in progress'], 409);
+        }
+        try {
+            if (JWTAuth::manager()->getBlacklist()->has($payload)) {
+                return response()->json(['success' => false, 'error' => 'Unauthorized'], 401);
+            }
+            $family = $payload->get('sid') ?: bin2hex(random_bytes(16));
+            $token = JWTAuth::claims(['sess' => $sess, 'sid' => $family])->fromUser($user);
+            JWTAuth::setToken($old)->invalidate();
+            // Moves legacy clients onto the cookie flow from here on.
+            [, , $cookie] = $this->refreshTokens->start($user, $family, $sess);
+        } finally {
+            $lock->release();
+        }
+
+        return response()->json([
+            'success' => true,
+            'access_token' => $token,
+            'token_type' => 'bearer',
+            'expires_in' => auth('api')->factory()->getTTL() * 60,
+        ])->withCookie($cookie);
     }
 
     public function logout()
     {
         $token = JWTAuth::getToken();
         if ($token) {
+            $this->refreshTokens->revokeFamily(JWTAuth::setToken($token)->getPayload()->get('sid'));
             JWTAuth::invalidate($token);
         }
         auth()->logout();
 
-        return response()->json(['success' => true, 'message' => 'Успешный выход']);
+        return response()->json(['success' => true, 'message' => 'Успешный выход'])
+            ->withCookie($this->refreshTokens->forget());
     }
 
     public function changePhone(Request $request, SmsChallengeService $sms)
     {
         Phone::prepare($request);
         $validator = Validator::make($request->all(), [
-            'phone' => ['required', 'regex:'.Phone::RULE, 'unique:users,phone,'.auth()->id()],
+            'phone' => ['required', 'regex:'.Phone::RULE],
         ]);
 
         if ($validator->fails()) {
             return response()->json(['success' => false, 'error' => $validator->errors()], 422);
         }
 
+        // A number held by someone else gets the same answer and no SMS, so this can't be used to
+        // tell which numbers are registered. The verify step still rejects it.
+        if (User::query()->where('phone', $request->phone)->whereKeyNot(auth()->id())->exists()) {
+            return $this->decoySmsJson();
+        }
+
         try {
-            $issued = $sms->issue(auth()->user(), 'change', ['phone' => $request->phone], null, true, $request->phone);
+            $issued = $sms->issueQueued(auth()->user(), 'change', ['phone' => $request->phone], $request->phone);
         } catch (AuthChallengeException $e) {
             return $this->challengeError($e);
         }
@@ -246,7 +405,7 @@ class AuthController extends Controller
     {
         Phone::matchStored($request);
         $validator = Validator::make($request->all(), [
-            'phone' => 'required|string|exists:users,phone',
+            'phone' => 'required|string',
         ]);
 
         if ($validator->fails()) {
@@ -254,9 +413,13 @@ class AuthController extends Controller
         }
 
         $user = User::query()->where('phone', $request->phone)->first();
+        if (! $user) {
+            // Unknown number: same answer, no SMS.
+            return $this->decoySmsJson();
+        }
 
         try {
-            $issued = $sms->issue($user, 'reset');
+            $issued = $sms->issueQueued($user, 'reset');
         } catch (AuthChallengeException $e) {
             return $this->challengeError($e);
         }
@@ -305,6 +468,7 @@ class AuthController extends Controller
         }
 
         $user->password = $request->password;
+        $user->forceFill(['password_reset_required' => false]);
         $user->phone_verified_at = $user->phone_verified_at ?: now();
         $user->token_version = (int) $user->token_version + 1;
         $user->save();
@@ -315,9 +479,21 @@ class AuthController extends Controller
     public function deleteAccount(Request $request)
     {
         $user = auth()->user();
-        $user->phone = $user->phone.'-del';
-        $user->token_version = (int) $user->token_version + 1;
-        $user->save();
+        // Personal data is erased; the row stays for orders/ledger history. The phone becomes a
+        // unique tombstone, so the same number can register and be deleted again.
+        $user->forceFill([
+            'name' => null,
+            'surname' => null,
+            'email' => null,
+            'pending_email' => null,
+            'date_of_birth' => null,
+            'sex' => null,
+            'password' => Str::password(40),
+            'token_version' => (int) $user->token_version + 1,
+        ])->save();
+        // Written past the phone mutator (it would strip this to digits and let tombstones collide
+        // or even look like a real number). The id makes it unique; it never matches a phone rule.
+        DB::table('users')->where('id', $user->id)->update(['phone' => 'deleted-'.$user->id.'-'.Str::lower(Str::random(6))]);
         $token = JWTAuth::getToken();
         if ($token) {
             JWTAuth::invalidate($token);
@@ -353,6 +529,29 @@ class AuthController extends Controller
         $user->pushTokens()->create(['push_id' => $pushID]);
 
         return response()->json(['success' => true]);
+    }
+
+    /**
+     * Answer for numbers that must not be revealed (registered / unknown / taken). Mirrors the
+     * real path's work: a queued SMS job (a no-op here) and, for /register, the bcrypt a new
+     * account costs. The real paths never call the gateway inline either (issueQueued).
+     */
+    private function decoySmsJson(bool $hashLikeNewUser = false): JsonResponse
+    {
+        if ($hashLikeNewUser) {
+            Hash::make(Str::random(16));
+        }
+        SendSms::dispatch();
+        $simulated = SmsChallengeService::queuedStatus() === SmsStatus::Simulated;
+
+        return response()->json([
+            'success' => true,
+            'temp_code' => bin2hex(random_bytes(16)),
+            'delivery' => $simulated ? SmsStatus::Simulated->value : SmsStatus::Accepted->value,
+            'message' => $simulated
+                ? 'კოდი შეიქმნა სატესტო რეჟიმში.'
+                : 'მოთხოვნა მიღებულია. შეიყვანეთ კოდი, როცა შეტყობინება მოგივათ.',
+        ]);
     }
 
     private function smsJson(IssuedSms $issued, bool $rollbackNewUser = false, ?User $user = null): JsonResponse

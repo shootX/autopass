@@ -154,6 +154,10 @@ class SettleTbcPayment
         }
 
         $user->points += $amount;
+        if ($payment->test_mode) {
+            // Sandbox points are tracked apart so they can't buy real partner goods.
+            $user->test_points = (int) $user->test_points + $amount;
+        }
         $user->save();
 
         Transaction::create([

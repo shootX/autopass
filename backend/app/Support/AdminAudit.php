@@ -7,10 +7,10 @@ use Illuminate\Support\Facades\DB;
 /** Append-only admin audit trail. Values are stored masked, never in clear. */
 class AdminAudit
 {
-    public static function record(string $targetType, int $targetId, string $action, ?string $field = null, ?string $old = null, ?string $new = null): void
+    public static function record(string $targetType, int $targetId, string $action, ?string $field = null, ?string $old = null, ?string $new = null, ?int $adminId = null): void
     {
         DB::table('admin_audit_logs')->insert([
-            'admin_id' => auth()->id(),
+            'admin_id' => $adminId ?? auth()->id(),
             'target_type' => $targetType,
             'target_id' => $targetId,
             'action' => $action,

@@ -125,7 +125,7 @@ it('audits admin phone/email edits and revokes the user sessions', function () {
     ])->assertRedirect();
     auth()->logout();
 
-    $rows = DB::table('admin_audit_logs')->where('target_id', $u->id)->orderBy('field')->get();
+    $rows = DB::table('admin_audit_logs')->where('target_id', $u->id)->whereNotNull('field')->orderBy('field')->get();
     expect($rows)->toHaveCount(2);
     expect($rows[0]->field)->toBe('email')->and($rows[0]->admin_id)->toBe($admin->id)
         ->and($rows[0]->old_value)->not->toContain('old@')->and($rows[0]->new_value)->not->toContain('new@')
@@ -144,7 +144,7 @@ it('does not audit or revoke when phone/email are unchanged', function () {
     $this->actingAs(fuAdmin())->post('/dashboard/clients/'.$u->id.'/edit_save', [
         'name' => 'X', 'surname' => 'S', 'email' => 'same@example.com', 'phone' => $u->phone, 'sex' => 'male', 'date_of_birth' => '1990-01-01',
     ])->assertRedirect();
-    expect(DB::table('admin_audit_logs')->count())->toBe(0)->and((int) $u->fresh()->token_version)->toBe($tv);
+    expect(DB::table('admin_audit_logs')->whereNotNull('field')->count())->toBe(0)->and((int) $u->fresh()->token_version)->toBe($tv);
 });
 
 it('blocks non-admins from editing users', function () {

@@ -6,7 +6,11 @@ return [
     'allowed_methods' => ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
 
     // Comma-separated list of frontend origins, e.g. https://autopass.ge,https://app.autopass.ge
-    'allowed_origins' => array_values(array_filter(array_map('trim', explode(',', (string) env('CORS_ALLOWED_ORIGINS', ''))))),
+    // '*' is dropped: with credentials only explicitly listed origins may read responses.
+    'allowed_origins' => array_values(array_filter(
+        array_map('trim', explode(',', (string) env('CORS_ALLOWED_ORIGINS', ''))),
+        fn ($origin) => $origin !== '' && $origin !== '*'
+    )),
 
     'allowed_origins_patterns' => [],
 
@@ -16,5 +20,6 @@ return [
 
     'max_age' => 600,
 
-    'supports_credentials' => false,
+    // Needed for the httpOnly refresh cookie (fetch credentials: 'include').
+    'supports_credentials' => true,
 ];

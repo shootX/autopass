@@ -1,5 +1,6 @@
 <?php
 
+use App\Jobs\SendSms;
 use App\Models\Partner;
 use App\Models\SmsTemp;
 use App\Models\User;
@@ -14,7 +15,7 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 beforeEach(function () {
     DB::statement('PRAGMA defer_foreign_keys = ON');
     Http::fake(['*' => Http::response(['Success' => true])]);
-    Queue::fake();
+    Queue::fakeExcept([SendSms::class]); // auth SMS still runs (sync) so codes reach the mock gateway
 });
 
 function freshAuth(): void
@@ -89,7 +90,7 @@ it('blocks approving against another branch appointment and records the wash on 
     expect(DB::table('user_packages')->find($pkg)->used_washes)->toBe(0);
 
     freshAuth();
-    $this->withToken(JWTAuth::fromUser($mgr1))->postJson("/api/package/{$pkg}/approve")->assertOk();
+    $this->withToken(JWTAuth::fromUser($mgr1))->postJson("/api/package/{$pkg}/approve", ['approve_token' => approveTokenFor($mgr1, $pkg)])->assertOk();
     expect(DB::table('user_packages')->find($pkg)->used_washes)->toBe(1);
     $wash = DB::table('package_washes')->first();
     expect((int) $wash->car_wash_id)->toBe($wash1)->and((bool) $wash->walk_in)->toBeFalse();
@@ -101,7 +102,8 @@ it('allows walk-in approval without a booking and records it on the manager bran
     $wash = washFor($mgr);
     $car = row('user_cars', ['user_id' => $client->id, 'model_id' => 1, 'plate' => 'AA555AA']);
     $pkg = userPackage($client->id, $car);
-    $this->withToken(JWTAuth::fromUser($mgr))->postJson("/api/package/{$pkg}/approve")->assertOk();
+    // Walk-in (no booking): the one-time checkqr token must be presented (audit H1, QA D13).
+    $this->withToken(JWTAuth::fromUser($mgr))->postJson("/api/package/{$pkg}/approve", ['approve_token' => approveTokenFor($mgr, $pkg)])->assertOk();
     $rec = DB::table('package_washes')->where('user_package_id', $pkg)->first();
     expect((int) $rec->car_wash_id)->toBe($wash)->and((bool) $rec->walk_in)->toBeTrue()->and((int) $rec->manager_id)->toBe($mgr->id);
 });
@@ -113,7 +115,7 @@ it('refuses approving an exhausted package', function () {
     $car = row('user_cars', ['user_id' => $client->id, 'model_id' => 1, 'plate' => 'AA222AA']);
     $pkg = userPackage($client->id, $car, ['used_washes' => 5]);
     row('appointments', ['user_id' => $client->id, 'car_wash_id' => $wash, 'car_id' => $car, 'date' => now()->toDateString(), 'time' => '10:00', 'qr_code' => 'A'.uniqid()]);
-    $this->withToken(JWTAuth::fromUser($mgr))->postJson("/api/package/{$pkg}/approve")->assertStatus(422);
+    $this->withToken(JWTAuth::fromUser($mgr))->postJson("/api/package/{$pkg}/approve", ['approve_token' => approveTokenFor($mgr, $pkg)])->assertStatus(422);
 });
 
 // BE-10
@@ -177,9 +179,10 @@ it('throttles OTP endpoints', function () {
 // CORS
 it('only allows configured CORS origins', function () {
     Config::set('cors.allowed_origins', ['https://app.autopass.ge']);
+    // Credentials are allowed (refresh cookie), but only for the listed origin: a foreign origin
+    // is never echoed (nor *), so the browser refuses to expose the response to it.
     $this->getJson('/api/promo', ['Origin' => 'https://evil.example'])
-        ->assertHeaderMissing('Access-Control-Allow-Credentials')
-        ->assertHeader('Access-Control-Allow-Origin', 'https://app.autopass.ge'); // never echoes the foreign origin or *
+        ->assertHeader('Access-Control-Allow-Origin', 'https://app.autopass.ge');
     $this->getJson('/api/promo', ['Origin' => 'https://app.autopass.ge'])
         ->assertHeader('Access-Control-Allow-Origin', 'https://app.autopass.ge');
 });
@@ -196,16 +199,17 @@ it('lets only the owning partner check and use a voucher', function () {
     row('user_vouchers', ['user_id' => $client->id, 'voucher_id' => $vNone, 'code' => 'CODE0002']);
 
     freshAuth();
-    $this->withToken($t2)->postJson('/api/partner/voucher/check', ['code' => 'CODE0001'])->assertForbidden();
+    // Foreign code answers like an unknown one (audit L2).
+    $this->withToken($t2)->postJson('/api/partner/voucher/check', ['code' => 'CODE0001'])->assertOk()->assertJsonPath('success', false);
     freshAuth();
-    $this->withToken($t1)->postJson('/api/partner/voucher/check', ['code' => 'CODE0002'])->assertForbidden();
+    $this->withToken($t1)->postJson('/api/partner/voucher/check', ['code' => 'CODE0002'])->assertOk()->assertJsonPath('success', false);
     freshAuth();
     $this->withToken($t1)->postJson('/api/partner/voucher/check', ['code' => 'CODE0001'])->assertOk()->assertJson(['success' => true]);
 
     $sms = SmsTemp::where('user_voucher_id', $uv)->first();
     $code = app(MockSmsGateway::class)->latestCode();
     freshAuth();
-    $this->withToken($t2)->postJson('/api/partner/voucher/use', ['temp_code' => $sms->public_id, 'code' => $code])->assertForbidden();
+    $this->withToken($t2)->postJson('/api/partner/voucher/use', ['temp_code' => $sms->public_id, 'code' => $code])->assertStatus(422); // same as a wrong code (audit L2)
     expect(DB::table('user_vouchers')->find($uv)->used_at)->toBeNull();
     freshAuth();
     $this->withToken($t1)->postJson('/api/partner/voucher/use', ['temp_code' => $sms->public_id, 'code' => $code])->assertOk()->assertJson(['success' => true]);

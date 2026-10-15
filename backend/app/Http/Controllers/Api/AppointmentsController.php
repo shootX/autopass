@@ -13,6 +13,7 @@ use App\Services\BookingService;
 use App\Support\Phone;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
@@ -249,8 +250,16 @@ class AppointmentsController extends Controller
                 return response()->json(['success' => false, 'error' => 'Not found'], 404);
             }
 
+            // One-time, manager-bound token for POST /package/{id}/approve (10 minutes).
+            $approveToken = bin2hex(random_bytes(20));
+            Cache::put('package-approve:'.hash('sha256', $approveToken), [
+                'manager_id' => (int) $user->id,
+                'package_id' => (int) $userPackage->id,
+            ], now()->addMinutes(10));
+
             return response()->json([
                 'success' => true,
+                'approve_token' => $approveToken,
                 'package' => [
                     'id' => $userPackage->id,
                     'start_date' => $userPackage->start_date,

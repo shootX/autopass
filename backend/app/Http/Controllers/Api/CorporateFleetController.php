@@ -91,9 +91,13 @@ class CorporateFleetController extends Controller
             return response()->json(['ok' => false, 'message' => 'Unauthorized'], 401);
         }
 
-        $client = CorporateClient::query()->where('api_token', $key)->first();
+        $client = CorporateClient::findByToken((string) $key);
         if (! $client) {
             return response()->json(['ok' => false, 'message' => 'Unauthorized'], 401);
+        }
+
+        if (! $client->api_token_used_at || $client->api_token_used_at->lt(now()->subMinutes(5))) {
+            $client->forceFill(['api_token_used_at' => now()])->saveQuietly();
         }
 
         if ($client->ban) {

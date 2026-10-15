@@ -265,3 +265,28 @@ voucher-checker-ში `useVoucher`/`usePath` სახელები შეი
 - Verification: gewash 103/103 (11 new regressions), build:check/lint/i18n checks passed; 374 referenced locale keys, 0 missing in six dictionaries. Stage 3 backend 131/131, voucher 9/9 and PostgreSQL 22/22 remain prior CI evidence; backend business code and voucher application code were not changed in this follow-up.
 - Browser observed the current landing, customer login, recovery, registration, public privacy text and admin login. No credentials were submitted; private panels and full new-version workflows were not tested. Landing help redirects anonymous visitors to login; privacy is English-only. These are recorded polish tasks for the closed test.
 - No merge, target server change or deployment. Target database copy, server credentials/configuration, actual CarAPI key and mail delivery are unavailable here. See docs/TEST_LAUNCH_READINESS.md for the exact controlled launch gates. Follow-up patch must be uploaded before deploying.
+
+## 2026-10-15 — Audit fixes: rules to keep
+- Never ship known passwords: RetireDefaultPasswords::KNOWN lists the published ones; staff with `password_reset_required` can only get back in via the SMS reset.
+- Package wash approval without a booking needs the QR (`qr_code`) or a checkqr `approve_token` (cache `package-approve:{sha256}`), never a bare id.
+- Corporate API keys: only `api_token_hash` is stored; assigning `api_token` on the model hashes it, the plain key exists only in memory and in a one-time flash (`corporate_api_token`).
+- OTP/email codes: `SmsChallengeService::codeHash()` (HMAC with APP_KEY + challenge id). Rotating APP_KEY invalidates open codes only.
+- Every admin POST/PUT/DELETE is audited by middleware; add explicit `AdminAudit::record` only when field-level old/new values matter.
+
+## 2026-10-15 — QA fixes on PR #28
+- Spendable points for partner goods = `points - test_points` (`User::realPoints()`); `test_points` is clamped to `points` on save.
+- One-time grants (approve_token, refresh) are consumed under `Cache::lock`; a busy lock answers 409, never a second consume.
+- Refreshed JWTs carry `sess` (first login time); `security.session_max_minutes` bounds the whole chain.
+- `AdminAudit::record(..., adminId:)` — pass it explicitly from API (JWT) routes; the default guard is web.
+
+## 2026-10-15 — QA round 2 on PR #28
+- Package approve = checkqr token only. Tests use `approveTokenFor($manager, $pkgId)` (tests/Pest.php).
+- Auth SMS goes through `SendSms` (encrypted queued job). Tests that read codes from MockSmsGateway use `Queue::fakeExcept([SendSms::class])`; plain `Queue::fake()` swallows the SMS.
+- Refresh tokens: table `refresh_tokens` (sha256 only), family = JWT claim `sid`, session start = `sess`. JSON test requests need `->withCredentials()` to send cookies.
+- Laravel's CORS with one allowed origin always returns that origin (not the caller's); assert "not echoed", not "missing".
+- Query builder has no `whereKey` (it becomes `where key = …`); use `where('id', …)` on `DB::table`.
+
+## 2026-10-15 — QA round 3 on PR #28
+- Refresh reuse inside the grace window is a tab race, not theft: a fresh token in the same family; the first use alone sets `used_at`.
+- Logout that must work without a valid JWT lives under the cookie Path: `/api/refresh/logout`.
+- `User::forceCreate` in /register can lose a race: catch `UniqueConstraintViolationException` and continue with the existing row.

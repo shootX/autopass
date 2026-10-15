@@ -3,6 +3,7 @@
 namespace App\Services\Sms;
 
 use App\Models\SmsDispatch;
+use App\Support\Phone;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Crypt;
 
@@ -11,6 +12,22 @@ class SmsInbox
     public static function enabled(): bool
     {
         return config('sms.driver') === 'mock' && config('sms.mock_inbox_enabled') === true;
+    }
+
+    public static function keeps(string $destination): bool
+    {
+        if (! self::enabled()) {
+            return false;
+        }
+        $to = substr(Phone::digits($destination), -9);
+        foreach ((array) config('sms.mock_inbox_phones', []) as $allowed) {
+            $allowed = substr(Phone::digits((string) $allowed), -9);
+            if ($to !== '' && $allowed !== '' && hash_equals($allowed, $to)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public static function messages(): Collection

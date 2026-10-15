@@ -2,11 +2,13 @@
 
 namespace App\Services\Security;
 
+use App\Jobs\SendSms;
 use App\Models\SmsTemp;
 use App\Models\User;
 use App\Services\Sms\IssuedSms;
 use App\Services\Sms\SmsDispatcher;
 use App\Services\Sms\SmsMessage;
+use App\Services\Sms\SmsResult;
 use App\Services\Sms\SmsStatus;
 use App\Support\Phone;
 use Illuminate\Support\Facades\Cache;
@@ -19,7 +21,16 @@ class SmsChallengeService
         private ActionGrantService $grants
     ) {}
 
-    public function issue(User $user, string $type, array $context = [], ?int $userVoucherId = null, bool $limitResend = true, ?string $destination = null): IssuedSms
+    /**
+     * Same as issue(), but the SMS goes out through the queue (SendSms). The answer is
+     * accepted/simulated right away; a gateway failure later just drops the challenge.
+     */
+    public function issueQueued(User $user, string $type, array $context = [], ?string $destination = null): IssuedSms
+    {
+        return $this->issue($user, $type, $context, null, true, $destination, true);
+    }
+
+    public function issue(User $user, string $type, array $context = [], ?int $userVoucherId = null, bool $limitResend = true, ?string $destination = null, bool $queued = false): IssuedSms
     {
         // One issue per user+purpose at a time: a double tap or two parallel requests can't send two SMS.
         $lock = Cache::lock('sms-issue:'.$user->id.':'.$type, 15);
@@ -28,13 +39,19 @@ class SmsChallengeService
         }
 
         try {
-            return $this->issueLocked($user, $type, $context, $userVoucherId, $limitResend, $destination);
+            return $this->issueLocked($user, $type, $context, $userVoucherId, $limitResend, $destination, $queued);
         } finally {
             $lock->release();
         }
     }
 
-    private function issueLocked(User $user, string $type, array $context, ?int $userVoucherId, bool $limitResend, ?string $destination): IssuedSms
+    /** What a queued send reports to the client (also used by the decoy answers). */
+    public static function queuedStatus(): SmsStatus
+    {
+        return config('sms.driver') === 'mock' ? SmsStatus::Simulated : SmsStatus::Accepted;
+    }
+
+    private function issueLocked(User $user, string $type, array $context, ?int $userVoucherId, bool $limitResend, ?string $destination, bool $queued = false): IssuedSms
     {
         $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
         $publicId = bin2hex(random_bytes(16));
@@ -65,7 +82,7 @@ class SmsChallengeService
             SmsTemp::query()->create([
                 'type' => $type,
                 'user_id' => $user->id,
-                'code' => hash('sha256', $code),
+                'code' => self::codeHash($code, $publicId),
                 'public_id' => $publicId,
                 'attempts' => 0,
                 'expires_at' => now()->addMinutes((int) config('security.sms_ttl_minutes')),
@@ -75,13 +92,21 @@ class SmsChallengeService
         });
 
         $destination = Phone::forSms($destination ?: $user->phone);
-        $result = $this->dispatcher->send(new SmsMessage(
+        $message = new SmsMessage(
             $destination,
             $this->message($type, $code),
             $type,
             substr($publicId, 0, 20),
             now()->addMinutes((int) config('security.sms_ttl_minutes')),
-        ));
+        );
+
+        if ($queued) {
+            SendSms::dispatch($message, $publicId);
+
+            return new IssuedSms($publicId, new SmsResult(self::queuedStatus(), $message->reference, null, 'queued'));
+        }
+
+        $result = $this->dispatcher->send($message);
 
         if ($result->status === SmsStatus::Failed) {
             // Never delivered: drop the challenge so it neither works nor blocks a retry (resend window).
@@ -109,7 +134,7 @@ class SmsChallengeService
             throw new AuthChallengeException('invalid', 422);
         }
 
-        if (! hash_equals((string) $row->code, hash('sha256', $code))) {
+        if (! hash_equals((string) $row->code, self::codeHash($code, (string) $row->public_id))) {
             $row->increment('attempts');
             if ((int) $row->fresh()->attempts >= $max) {
                 SmsTemp::query()->whereKey($row->id)->whereNull('consumed_at')->update(['consumed_at' => now()]);
@@ -160,5 +185,11 @@ class SmsChallengeService
             'use_voucher' => 'Voucher use code: '.$code,
             default => 'Code: '.$code,
         };
+    }
+
+    /** Keyed per challenge, so a leaked sms_temps row can't be brute-forced offline (10^6 codes). */
+    public static function codeHash(string $code, string $publicId): string
+    {
+        return hash_hmac('sha256', $code, (string) config('app.key').'|'.$publicId);
     }
 }

@@ -59,7 +59,8 @@ it('issues no auth token on verify and denies the API until a password is set', 
     expect($user->phone_verified_at)->toBeNull();
     // A token minted for an unconfirmed user (e.g. leaked) is still refused.
     $this->withToken(JWTAuth::fromUser($user))->getJson('/api/me')->assertForbidden();
-    $this->postJson('/api/login', ['phone' => '555700001', 'password' => 'whatever1'])->assertForbidden();
+    // Wrong password: 401 without revealing the unconfirmed state (audit M3).
+    $this->postJson('/api/login', ['phone' => '555700001', 'password' => 'whatever1'])->assertUnauthorized();
 
     $set = $this->postJson('/api/register/set_password', ['setup_token' => $verify->json('setup_token'), 'password' => 'secret12'])->assertOk();
     expect($set->json('access_token'))->toBeString();
@@ -147,8 +148,11 @@ it('lets a person register again after the SMS failed', function () {
     };
     app()->instance(SmsGateway::class, $failing);
     app()->forgetInstance(SmsDispatcher::class);
-    $this->postJson('/api/register', ['phone' => '555700020'])->assertStatus(422)->assertJsonPath('delivery', 'failed');
-    expect(User::query()->where('phone', '555 70 00 20')->exists())->toBeFalse();
+    // Sent through the queue (QA D10): the answer can't wait for the gateway, so it is
+    // "accepted"; the failed job drops the challenge, which keeps the retry open.
+    $this->postJson('/api/register', ['phone' => '555700020'])->assertOk();
+    $stub = User::query()->where('phone', '555 70 00 20')->first();
+    expect(DB::table('sms_temps')->where('user_id', $stub->id)->count())->toBe(0);
 
     app()->instance(SmsGateway::class, mockSms());
     $this->postJson('/api/register', ['phone' => '555700020'])->assertOk()->assertJsonPath('delivery', 'simulated');
@@ -199,6 +203,7 @@ it('treats only Success=true and numeric ErrorCode 0 as accepted', function (mix
 
 it('prunes expired inbox texts on the scheduler, not when the inbox opens', function () {
     Config::set('sms.mock_inbox_enabled', true);
+    Config::set('sms.mock_inbox_phones', ['555700050']);
     $this->postJson('/api/register', ['phone' => '555700050'])->assertOk();
     $admin = makeUser('555700051', User::ROLE_ADMIN);
     $this->travel(11)->minutes();
@@ -224,7 +229,7 @@ it('serves the manager API without the manager owning a car', function () {
 
     $token = JWTAuth::fromUser($mgr);
     $this->withToken($token)->getJson('/api/me')->assertOk();
-    $this->withToken($token)->postJson("/api/package/{$pkg}/approve")->assertOk();
+    $this->withToken($token)->postJson("/api/package/{$pkg}/approve", ['approve_token' => approveTokenFor($mgr, $pkg)])->assertOk();
     $this->withToken($token)->postJson("/api/package/{$pkg}/approve", ['car_wash_id' => $wash + 99])->assertForbidden();
     expect(DB::table('package_washes')->where('user_package_id', $pkg)->count())->toBe(1);
 });

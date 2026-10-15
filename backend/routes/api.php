@@ -54,12 +54,16 @@ Route::post('/ref/check-hash', [ReferralsController::class, 'checkHash'])->middl
 
 Route::post('/device/register', [AuthController::class, 'registerDevice']);
 
-Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:otp');
+Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:otp-send');
 Route::post('/register/verify', [AuthController::class, 'verify'])->middleware('throttle:otp');
 Route::post('/register/set_password', [AuthController::class, 'set_password'])->middleware('throttle:otp');
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:login');
+// Public: works with the httpOnly refresh cookie after the access token expired (legacy: valid bearer).
+Route::post('/refresh', [AuthController::class, 'refresh'])->middleware('throttle:refresh');
+// Public logout by the refresh cookie (under its Path), works with an expired access token.
+Route::post('/refresh/logout', [AuthController::class, 'logoutByCookie'])->middleware('throttle:refresh');
 
-Route::post('/change_password', [AuthController::class, 'changePassword'])->middleware('throttle:otp');
+Route::post('/change_password', [AuthController::class, 'changePassword'])->middleware('throttle:otp-send');
 Route::post('/change_password/verify', [AuthController::class, 'changePasswordVerify'])->middleware('throttle:otp');
 Route::post('/change_password/verify_submit', [AuthController::class, 'changePasswordVerifySubmit'])->middleware('throttle:otp');
 
@@ -69,7 +73,7 @@ Route::middleware(['auth:api', CorsMiddleware::class, EnsureApiSession::class])-
 
     Route::post('/account/delete', [AuthController::class, 'deleteAccount']);
 
-    Route::post('/change_phone', [AuthController::class, 'changePhone'])->middleware('throttle:otp');
+    Route::post('/change_phone', [AuthController::class, 'changePhone'])->middleware('throttle:otp-send');
     Route::post('/change_phone/verify', [AuthController::class, 'changePhoneVerify'])->middleware('throttle:otp');
 
     Route::post('/email/set', [UserController::class, 'emailSet'])->middleware('throttle:otp');
@@ -127,7 +131,7 @@ Route::middleware(['auth:api', CorsMiddleware::class, EnsureApiSession::class])-
 
     Route::get('/myappointments', [AppointmentsController::class, 'myAppointments']);
 
-    Route::get('/checkqr/{qr}', [AppointmentsController::class, 'checkQr']);
+    Route::get('/checkqr/{qr}', [AppointmentsController::class, 'checkQr'])->middleware('throttle:30,1');
 
     Route::prefix('/packages')->group(function () {
         Route::get('/', [PackagesController::class, 'packages']);
@@ -153,7 +157,7 @@ Route::middleware(['auth:api', CorsMiddleware::class, EnsureApiSession::class])-
         Route::post('/buy', [PointsController::class, 'buy']);
     });
 
-    Route::post('/package/{id}/approve', [PackagesController::class, 'managerApprove']);
+    Route::post('/package/{id}/approve', [PackagesController::class, 'managerApprove'])->middleware('throttle:30,1');
 
     Route::get('/manager/my-washes', [StatisticsController::class, 'my_washes']);
     Route::get('/manager/report', [StatisticsController::class, 'report']);
