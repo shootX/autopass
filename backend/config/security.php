@@ -20,6 +20,11 @@ return [
     // Test (sandbox) payments in APP_ENV=production. Default off. Even when on, only admins and TEST_PAYMENT_PHONES.
     // Upper bound for one sandbox top-up (points).
     'test_payment_max_amount' => (int) env('TEST_PAYMENT_MAX_AMOUNT', 100),
+    // Upper bound per user per day across all sandbox top-ups (points).
+    'test_payment_daily_max' => (int) env('TEST_PAYMENT_DAILY_MAX', 300),
+
+    // Absolute lifetime of a login across /api/refresh rotations (minutes).
+    'session_max_minutes' => (int) env('SECURITY_SESSION_MAX_MINUTES', 43200),
 
     // OTP SMS: per phone (any IP) per hour, and for the whole app per day.
     'otp_per_phone_hourly' => (int) env('SECURITY_OTP_PER_PHONE_HOURLY', 5),

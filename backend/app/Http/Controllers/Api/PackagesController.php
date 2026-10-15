@@ -168,6 +168,16 @@ class PackagesController extends Controller
             return response()->json(['success' => false, 'error' => 'Forbidden'], 403);
         }
 
+        $input = Validator::make($request->all(), [
+            'qr_code' => ['nullable', 'string', 'max:128'],
+            'approve_token' => ['nullable', 'string', 'max:128'],
+            'car_wash_id' => ['nullable', 'integer'],
+            'branch_id' => ['nullable', 'integer'],
+        ]);
+        if ($input->fails()) {
+            return response()->json(['success' => false, 'error' => $input->errors()], 422);
+        }
+
         $washId = $user->washing?->id;
         if (! $washId) {
             return response()->json(['success' => false, 'error' => 'Manager has no branch'], 403);
@@ -194,10 +204,19 @@ class PackagesController extends Controller
             return response()->json(['success' => false, 'error' => 'Appointment belongs to another branch'], 403);
         }
 
-        // A bare package id is not enough: the car must be booked here today, or the manager
-        // must present the scanned QR code (or the one-time token checkqr issued to them).
-        if (! $hereAppointment && ! $this->presentedPackage($request, $userPackage, (int) $user->id)) {
-            return response()->json(['success' => false, 'error' => 'Scan the package QR code'], 403);
+        // A bare package id is enough only for the first wash of a booking here today. Otherwise
+        // the manager must present the scanned QR code (or the one-time token checkqr issued to them).
+        $bookingUnused = $hereAppointment
+            && ! PackageWash::query()->where('appointment_id', $hereAppointment->id)->exists();
+        $presented = null;
+        if (! $bookingUnused) {
+            $presented = $this->presentedPackage($request, $userPackage, (int) $user->id);
+            if ($presented === 'busy') {
+                return response()->json(['success' => false, 'error' => 'Approval already in progress'], 409);
+            }
+            if ($presented !== 'ok') {
+                return response()->json(['success' => false, 'error' => 'Scan the package QR code'], 403);
+            }
         }
 
         if ($userPackage->start_date && now()->lessThan(Carbon::parse($userPackage->start_date)->startOfDay())) {
@@ -210,23 +229,30 @@ class PackagesController extends Controller
             return response()->json(['success' => false, 'error' => 'No washes left'], 422);
         }
 
-        $approved = DB::transaction(function () use ($userPackage, $washId, $user, $hereAppointment) {
+        $approved = DB::transaction(function () use ($userPackage, $washId, $user, $hereAppointment, $presented) {
             $locked = UserPackage::query()->whereKey($userPackage->id)->lockForUpdate()->first();
             if (! $locked || (int) $locked->used_washes >= (int) $locked->number_of_washes) {
                 return false;
+            }
+            // Re-checked under the package lock: two parallel bare-id calls can't both use the booking.
+            if ($presented === null && PackageWash::query()->where('appointment_id', $hereAppointment->id)->exists()) {
+                return 'qr';
             }
             $locked->increment('used_washes');
             PackageWash::create([
                 'user_package_id' => $userPackage->id,
                 'car_wash_id' => $washId,
                 'manager_id' => $user->id,
-                'appointment_id' => $hereAppointment?->id,
+                'appointment_id' => $presented === null ? $hereAppointment?->id : null,
                 'walk_in' => $hereAppointment === null,
             ]);
 
             return true;
         });
 
+        if ($approved === 'qr') {
+            return response()->json(['success' => false, 'error' => 'Scan the package QR code'], 403);
+        }
         if (! $approved) {
             return response()->json(['success' => false, 'error' => 'No washes left'], 422);
         }
@@ -244,21 +270,35 @@ class PackagesController extends Controller
         return response()->json(['success' => true, 'package' => $userPackage->fresh()]);
     }
 
-    private function presentedPackage(Request $request, UserPackage $userPackage, int $managerId): bool
+    /** @return 'ok'|'busy'|'no' */
+    private function presentedPackage(Request $request, UserPackage $userPackage, int $managerId): string
     {
         $qr = (string) $request->input('qr_code', '');
         if ($qr !== '' && is_string($userPackage->qr_code) && hash_equals($userPackage->qr_code, $qr)) {
-            return true;
+            return 'ok';
         }
 
         $token = (string) $request->input('approve_token', '');
         if ($token === '') {
-            return false;
+            return 'no';
         }
-        $grant = Cache::pull('package-approve:'.hash('sha256', $token));
+        $key = 'package-approve:'.hash('sha256', $token);
+
+        // Single use under concurrency: only the request holding the lock may read and delete the
+        // grant; a parallel request gets 'busy' and the grant is gone once the holder is done.
+        $lock = Cache::lock($key.':lock', 10);
+        if (! $lock->get()) {
+            return 'busy';
+        }
+        try {
+            $grant = Cache::get($key);
+            Cache::forget($key);
+        } finally {
+            $lock->release();
+        }
 
         return is_array($grant)
             && (int) ($grant['manager_id'] ?? 0) === $managerId
-            && (int) ($grant['package_id'] ?? 0) === (int) $userPackage->id;
+            && (int) ($grant['package_id'] ?? 0) === (int) $userPackage->id ? 'ok' : 'no';
     }
 }

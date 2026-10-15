@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 /**
- * Staff and partner accounts still on a password that was published in the public git history
+ * User (client, manager, admin) and partner accounts still on a password that was published in the public git history
  * are locked: the password is replaced with random bytes, every token/session is revoked and
  * login stays blocked until the owner sets a new password through the SMS reset flow
  * (partners: until an admin issues a temporary password).
@@ -24,7 +24,7 @@ class RetireDefaultPasswords
         $locked = ['users' => 0, 'partners' => 0];
 
         DB::table('users')
-            ->whereIn('role', [User::ROLE_MANAGER, User::ROLE_ADMIN])
+            ->whereIn('role', [User::ROLE_USER, User::ROLE_MANAGER, User::ROLE_ADMIN])
             ->whereNotNull('password')
             ->orderBy('id')
             ->select(['id', 'password', 'token_version'])

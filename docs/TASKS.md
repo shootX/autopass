@@ -268,3 +268,14 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 - [x] იგივე კლასი: device token აღარ ეწერება iframe-ში; checkout URL გადის `safeCheckoutUrl`-ში; `redirect`/`next` არ მოჰყვება; Viber აღარ იყენებს `geocar.ge/redirect.html`. ტესტი: `navigationTarget.test.ts`, `App.routes.test.tsx`.
 - [ ] რეგისტრაციის captcha: #28-ის `register` იღებს მხოლოდ `phone`-ს და არასავალდებულო რეფერალ `code`-ს. captcha-ს ველი, site key და შემოწმების endpoint არ არის. სერვერის იგნორირებული ვიჯეტი არ დაემატა.
 - შერწყმა main-ში, დეპლოი და ცოცხალი სერვერი არ შეხებია.
+
+## 2026-10-15 — QA fixes on PR #28 (D1–D9, `tests/Feature/AuditQaFixesTest.php`)
+- [x] D1 client accounts on client123/known defaults locked too (migration 000003 reruns RetireDefaultPasswords incl. role USER).
+- [x] D2 approve_token consume under `Cache::lock` (parallel → 409, single deduction).
+- [x] D3 array `qr_code`/`approve_token`/`amount` → 422 instead of 500.
+- [x] D4 a booking allows only one bare-id approve; later washes need QR/token.
+- [x] D5 daily per-user test-payment cap (`TEST_PAYMENT_DAILY_MAX`); sandbox points tracked in `users.test_points` and not spendable on vouchers/tickets.
+- [x] D6 refresh: per-jti lock (409 on parallel), blacklist recheck, absolute session lifetime via `sess` claim (`SECURITY_SESSION_MAX_MINUTES`).
+- [x] D7 decoy path does a bcrypt so timing matches (SMS gateway latency not equalized).
+- [x] D8 change_phone to a taken number answers like a free one, no SMS; verify still enforces unique.
+- [x] D9 failed-validation redirects not audited; admin testpay audited with explicit admin id.

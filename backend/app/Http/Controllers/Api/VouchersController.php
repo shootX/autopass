@@ -82,7 +82,7 @@ class VouchersController extends Controller
             // Balance check, deduction, voucher and ledger row are one unit: any failure rolls all of it back.
             $points = DB::transaction(function () use ($userId, $voucher, $price) {
                 $user = User::query()->whereKey($userId)->lockForUpdate()->firstOrFail();
-                if ((int) $user->points < $price) {
+                if ($user->realPoints() < $price) {
                     return null;
                 }
 

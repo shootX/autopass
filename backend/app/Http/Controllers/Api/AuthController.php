@@ -14,6 +14,7 @@ use App\Services\Sms\SmsUserMessage;
 use App\Support\Phone;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
@@ -186,9 +187,34 @@ class AuthController extends Controller
     {
         $user = auth('api')->user();
         $old = JWTAuth::getToken();
-        $token = JWTAuth::fromUser($user);
-        if ($old) {
+        if (! $user || ! $old) {
+            return response()->json(['success' => false, 'error' => 'Unauthorized'], 401);
+        }
+        $payload = JWTAuth::setToken($old)->getPayload();
+
+        // The login's first issue time travels with every rotated token, so refreshing
+        // can't keep one stolen session alive forever.
+        $sess = (int) ($payload->get('sess') ?: $payload->get('iat'));
+        if (now()->timestamp - $sess > (int) config('security.session_max_minutes', 43200) * 60) {
             JWTAuth::setToken($old)->invalidate();
+
+            return response()->json(['success' => false, 'error' => 'Session expired'], 401);
+        }
+
+        // One rotation per token: a parallel refresh of the same token is turned away, and
+        // one that comes after finds the old token blacklisted.
+        $lock = Cache::lock('jwt-refresh:'.$payload->get('jti'), 10);
+        if (! $lock->get()) {
+            return response()->json(['success' => false, 'error' => 'Refresh already in progress'], 409);
+        }
+        try {
+            if (JWTAuth::manager()->getBlacklist()->has($payload)) {
+                return response()->json(['success' => false, 'error' => 'Unauthorized'], 401);
+            }
+            $token = JWTAuth::claims(['sess' => $sess])->fromUser($user);
+            JWTAuth::setToken($old)->invalidate();
+        } finally {
+            $lock->release();
         }
 
         return response()->json([
@@ -214,11 +240,17 @@ class AuthController extends Controller
     {
         Phone::prepare($request);
         $validator = Validator::make($request->all(), [
-            'phone' => ['required', 'regex:'.Phone::RULE, 'unique:users,phone,'.auth()->id()],
+            'phone' => ['required', 'regex:'.Phone::RULE],
         ]);
 
         if ($validator->fails()) {
             return response()->json(['success' => false, 'error' => $validator->errors()], 422);
+        }
+
+        // A number held by someone else gets the same answer and no SMS, so this can't be used to
+        // tell which numbers are registered. The verify step still rejects it.
+        if (User::query()->where('phone', $request->phone)->whereKeyNot(auth()->id())->exists()) {
+            return $this->decoySmsJson();
         }
 
         try {
@@ -396,6 +428,8 @@ class AuthController extends Controller
 
     private function decoySmsJson(): JsonResponse
     {
+        // Same hashing work as the real path (bcrypt of the new password), so timing doesn't tell.
+        Hash::make(Str::random(16));
         $simulated = config('sms.driver') === 'mock';
 
         return response()->json([

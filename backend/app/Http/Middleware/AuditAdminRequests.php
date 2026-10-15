@@ -26,6 +26,10 @@ class AuditAdminRequests
         if (! auth()->check() || (! $writes && ! in_array($name, self::VIEW_AUDITED, true)) || $response->getStatusCode() >= 400) {
             return $response;
         }
+        // A redirect back carrying validation errors changed nothing.
+        if ($response->isRedirection() && $request->hasSession() && $request->session()->has('errors')) {
+            return $response;
+        }
 
         [$type, $id] = ['route', 0];
         foreach ((array) $route?->parameters() as $key => $value) {

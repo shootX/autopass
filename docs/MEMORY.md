@@ -286,3 +286,9 @@ JWT httpOnly cookie არ არის: `access_token` რჩება მე�
 რეგისტრაციას captcha არ აქვს: #28 იღებს ტელეფონს და არასავალდებულო რეფერალ კოდს. ვიჯეტი არ დაემატა.
 
 `npm audit --omit=dev` სუფთაა gewash-სა და voucher-checker-ში (`maplibre-gl` 6.14.0, `react-router-dom` 7.18.4, vite 7.3.7 / 8.3.4). `npm ci` გადის npm 10.9.9-ზეც და 11.17.0-ზეც. main-ში შერწყმა და დეპლოი არ ყოფილა.
+
+## 2026-10-15 — QA fixes on PR #28
+- Spendable points for partner goods = `points - test_points` (`User::realPoints()`); `test_points` is clamped to `points` on save.
+- One-time grants (approve_token, refresh) are consumed under `Cache::lock`; a busy lock answers 409, never a second consume.
+- Refreshed JWTs carry `sess` (first login time); `security.session_max_minutes` bounds the whole chain.
+- `AdminAudit::record(..., adminId:)` — pass it explicitly from API (JWT) routes; the default guard is web.
