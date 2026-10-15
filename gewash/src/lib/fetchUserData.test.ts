@@ -4,6 +4,7 @@ import userReducer from "@/store/userSlice";
 import { customFetch } from "@/utils/customFetch";
 import { refreshCurrentUser } from "@/hooks/useUser";
 import { fetchUserData } from "./fetchUserData";
+import { readAccessToken, saveAccessToken } from "@/lib/accessToken";
 
 vi.mock("@/utils/customFetch", () => ({
   customFetch: vi.fn(),
@@ -30,7 +31,7 @@ beforeEach(() => {
 
 describe("GET /me session", () => {
   it("keeps the session pending until /me resolves, then records the manager role", async () => {
-    localStorage.setItem("access_token", "ok");
+    saveAccessToken("ok");
     let finish: (response: Response) => void = () => {};
     vi.mocked(customFetch).mockReturnValue(new Promise((resolve) => {
       finish = resolve;
@@ -48,18 +49,18 @@ describe("GET /me session", () => {
   });
 
   it("turns a 401 into a logged-out session", async () => {
-    localStorage.setItem("access_token", "expired");
+    saveAccessToken("expired");
     vi.mocked(customFetch).mockResolvedValue(new Response(null, { status: 401 }));
 
     const store = makeStore();
     await expect(refreshCurrentUser(store.dispatch, "establish")).rejects.toThrow(/401/);
-    expect(localStorage.getItem("access_token")).toBeNull();
+    expect(readAccessToken()).toBeNull();
     expect(store.getState().user.session).toBe("unauthorized");
     expect(store.getState().user.role).toBeNull();
   });
 
   it("maps a regular user from /me", async () => {
-    localStorage.setItem("access_token", "ok");
+    saveAccessToken("ok");
     vi.mocked(customFetch).mockResolvedValue(meResponse(0));
     const store = makeStore();
     await expect(fetchUserData(store.dispatch)).resolves.toBe("customer");

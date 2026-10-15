@@ -1,5 +1,6 @@
 import { customFetch } from "@/utils/customFetch";
 import { useEffect, useState } from "react";
+import { readAccessToken } from "@/lib/accessToken";
 
 export function useFetchContacts() {
   const [contacts, setContacts] = useState<{
@@ -15,7 +16,7 @@ export function useFetchContacts() {
 
   useEffect(() => {
     const fetchContacts = async () => {
-        const token = localStorage.getItem("access_token");
+        const token = readAccessToken();
       
         try {
           const res = await customFetch(`${import.meta.env.VITE_NO_API_URL}/api/contacts`, {

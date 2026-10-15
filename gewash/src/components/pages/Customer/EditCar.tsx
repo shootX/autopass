@@ -8,6 +8,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import Header from '@/components/Header';
 import { apiErrorMessage, type ApiBody } from '@/lib/apiResult';
 import { readCar, formatPlate } from '@/lib/carResult';
+import { readAccessToken } from "@/lib/accessToken";
 
 export default function EditCar() {
   const navigate = useNavigate();
@@ -30,7 +31,7 @@ export default function EditCar() {
 
   useEffect(() => {
     if ((!carToEdit || carToEdit.id !== Number(carId) || !carToEdit.model.id) && carId) {
-      const token = localStorage.getItem('access_token');
+      const token = readAccessToken();
       customFetch(`${import.meta.env.VITE_API_URL}/mycars/${carId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -75,7 +76,7 @@ export default function EditCar() {
 
     if (saving || !carToEdit) return;
     setSaving(true);
-    const token = localStorage.getItem('access_token');
+    const token = readAccessToken();
 
     try {
       const sendPlate = numberPlate.replace(/[^a-zA-Z0-9]/g, '');
@@ -117,7 +118,7 @@ export default function EditCar() {
 
   const handleDelete = async () => {
     setIsClosing(true);
-    const token = localStorage.getItem('access_token');
+    const token = readAccessToken();
 
     try {
       const response = await customFetch(`${import.meta.env.VITE_API_URL}/mycars/${carId}/remove`, {

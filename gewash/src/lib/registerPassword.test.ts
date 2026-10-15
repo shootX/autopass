@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildSetPasswordBody, readSmsChallenge, tempCodeFromRegister } from "./registerPassword";
+import { buildSetPasswordBody, readSmsChallenge, smsChallengeContinues, tempCodeFromRegister } from "./registerPassword";
 
 const ID = "0123456789abcdef0123456789abcdef";
 
@@ -27,6 +27,13 @@ describe("register response", () => {
 
   it("returns null on failed delivery", () => {
     expect(tempCodeFromRegister({ success: false, temp_code: ID, delivery: "failed" })).toBeNull();
+  });
+
+  it("treats accepted and simulated 200 responses as success", () => {
+    expect(smsChallengeContinues({ success: true, temp_code: ID, delivery: "accepted" })).toBe(true);
+    expect(smsChallengeContinues({ success: true, temp_code: ID, delivery: "simulated" })).toBe(true);
+    expect(smsChallengeContinues({ success: false, temp_code: ID, delivery: "failed" })).toBe(false);
+    expect(smsChallengeContinues({ success: true, temp_code: ID, delivery: "failed" })).toBe(false);
   });
 
   it("does not keep an OTP that arrived in the status text", () => {

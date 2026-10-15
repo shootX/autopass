@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { clearAccessToken, readAccessToken, saveAccessToken } from "@/lib/accessToken";
 import {
   bearerToken,
   expireSession,
@@ -8,6 +9,7 @@ import {
 } from "./session";
 
 afterEach(() => {
+  clearAccessToken();
   localStorage.clear();
   sessionStorage.clear();
   window.history.pushState({}, "", "/");
@@ -16,7 +18,7 @@ afterEach(() => {
 
 describe("expireSession", () => {
   it("clears the token and opens /auth", () => {
-    localStorage.setItem("access_token", "abc");
+    saveAccessToken("abc");
     localStorage.setItem("access_token_expires_at", "99");
     localStorage.setItem("autopass.me", "{\"id\":1}");
     sessionStorage.setItem("autopass.me", "{\"id\":1}");
@@ -26,7 +28,7 @@ describe("expireSession", () => {
 
     expireSession();
 
-    expect(localStorage.getItem("access_token")).toBeNull();
+    expect(readAccessToken()).toBeNull();
     expect(localStorage.getItem("access_token_expires_at")).toBeNull();
     expect(localStorage.getItem("autopass.me")).toBeNull();
     expect(sessionStorage.getItem("autopass.me")).toBeNull();
@@ -34,7 +36,7 @@ describe("expireSession", () => {
   });
 
   it("sends a manager to the manager login and drops the remembered role", () => {
-    localStorage.setItem("access_token", "abc");
+    saveAccessToken("abc");
     rememberSessionRole("manager");
     window.history.pushState({}, "", "/manager-qr-page");
     const redirect = vi.fn();
@@ -48,14 +50,14 @@ describe("expireSession", () => {
   });
 
   it("does not redirect when already on a login screen", () => {
-    localStorage.setItem("access_token", "abc");
+    saveAccessToken("abc");
     window.history.pushState({}, "", "/auth");
     const redirect = vi.fn();
     setSessionRedirect(redirect);
 
     expireSession();
 
-    expect(localStorage.getItem("access_token")).toBeNull();
+    expect(readAccessToken()).toBeNull();
     expect(redirect).not.toHaveBeenCalled();
 
     window.history.pushState({}, "", "/manager-auth");

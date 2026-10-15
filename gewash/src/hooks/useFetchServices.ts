@@ -1,5 +1,6 @@
 import { customFetch } from "@/utils/customFetch";
 import { useEffect, useState } from "react";
+import { readAccessToken } from "@/lib/accessToken";
 
 export type Service = {
   id: number;
@@ -13,7 +14,7 @@ export function useFetchServices() {
   
 
   useEffect(() => {
-    const token = localStorage.getItem("access_token");
+    const token = readAccessToken();
 
     customFetch(`${import.meta.env.VITE_API_URL}/services-list`, {
       headers: {

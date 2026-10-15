@@ -10,6 +10,8 @@ import Header from "@/components/Header";
 import balanceIcon from "@/assets/icons/balance_icon.svg";
 import referralsIcon from "@/assets/icons/referals_icon.svg";
 import rightArrow from "@/assets/icons/right-arrow.svg";
+import { readAccessToken } from "@/lib/accessToken";
+import { splitPoints } from "@/lib/pointBalance";
 
 type Transaction = {
   id: string;
@@ -69,6 +71,7 @@ export default function MyPoints() {
   const dispatch = useDispatch<AppDispatch>();
   const t = useTranslation();
   const user = useSelector((s: RootState) => s.user.data);
+  const balance = splitPoints(user?.points, user?.testPoints);
 
   /** Сумма для баннера после оплаты: не пересчитывать из session на каждом рендере (иначе таймер ломается). */
   const [noticeAmount, setNoticeAmount] = useState<number | null>(() => {
@@ -96,7 +99,7 @@ export default function MyPoints() {
   }, [noticeAmount]);
 
   useEffect(() => {
-    const token = localStorage.getItem("access_token");
+    const token = readAccessToken();
     if (!token) {
       setTxLoading(false);
       return;
@@ -210,9 +213,12 @@ export default function MyPoints() {
 
           <div className="my-points-card__bottom">
             <p className="my-points-card__value">
-              {user ? user.points : "—"}
+              {user ? balance.real : "—"}
               <span className="my-points-card__unit">{t("MyPoints.balance.unit")}</span>
             </p>
+            {user && balance.test > 0 && (
+              <p className="my-points-card__unit">{balance.test} {t("Points.test")}</p>
+            )}
             <img src={rightArrow} alt="" className="my-points-card__arrow" />
           </div>
         </div>

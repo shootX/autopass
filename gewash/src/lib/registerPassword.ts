@@ -34,6 +34,18 @@ export function tempCodeFromRegister(data: {
   return null;
 }
 
+/** `/register`, `/change_password` and `/change_phone` succeed on accepted or simulated. */
+export function smsChallengeContinues(data: {
+  success?: boolean;
+  temp_code?: unknown;
+  delivery?: unknown;
+}): boolean {
+  if (data.success !== true) return false;
+  const delivery = parseSmsDelivery(data.delivery);
+  if (delivery !== "accepted" && delivery !== "simulated") return false;
+  return tempCodeFromRegister(data) != null;
+}
+
 export function readSmsChallenge(data: {
   success?: boolean;
   temp_code?: unknown;

@@ -5,7 +5,7 @@ import { customFetch } from "@/utils/customFetch";
 import { useTranslation } from "@/hooks/useTranslation";
 import { logoUrl } from "@/assets/staticUrls";
 import { georgianLocalDigits } from "@/lib/format";
-import { readSmsChallenge } from "@/lib/registerPassword";
+import { readSmsChallenge, smsChallengeContinues } from "@/lib/registerPassword";
 import SmsStatusNotice from "@/components/SmsStatusNotice";
 import type { SmsDelivery } from "@/lib/smsDelivery";
 
@@ -53,7 +53,7 @@ export default function PasswordChangePage() {
       const data = await res.json();
       const challenge = readSmsChallenge(data);
 
-      if (challenge.tempCode) {
+      if (smsChallengeContinues(data) && challenge.tempCode) {
         setTempCode(challenge.tempCode);
         setSmsDelivery(challenge.delivery);
         setSmsDetail(challenge.detail);

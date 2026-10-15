@@ -9,6 +9,7 @@ import geocoinIcon from "@/assets/images/shop/geocoin_icon.png";
 import discountImg from "@/assets/images/discounts/discount_img.png";
 import copyIcon from "@/assets/icons/coppy_icon.svg";
 import { buyPointsAndRedirect } from "@/lib/buyPoints";
+import { splitPoints } from "@/lib/pointBalance";
 import {
   buyVoucher,
   extractVoucherCode,
@@ -89,12 +90,13 @@ export default function DiscountDetailPage() {
     return c || null;
   });
 
-  const userPoints = useSelector((s: RootState) => s.user.data?.points);
+  const account = useSelector((s: RootState) => s.user.data);
+  const pointSplit = splitPoints(account?.points, account?.testPoints);
   const [balance, setBalance] = useState(0);
 
   useEffect(() => {
-    if (typeof userPoints === "number") setBalance(userPoints);
-  }, [userPoints]);
+    if (account) setBalance(pointSplit.real);
+  }, [account, pointSplit.real]);
 
   const catalogReady = isCatalogComplete(passed);
 
@@ -413,6 +415,9 @@ export default function DiscountDetailPage() {
                     <div className="discount-detail__sheet-balance-value">
                       <span>{balance.toLocaleString()}</span>
                       <span className="discount-detail__sheet-balance-unit">{t("Discounts.detail.points")}</span>
+                      {pointSplit.test > 0 && (
+                        <span className="discount-detail__sheet-balance-unit">{pointSplit.test} {t("Points.test")}</span>
+                      )}
                     </div>
                   </div>
                   <div className="discount-detail__sheet-balance-row">

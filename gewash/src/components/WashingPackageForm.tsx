@@ -9,6 +9,7 @@ import { useFetchPackagePricing } from "@/hooks/useFetchPackagePricing";
 import { useTranslation } from "@/hooks/useTranslation";
 import { AUTO_RENEWAL_DEFAULT } from "@/lib/packageForm";
 import { bodyLabel, carParts, formatGel, savePendingPayment } from "@/lib/v4";
+import { safeCheckoutUrl } from "@/lib/navigationTarget";
 import { Info, Repeat2 } from "lucide-react";
 
 type Props = {
@@ -115,7 +116,8 @@ export function WashingPackageForm({
     try {
       const response = await activatePackage(payload);
   
-      if (response?.success && response.url) {
+      const checkout = response?.url ? safeCheckoutUrl(response.url, window.location.origin) : null;
+      if (response?.success && checkout) {
         savePendingPayment({
           kind: "package",
           car: carParts(selectedCar).title || selectedCar.plate,
@@ -125,7 +127,7 @@ export function WashingPackageForm({
           renewal: autoRenewal,
           at: new Date().toISOString(),
         });
-        window.location.href = response.url;
+        window.location.href = checkout;
         return;
       }
 

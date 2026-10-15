@@ -251,8 +251,31 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 - [x] M7: corporate API key stored as sha256 (+last4, last-used); shown once after issue; existing keys hashed in place by migration `2026_10_15_000002`.
 - [x] M8: mock SMS inbox stores texts only for `SMS_MOCK_INBOX_PHONES` (default TEST_PAYMENT_PHONES); views audited.
 - [x] L2 uniform partner voucher answers; L3 no SVG uploads; L4 `@json($voucher)`; L5 review toggle is POST+CSRF; L6 `TRUSTED_PROXIES`; L7 OTP/email codes HMAC-keyed per challenge; L8 account deletion erases personal data with a unique tombstone phone.
-- [ ] Frontend: manager approve must send `qr_code`/`approve_token`; call `/api/refresh` before expiry; M4 CSP list; npm audit (maplibre-gl, react-router-dom, vite).
+- [x] Frontend: manager approve, `/api/refresh`, CSP list, npm audit — done on `security/frontend-audit-fixes` (section below).
 - [ ] DevOps (Shota): deploy, security headers (M4), APP_ENV=production, TEST_PAYMENT_ALLOW_PRODUCTION off, TRUSTED_PROXIES, check live accounts after migrate (C1).
+
+## 2026-10-15 — Frontend audit fixes (`security/frontend-audit-fixes`)
+
+- [x] `security/audit-fixes` (`16845d1`, PR #28) შერწყმულია merge commit-ით. Rebase და force-push არ ყოფილა.
+- [x] H1: მენეჯერის approve აგზავნის `qr_code` და/ან `approve_token`-ს `GET /api/checkqr`-დან. მხოლოდ id აღარ იგზავნება. ტელეფონი ბარათზე აღარ არის სავალდებულო. ტესტი: `gewash/src/lib/packageApprove.test.ts`.
+- [x] M1: JWT რჩება მეხსიერებაში. #28 httpOnly cookie-ს არ დებს. ძველი `localStorage` ტოკენი იშლება. `POST /api/refresh` ეშვება `expires_in`-მდე (TTL 1 დღე). წარუმატებლობა გამოდის სესიიდან. ტესტი: `accessToken.test.ts`, `sessionRefresh.test.ts`. voucher-checker-ის პარტნიორის ტოკენიც მეხსიერებაშია (`voucherApi.test.ts`).
+- [x] M6: `maplibre-gl` 6.14.0, `react-router-dom` 7.18.4, gewash `vite` 7.3.7, `postcss` 8.5.30, voucher-checker `vite` 8.3.4. `npm audit --omit=dev` ორივეზე სუფთაა. `npm ci` გადის npm 11.17.0-ზეც და npm 10.9.9-ზეც (engines მხოლოდ გაფრთხილებაა).
+- [x] M4: `docs/CSP.md`. nginx არ შეცვლილა. `api.mapbox.com` preconnect მოხსნილია.
+- [x] `/help` სტუმარს შესვლაზე აღარ აგდებს. ტესტი: `App.routes.test.tsx`.
+- [x] კონფიდენციალურობა ka/en/ru, `[cite:` აღარ არის. ტესტი: `PrivacyPage.test.tsx`.
+- [x] `VITE_BYPASS_AUTH` და `VITE_MOCK_VOUCHER_CHECK` production ბილდში ვერ ირთვება. ტესტი: `productionFlags.test.ts` ორივე პაკეტში.
+- [x] `/payment/sandbox` არის NotFound, სანამ `VITE_TEST_PAYMENTS=true` არ არის. ბარათის ფორმა არ დაემატა. ტესტი: `App.routes.test.tsx`.
+- [x] იგივე კლასი: device token აღარ ეწერება iframe-ში; checkout URL გადის `safeCheckoutUrl`-ში; `redirect`/`next` არ მოჰყვება; Viber აღარ იყენებს `geocar.ge/redirect.html`. ტესტი: `navigationTarget.test.ts`, `App.routes.test.tsx`.
+- captcha ამოცანიდან ამოღებულია. ვიჯეტი არ დაემატა.
+- შერწყმა main-ში, დეპლოი და ცოცხალი სერვერი არ შეხებია.
+
+## 2026-10-15 — Frontend follow-up for #28 `104dfe8`
+
+- [x] `security/audit-fixes` (`104dfe8`) შერწყმულია merge commit-ით. Rebase და force-push არ ყოფილა.
+- [x] `POST /api/refresh`: 409 ერთხელ მეორდება და სესია რჩება; 401 გამოდის სესიიდან. ტესტი: `sessionRefresh.test.ts`.
+- [x] `approve_token` ერთჯერადია: გაგზავნის შემდეგ აღარ ინახება. 403/409/422 აბრუნებს სკანერზე. ტესტი: `packageApprove.test.ts`.
+- [x] `test_points` ცალკე ჩანს ხარჯვადი ქულისგან (`points - test_points`), სადაც `/me` აბრუნებს ველს. ტესტი: `pointBalance.test.ts`.
+- main-ში შერწყმა და ცოცხალი სერვერი არ შეხებია.
 
 ## 2026-10-15 — QA fixes on PR #28 (D1–D9, `tests/Feature/AuditQaFixesTest.php`)
 - [x] D1 client accounts on client123/known defaults locked too (migration 000003 reruns RetireDefaultPasswords incl. role USER).
@@ -273,11 +296,29 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 - [x] Refresh: rotating httpOnly `ap_refresh` cookie (Path=/api/refresh, Secure, SameSite=Strict), reuse → family revoked; public `/api/refresh`; bearer flow kept as deprecated compat; CORS credentials for listed origins.
 - [x] Contract: `docs/auth-contract.md`.
 - [ ] Ops: production needs a queue worker for the `database` queue (SMS now goes through it).
-- [ ] Frontend: switch gewash to the cookie flow (`credentials: 'include'`), handle 409.
+- [x] Frontend: switch gewash to the cookie flow (`credentials: 'include'`), handle 409. See the section below.
+
+## 2026-10-15 — Frontend for #28 `f45eca0`
+
+- [x] `security/audit-fixes` (`f45eca0`) შერწყმულია merge commit-ით. Rebase და force-push არ ყოფილა.
+- [x] `ap_refresh` (HttpOnly, path `/api/refresh`). `credentials: 'include'` არის `/api/login`, `/api/register/set_password`, `/api/refresh`, `/api/logout`-ზე. ტესტი: `customFetch.test.ts`, `Authentication.integration.test.tsx`, `sessionRefresh.test.ts`.
+- [x] გვერდის ჩატვირთვა იძახებს `POST /api/refresh`-ს Authorization-ის გარეშე. სანამ პასუხი არ მოვა, ჩანს splash და დაცული გვერდი შესვლაზე არ გადადის. 200 ინახავს `access_token`-ს მხოლოდ მეხსიერებაში. 401 ხსნის შესვლას. 409 ერთხელ მეორდება და სესიას არ წყვეტს. ქსელის შეცდომა სესიას არ წყვეტს. პარალელური refresh ერთია. Bearer refresh აღარ იგზავნება. ტესტი: `App.routes.test.tsx`, `sessionRefresh.test.ts`.
+- [x] Approve სხეული არის მხოლოდ `{approve_token}`. 403 აჩვენებს შეცდომას და აბრუნებს სკანერზე. 409 აბრუნებს სკანერზე. ტესტი: `packageApprove.test.ts`.
+- [x] `/register`, `/change_password`, `/change_phone` პასუხი `delivery: accepted|simulated` აღარ ითვლება შეცდომად. სატესტო შეტყობინება ჩანს მხოლოდ არა-production ბილდში. ტესტი: `registerPassword.test.ts`, `smsDelivery.test.ts`.
+- captcha ამოცანიდან ამოღებულია.
+- main-ში შერწყმა და ცოცხალი სერვერი არ შეხებია.
 
 ## 2026-10-15 — QA round 3 on PR #28
 - [x] D14 two-tab refresh: parallel calls wait on the cookie lock; a rotated cookie reused within 30 s (`REFRESH_REUSE_GRACE_SECONDS`) gets a fresh pair in the same family; later reuse still revokes the family.
 - [x] D15 public `POST /api/refresh/logout` (under the cookie Path) revokes the session by cookie with an expired access token and clears the cookie.
 - [x] D16 parallel /register of one new number: unique violation caught, normal answer (no 500).
 - [x] SendSms: tries=3, backoff [5, 20] s.
-- [ ] PR #29 (frontend): Sign out → `POST /api/refresh/logout` with `credentials: 'include'`.
+- [x] PR #29 (frontend): Sign out → `POST /api/refresh/logout` with `credentials: 'include'`.
+
+## 2026-10-15 — Frontend for #28 `806db9a`
+
+- [x] `security/audit-fixes` (`806db9a`) შერწყმულია merge commit-ით. Rebase და force-push არ ყოფილა.
+- [x] გამოსვლა იძახებს `POST /api/refresh/logout`-ს (`credentials: 'include'`, bearer თუ მეხსიერებაში ტოკენია). შემდეგ შლის მეხსიერების ტოკენს და ხსნის `/auth`-ს. ქსელის შეცდომაზეც სრულდება. ტესტი: `sessionRefresh.test.ts`.
+- refresh უცვლელია: 409 ერთხელ, ქსელის შეცდომა სესიას არ წყვეტს. ტაბების lock არ დაემატა.
+- login, set_password, approve და cookie refresh უცვლელია.
+- main-ში შერწყმა და ცოცხალი სერვერი არ შეხებია.

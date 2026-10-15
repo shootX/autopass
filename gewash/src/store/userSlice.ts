@@ -1,5 +1,6 @@
 // src/store/userSlice.ts
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import { readAccessToken } from "@/lib/accessToken";
 
 export type UserRole = "manager" | "customer";
 
@@ -22,6 +23,8 @@ export interface User {
   enablePushRenewalSubscription: boolean;
   enablePushSpecialPromotions: boolean;
   points: number;
+  /** Present only when GET /me includes `test_points`. */
+  testPoints?: number;
   referralsCount: number;
 };
 
@@ -33,7 +36,7 @@ interface UserState {
 
 function readInitialSession(): SessionPhase {
   try {
-    if (typeof localStorage !== "undefined" && localStorage.getItem("access_token")) {
+    if (typeof localStorage !== "undefined" && readAccessToken()) {
       return "pending";
     }
   } catch {

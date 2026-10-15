@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store";
+import { splitPoints } from "@/lib/pointBalance";
 import geocoinIcon from "@/assets/images/shop/geocoin_icon.png";
 import discountImg from "@/assets/images/discounts/discount_img.png";
 import ShopAsyncLoader from "@/components/ui/ShopAsyncLoader";
@@ -115,7 +116,8 @@ export default function DiscountsPage() {
   const t = useTranslation();
   const [activeTab, setActiveTab] = useState("All");
   const [search, setSearch] = useState("");
-  const points = useSelector((s: RootState) => s.user.data?.points);
+  const account = useSelector((s: RootState) => s.user.data);
+  const points = account ? splitPoints(account.points, account.testPoints) : null;
   const [cards, setCards] = useState<DiscountCard[]>([]);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
 
@@ -167,7 +169,7 @@ export default function DiscountsPage() {
           <div className="discounts-header__balance">
             <img src={geocoinIcon} alt="coin" className="discounts-header__coin" />
             <span className="discounts-header__amount">
-              {typeof points === "number" ? points.toLocaleString() : "—"}
+              {points ? (points.test > 0 ? `${points.real.toLocaleString()} · ${points.test.toLocaleString()} ${t("Points.test")}` : points.real.toLocaleString()) : "—"}
             </span>
           </div>
         }

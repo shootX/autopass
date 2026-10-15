@@ -13,6 +13,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { ArrowLeft, Pencil } from 'lucide-react';
 import Header from '@/components/Header';
 import { shouldShowPackageForm } from '@/lib/packageForm';
+import { readAccessToken } from "@/lib/accessToken";
 
 export default function MyPackages() {
   const navigate = useNavigate();
@@ -26,7 +27,7 @@ export default function MyPackages() {
   const [buying, setBuying] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem('access_token');
+    const token = readAccessToken();
     if (!token) return;
 
     customFetch(`${import.meta.env.VITE_API_URL}/mycars`, {

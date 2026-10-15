@@ -6,9 +6,10 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { leftArrowUrl } from "@/assets/staticUrls";
 import Header from "@/components/Header";
 import { georgianLocalDigits } from "@/lib/format";
-import { readSmsChallenge } from "@/lib/registerPassword";
+import { readSmsChallenge, smsChallengeContinues } from "@/lib/registerPassword";
 import SmsStatusNotice from "@/components/SmsStatusNotice";
 import type { SmsDelivery } from "@/lib/smsDelivery";
+import { readAccessToken } from "@/lib/accessToken";
 
 export default function PhoneNumberChanging() {
   const [phoneDigits, setPhoneDigits] = useState("");
@@ -44,7 +45,7 @@ export default function PhoneNumberChanging() {
     }
 
     try {
-      const token = localStorage.getItem("access_token");
+      const token = readAccessToken();
       const response = await customFetch(`${import.meta.env.VITE_API_URL}/change_phone`, {
         method: "POST",
         headers: {
@@ -57,7 +58,7 @@ export default function PhoneNumberChanging() {
       const data = await response.json();
       const challenge = readSmsChallenge(data);
 
-      if (!challenge.tempCode) {
+      if (!smsChallengeContinues(data) || !challenge.tempCode) {
         setSmsDelivery(challenge.delivery);
         setSmsDetail(challenge.detail);
         throw new Error(challenge.detail || "Failed to initiate phone change");
@@ -77,7 +78,7 @@ export default function PhoneNumberChanging() {
 
   const handleVerifyOTP = async (code: string) => {
     try {
-      const token = localStorage.getItem("access_token");
+      const token = readAccessToken();
       const res = await customFetch(`${import.meta.env.VITE_API_URL}/change_phone/verify`, {
         method: "POST",
         headers: {

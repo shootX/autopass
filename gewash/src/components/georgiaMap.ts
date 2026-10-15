@@ -1,4 +1,5 @@
-import maplibregl, { type StyleSpecification } from "maplibre-gl";
+import * as maplibregl from "maplibre-gl";
+import type { StyleSpecification } from "maplibre-gl";
 import { FileSource, PMTiles, Protocol } from "pmtiles";
 
 const ARCHIVE_NAME = "georgia.pmtiles";

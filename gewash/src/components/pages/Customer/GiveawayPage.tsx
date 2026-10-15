@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store";
+import { splitPoints } from "@/lib/pointBalance";
 import geocoinIcon from "@/assets/images/shop/geocoin_icon.png";
 import ticketYellow from "@/assets/images/shop/ticket_yellow.svg";
 import giveaway1 from "@/assets/images/giveaway/giveaway_1.png";
@@ -26,7 +27,8 @@ function withFallbackImg(items: ShopTicket[]): ShopTicket[] {
 export default function GiveawayPage() {
   const navigate = useNavigate();
   const t = useTranslation();
-  const points = useSelector((s: RootState) => s.user.data?.points);
+  const account = useSelector((s: RootState) => s.user.data);
+  const points = account ? splitPoints(account.points, account.testPoints) : null;
   const [items, setItems] = useState<GiveawayItem[]>([]);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
 
@@ -62,7 +64,7 @@ export default function GiveawayPage() {
         right={
           <div className="giveaway-header__balance">
             <img src={geocoinIcon} alt="coin" />
-            <span>{typeof points === "number" ? points.toLocaleString() : "—"}</span>
+            <span>{points ? (points.test > 0 ? `${points.real.toLocaleString()} · ${points.test.toLocaleString()} ${t("Points.test")}` : points.real.toLocaleString()) : "—"}</span>
           </div>
         }
       />

@@ -67,6 +67,13 @@ const COPY: Record<SmsDelivery, Record<SmsLang, SmsCopy>> = {
   },
 };
 
+/** A simulated send is a test-mode notice. Production builds stay quiet. */
+export function visibleSmsDelivery(delivery: SmsDelivery | null, production: boolean): SmsDelivery | null {
+  if (!delivery) return null;
+  if (delivery === "simulated" && production) return null;
+  return delivery;
+}
+
 export function smsStatusCopy(
   status: SmsDelivery,
   lang: SmsLang,

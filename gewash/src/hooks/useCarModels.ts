@@ -1,6 +1,7 @@
 // hooks/useCarModels.ts
 import { useEffect, useState } from "react";
 import { customFetch } from "@/utils/customFetch";
+import { readAccessToken } from "@/lib/accessToken";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -14,7 +15,7 @@ export function useCarModels(brandId: number | null) {
   useEffect(() => {
     if (!brandId) return;
 
-    const token = localStorage.getItem("access_token");
+    const token = readAccessToken();
     if (!token) {
       setError(new Error("No access token"));
       return;

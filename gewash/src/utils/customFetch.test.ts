@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { setSessionRedirect } from "@/lib/session";
 import { customFetch } from "./customFetch";
+import { readAccessToken, saveAccessToken } from "@/lib/accessToken";
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -12,7 +13,7 @@ afterEach(() => {
 
 describe("customFetch 401", () => {
   it("ends the session when an authorized request is rejected", async () => {
-    localStorage.setItem("access_token", "abc");
+    saveAccessToken("abc");
     window.history.pushState({}, "", "/customer-my-data");
     const redirect = vi.fn();
     setSessionRedirect(redirect);
@@ -26,12 +27,12 @@ describe("customFetch 401", () => {
     });
 
     expect(response.status).toBe(401);
-    expect(localStorage.getItem("access_token")).toBeNull();
+    expect(readAccessToken()).toBeNull();
     expect(redirect).toHaveBeenCalledWith("/auth");
   });
 
   it("sends a remembered manager to /manager-auth", async () => {
-    localStorage.setItem("access_token", "abc");
+    saveAccessToken("abc");
     sessionStorage.setItem("autopass.session_role", "manager");
     sessionStorage.setItem("autopass.me", "{\"role\":1}");
     window.history.pushState({}, "", "/booking");
@@ -65,5 +66,17 @@ describe("customFetch 401", () => {
     });
 
     expect(redirect).not.toHaveBeenCalled();
+  });
+
+  it("includes cookies on login, set_password, refresh and logout", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => new Response("{}", { status: 200 })));
+    for (const path of ["/login", "/register/set_password", "/refresh", "/logout"]) {
+      await customFetch(`https://api.example${path}`, { method: "POST" });
+    }
+    await customFetch("https://api.example/me");
+    const fetchMock = vi.mocked(fetch);
+    const credentialed = fetchMock.mock.calls.slice(0, 4).map((call) => (call[1] as RequestInit).credentials);
+    expect(credentialed).toEqual(["include", "include", "include", "include"]);
+    expect((fetchMock.mock.calls[4][1] as RequestInit | undefined)?.credentials).toBeUndefined();
   });
 });

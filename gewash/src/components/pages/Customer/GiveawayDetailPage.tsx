@@ -5,6 +5,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import geocoinIcon from "@/assets/images/shop/geocoin_icon.png";
 import ticketYellow from "@/assets/images/shop/ticket_yellow.svg";
 import { buyPointsAndRedirect } from "@/lib/buyPoints";
+import { splitPoints } from "@/lib/pointBalance";
 import { useDispatch, useSelector } from "react-redux";
 import type { RootState } from "@/store";
 import type { AppDispatch } from "@/store";
@@ -45,7 +46,8 @@ export default function GiveawayDetailPage() {
   const [sheet, setSheet] = useState<SheetState>("closed");
   const [qty, setQty] = useState(1);
   const [pointsInput, setPointsInput] = useState("");
-  const userPoints = useSelector((s: RootState) => s.user.data?.points);
+  const account = useSelector((s: RootState) => s.user.data);
+  const pointSplit = splitPoints(account?.points, account?.testPoints);
   const [balance, setBalance] = useState(0);
   const [myTickets, setMyTickets] = useState(0);
   const [bannerVisible, setBannerVisible] = useState(false);
@@ -106,10 +108,8 @@ export default function GiveawayDetailPage() {
   }, [sheet]);
 
   useEffect(() => {
-    if (typeof userPoints === "number") {
-      setBalance(userPoints);
-    }
-  }, [userPoints]);
+    if (account) setBalance(pointSplit.real);
+  }, [account, pointSplit.real]);
 
   useEffect(() => {
     if (passed) return;
@@ -175,7 +175,7 @@ export default function GiveawayDetailPage() {
           right={
             <div className="giveaway-header__balance">
               <img src={geocoinIcon} alt="coin" />
-              <span>{typeof userPoints === "number" ? userPoints.toLocaleString() : "—"}</span>
+              <span>{account ? (pointSplit.test > 0 ? `${pointSplit.real.toLocaleString()} · ${pointSplit.test.toLocaleString()} ${t("Points.test")}` : pointSplit.real.toLocaleString()) : "—"}</span>
             </div>
           }
         />
@@ -201,7 +201,7 @@ export default function GiveawayDetailPage() {
           right={
             <div className="giveaway-header__balance">
               <img src={geocoinIcon} alt="coin" />
-              <span>{typeof userPoints === "number" ? userPoints.toLocaleString() : "—"}</span>
+              <span>{account ? (pointSplit.test > 0 ? `${pointSplit.real.toLocaleString()} · ${pointSplit.test.toLocaleString()} ${t("Points.test")}` : pointSplit.real.toLocaleString()) : "—"}</span>
             </div>
           }
         />
@@ -388,6 +388,9 @@ export default function GiveawayDetailPage() {
                     <div className="giveaway-sheet__balance-value">
                       <span>{balance.toLocaleString()}</span>
                       <span className="giveaway-sheet__balance-unit">{t("Giveaway.points")}</span>
+                      {pointSplit.test > 0 && (
+                        <span className="giveaway-sheet__balance-unit">{pointSplit.test} {t("Points.test")}</span>
+                      )}
                     </div>
                   </div>
                   <div className="giveaway-sheet__balance-row">

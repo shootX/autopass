@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { customFetch } from "@/utils/customFetch";
+import { readAccessToken } from "@/lib/accessToken";
 
 export type PriceOption = {
   id: number;
@@ -27,7 +28,7 @@ export function useFetchPackagePricing(carId: number | null) {
     setLoading(true);
     setError("");
 
-    const token = localStorage.getItem("access_token");
+    const token = readAccessToken();
 
     customFetch(`${import.meta.env.VITE_API_URL}/packages?carid=${carId}`, {
       headers: {

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { bootSession, readSessionBoot, subscribeSessionBoot, type SessionBoot } from "@/lib/sessionRefresh";
 import { useDispatch } from "react-redux";
 import { customFetch } from "@/utils/customFetch";
 import {
@@ -12,6 +13,7 @@ import {
 } from "@/store/userSlice";
 import { clearSessionStorage, rememberSessionRole } from "@/lib/session";
 import type { AppDispatch } from "@/store";
+import { readAccessToken } from "@/lib/accessToken";
 
 export class MeRequestError extends Error {
   status: number;
@@ -40,7 +42,7 @@ export async function refreshCurrentUser(
   dispatch: AppDispatch,
   mode: "establish" | "silent" = "silent",
 ): Promise<UserRole | null> {
-  const token = localStorage.getItem("access_token");
+  const token = readAccessToken();
   if (!token) {
     if (mode === "establish") dispatch(resetSession());
     return null;
@@ -82,6 +84,9 @@ export async function refreshCurrentUser(
       enablePushRenewalSubscription: Boolean(data.user.enable_push_renewal_subscription),
       enablePushSpecialPromotions: Boolean(data.user.enable_push_special_promotions),
       points: typeof raw.points === "number" ? raw.points : Number(raw.points) || 0,
+      testPoints: Object.prototype.hasOwnProperty.call(raw, "test_points")
+        ? (typeof raw.test_points === "number" ? raw.test_points : Number(raw.test_points) || 0)
+        : undefined,
       referralsCount:
         typeof raw.referrals_count === "number"
           ? raw.referrals_count
@@ -101,6 +106,12 @@ export async function refreshCurrentUser(
   }
 }
 
+export function useSessionBoot(): SessionBoot {
+  const [phase, setPhase] = useState(readSessionBoot);
+  useEffect(() => subscribeSessionBoot(setPhase), []);
+  return phase;
+}
+
 export function useUser() {
   const [error, setError] = useState<Error | null>(null);
   const dispatch = useDispatch<AppDispatch>();
@@ -108,11 +119,26 @@ export function useUser() {
   useEffect(() => {
     let cancelled = false;
 
-    refreshCurrentUser(dispatch, "establish").catch((err) => {
+    void (async () => {
+      const phase = await bootSession();
       if (cancelled) return;
-      console.error("Failed to fetch /me:", err);
-      setError(err as Error);
-    });
+      if (phase === "anonymous") {
+        dispatch(rejectSession());
+        return;
+      }
+      if (phase === "hold") {
+        dispatch(setSession("error"));
+        return;
+      }
+      dispatch(setSession("pending"));
+      try {
+        await refreshCurrentUser(dispatch, "establish");
+      } catch (err) {
+        if (cancelled) return;
+        console.error("Failed to fetch /me:", err);
+        setError(err as Error);
+      }
+    })();
 
     return () => {
       cancelled = true;

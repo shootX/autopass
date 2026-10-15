@@ -1,6 +1,7 @@
 // hooks/useAllRecords.ts
 import { useEffect, useState } from "react";
 import { customFetch } from "@/utils/customFetch";
+import { readAccessToken } from "@/lib/accessToken";
 
 export type Status = "New" | "Confirm" | "Deleted" | "Rescheduled" | "Expired" | "Completed";
 
@@ -32,7 +33,7 @@ export function useAllRecords() {
 
   const fetchRecords = async () => {
     try {
-      const token = localStorage.getItem("access_token");
+      const token = readAccessToken();
       const res = await customFetch(`${import.meta.env.VITE_API_URL}/allrecords`, {
         method: "GET",
         headers: {

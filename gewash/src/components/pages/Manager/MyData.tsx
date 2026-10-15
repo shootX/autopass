@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom';
 import { customFetch } from '@/utils/customFetch';
 import { formatPhone } from '@/lib/format';
 import Header from '@/components/Header';
+import { readAccessToken } from "@/lib/accessToken";
 
 export default function MyData() {
   const user = useSelector((state: RootState) => state.user.data);
@@ -15,7 +16,7 @@ export default function MyData() {
   const role = useUserRole();
 
   useEffect(() => {
-    const token = localStorage.getItem('access_token');
+    const token = readAccessToken();
 
     customFetch(`${import.meta.env.VITE_API_URL}/manager/my-washes`, {
       headers: {

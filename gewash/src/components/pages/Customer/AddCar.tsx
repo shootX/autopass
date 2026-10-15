@@ -13,6 +13,7 @@ import { readCar, record } from "@/lib/carResult";
 import { useTranslation } from "@/hooks/useTranslation";
 import { leftArrowUrl, closeIconUrl } from "@/assets/staticUrls";
 import Header from "@/components/Header";
+import { readAccessToken } from "@/lib/accessToken";
 
 export default function AddCar({ showHeader }: { showHeader?: boolean }) {
   const dispatch = useAppDispatch();
@@ -62,7 +63,7 @@ export default function AddCar({ showHeader }: { showHeader?: boolean }) {
     const sequence = ++modelRequest.current;
     try {
       const res = await customFetch(`${import.meta.env.VITE_API_URL}/cars/brands/${selected.id}/models`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` },
+        headers: { Authorization: `Bearer ${readAccessToken()}` },
       });
       if (!res.ok) throw new Error("Models unavailable");
       const body = record(await res.json());
@@ -106,7 +107,7 @@ export default function AddCar({ showHeader }: { showHeader?: boolean }) {
       setIsSubmitting(false);
       return;
     }
-    const token = localStorage.getItem("access_token");
+    const token = readAccessToken();
     const payload = {
       source: model.source ?? brand.source ?? "local",
       brand_id: brand.id, model_id: model.id, year: Number(year), plate: normalizedPlate,

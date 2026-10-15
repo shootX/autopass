@@ -2,10 +2,12 @@ import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useFetchCars } from "@/hooks/useFetchCars";
 import { useUserRole } from "@/hooks/useUserRole";
 import { shouldCheckCars } from "@/lib/sessionRouting";
+import { readAccessToken } from "@/lib/accessToken";
+import { authBypassEnabled } from "@/lib/productionFlags";
 
 export function CarCheckRoute() {
   const role = useUserRole();
-  const bypassAuth = import.meta.env.VITE_BYPASS_AUTH === "true";
+  const bypassAuth = authBypassEnabled(import.meta.env);
   if (!shouldCheckCars(role, bypassAuth)) {
     return <Outlet />;
   }
@@ -14,7 +16,7 @@ export function CarCheckRoute() {
 
 function CustomerCarCheck() {
   const { cars, loading, error } = useFetchCars();
-  const token = localStorage.getItem("access_token");
+  const token = readAccessToken();
   const location = useLocation();
 
   const publicPaths = ["/auth", "/register", "/add-car"];

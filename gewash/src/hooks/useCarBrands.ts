@@ -1,6 +1,7 @@
 import type { Brand } from "@/store/carSlice";
 import { customFetch } from "@/utils/customFetch";
 import { useEffect, useState } from "react";
+import { readAccessToken } from "@/lib/accessToken";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -10,7 +11,7 @@ export function useCarBrands() {
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem("access_token");
+    const token = readAccessToken();
     if (!token) {
       console.warn("Нет access_token — бренды не загружаются");
       return;

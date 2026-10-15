@@ -2,6 +2,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import Authentication from "./Authentication";
+import { clearAccessToken, readAccessToken } from "@/lib/accessToken";
 
 const mock = vi.hoisted(() => ({ fetch: vi.fn(), dispatch: vi.fn() }));
 vi.mock("react-redux", () => ({ useDispatch: () => mock.dispatch }));
@@ -20,7 +21,7 @@ beforeEach(() => {
   vi.stubGlobal("fetch", mock.fetch);
   vi.stubEnv("VITE_API_URL", "https://api.example.test/api");
 });
-afterEach(() => { cleanup(); localStorage.clear(); vi.restoreAllMocks(); vi.unstubAllGlobals(); vi.unstubAllEnvs(); });
+afterEach(() => { clearAccessToken(); cleanup(); localStorage.clear(); vi.restoreAllMocks(); vi.unstubAllGlobals(); vi.unstubAllEnvs(); });
 
 describe("authentication failure and credential privacy", () => {
   it("shows a localized message when the connection fails", async () => {
@@ -35,7 +36,10 @@ describe("authentication failure and credential privacy", () => {
     const log = vi.spyOn(console, "log").mockImplementation(() => undefined);
     mock.fetch.mockResolvedValue(new Response(JSON.stringify({ access_token: "fixture-access-token", expires_in: 3600 })));
     submit();
-    await waitFor(() => expect(localStorage.getItem("access_token")).toBe("fixture-access-token"));
+    await waitFor(() => expect(readAccessToken()).toBe("fixture-access-token"));
+    const init = mock.fetch.mock.calls[0]?.[1] as RequestInit;
+    expect(init.credentials).toBe("include");
+    expect(localStorage.getItem("access_token")).toBeNull();
     expect(log.mock.calls.some((args) => JSON.stringify(args).includes("fixture-access-token"))).toBe(false);
   });
 });

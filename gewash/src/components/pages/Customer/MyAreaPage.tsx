@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store";
+import { splitPoints } from "@/lib/pointBalance";
 import leftArrow from "@/assets/icons/left-arrow.svg";
 import Header from "@/components/Header";
 
@@ -94,7 +95,8 @@ export default function MyAreaPage() {
   const [activeTab, setActiveTab] = useState<"vouchers" | "tickets">(
     searchParams.get("tab") === "tickets" ? "tickets" : "vouchers",
   );
-  const points = useSelector((s: RootState) => s.user.data?.points);
+  const account = useSelector((s: RootState) => s.user.data);
+  const points = account ? splitPoints(account.points, account.testPoints) : null;
   const [myVouchers, setMyVouchers] = useState<Awaited<ReturnType<typeof fetchMyVouchers>>>([]);
   const [myTickets, setMyTickets] = useState<Awaited<ReturnType<typeof fetchMyTickets>>>([]);
   const [listStatus, setListStatus] = useState<"loading" | "ready" | "error">("loading");
@@ -154,7 +156,7 @@ export default function MyAreaPage() {
             </div>
             <div className="my-area-topbar__balance-text">
               <span className="my-area-topbar__amount">
-                {typeof points === "number" ? points.toLocaleString() : "—"}
+                {points ? (points.test > 0 ? `${points.real.toLocaleString()} · ${points.test.toLocaleString()} ${t("Points.test")}` : points.real.toLocaleString()) : "—"}
               </span>
             </div>
           </div>

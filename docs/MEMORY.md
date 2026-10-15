@@ -273,11 +273,33 @@ voucher-checker-ში `useVoucher`/`usePath` სახელები შეი
 - OTP/email codes: `SmsChallengeService::codeHash()` (HMAC with APP_KEY + challenge id). Rotating APP_KEY invalidates open codes only.
 - Every admin POST/PUT/DELETE is audited by middleware; add explicit `AdminAudit::record` only when field-level old/new values matter.
 
+## 2026-10-15 — Frontend audit fixes
+
+`security/audit-fixes` (`16845d1`, PR #28) შევიდა `security/frontend-audit-fixes`-ში merge commit-ით.
+
+JWT httpOnly cookie არ არის: `access_token` რჩება მეხსიერებაში და გვერდის განახლება სესიას წყვეტს. `POST /api/refresh` შავ სიაში აგდებს ძველ ტოკენს და უნდა გამოიძახოს `expires_in`-მდე (წამები, ნაგულისხმევი 86400). წარუმატებელი refresh არის logout. `localStorage` გასაღებები `access_token` და `access_token_expires_at` იშლება. voucher-checker-ის `voucher_checker_access_token` იგივე წესით მეხსიერებაშია.
+
+პაკეტის approve ცარიელი ტანით 403-ია. სხეული არის `qr_code` (დასკანერებული) და/ან `approve_token` (`GET /api/checkqr`). checkqr აღარ აბრუნებს ტელეფონს.
+
+`VITE_BYPASS_AUTH` და `VITE_MOCK_VOUCHER_CHECK` production ბილდს აგდებს და runtime-ზეც გამორთულია. `VITE_TEST_PAYMENTS=true` რთავს მხოლოდ შეტყობინებას `/payment/sandbox`-ზე. ბარათი რჩება სერვერის გვერდზე. CSP არის `docs/CSP.md`. nginx არ შეცვლილა.
+
+რეგისტრაციის captcha ამოცანიდან ამოღებულია. ვიჯეტი არ დაემატა.
+
+`npm audit --omit=dev` სუფთაა gewash-სა და voucher-checker-ში (`maplibre-gl` 6.14.0, `react-router-dom` 7.18.4, vite 7.3.7 / 8.3.4). `npm ci` გადის npm 10.9.9-ზეც და 11.17.0-ზეც. main-ში შერწყმა და დეპლოი არ ყოფილა.
+
 ## 2026-10-15 — QA fixes on PR #28
 - Spendable points for partner goods = `points - test_points` (`User::realPoints()`); `test_points` is clamped to `points` on save.
 - One-time grants (approve_token, refresh) are consumed under `Cache::lock`; a busy lock answers 409, never a second consume.
 - Refreshed JWTs carry `sess` (first login time); `security.session_max_minutes` bounds the whole chain.
 - `AdminAudit::record(..., adminId:)` — pass it explicitly from API (JWT) routes; the default guard is web.
+
+## 2026-10-15 — Frontend for 104dfe8
+
+`security/audit-fixes` (`104dfe8`) შევიდა `security/frontend-audit-fixes`-ში merge commit-ით.
+
+`POST /api/refresh` 409-ზე ერთხელ მეორდება იმავე ტოკენით და სესიას არ წყვეტს. მეორე 409-იც ტოვებს სესიას. 401 წყვეტს. `approve_token` იგზავნება ერთხელ და იშლება; უარყოფა (403, 409, 422) აბრუნებს კამერაზე ახალი სკანისთვის.
+
+`GET /me`-ის `test_points` არის სანდბოქსის ქულა. ხარჯვადი რიცხვი არის `points - test_points`. ველი რომ არ მოვიდეს, ჩანს მთელი `points`. main-ში შერწყმა და დეპლოი არ ყოფილა.
 
 ## 2026-10-15 — QA round 2 on PR #28
 - Package approve = checkqr token only. Tests use `approveTokenFor($manager, $pkgId)` (tests/Pest.php).
@@ -286,7 +308,27 @@ voucher-checker-ში `useVoucher`/`usePath` სახელები შეი
 - Laravel's CORS with one allowed origin always returns that origin (not the caller's); assert "not echoed", not "missing".
 - Query builder has no `whereKey` (it becomes `where key = …`); use `where('id', …)` on `DB::table`.
 
+## 2026-10-15 — Frontend for f45eca0
+
+`security/audit-fixes` (`f45eca0`) შევიდა `security/frontend-audit-fixes`-ში merge commit-ით. კონტრაქტი არის `docs/auth-contract.md`.
+
+სესია გვერდის განახლებასა და ახალ ტაბზე ბრუნდება `POST /api/refresh`-ით (`credentials: 'include'`, Authorization-ის გარეშე). `ap_refresh` არის HttpOnly და JS-ს არ ეჭირება. `access_token` რჩება მხოლოდ მეხსიერებაში. სანამ refresh არ დასრულდება, დაცული მარშრუტი შესვლაზე არ გადადის. 401 ხსნის შესვლას. 409 ერთხელ მეორდება. ქსელის შეცდომა და მეორე 409 სესიას არ წყვეტს. პარალელური გამოძახება ერთია. ძველი bearer refresh აღარ იგზავნება.
+
+`POST /api/login`, `/api/register/set_password`, `/api/refresh` და `/api/logout` აგზავნის cookie-ს. გამოსვლა ჯერ `/api/logout`-ს იძახებს.
+
+პაკეტის approve არის მხოლოდ `{approve_token}`. 403 აჩვენებს შეცდომას და სკანერს ხსნის. 409 მხოლოდ სკანერს ხსნის.
+
+`/register`, `/change_password` და `/change_phone` წარმატებაა `delivery` `accepted` ან `simulated`. სატესტო ტექსტი production ბილდში არ ჩანს. captcha ამოცანიდან ამოღებულია. main-ში შერწყმა და დეპლოი არ ყოფილა.
+
 ## 2026-10-15 — QA round 3 on PR #28
 - Refresh reuse inside the grace window is a tab race, not theft: a fresh token in the same family; the first use alone sets `used_at`.
 - Logout that must work without a valid JWT lives under the cookie Path: `/api/refresh/logout`.
 - `User::forceCreate` in /register can lose a race: catch `UniqueConstraintViolationException` and continue with the existing row.
+
+## 2026-10-15 — Frontend for 806db9a
+
+`security/audit-fixes` (`806db9a`) შევიდა `security/frontend-audit-fixes`-ში merge commit-ით.
+
+გამოსვლა არის `POST /api/refresh/logout` (`credentials: 'include'`). Bearer ემატება მხოლოდ მაშინ, როცა `access_token` მეხსიერებაშია. პასუხის შემდეგ ტოკენი იშლება და იხსნება `/auth`. მოთხოვნის წარუმატებლობაც იგივე ლოკალურ გამოსვლას აკეთებს. `/api/logout` აღარ იძახება.
+
+`POST /api/refresh` უცვლელია: 409 ერთხელ მეორდება, ქსელის შეცდომა `expireSession`-ს არ იძახებს. 30 წამიანი ტაბების grace კლიენტში ცალკე არ იმუშავა. login, `set_password` და approve უცვლელია. main-ში შერწყმა და დეპლოი არ ყოფილა.
