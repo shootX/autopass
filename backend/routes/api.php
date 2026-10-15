@@ -58,6 +58,8 @@ Route::post('/register', [AuthController::class, 'register'])->middleware('throt
 Route::post('/register/verify', [AuthController::class, 'verify'])->middleware('throttle:otp');
 Route::post('/register/set_password', [AuthController::class, 'set_password'])->middleware('throttle:otp');
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:login');
+// Public: works with the httpOnly refresh cookie after the access token expired (legacy: valid bearer).
+Route::post('/refresh', [AuthController::class, 'refresh'])->middleware('throttle:refresh');
 
 Route::post('/change_password', [AuthController::class, 'changePassword'])->middleware('throttle:otp-send');
 Route::post('/change_password/verify', [AuthController::class, 'changePasswordVerify'])->middleware('throttle:otp');
@@ -78,7 +80,6 @@ Route::middleware(['auth:api', CorsMiddleware::class, EnsureApiSession::class])-
     Route::post('/push_settings', [UserController::class, 'pushSettings']);
 
     Route::post('/logout', [AuthController::class, 'logout']);
-    Route::post('/refresh', [AuthController::class, 'refresh'])->middleware('throttle:refresh');
 
     Route::get('/me', [UserController::class, 'me']);
     Route::get('/me/get-referral-link', function () {

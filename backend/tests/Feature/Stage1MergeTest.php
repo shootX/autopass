@@ -148,8 +148,11 @@ it('lets a person register again after the SMS failed', function () {
     };
     app()->instance(SmsGateway::class, $failing);
     app()->forgetInstance(SmsDispatcher::class);
-    $this->postJson('/api/register', ['phone' => '555700020'])->assertStatus(422)->assertJsonPath('delivery', 'failed');
-    expect(User::query()->where('phone', '555 70 00 20')->exists())->toBeFalse();
+    // Sent through the queue (QA D10): the answer can't wait for the gateway, so it is
+    // "accepted"; the failed job drops the challenge, which keeps the retry open.
+    $this->postJson('/api/register', ['phone' => '555700020'])->assertOk();
+    $stub = User::query()->where('phone', '555 70 00 20')->first();
+    expect(DB::table('sms_temps')->where('user_id', $stub->id)->count())->toBe(0);
 
     app()->instance(SmsGateway::class, mockSms());
     $this->postJson('/api/register', ['phone' => '555700020'])->assertOk()->assertJsonPath('delivery', 'simulated');
@@ -226,7 +229,7 @@ it('serves the manager API without the manager owning a car', function () {
 
     $token = JWTAuth::fromUser($mgr);
     $this->withToken($token)->getJson('/api/me')->assertOk();
-    $this->withToken($token)->postJson("/api/package/{$pkg}/approve", ['qr_code' => 'QRMGR1'])->assertOk();
+    $this->withToken($token)->postJson("/api/package/{$pkg}/approve", ['approve_token' => approveTokenFor($mgr, $pkg)])->assertOk();
     $this->withToken($token)->postJson("/api/package/{$pkg}/approve", ['car_wash_id' => $wash + 99])->assertForbidden();
     expect(DB::table('package_washes')->where('user_package_id', $pkg)->count())->toBe(1);
 });

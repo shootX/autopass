@@ -300,3 +300,10 @@ JWT httpOnly cookie არ არის: `access_token` რჩება მე�
 `POST /api/refresh` 409-ზე ერთხელ მეორდება იმავე ტოკენით და სესიას არ წყვეტს. მეორე 409-იც ტოვებს სესიას. 401 წყვეტს. `approve_token` იგზავნება ერთხელ და იშლება; უარყოფა (403, 409, 422) აბრუნებს კამერაზე ახალი სკანისთვის.
 
 `GET /me`-ის `test_points` არის სანდბოქსის ქულა. ხარჯვადი რიცხვი არის `points - test_points`. ველი რომ არ მოვიდეს, ჩანს მთელი `points`. main-ში შერწყმა და დეპლოი არ ყოფილა.
+
+## 2026-10-15 — QA round 2 on PR #28
+- Package approve = checkqr token only. Tests use `approveTokenFor($manager, $pkgId)` (tests/Pest.php).
+- Auth SMS goes through `SendSms` (encrypted queued job). Tests that read codes from MockSmsGateway use `Queue::fakeExcept([SendSms::class])`; plain `Queue::fake()` swallows the SMS.
+- Refresh tokens: table `refresh_tokens` (sha256 only), family = JWT claim `sid`, session start = `sess`. JSON test requests need `->withCredentials()` to send cookies.
+- Laravel's CORS with one allowed origin always returns that origin (not the caller's); assert "not echoed", not "missing".
+- Query builder has no `whereKey` (it becomes `where key = …`); use `where('id', …)` on `DB::table`.

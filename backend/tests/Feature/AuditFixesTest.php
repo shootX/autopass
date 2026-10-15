@@ -1,5 +1,6 @@
 <?php
 
+use App\Jobs\SendSms;
 use App\Models\CorporateClient;
 use App\Models\Partner;
 use App\Models\Review;
@@ -21,7 +22,7 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 beforeEach(function () {
     DB::statement('PRAGMA defer_foreign_keys = ON');
     Http::fake(['*' => Http::response(['Success' => true])]);
-    Queue::fake();
+    Queue::fakeExcept([SendSms::class]); // auth SMS still runs (sync) so codes reach the mock gateway
     $this->withoutMiddleware(PreventRequestForgery::class);
     app(MockSmsGateway::class)->reset();
 });
@@ -95,7 +96,7 @@ it('keeps fixed passwords out of seeders', function () {
 });
 
 // H1 — package wash bound to branch
-it('refuses a bare-id walk-in approve and accepts the scanned QR or a checkqr token', function () {
+it('refuses a bare-id or static-QR approve and accepts a checkqr token', function () {
     $mgr = makeUser('555600020', User::ROLE_MANAGER);
     $client = makeUser('555600021');
     washFor($mgr);
@@ -107,7 +108,9 @@ it('refuses a bare-id walk-in approve and accepts the scanned QR or a checkqr to
     $this->withToken($t)->postJson("/api/package/{$pkg}/approve", ['qr_code' => 'WRONG'])->assertForbidden();
     expect((int) DB::table('user_packages')->find($pkg)->used_washes)->toBe(0);
 
-    $this->withToken($t)->postJson("/api/package/{$pkg}/approve", ['qr_code' => 'QRCODE0000000001'])->assertOk();
+    // QA round 2 (D13): the static QR alone no longer approves.
+    $this->withToken($t)->postJson("/api/package/{$pkg}/approve", ['qr_code' => 'QRCODE0000000001'])->assertForbidden();
+    $this->withToken($t)->postJson("/api/package/{$pkg}/approve", ['approve_token' => approveTokenFor($mgr, $pkg)])->assertOk();
     $token = $this->withToken($t)->getJson('/api/checkqr/QRCODE0000000001')->assertOk()->json('approve_token');
     expect($token)->toBeString();
     $this->withToken($t)->postJson("/api/package/{$pkg}/approve", ['approve_token' => $token])->assertOk();
@@ -302,6 +305,6 @@ it('anonymises personal data on account deletion and allows deleting twice', fun
         $this->withToken(JWTAuth::fromUser($u))->postJson('/api/account/delete')->assertOk();
         $f = $u->fresh();
         expect($f->name)->toBeNull()->and($f->surname)->toBeNull()->and($f->email)->toBeNull()->and($f->date_of_birth)->toBeNull()
-            ->and($f->phone)->not->toContain('555');
+            ->and($f->phone)->toStartWith('deleted-'.$u->id.'-');
     }
 });

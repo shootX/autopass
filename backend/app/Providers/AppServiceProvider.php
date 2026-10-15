@@ -67,7 +67,10 @@ class AppServiceProvider extends ServiceProvider
 
         RateLimiter::for('referral', fn (Request $request) => Limit::perMinute(10)->by('referral:'.$request->ip()));
 
-        RateLimiter::for('refresh', fn (Request $request) => Limit::perMinute(10)->by('refresh:'.($request->bearerToken() ? hash('sha256', $request->bearerToken()) : $request->ip())));
+        RateLimiter::for('refresh', fn (Request $request) => [
+            Limit::perMinute(10)->by('refresh:'.hash('sha256', (string) ($request->cookie('ap_refresh') ?: $request->bearerToken() ?: ''))),
+            Limit::perMinute(60)->by('refresh-ip:'.$request->ip()),
+        ]);
 
         RateLimiter::for('public', fn (Request $request) => Limit::perMinute(60)->by($request->ip()));
     }

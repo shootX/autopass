@@ -204,19 +204,28 @@ class PackagesController extends Controller
             return response()->json(['success' => false, 'error' => 'Appointment belongs to another branch'], 403);
         }
 
-        // A bare package id is enough only for the first wash of a booking here today. Otherwise
-        // the manager must present the scanned QR code (or the one-time token checkqr issued to them).
-        $bookingUnused = $hereAppointment
-            && ! PackageWash::query()->where('appointment_id', $hereAppointment->id)->exists();
-        $presented = null;
-        if (! $bookingUnused) {
-            $presented = $this->presentedPackage($request, $userPackage, (int) $user->id);
-            if ($presented === 'busy') {
-                return response()->json(['success' => false, 'error' => 'Approval already in progress'], 409);
-            }
-            if ($presented !== 'ok') {
-                return response()->json(['success' => false, 'error' => 'Scan the package QR code'], 403);
-            }
+        // Only the one-time token from GET /checkqr/{qr} approves a wash: a static QR (or a
+        // screenshot of it) is never enough on its own, and every token deducts at most once.
+        // A per-package lock makes parallel approvals of one package wait their turn (409).
+        $packageLock = Cache::lock('package-approve-pkg:'.$userPackage->id, 15);
+        if (! $packageLock->get()) {
+            return response()->json(['success' => false, 'error' => 'Approval already in progress'], 409);
+        }
+        try {
+            return $this->approveLocked($request, $userPackage, $user, (int) $washId, $hereAppointment);
+        } finally {
+            $packageLock->release();
+        }
+    }
+
+    private function approveLocked(Request $request, UserPackage $userPackage, User $user, int $washId, ?Appointment $hereAppointment)
+    {
+        $presented = $this->presentedPackage($request, $userPackage, (int) $user->id);
+        if ($presented === 'busy') {
+            return response()->json(['success' => false, 'error' => 'Approval already in progress'], 409);
+        }
+        if ($presented !== 'ok') {
+            return response()->json(['success' => false, 'error' => 'Scan the package QR code'], 403);
         }
 
         if ($userPackage->start_date && now()->lessThan(Carbon::parse($userPackage->start_date)->startOfDay())) {
@@ -229,30 +238,26 @@ class PackagesController extends Controller
             return response()->json(['success' => false, 'error' => 'No washes left'], 422);
         }
 
-        $approved = DB::transaction(function () use ($userPackage, $washId, $user, $hereAppointment, $presented) {
+        $approved = DB::transaction(function () use ($userPackage, $washId, $user, $hereAppointment) {
             $locked = UserPackage::query()->whereKey($userPackage->id)->lockForUpdate()->first();
             if (! $locked || (int) $locked->used_washes >= (int) $locked->number_of_washes) {
                 return false;
             }
-            // Re-checked under the package lock: two parallel bare-id calls can't both use the booking.
-            if ($presented === null && PackageWash::query()->where('appointment_id', $hereAppointment->id)->exists()) {
-                return 'qr';
-            }
+            // The booking is linked to its first wash only; later washes count as walk-ins.
+            $bookingUnused = $hereAppointment
+                && ! PackageWash::query()->where('appointment_id', $hereAppointment->id)->exists();
             $locked->increment('used_washes');
             PackageWash::create([
                 'user_package_id' => $userPackage->id,
                 'car_wash_id' => $washId,
                 'manager_id' => $user->id,
-                'appointment_id' => $presented === null ? $hereAppointment?->id : null,
+                'appointment_id' => $bookingUnused ? $hereAppointment->id : null,
                 'walk_in' => $hereAppointment === null,
             ]);
 
             return true;
         });
 
-        if ($approved === 'qr') {
-            return response()->json(['success' => false, 'error' => 'Scan the package QR code'], 403);
-        }
         if (! $approved) {
             return response()->json(['success' => false, 'error' => 'No washes left'], 422);
         }
@@ -270,14 +275,9 @@ class PackagesController extends Controller
         return response()->json(['success' => true, 'package' => $userPackage->fresh()]);
     }
 
-    /** @return 'ok'|'busy'|'no' */
+    /** Consumes the checkqr token (qr_code is ignored). @return 'ok'|'busy'|'no' */
     private function presentedPackage(Request $request, UserPackage $userPackage, int $managerId): string
     {
-        $qr = (string) $request->input('qr_code', '');
-        if ($qr !== '' && is_string($userPackage->qr_code) && hash_equals($userPackage->qr_code, $qr)) {
-            return 'ok';
-        }
-
         $token = (string) $request->input('approve_token', '');
         if ($token === '') {
             return 'no';

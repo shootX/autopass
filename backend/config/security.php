@@ -26,6 +26,9 @@ return [
     // Absolute lifetime of a login across /api/refresh rotations (minutes).
     'session_max_minutes' => (int) env('SECURITY_SESSION_MAX_MINUTES', 43200),
 
+    // Refresh cookie Secure flag. Keep true outside local http development.
+    'refresh_cookie_secure' => (bool) env('REFRESH_COOKIE_SECURE', true),
+
     // OTP SMS: per phone (any IP) per hour, and for the whole app per day.
     'otp_per_phone_hourly' => (int) env('SECURITY_OTP_PER_PHONE_HOURLY', 5),
     'otp_daily_global_limit' => (int) env('SECURITY_OTP_DAILY_GLOBAL_LIMIT', 2000),
