@@ -15,6 +15,8 @@ use App\Services\Sms\IssuedSms;
 use App\Services\Sms\SmsStatus;
 use App\Services\Sms\SmsUserMessage;
 use App\Support\Phone;
+use Illuminate\Contracts\Cache\LockTimeoutException;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -55,18 +57,30 @@ class AuthController extends Controller
                 $referralId = User::query()->where('ref_code', $request->code)->value('id');
             }
 
-            $existing = User::query()->forceCreate([
-                'name' => null,
-                'surname' => null,
-                'email' => null,
-                'phone' => $request->phone,
-                'password' => Str::password(40),
-                'date_of_birth' => null,
-                'role' => User::ROLE_USER,
-                'referral_id' => $referralId,
-                'ref_code' => substr(strtoupper(md5($request->phone.Str::random(8))), 0, 5),
-            ]);
-            $createdNow = true;
+            try {
+                $existing = User::query()->forceCreate([
+                    'name' => null,
+                    'surname' => null,
+                    'email' => null,
+                    'phone' => $request->phone,
+                    'password' => Str::password(40),
+                    'date_of_birth' => null,
+                    'role' => User::ROLE_USER,
+                    'referral_id' => $referralId,
+                    'ref_code' => substr(strtoupper(md5($request->phone.Str::random(8))), 0, 5),
+                ]);
+                $createdNow = true;
+            } catch (UniqueConstraintViolationException) {
+                // A parallel /register created this number first: continue with that row (its
+                // SMS lock / resend window answers this request), never a 500.
+                $existing = User::query()->where('phone', $request->phone)->first();
+                if (! $existing) {
+                    return response()->json(['success' => false, 'error' => 'Please try again.'], 409);
+                }
+                if ($existing->phone_verified_at) {
+                    return $this->decoySmsJson(hashLikeNewUser: true);
+                }
+            }
         }
 
         try {
@@ -214,8 +228,12 @@ class AuthController extends Controller
 
     private function refreshFromCookie(string $presented): JsonResponse
     {
+        // Parallel refreshes with one cookie (several tabs) wait for each other briefly; the
+        // later ones then take the grace path in RefreshTokens::consume().
         $lock = Cache::lock('refresh-cookie:'.hash('sha256', $presented), 10);
-        if (! $lock->get()) {
+        try {
+            $lock->block(5);
+        } catch (LockTimeoutException) {
             return response()->json(['success' => false, 'error' => 'Refresh already in progress'], 409);
         }
         try {
@@ -237,6 +255,29 @@ class AuthController extends Controller
             'token_type' => 'bearer',
             'expires_in' => auth('api')->factory()->getTTL() * 60,
         ])->withCookie($cookie);
+    }
+
+    /**
+     * POST /api/refresh/logout (public). Sits under the cookie's path, so it works with an
+     * expired or missing access token: revokes the cookie's session and clears the cookie.
+     * Also blacklists a still-valid bearer token if one is sent.
+     */
+    public function logoutByCookie(Request $request): JsonResponse
+    {
+        $presented = $request->cookie(RefreshTokens::COOKIE);
+        if (is_string($presented)) {
+            $this->refreshTokens->revokeByToken($presented);
+        }
+        try {
+            if ($token = JWTAuth::getToken()) {
+                JWTAuth::setToken($token)->invalidate();
+            }
+        } catch (\Throwable) {
+            // Expired or malformed access token: nothing to blacklist.
+        }
+
+        return response()->json(['success' => true, 'message' => 'Успешный выход'])
+            ->withCookie($this->refreshTokens->forget());
     }
 
     /** Legacy body/bearer rotation (kept for clients that don't send the cookie yet). */

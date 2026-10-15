@@ -27,6 +27,9 @@ return [
     'session_max_minutes' => (int) env('SECURITY_SESSION_MAX_MINUTES', 43200),
 
     // Refresh cookie Secure flag. Keep true outside local http development.
+    // A rotated refresh token still works this long (two tabs refreshing at once).
+    'refresh_reuse_grace_seconds' => (int) env('REFRESH_REUSE_GRACE_SECONDS', 30),
+
     'refresh_cookie_secure' => (bool) env('REFRESH_COOKIE_SECURE', true),
 
     // OTP SMS: per phone (any IP) per hour, and for the whole app per day.

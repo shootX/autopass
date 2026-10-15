@@ -169,6 +169,7 @@ it('refreshes from the cookie alone, rotates it and treats reuse as theft', func
     qa2Reset();
     $this->withToken($r->json('access_token'))->getJson('/api/me')->assertOk();
 
+    $this->travel(31)->seconds(); // past the two-tab grace window (round 3, D14)
     qa2Reset();
     $this->withCredentials()->withUnencryptedCookie(RefreshTokens::COOKIE, $first)->postJson('/api/refresh')->assertStatus(401);
     qa2Reset();
@@ -213,4 +214,67 @@ it('allows credentialed CORS only for configured origins', function () {
     expect($bad->headers->get('Access-Control-Allow-Origin'))->not->toBe('https://evil.example.test')
         ->and($bad->headers->get('Access-Control-Allow-Origin'))->not->toBe('*');
     expect(config('cors.supports_credentials'))->toBeTrue();
+});
+
+// QA round 3
+it('keeps the session when two tabs refresh with the same cookie (grace window)', function () {
+    qa2Client('555770801');
+    $first = qa2Login($this, '555770801')->getCookie(RefreshTokens::COOKIE, false)->getValue();
+    qa2Reset();
+    $a = $this->withCredentials()->withUnencryptedCookie(RefreshTokens::COOKIE, $first)->postJson('/api/refresh')->assertOk();
+    $this->travel(10)->seconds();
+    qa2Reset();
+    // The second tab's request arrives after the rotation: still a race, not theft.
+    $b = $this->withCredentials()->withUnencryptedCookie(RefreshTokens::COOKIE, $first)->postJson('/api/refresh')->assertOk();
+    foreach ([$a, $b] as $r) {
+        qa2Reset();
+        $this->withCredentials()->withUnencryptedCookie(RefreshTokens::COOKIE, $r->getCookie(RefreshTokens::COOKIE, false)->getValue())
+            ->postJson('/api/refresh')->assertOk();
+    }
+});
+
+it('treats reuse after the grace window as theft', function () {
+    qa2Client('555770802');
+    $first = qa2Login($this, '555770802')->getCookie(RefreshTokens::COOKIE, false)->getValue();
+    qa2Reset();
+    $next = $this->withCredentials()->withUnencryptedCookie(RefreshTokens::COOKIE, $first)->postJson('/api/refresh')
+        ->assertOk()->getCookie(RefreshTokens::COOKIE, false)->getValue();
+    $this->travel(31)->seconds();
+    qa2Reset();
+    $this->withCredentials()->withUnencryptedCookie(RefreshTokens::COOKIE, $first)->postJson('/api/refresh')->assertStatus(401);
+    qa2Reset();
+    $this->withCredentials()->withUnencryptedCookie(RefreshTokens::COOKIE, $next)->postJson('/api/refresh')->assertStatus(401);
+});
+
+it('logs out by the refresh cookie even when the access token expired', function () {
+    qa2Client('555770803');
+    $c = qa2Login($this, '555770803')->getCookie(RefreshTokens::COOKIE, false)->getValue();
+    $this->travel(2)->days(); // access token (24 h) expired, session (30 d) not
+    qa2Reset();
+    $out = $this->withCredentials()->withUnencryptedCookie(RefreshTokens::COOKIE, $c)->postJson('/api/refresh/logout')->assertOk();
+    $cleared = $out->getCookie(RefreshTokens::COOKIE, false);
+    expect($cleared->getValue())->toBe('')->and($cleared->getPath())->toBe('/api/refresh')
+        ->and($cleared->getExpiresTime())->toBeLessThan(time());
+    qa2Reset();
+    $this->withCredentials()->withUnencryptedCookie(RefreshTokens::COOKIE, $c)->postJson('/api/refresh')->assertStatus(401);
+    qa2Reset();
+    $this->postJson('/api/refresh/logout')->assertOk(); // no cookie: idempotent
+});
+
+it('answers a parallel registration of the same new number without a 500', function () {
+    Queue::fake();
+    // Simulates the losing request: the number gets taken between its lookup and its insert.
+    User::creating(function (User $u) {
+        if ($u->phone === '555 77 09 01' && ! User::query()->where('phone', '555 77 09 01')->exists()) {
+            DB::table('users')->insert(['phone' => '555 77 09 01', 'password' => 'x', 'role' => 0, 'ref_code' => 'ZZZZZ', 'created_at' => now(), 'updated_at' => now()]);
+        }
+    });
+    $r = $this->postJson('/api/register', ['phone' => '555770901']);
+    expect($r->status())->toBeLessThan(500);
+    expect(User::query()->where('phone', '555 77 09 01')->count())->toBe(1);
+});
+
+it('retries SMS jobs with backoff', function () {
+    $job = new SendSms;
+    expect($job->tries)->toBeGreaterThanOrEqual(3)->and($job->backoff())->not->toBeEmpty();
 });

@@ -319,3 +319,8 @@ JWT httpOnly cookie არ არის: `access_token` რჩება მე�
 პაკეტის approve არის მხოლოდ `{approve_token}`. 403 აჩვენებს შეცდომას და სკანერს ხსნის. 409 მხოლოდ სკანერს ხსნის.
 
 `/register`, `/change_password` და `/change_phone` წარმატებაა `delivery` `accepted` ან `simulated`. სატესტო ტექსტი production ბილდში არ ჩანს. captcha ამოცანიდან ამოღებულია. main-ში შერწყმა და დეპლოი არ ყოფილა.
+
+## 2026-10-15 — QA round 3 on PR #28
+- Refresh reuse inside the grace window is a tab race, not theft: a fresh token in the same family; the first use alone sets `used_at`.
+- Logout that must work without a valid JWT lives under the cookie Path: `/api/refresh/logout`.
+- `User::forceCreate` in /register can lose a race: catch `UniqueConstraintViolationException` and continue with the existing row.
