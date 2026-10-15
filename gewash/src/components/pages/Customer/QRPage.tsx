@@ -8,6 +8,7 @@ import { carParts, washCells } from '@/lib/v4';
 import PageSkeleton from '@/components/Skeletons/PageSkeleton';
 import { Car, CarFront, Sun } from 'lucide-react';
 import Header from '@/components/Header';
+import { readAccessToken } from "@/lib/accessToken";
 
 export default function QRPage() {
   const t = useTranslation();
@@ -44,7 +45,7 @@ export default function QRPage() {
   useEffect(() => {
     if (!activePackageId) return;
 
-    const token = localStorage.getItem('access_token');
+    const token = readAccessToken();
 
     customFetch(`${import.meta.env.VITE_API_URL}/packages/${activePackageId}/qr`, {
       headers: {

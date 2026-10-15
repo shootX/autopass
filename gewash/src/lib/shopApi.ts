@@ -1,4 +1,5 @@
 import { customFetch } from "@/utils/customFetch";
+import { readAccessToken } from "@/lib/accessToken";
 
 export type ShopTicket = {
   id: number;
@@ -46,7 +47,7 @@ export function formatVoucherCodeDisplay(code: string): string {
 }
 
 function authHeaders(): HeadersInit {
-  const token = localStorage.getItem("access_token");
+  const token = readAccessToken();
   const h: Record<string, string> = {
     Accept: "application/json",
     "Content-Type": "application/json",
@@ -57,7 +58,7 @@ function authHeaders(): HeadersInit {
 
 /** POST /tickets/buy, /vouchers/buy — бэкенд требует токен в заголовке (как /points/buy). */
 function authHeadersPurchase(): HeadersInit {
-  const token = localStorage.getItem("access_token")?.trim();
+  const token = readAccessToken()?.trim();
   if (!token) throw new Error("Missing access token");
   return {
     Accept: "application/json",

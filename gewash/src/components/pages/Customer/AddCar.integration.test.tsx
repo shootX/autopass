@@ -5,6 +5,7 @@ import { MemoryRouter } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import AddCar from "./AddCar";
 import carReducer, { setBrand, setModel } from "@/store/carSlice";
+import { saveAccessToken } from "@/lib/accessToken";
 
 const mock = vi.hoisted(() => ({ fetch: vi.fn() }));
 vi.mock("@/utils/customFetch", () => ({ customFetch: mock.fetch }));
@@ -23,7 +24,7 @@ function renderSelectedCar() {
 }
 
 beforeEach(() => {
-  localStorage.setItem("access_token", "review-token");
+  saveAccessToken("review-token");
   mock.fetch.mockReset();
 });
 afterEach(() => { cleanup(); localStorage.clear(); });

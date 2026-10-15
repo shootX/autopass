@@ -15,6 +15,7 @@ import { customFetch } from '@/utils/customFetch';
 import { leftArrowUrl, calendarIconUrl, dangerUrl } from '@/assets/staticUrls';
 import Header from '@/components/Header';
 import { refreshCurrentUser } from '@/hooks/useUser';
+import { readAccessToken } from "@/lib/accessToken";
 
 export default function CustomerMyData() {
   const navigate = useNavigate();
@@ -93,7 +94,7 @@ export default function CustomerMyData() {
 
   const savePushSettings = async (wash: boolean, subscription: boolean, promo: boolean) => {
     try {
-      const token = localStorage.getItem('access_token');
+      const token = readAccessToken();
 
       await customFetch(`${import.meta.env.VITE_API_URL}/push_settings`, {
         method: 'POST',

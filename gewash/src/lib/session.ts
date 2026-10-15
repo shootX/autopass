@@ -1,9 +1,9 @@
+import { clearAccessToken } from "./accessToken";
+
 const CUSTOMER_LOGIN = "/auth";
 const MANAGER_LOGIN = "/manager-auth";
 const ROLE_KEY = "autopass.session_role";
 const ME_CACHE_KEY = "autopass.me";
-const TOKEN_KEY = "access_token";
-const EXPIRES_KEY = "access_token_expires_at";
 
 type Redirect = (path: string) => void;
 type ExpiredListener = () => void;
@@ -40,14 +40,9 @@ export function loginPathForRole(role: string | null): string {
   return role === "manager" ? MANAGER_LOGIN : CUSTOMER_LOGIN;
 }
 
-export function clearAccessToken(): void {
-  localStorage.removeItem(TOKEN_KEY);
-}
-
 /** Tokens, remembered role, and any cached /me payload. */
 export function clearSessionStorage(): void {
-  localStorage.removeItem(TOKEN_KEY);
-  localStorage.removeItem(EXPIRES_KEY);
+  clearAccessToken();
   localStorage.removeItem(ME_CACHE_KEY);
   sessionStorage.removeItem(ROLE_KEY);
   sessionStorage.removeItem(ME_CACHE_KEY);

@@ -9,6 +9,7 @@ import { georgianLocalDigits } from "@/lib/format";
 import { readSmsChallenge } from "@/lib/registerPassword";
 import SmsStatusNotice from "@/components/SmsStatusNotice";
 import type { SmsDelivery } from "@/lib/smsDelivery";
+import { readAccessToken } from "@/lib/accessToken";
 
 export default function PhoneNumberChanging() {
   const [phoneDigits, setPhoneDigits] = useState("");
@@ -44,7 +45,7 @@ export default function PhoneNumberChanging() {
     }
 
     try {
-      const token = localStorage.getItem("access_token");
+      const token = readAccessToken();
       const response = await customFetch(`${import.meta.env.VITE_API_URL}/change_phone`, {
         method: "POST",
         headers: {
@@ -77,7 +78,7 @@ export default function PhoneNumberChanging() {
 
   const handleVerifyOTP = async (code: string) => {
     try {
-      const token = localStorage.getItem("access_token");
+      const token = readAccessToken();
       const res = await customFetch(`${import.meta.env.VITE_API_URL}/change_phone/verify`, {
         method: "POST",
         headers: {

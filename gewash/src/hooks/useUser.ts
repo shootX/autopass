@@ -12,6 +12,7 @@ import {
 } from "@/store/userSlice";
 import { clearSessionStorage, rememberSessionRole } from "@/lib/session";
 import type { AppDispatch } from "@/store";
+import { readAccessToken } from "@/lib/accessToken";
 
 export class MeRequestError extends Error {
   status: number;
@@ -40,7 +41,7 @@ export async function refreshCurrentUser(
   dispatch: AppDispatch,
   mode: "establish" | "silent" = "silent",
 ): Promise<UserRole | null> {
-  const token = localStorage.getItem("access_token");
+  const token = readAccessToken();
   if (!token) {
     if (mode === "establish") dispatch(resetSession());
     return null;

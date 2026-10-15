@@ -7,6 +7,9 @@ describe("shouldShowOnboarding", () => {
     expect(shouldShowOnboarding(true, false, "/manager-auth")).toBe(false);
     expect(shouldShowOnboarding(true, false, "/register")).toBe(false);
     expect(shouldShowOnboarding(true, false, "/renew-password")).toBe(false);
+    expect(shouldShowOnboarding(true, false, "/help")).toBe(false);
+    expect(shouldShowOnboarding(true, false, "/privacy")).toBe(false);
+    expect(shouldShowOnboarding(true, false, "/payment/sandbox")).toBe(false);
   });
 
   it("still shows the carousel on the logged-out home entry", () => {

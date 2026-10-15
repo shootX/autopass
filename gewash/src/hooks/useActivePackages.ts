@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { customFetch } from '@/utils/customFetch';
+import { readAccessToken } from "@/lib/accessToken";
 
 export interface Package {
   id: number;
@@ -42,7 +43,7 @@ function loadPackages(): Promise<Package[]> {
   if (packagesCache) return Promise.resolve(packagesCache);
   if (packagesInflight) return packagesInflight;
 
-  const token = localStorage.getItem('access_token');
+  const token = readAccessToken();
   packagesInflight = customFetch(`${import.meta.env.VITE_API_URL}/packages/my`, {
     method: 'GET',
     headers: {

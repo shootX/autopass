@@ -1,6 +1,7 @@
 import { type Branch } from "@/hooks/useFetchBranches";
 import { branchIsOpen, formatHm } from "@/lib/format";
 import { customFetch } from "@/utils/customFetch";
+import { readAccessToken } from "@/lib/accessToken";
 
 function asRecord(value: unknown): Record<string, unknown> | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
@@ -66,7 +67,7 @@ export async function fetchFilteredBranches({
   onlyOpen: boolean;
   roundTheClockOnly: boolean;
 }): Promise<Branch[]> {
-  const token = localStorage.getItem("access_token");
+  const token = readAccessToken();
   const params = new URLSearchParams();
 
   if (selectedServices.length > 0) {

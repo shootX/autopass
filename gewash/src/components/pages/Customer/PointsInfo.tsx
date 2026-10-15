@@ -10,6 +10,7 @@ import cardIconBlue from "@/assets/icons/card_icon_blue.svg";
 import ticketIcon from "@/assets/icons/ticket_icon.svg";
 import referralsIcon from "@/assets/icons/referals_icon.svg";
 import { dragY } from "@/lib/dragOffset";
+import { readAccessToken } from "@/lib/accessToken";
 
 export default function PointsInfo() {
   const navigate = useNavigate();
@@ -102,7 +103,7 @@ export default function PointsInfo() {
               className={`buy-points-sheet__btn${price > 0 ? " active" : ""}`}
               disabled={price === 0}
               onClick={async () => {
-                const token = localStorage.getItem("access_token");
+                const token = readAccessToken();
                 if (!token || price <= 0 || buyLoading) return;
 
                 try {

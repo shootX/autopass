@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import userReducer from "@/store/userSlice";
 import type { SessionPhase, UserRole } from "@/store/userSlice";
 import { CarCheckRoute } from "./CarCheckRoute";
+import { saveAccessToken } from "@/lib/accessToken";
 
 const fetchCars = vi.hoisted(() => vi.fn());
 
@@ -49,7 +50,7 @@ afterEach(() => {
 
 describe("CarCheckRoute", () => {
   it("lets a manager through to the manager page without loading cars", () => {
-    localStorage.setItem("access_token", "manager-token");
+    saveAccessToken("manager-token");
     renderAt("/manager-qr-page", "manager", "ready");
 
     expect(screen.getByText("manager-page")).toBeTruthy();
@@ -58,7 +59,7 @@ describe("CarCheckRoute", () => {
   });
 
   it("sends a regular user without a car to car registration", () => {
-    localStorage.setItem("access_token", "user-token");
+    saveAccessToken("user-token");
     fetchCars.mockReturnValue({ cars: [], loading: false, error: "" });
     renderAt("/home", "customer", "ready");
 
@@ -67,7 +68,7 @@ describe("CarCheckRoute", () => {
   });
 
   it("does not redirect before the role is known", () => {
-    localStorage.setItem("access_token", "pending-token");
+    saveAccessToken("pending-token");
     renderAt("/home", null, "pending");
 
     expect(screen.getByText("home")).toBeTruthy();

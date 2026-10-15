@@ -11,6 +11,7 @@ import { invalidatePackagesCache } from "@/hooks/useActivePackages";
 import { bodyLabel, carParts } from "@/lib/v4";
 import { WashRing } from "@/components/v4/WashRing";
 import { QrCode, Trash2 } from "lucide-react";
+import { readAccessToken } from "@/lib/accessToken";
 
 type Props = {
   id: number;
@@ -49,7 +50,7 @@ export function ActivePackageCard({
   const navigate = useNavigate();
   
   const deletePackage = async (id: number): Promise<boolean> => {
-    const token = localStorage.getItem("access_token");
+    const token = readAccessToken();
   
     try {
       const res = await customFetch(`${import.meta.env.VITE_API_URL}/packages/${id}/remove`, {

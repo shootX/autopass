@@ -251,5 +251,20 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 - [x] M7: corporate API key stored as sha256 (+last4, last-used); shown once after issue; existing keys hashed in place by migration `2026_10_15_000002`.
 - [x] M8: mock SMS inbox stores texts only for `SMS_MOCK_INBOX_PHONES` (default TEST_PAYMENT_PHONES); views audited.
 - [x] L2 uniform partner voucher answers; L3 no SVG uploads; L4 `@json($voucher)`; L5 review toggle is POST+CSRF; L6 `TRUSTED_PROXIES`; L7 OTP/email codes HMAC-keyed per challenge; L8 account deletion erases personal data with a unique tombstone phone.
-- [ ] Frontend: manager approve must send `qr_code`/`approve_token`; call `/api/refresh` before expiry; M4 CSP list; npm audit (maplibre-gl, react-router-dom, vite).
+- [x] Frontend: manager approve, `/api/refresh`, CSP list, npm audit — done on `security/frontend-audit-fixes` (section below).
 - [ ] DevOps (Shota): deploy, security headers (M4), APP_ENV=production, TEST_PAYMENT_ALLOW_PRODUCTION off, TRUSTED_PROXIES, check live accounts after migrate (C1).
+
+## 2026-10-15 — Frontend audit fixes (`security/frontend-audit-fixes`)
+
+- [x] `security/audit-fixes` (`16845d1`, PR #28) შერწყმულია merge commit-ით. Rebase და force-push არ ყოფილა.
+- [x] H1: მენეჯერის approve აგზავნის `qr_code` და/ან `approve_token`-ს `GET /api/checkqr`-დან. მხოლოდ id აღარ იგზავნება. ტელეფონი ბარათზე აღარ არის სავალდებულო. ტესტი: `gewash/src/lib/packageApprove.test.ts`.
+- [x] M1: JWT რჩება მეხსიერებაში. #28 httpOnly cookie-ს არ დებს. ძველი `localStorage` ტოკენი იშლება. `POST /api/refresh` ეშვება `expires_in`-მდე (TTL 1 დღე). წარუმატებლობა გამოდის სესიიდან. ტესტი: `accessToken.test.ts`, `sessionRefresh.test.ts`. voucher-checker-ის პარტნიორის ტოკენიც მეხსიერებაშია (`voucherApi.test.ts`).
+- [x] M6: `maplibre-gl` 6.14.0, `react-router-dom` 7.18.4, gewash `vite` 7.3.7, `postcss` 8.5.30, voucher-checker `vite` 8.3.4. `npm audit --omit=dev` ორივეზე სუფთაა. `npm ci` გადის npm 11.17.0-ზეც და npm 10.9.9-ზეც (engines მხოლოდ გაფრთხილებაა).
+- [x] M4: `docs/CSP.md`. nginx არ შეცვლილა. `api.mapbox.com` preconnect მოხსნილია.
+- [x] `/help` სტუმარს შესვლაზე აღარ აგდებს. ტესტი: `App.routes.test.tsx`.
+- [x] კონფიდენციალურობა ka/en/ru, `[cite:` აღარ არის. ტესტი: `PrivacyPage.test.tsx`.
+- [x] `VITE_BYPASS_AUTH` და `VITE_MOCK_VOUCHER_CHECK` production ბილდში ვერ ირთვება. ტესტი: `productionFlags.test.ts` ორივე პაკეტში.
+- [x] `/payment/sandbox` არის NotFound, სანამ `VITE_TEST_PAYMENTS=true` არ არის. ბარათის ფორმა არ დაემატა. ტესტი: `App.routes.test.tsx`.
+- [x] იგივე კლასი: device token აღარ ეწერება iframe-ში; checkout URL გადის `safeCheckoutUrl`-ში; `redirect`/`next` არ მოჰყვება; Viber აღარ იყენებს `geocar.ge/redirect.html`. ტესტი: `navigationTarget.test.ts`, `App.routes.test.tsx`.
+- [ ] რეგისტრაციის captcha: #28-ის `register` იღებს მხოლოდ `phone`-ს და არასავალდებულო რეფერალ `code`-ს. captcha-ს ველი, site key და შემოწმების endpoint არ არის. სერვერის იგნორირებული ვიჯეტი არ დაემატა.
+- შერწყმა main-ში, დეპლოი და ცოცხალი სერვერი არ შეხებია.

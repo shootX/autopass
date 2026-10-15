@@ -25,6 +25,9 @@ import SplashScreen from "./components/v4/SplashScreen";
 import { SPLASH_MAX_MS, splashShouldBlock } from "./lib/splashGate";
 import Onboarding from "./components/v4/Onboarding";
 import PaymentSuccess from "./components/v4/PaymentSuccess";
+import { readAccessToken } from "@/lib/accessToken";
+import { authBypassEnabled } from "./lib/productionFlags";
+import { HelpShell, PaymentSandboxGate } from "./components/PublicEntry";
 
 const Home = lazy(() => import("./components/pages/Home"));
 const CustomerCalendar = lazy(() => import("./components/Calendars/CustomerCalendar"));
@@ -77,6 +80,18 @@ function PublicAuthRoutes() {
   );
 }
 
+function PublicPages() {
+  return (
+    <>
+      {PublicAuthRoutes()}
+      <Route path="/help" element={<HelpShell />}>
+        <Route index element={<Help />} />
+      </Route>
+      <Route path="/payment/sandbox" element={<PaymentSandboxGate />} />
+    </>
+  );
+}
+
 function readLangCache(lang: string): Record<string, unknown> | null {
   try {
     const raw = sessionStorage.getItem(`gewash_lang:${lang}`);
@@ -111,8 +126,8 @@ function AppRoutes() {
   }, [splashStarted]);
 
   useEffect(() => {
-    if (import.meta.env.VITE_BYPASS_AUTH !== "true") return;
-    if (localStorage.getItem("access_token")) return;
+    if (import.meta.env.PROD || !authBypassEnabled(import.meta.env)) return;
+    if (readAccessToken()) return;
     void import("./dev/previewFixtures").then(({ previewUser }) => {
       dispatch(setUser(previewUser));
       dispatch(setRole("customer"));
@@ -120,16 +135,7 @@ function AppRoutes() {
   }, [dispatch]);
 
   useEffect(() => {
-    ensureDeviceToken().then((token) => {
-      if (token) {
-        const webview = document.querySelector("iframe, webview");
-        if (webview && "src" in webview && typeof webview.src === "string") {
-          const url = new URL(webview.src);
-          url.searchParams.set("token", token);
-          webview.src = url.toString();
-        }
-      }
-    });
+    void ensureDeviceToken();
   }, []);
 
 //////////////////////////////////////
@@ -174,7 +180,7 @@ function AppRoutes() {
 
   useEffect(() => {
     if (langLoading) return;
-    if (!localStorage.getItem("access_token")) return;
+    if (!readAccessToken()) return;
     const run = () => {
       void loadShopBundle();
       void loadDefaultBranches();
@@ -206,14 +212,14 @@ function AppRoutes() {
     return (
       <Suspense fallback={<SplashScreen />}>
         <Routes>
-          {PublicAuthRoutes()}
+          {PublicPages()}
           <Route path="*" element={<Navigate to={loginPathForRole(readSessionRole())} replace />} />
         </Routes>
       </Suspense>
     );
   }
 
-  const loggedOut = !localStorage.getItem("access_token") && import.meta.env.VITE_BYPASS_AUTH !== "true";
+  const loggedOut = !readAccessToken() && !authBypassEnabled(import.meta.env);
   if (shouldShowOnboarding(loggedOut, onboarded, pathname)) {
     return (
       <Onboarding
@@ -228,7 +234,7 @@ function AppRoutes() {
   return (
     <Suspense fallback={<SplashScreen />}>
     <Routes>
-      {PublicAuthRoutes()}
+      {PublicPages()}
 
       {/* Secure routes */}
       <Route element={<ProtectedRoute />}>
@@ -249,7 +255,6 @@ function AppRoutes() {
             <Route path={managerAliasPaths.scanner} element={<ManagerScanner />} />
             <Route path="/contacts" element={<Contacts />} />
             <Route path={managerAliasPaths.contacts} element={<Contacts />} />
-            <Route path="/help" element={<Help />} />
             <Route path={managerAliasPaths.help} element={<Help />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path={managerAliasPaths.settings} element={<SettingsPage />} />
@@ -293,7 +298,6 @@ function AppRoutes() {
                 <Route path={customerAliasPaths.profileCars} element={<Navigate to="/customer-my-data#vehicles" replace />} />
                 <Route path="/messages" element={<Messages />} />
                 <Route path="/contacts" element={<Contacts />} />
-                <Route path="/help" element={<Help />} />
                 <Route path="/settings" element={<SettingsPage />} />
               </Route>
             </Route>

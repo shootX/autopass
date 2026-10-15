@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import { customFetch } from "@/utils/customFetch";
+import { readAccessToken } from "@/lib/accessToken";
 
 export interface QrCheckResponse {
   success: boolean;
+  approve_token?: string;
   package: {
     id: number;
     start_date: string;
@@ -13,7 +15,7 @@ export interface QrCheckResponse {
     user: {
       name: string;
       surname: string;
-      phone: string;
+      phone?: string;
     };
     package: {
       count_washes: number;
@@ -38,7 +40,7 @@ export const useCheckQr = (qrCode: string | null) => {
       setError(null);
 
       try {
-        const token = localStorage.getItem("access_token");
+        const token = readAccessToken();
         const res = await customFetch(`${import.meta.env.VITE_API_URL}/checkqr/${qrCode}`, {
           method: "GET",
           headers: {

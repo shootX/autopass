@@ -18,6 +18,7 @@ import {
   branchWorkloadUrl,
 } from '@/assets/staticUrls';
 import PageSkeleton from '@/components/Skeletons/PageSkeleton';
+import { readAccessToken } from "@/lib/accessToken";
 
 type CountMap = Record<string, number | string>;
 type GraphMap = Record<string, number>;
@@ -106,7 +107,7 @@ export default function CarwashStatistics() {
   const [branch, setBranch] = useState<ManagerBranch | null>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem('access_token');
+    const token = readAccessToken();
 
     customFetch(`${import.meta.env.VITE_API_URL}/manager/my-washes`, {
       headers: {
@@ -125,7 +126,7 @@ export default function CarwashStatistics() {
   useEffect(() => {
     if (!branch?.id) return;
 
-    const token = localStorage.getItem('access_token');
+    const token = readAccessToken();
     setIsStatsLoading(true);
 
     customFetch(

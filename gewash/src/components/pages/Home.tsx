@@ -13,6 +13,7 @@ import { avatarLabel, greetingName } from "@/lib/greetingName";
 import { bodyLabel, carParts, carPhoto, washCells } from "@/lib/v4";
 import PageSkeleton from "@/components/Skeletons/PageSkeleton";
 import { ArrowRight, Bell, CalendarCheck, CalendarDays, Car, CarFront, ChevronRight, Clock3, MapPin, Plus, QrCode, Search, Star } from "lucide-react";
+import { readAccessToken } from "@/lib/accessToken";
 
 const BranchMap = lazy(() => import("../BranchMap").then((m) => ({ default: m.BranchMap })));
 
@@ -45,7 +46,7 @@ export default function Home() {
   const name = greetingName(user?.firstName, user?.phone);
 
   useEffect(() => {
-    const token = localStorage.getItem("access_token");
+    const token = readAccessToken();
     customFetch(`${import.meta.env.VITE_API_URL}/myappointments`, {
       headers: { Authorization: `Bearer ${token}` },
     })

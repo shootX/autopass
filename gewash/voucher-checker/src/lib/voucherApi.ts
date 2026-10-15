@@ -1,4 +1,5 @@
 import { getToken } from "./session";
+import { voucherMockEnabled } from "./productionFlags";
 import { authJsonHeaders } from "./apiHeaders";
 import { assertPartnerAccess } from "./partnerGate";
 
@@ -88,10 +89,12 @@ export type VoucherCheckResult =
   | { status: "invalid"; code: string; payload: VoucherCheckResponse }
   | { status: "error"; code: string; message: string };
 
-/** Mock is off by default — real `fetch` to the API. Set `VITE_MOCK_VOUCHER_CHECK=true` for UI work without backend. */
+/** Mock is off by default. A production build ignores VITE_MOCK_VOUCHER_CHECK. */
 function voucherCheckMockEnabled(): boolean {
-  const v = String(import.meta.env.VITE_MOCK_VOUCHER_CHECK ?? "false").trim().toLowerCase();
-  return v === "true" || v === "1" || v === "yes";
+  return voucherMockEnabled({
+    PROD: import.meta.env.PROD,
+    VITE_MOCK_VOUCHER_CHECK: import.meta.env.VITE_MOCK_VOUCHER_CHECK,
+  });
 }
 
 export type CheckVoucherResult = {

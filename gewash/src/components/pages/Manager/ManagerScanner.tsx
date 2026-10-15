@@ -9,6 +9,8 @@ import { formatPhone } from "@/lib/format";
 import Header from "@/components/Header";
 import { releaseScanner } from "@/lib/releaseScanner";
 import { useTranslation } from "@/hooks/useTranslation";
+import { readAccessToken } from "@/lib/accessToken";
+import { approvePackageBody, packageQrReady } from "@/lib/packageApprove";
 
 const SCAN_CONFIG = {
   fps: 10,
@@ -80,10 +82,14 @@ export default function ManagerScanner(): React.JSX.Element {
 
 
   const handleApprove = async () => {
+    const body = approvePackageBody({
+      qrCode: scannedCode,
+      approveToken: result?.approve_token,
+    });
+    if (!body || !pkgMeta?.id) return;
     setIsApproved(true);
-    if (!pkgMeta?.id) return;
 
-    const token = localStorage.getItem("access_token");
+    const token = readAccessToken();
 
     try {
       const res = await customFetch(`${import.meta.env.VITE_API_URL}/package/${pkgMeta.id}/approve`, {
@@ -92,13 +98,12 @@ export default function ManagerScanner(): React.JSX.Element {
           "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json",
         },
+        body: JSON.stringify(body),
       });
 
       if (!res.ok) throw new Error("Approval failed");
 
-      const data = await res.json();
-
-      console.log("Approved:", data.package.id);
+      await res.json();
       setApprovalSuccess(true);
       setApprovedOffset(1);
     } catch (err) {
@@ -123,15 +128,7 @@ export default function ManagerScanner(): React.JSX.Element {
   const user = pkgMeta?.user;
   const pkg = pkgMeta?.package;
 
-  const isValid =
-    result?.success &&
-    typeof user?.name === "string" &&
-    typeof user?.surname === "string" &&
-    typeof user?.phone === "string" &&
-    typeof pkg?.count_washes === "number" &&
-    typeof pkgMeta?.used_washes === "number" &&
-    typeof pkgMeta?.created_at === "string" &&
-    typeof pkgMeta?.end_date === "string";
+  const isValid = packageQrReady(result) && user != null && pkgMeta != null && pkg != null;
 
   return (
     <div>
@@ -167,7 +164,7 @@ export default function ManagerScanner(): React.JSX.Element {
               <p className='qr-client-name'>
                 {user.name} {user.surname}
               </p>
-              <p className='qr-client-phone'>{formatPhone(user.phone)}</p>
+              {user.phone ? <p className='qr-client-phone'>{formatPhone(user.phone)}</p> : null}
               <img
                 src={closeIconUrl}
                 alt='close'

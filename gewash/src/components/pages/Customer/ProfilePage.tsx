@@ -8,9 +8,10 @@ import { useFetchCars } from "@/hooks/useFetchCars";
 import { useMyPackages } from "@/hooks/useActivePackages";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Bell, CarFront, ChevronRight, Settings, Share2, ShoppingBag, Star, Ticket } from "lucide-react";
+import { readAccessToken } from "@/lib/accessToken";
 
 async function loadReferralLink(): Promise<string | null> {
-  const token = localStorage.getItem("access_token");
+  const token = readAccessToken();
   if (!token) return null;
   try {
     const res = await customFetch(`${import.meta.env.VITE_API_URL}/me/get-referral-link`, {

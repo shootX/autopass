@@ -1,19 +1,19 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { loginPathForRole, readSessionRole } from "@/lib/session";
+import { readAccessToken } from "@/lib/accessToken";
+import { authBypassEnabled } from "@/lib/productionFlags";
 
 export function ProtectedRoute() {
   const location = useLocation();
-  // В режиме верстки можно включить обход авторизации,
-  // установив VITE_BYPASS_AUTH=true в .env
-  const bypassAuth = import.meta.env.VITE_BYPASS_AUTH === "true";
+  const bypassAuth = authBypassEnabled(import.meta.env);
 
   if (bypassAuth) {
     return <Outlet />;
   }
 
-  const token = localStorage.getItem("access_token");
+  const token = readAccessToken();
 
-  const publicPaths = ["/auth", "/manager-auth", "/register", "/renew-password"];
+  const publicPaths = ["/auth", "/manager-auth", "/register", "/renew-password", "/privacy", "/help", "/payment-success", "/payment/sandbox"];
   const isPublic = publicPaths.includes(location.pathname);
 
   if (!token && !isPublic) {

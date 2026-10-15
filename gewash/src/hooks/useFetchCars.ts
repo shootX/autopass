@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { customFetch } from "@/utils/customFetch";
+import { readAccessToken } from "@/lib/accessToken";
 
 type EnrichedCar = {
   id: number;
@@ -32,7 +33,7 @@ function loadCars(): Promise<EnrichedCar[]> {
   if (carsCache) return Promise.resolve(carsCache);
   if (carsInflight) return carsInflight;
 
-  const token = localStorage.getItem("access_token");
+  const token = readAccessToken();
   carsInflight = customFetch(`${import.meta.env.VITE_API_URL}/mycars`, {
     headers: {
       Authorization: `Bearer ${token}`,

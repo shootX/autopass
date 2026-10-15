@@ -10,6 +10,7 @@ import Header from "@/components/Header";
 import balanceIcon from "@/assets/icons/balance_icon.svg";
 import referralsIcon from "@/assets/icons/referals_icon.svg";
 import rightArrow from "@/assets/icons/right-arrow.svg";
+import { readAccessToken } from "@/lib/accessToken";
 
 type Transaction = {
   id: string;
@@ -96,7 +97,7 @@ export default function MyPoints() {
   }, [noticeAmount]);
 
   useEffect(() => {
-    const token = localStorage.getItem("access_token");
+    const token = readAccessToken();
     if (!token) {
       setTxLoading(false);
       return;

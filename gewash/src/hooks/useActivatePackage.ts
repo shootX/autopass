@@ -1,5 +1,6 @@
 import { customFetch } from "@/utils/customFetch";
 import { useState } from "react";
+import { readAccessToken } from "@/lib/accessToken";
 
 export function useActivatePackage() {
   const [loading, setLoading] = useState(false);
@@ -20,7 +21,7 @@ export function useActivatePackage() {
     setError(null);
 
     try {
-      const token = localStorage.getItem("access_token");
+      const token = readAccessToken();
 
       const response = await customFetch(
         `${import.meta.env.VITE_API_URL}/packages/buy`,

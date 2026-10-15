@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { confirmVoucherUse, checkVoucher, opaqueTempCode } from "./voucherApi";
 import { PartnerFlowError } from "./partnerGate";
+import { clearToken, setToken } from "./session";
 
 const ID = "0123456789abcdef0123456789abcdef";
 
@@ -12,7 +13,9 @@ function jsonResponse(body: unknown, status: number) {
 }
 
 afterEach(() => {
+  clearToken();
   vi.unstubAllGlobals();
+  vi.unstubAllEnvs();
   vi.restoreAllMocks();
 });
 
@@ -45,6 +48,7 @@ describe("voucher temp_code", () => {
 
   it("posts temp_code as a string and does not store the SMS code", async () => {
     const storage = installStorage();
+    setToken("partner-token");
     const fetchMock = vi.fn(async () => jsonResponse({ success: true }, 200));
     vi.stubGlobal("fetch", fetchMock);
 
@@ -54,8 +58,8 @@ describe("voucher temp_code", () => {
     const body = JSON.parse(String(calls[0]?.[1]?.body));
     expect(body).toEqual({ temp_code: ID, code: "123456" });
     expect(typeof body.temp_code).toBe("string");
-    expect(storage.getItem("voucher_checker_access_token")).toBe("partner-token");
-    expect(storage.getItem("voucher_checker_access_token")).not.toContain("123456");
+    expect(storage.getItem("voucher_checker_access_token")).toBeNull();
+    expect(JSON.stringify(storage)).not.toContain("123456");
   });
 
   it("rejects a numeric temp code before calling the API", async () => {
@@ -77,6 +81,19 @@ describe("voucher temp_code", () => {
     expect(result.tempCode).toBe(ID);
   });
 
+  it("does not use the voucher mock when the build is production", async () => {
+    installStorage();
+    vi.stubEnv("PROD", true);
+    vi.stubEnv("VITE_MOCK_VOUCHER_CHECK", "true");
+    const fetchMock = vi.fn(async () => jsonResponse({ success: true, temp_code: ID }, 200));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await checkVoucher("AB12CD34");
+
+    expect(fetchMock).toHaveBeenCalled();
+    expect(result.payload.message).not.toBe("OK (mock)");
+  });
+
   it("does not hand back a code when delivery failed", async () => {
     installStorage();
     vi.stubGlobal(
@@ -90,6 +107,7 @@ describe("voucher temp_code", () => {
 
   it("logs the partner out on 401 and blocks on must_change_password", async () => {
     installStorage();
+    setToken("partner-token");
     vi.stubGlobal("fetch", vi.fn(async () => jsonResponse({ error: "Unauthorized" }, 401)));
     await expect(checkVoucher("AB12CD34")).rejects.toBeInstanceOf(PartnerFlowError);
 

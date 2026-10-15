@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { setSessionRedirect } from "@/lib/session";
 import { customFetch } from "./customFetch";
+import { readAccessToken, saveAccessToken } from "@/lib/accessToken";
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -12,7 +13,7 @@ afterEach(() => {
 
 describe("customFetch 401", () => {
   it("ends the session when an authorized request is rejected", async () => {
-    localStorage.setItem("access_token", "abc");
+    saveAccessToken("abc");
     window.history.pushState({}, "", "/customer-my-data");
     const redirect = vi.fn();
     setSessionRedirect(redirect);
@@ -26,12 +27,12 @@ describe("customFetch 401", () => {
     });
 
     expect(response.status).toBe(401);
-    expect(localStorage.getItem("access_token")).toBeNull();
+    expect(readAccessToken()).toBeNull();
     expect(redirect).toHaveBeenCalledWith("/auth");
   });
 
   it("sends a remembered manager to /manager-auth", async () => {
-    localStorage.setItem("access_token", "abc");
+    saveAccessToken("abc");
     sessionStorage.setItem("autopass.session_role", "manager");
     sessionStorage.setItem("autopass.me", "{\"role\":1}");
     window.history.pushState({}, "", "/booking");

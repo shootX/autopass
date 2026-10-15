@@ -23,7 +23,7 @@ import { useFetchBranches, type Branch } from "@/hooks/useFetchBranches";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ru, ka, enUS } from "date-fns/locale";
-
+import { readAccessToken } from "@/lib/accessToken";
 import {
   trashIconUrl,
   managerCallIconUrl,
@@ -75,7 +75,7 @@ export default function WashAppointmentsCalendar() {
     if (!selectedAppointment) return;
 
     try {
-      const token = localStorage.getItem("access_token");
+      const token = readAccessToken();
       const response = await customFetch(
         `${import.meta.env.VITE_API_URL}/appointments/${selectedAppointment.id}/remove`,
         {

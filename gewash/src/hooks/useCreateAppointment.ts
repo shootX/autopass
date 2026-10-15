@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { addAppointment } from "@/store/appointmentsSlice";
 import { customFetch } from "@/utils/customFetch";
+import { readAccessToken } from "@/lib/accessToken";
 
 type CreateAppointmentPayload = {
   car_wash_id: number;
@@ -41,7 +42,7 @@ export function useCreateAppointment() {
     setSuccess(false);
 
     try {
-      const token = localStorage.getItem("access_token");  
+      const token = readAccessToken();  
       const response = await customFetch(`${import.meta.env.VITE_API_URL}/appointments/add`, {
         method: "POST",
         headers: {

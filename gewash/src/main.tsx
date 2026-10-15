@@ -3,6 +3,8 @@ import App from './App.tsx'
 import "./index.css"
 import "./styles/global.scss";
 import { dropExpiredAccessToken } from "./lib/accessToken";
+import { authBypassEnabled } from "./lib/productionFlags";
+import "./lib/sessionRefresh";
 
 dropExpiredAccessToken();
 
@@ -12,7 +14,7 @@ if (import.meta.env.PROD && "serviceWorker" in navigator) {
   });
 }
 
-if (import.meta.env.VITE_BYPASS_AUTH === "true") {
+if (!import.meta.env.PROD && authBypassEnabled(import.meta.env)) {
   const { installPreviewFetch } = await import("./dev/previewFixtures");
   installPreviewFetch();
 }

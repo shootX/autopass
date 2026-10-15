@@ -1,26 +1,50 @@
 const TOKEN_KEY = "voucher_checker_access_token";
 const MUST_CHANGE_KEY = "voucher_checker_must_change";
 
+let memoryToken: string | null = null;
+
+function purgePersistedToken(): void {
+  try {
+    localStorage.removeItem(TOKEN_KEY);
+  } catch {
+    /* private mode or tests without storage */
+  }
+}
+
+purgePersistedToken();
+
 export function getToken(): string | null {
-  const t = localStorage.getItem(TOKEN_KEY);
-  return t && t.trim() ? t.trim() : null;
+  return memoryToken;
 }
 
 export function setToken(token: string): void {
-  localStorage.setItem(TOKEN_KEY, token);
+  memoryToken = token.trim();
+  purgePersistedToken();
 }
 
 export function clearToken(): void {
-  localStorage.removeItem(TOKEN_KEY);
-  localStorage.removeItem(MUST_CHANGE_KEY);
+  memoryToken = null;
+  try {
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(MUST_CHANGE_KEY);
+  } catch {
+    /* private mode */
+  }
 }
 
 export function mustChangePassword(): boolean {
-  return localStorage.getItem(MUST_CHANGE_KEY) === "1";
+  try {
+    return localStorage.getItem(MUST_CHANGE_KEY) === "1";
+  } catch {
+    return false;
+  }
 }
 
 export function setMustChangePassword(required: boolean): void {
-  if (required) localStorage.setItem(MUST_CHANGE_KEY, "1");
-  else localStorage.removeItem(MUST_CHANGE_KEY);
+  try {
+    if (required) localStorage.setItem(MUST_CHANGE_KEY, "1");
+    else localStorage.removeItem(MUST_CHANGE_KEY);
+  } catch {
+    /* private mode */
+  }
 }
-

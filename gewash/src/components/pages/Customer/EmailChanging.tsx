@@ -4,6 +4,7 @@ import { leftArrowUrl } from '@/assets/staticUrls';
 import { customFetch } from '@/utils/customFetch';
 import { useTranslation } from '@/hooks/useTranslation';
 import Header from '@/components/Header';
+import { readAccessToken } from "@/lib/accessToken";
 
 type Step = 'EMAIL' | 'VERIFY';
 
@@ -39,7 +40,7 @@ export default function EmailChanging() {
     setError(null);
 
     try {
-      const token = localStorage.getItem('access_token');
+      const token = readAccessToken();
       const response = await customFetch(`${import.meta.env.VITE_API_URL}/email/set`, {
         method: 'POST',
         headers: { 
@@ -75,7 +76,7 @@ export default function EmailChanging() {
     setError(null);
 
     try {
-      const token = localStorage.getItem('access_token');
+      const token = readAccessToken();
       const response = await customFetch(`${import.meta.env.VITE_API_URL}/email/verify`, {
         method: 'POST',
         headers: { 

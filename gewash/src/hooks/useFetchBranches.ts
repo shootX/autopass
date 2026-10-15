@@ -1,6 +1,7 @@
 import { customFetch } from "@/utils/customFetch";
 import { parseBranch } from "@/hooks/fetchFilteredBranches";
 import { useEffect, useState } from "react";
+import { readAccessToken } from "@/lib/accessToken";
 
 export type Branch = {
   id: number;
@@ -35,7 +36,7 @@ export function useFetchBranches() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem("access_token");
+    const token = readAccessToken();
 
     customFetch(`${import.meta.env.VITE_API_URL}/branches`, {
       headers: {

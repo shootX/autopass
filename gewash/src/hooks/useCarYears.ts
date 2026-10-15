@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import type { Brand, Model } from "@/store/carSlice";
 import { customFetch } from "@/utils/customFetch";
 import { record } from "@/lib/carResult";
+import { readAccessToken } from "@/lib/accessToken";
 
 export function useCarYears(brand: Brand | null, model: Model | null) {
   const [years, setYears] = useState<number[]>([]);
@@ -20,7 +21,7 @@ export function useCarYears(brand: Brand | null, model: Model | null) {
     setLoading(true);
     const params = new URLSearchParams({ source: catalogSource, brand_id: String(brandId), model_id: String(modelId) });
     customFetch(`${import.meta.env.VITE_API_URL}/cars/years?${params}`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` },
+      headers: { Authorization: `Bearer ${readAccessToken()}` },
       signal: controller.signal,
     }).then(async response => {
       if (!response.ok) throw new Error("Years unavailable");

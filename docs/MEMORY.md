@@ -272,3 +272,17 @@ voucher-checker-ში `useVoucher`/`usePath` სახელები შეი
 - Corporate API keys: only `api_token_hash` is stored; assigning `api_token` on the model hashes it, the plain key exists only in memory and in a one-time flash (`corporate_api_token`).
 - OTP/email codes: `SmsChallengeService::codeHash()` (HMAC with APP_KEY + challenge id). Rotating APP_KEY invalidates open codes only.
 - Every admin POST/PUT/DELETE is audited by middleware; add explicit `AdminAudit::record` only when field-level old/new values matter.
+
+## 2026-10-15 — Frontend audit fixes
+
+`security/audit-fixes` (`16845d1`, PR #28) შევიდა `security/frontend-audit-fixes`-ში merge commit-ით.
+
+JWT httpOnly cookie არ არის: `access_token` რჩება მეხსიერებაში და გვერდის განახლება სესიას წყვეტს. `POST /api/refresh` შავ სიაში აგდებს ძველ ტოკენს და უნდა გამოიძახოს `expires_in`-მდე (წამები, ნაგულისხმევი 86400). წარუმატებელი refresh არის logout. `localStorage` გასაღებები `access_token` და `access_token_expires_at` იშლება. voucher-checker-ის `voucher_checker_access_token` იგივე წესით მეხსიერებაშია.
+
+პაკეტის approve ცარიელი ტანით 403-ია. სხეული არის `qr_code` (დასკანერებული) და/ან `approve_token` (`GET /api/checkqr`). checkqr აღარ აბრუნებს ტელეფონს.
+
+`VITE_BYPASS_AUTH` და `VITE_MOCK_VOUCHER_CHECK` production ბილდს აგდებს და runtime-ზეც გამორთულია. `VITE_TEST_PAYMENTS=true` რთავს მხოლოდ შეტყობინებას `/payment/sandbox`-ზე. ბარათი რჩება სერვერის გვერდზე. CSP არის `docs/CSP.md`. nginx არ შეცვლილა.
+
+რეგისტრაციას captcha არ აქვს: #28 იღებს ტელეფონს და არასავალდებულო რეფერალ კოდს. ვიჯეტი არ დაემატა.
+
+`npm audit --omit=dev` სუფთაა gewash-სა და voucher-checker-ში (`maplibre-gl` 6.14.0, `react-router-dom` 7.18.4, vite 7.3.7 / 8.3.4). `npm ci` გადის npm 10.9.9-ზეც და 11.17.0-ზეც. main-ში შერწყმა და დეპლოი არ ყოფილა.

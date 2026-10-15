@@ -1,5 +1,7 @@
 import { customFetch } from "@/utils/customFetch";
 import { savePendingPayment } from "@/lib/v4";
+import { readAccessToken } from "@/lib/accessToken";
+import { safeCheckoutUrl } from "@/lib/navigationTarget";
 
 type BuyPointsResponse = unknown;
 
@@ -29,7 +31,7 @@ function extractPaymentUrl(json: BuyPointsResponse): string | null {
  * `returnTo` is passed to backend so it can redirect back after payment.
  */
 export async function buyPointsAndRedirect(amount: number, returnTo: string): Promise<void> {
-  const token = localStorage.getItem("access_token");
+  const token = readAccessToken();
   if (!token) throw new Error("Missing access token");
   if (!Number.isFinite(amount) || amount <= 0) throw new Error("Invalid amount");
 
@@ -62,9 +64,10 @@ export async function buyPointsAndRedirect(amount: number, returnTo: string): Pr
 
   const json = (await res.json()) as unknown;
   const paymentUrl = extractPaymentUrl(json);
-  if (!paymentUrl) throw new Error("Payment URL not found in response");
+  const checkout = paymentUrl ? safeCheckoutUrl(paymentUrl, window.location.origin) : null;
+  if (!checkout) throw new Error("Payment URL not found in response");
 
   savePendingPayment({ kind: "points", points: amount, price: amount, at: new Date().toISOString() });
-  window.location.href = paymentUrl;
+  window.location.href = checkout;
 }
 

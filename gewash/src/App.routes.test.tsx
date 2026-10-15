@@ -5,6 +5,7 @@ import { invalidatePackagesCache } from "./hooks/useActivePackages";
 import { invalidateCarsCache } from "./hooks/useFetchCars";
 import { store } from "./store";
 import { resetSession, setRole, setSession } from "./store/userSlice";
+import { clearAccessToken, saveAccessToken } from "@/lib/accessToken";
 
 vi.mock("./components/BranchMap", () => ({
   BranchMap: () => null,
@@ -22,6 +23,12 @@ const translations = {
     logoAlt: "autopass",
   },
   Home: { greeting: "გამარჯობა" },
+  Help: { title: "დახმარება", backAlt: "უკან" },
+  NotFound: { title: "გვერდი ვერ მოიძებნა", home: "მთავარზე დაბრუნება" },
+  Sandbox: {
+    title: "სატესტო გადახდა",
+    body: "სატესტო გადახდა ამ ბილდში ჩართულია. ბარათის მონაცემები აქ არ შეიყვანება.",
+  },
 };
 
 function json(body: unknown, status = 200): Response {
@@ -81,6 +88,7 @@ function installFetch(): void {
 }
 
 beforeEach(() => {
+  clearAccessToken();
   localStorage.clear();
   sessionStorage.clear();
   invalidateCarsCache();
@@ -99,7 +107,7 @@ afterEach(() => {
 
 describe("app router", () => {
   it("renders the home page", async () => {
-    localStorage.setItem("access_token", "customer-token");
+    saveAccessToken("customer-token");
     store.dispatch(setRole("customer"));
     store.dispatch(setSession("ready"));
     window.history.pushState({}, "", "/");
@@ -121,5 +129,44 @@ describe("app router", () => {
     expect(screen.getByPlaceholderText("500500555")).toBeTruthy();
     expect(screen.getByRole("button", { name: "შესვლა" })).toBeTruthy();
     expect(document.body.textContent?.trim().length).toBeGreaterThan(0);
+  }, 20000);
+
+  it("renders public help without sending the visitor to sign-in", async () => {
+    window.history.pushState({}, "", "/help");
+
+    render(<App />);
+
+    expect(await screen.findByText("დახმარება", {}, { timeout: 8000 })).toBeTruthy();
+    expect(screen.queryByRole("heading", { name: "შესვლა" })).toBeNull();
+    expect(screen.queryByPlaceholderText("500500555")).toBeNull();
+  }, 20000);
+
+  it("does not expose the payment sandbox unless test payment is configured", async () => {
+    window.history.pushState({}, "", "/payment/sandbox");
+
+    render(<App />);
+
+    expect(await screen.findByRole("heading", { name: "გვერდი ვერ მოიძებნა" }, { timeout: 8000 })).toBeTruthy();
+    expect(screen.queryByRole("heading", { name: "შესვლა" })).toBeNull();
+    expect(screen.queryByRole("heading", { name: "სატესტო გადახდა" })).toBeNull();
+    expect(document.body.textContent ?? "").not.toMatch(/CVV|4111/);
+  }, 20000);
+
+  it("does not copy a device token into an iframe URL", async () => {
+    const frame = document.createElement("iframe");
+    frame.src = "https://evil.example/embed";
+    document.body.appendChild(frame);
+    saveAccessToken("customer-token");
+    store.dispatch(setRole("customer"));
+    store.dispatch(setSession("ready"));
+    window.history.pushState({}, "", "/");
+
+    render(<App />);
+
+    expect((await screen.findAllByText("AA001BB", {}, { timeout: 8000 })).length).toBeGreaterThan(0);
+    expect(frame.src).toBe("https://evil.example/embed");
+    expect(frame.src).not.toContain("device-token");
+    expect(frame.src).not.toContain("token=");
+    frame.remove();
   }, 20000);
 });

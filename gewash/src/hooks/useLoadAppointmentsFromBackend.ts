@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { setAppointments } from "@/store/appointmentsSlice";
 import { customFetch } from "@/utils/customFetch";
+import { readAccessToken } from "@/lib/accessToken";
 
 function asRecord(value: unknown): Record<string, unknown> | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
@@ -21,7 +22,7 @@ export function useLoadAppointmentsFromBackend() {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    const token = localStorage.getItem("access_token");
+    const token = readAccessToken();
 
     customFetch(`${import.meta.env.VITE_API_URL}/myappointments`, {
       headers: {

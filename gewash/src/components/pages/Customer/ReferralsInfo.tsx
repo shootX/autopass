@@ -15,6 +15,8 @@ import facebookIcon from "@/assets/icons/facebook_referal.svg";
 import { leftArrowUrl } from "@/assets/staticUrls";
 import Header from "@/components/Header";
 import { dragY } from "@/lib/dragOffset";
+import { readAccessToken } from "@/lib/accessToken";
+import { referralShareHref } from "@/lib/navigationTarget";
 
 const MOCK_REFERRAL_LINK = "https://geocar.com/rnu2345681";
 
@@ -23,25 +25,25 @@ const SOCIALS = [
     label: "Telegram",
     color: "#29A8E2",
     icon: telegramIcon,
-    href: (link: string) => `https://t.me/share/url?url=${encodeURIComponent(link)}`,
+    href: (link: string) => referralShareHref("telegram", link),
   },
   {
     label: "Whatsapp",
     color: "#25D366",
     icon: whatsappIcon,
-    href: (link: string) => `https://wa.me/?text=${encodeURIComponent(link)}`,
+    href: (link: string) => referralShareHref("whatsapp", link),
   },
   {
     label: "Viber",
     color: "#7360F2",
     icon: viberIcon,
-    href: (link: string) => `https://geocar.ge/redirect.html?to=viber://forward?text=${encodeURIComponent(link)}`,
+    href: (link: string) => referralShareHref("viber", link),
   },
   {
     label: "Facebook",
     color: "#1877F2",
     icon: facebookIcon,
-    href: (link: string) => `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(link)}`,
+    href: (link: string) => referralShareHref("facebook", link),
   },
 ];
 
@@ -56,7 +58,7 @@ export default function ReferralsInfo() {
   );
 
   useEffect(() => {
-    const token = localStorage.getItem("access_token");
+    const token = readAccessToken();
     if (!token) return;
 
     const loadReferrals = async () => {
@@ -100,7 +102,7 @@ export default function ReferralsInfo() {
 
   useEffect(() => {
     if (!sheetOpen) return;
-    const token = localStorage.getItem("access_token");
+    const token = readAccessToken();
     if (!token) return;
 
     const loadReferralLink = async () => {

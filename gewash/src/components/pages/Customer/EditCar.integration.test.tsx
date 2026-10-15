@@ -2,12 +2,13 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import EditCar from "./EditCar";
+import { saveAccessToken } from "@/lib/accessToken";
 
 const mock = vi.hoisted(() => ({ fetch: vi.fn() }));
 vi.mock("@/utils/customFetch", () => ({ customFetch: mock.fetch }));
 vi.mock("@/hooks/useTranslation", () => ({ useTranslation: () => (key: string) => key }));
 vi.mock("@/components/Header", () => ({ default: () => null }));
-beforeEach(() => { mock.fetch.mockReset(); localStorage.setItem("access_token", "review-only"); });
+beforeEach(() => { mock.fetch.mockReset(); saveAccessToken("review-only"); });
 afterEach(() => { cleanup(); localStorage.clear(); });
 
 it("loads an editable car and year directly without navigation state", async () => {
