@@ -11,7 +11,9 @@ use Symfony\Component\HttpFoundation\Cookie;
  * Rotating refresh tokens for the SPA, carried in an httpOnly cookie scoped to /api/refresh.
  *
  * - Every login starts a family; each refresh marks the presented token used and issues the next.
- * - Presenting a used/revoked token again revokes the whole family (theft signal) → 401.
+ * - A used token presented again within security.refresh_reuse_grace_seconds (30) is a second
+ *   tab racing the first: it gets a fresh token in the same family. Later reuse, or reuse of a
+ *   revoked token, revokes the whole family (theft signal) → 401.
  * - A family never outlives security.session_max_minutes from its login.
  * - A token_version bump (password change, logout everywhere, ban flow) kills old families.
  */
@@ -60,7 +62,10 @@ class RefreshTokens
             if (! $row) {
                 return null;
             }
-            if ($row->used_at !== null || $row->revoked_at !== null) {
+            $grace = (int) config('security.refresh_reuse_grace_seconds', 30);
+            $racing = $row->revoked_at === null && $row->used_at !== null
+                && Carbon::parse($row->used_at)->gt(now()->subSeconds($grace));
+            if (! $racing && ($row->used_at !== null || $row->revoked_at !== null)) {
                 // Reuse of a rotated token: someone else may hold the newer one. End the session.
                 $this->revokeFamily($row->family);
 
@@ -78,11 +83,23 @@ class RefreshTokens
                 return null;
             }
 
-            $marked = DB::table('refresh_tokens')->where('id', $row->id)->whereNull('used_at')
-                ->update(['used_at' => now(), 'updated_at' => now()]);
+            if (! $racing) {
+                // The first use starts the grace window; a racing reuse doesn't extend it.
+                DB::table('refresh_tokens')->where('id', $row->id)->whereNull('used_at')
+                    ->update(['used_at' => now(), 'updated_at' => now()]);
+            }
 
-            return $marked === 1 ? [$user, (string) $row->family, $started->timestamp] : null;
+            return [$user, (string) $row->family, $started->timestamp];
         });
+    }
+
+    /** Revokes the session the presented cookie belongs to (logout without an access token). */
+    public function revokeByToken(string $plain): void
+    {
+        if ($plain === '' || strlen($plain) > 128) {
+            return;
+        }
+        $this->revokeFamily(DB::table('refresh_tokens')->where('token_hash', hash('sha256', $plain))->value('family'));
     }
 
     public function revokeFamily(?string $family): void

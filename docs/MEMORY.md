@@ -285,3 +285,8 @@ voucher-checker-ში `useVoucher`/`usePath` სახელები შეი
 - Refresh tokens: table `refresh_tokens` (sha256 only), family = JWT claim `sid`, session start = `sess`. JSON test requests need `->withCredentials()` to send cookies.
 - Laravel's CORS with one allowed origin always returns that origin (not the caller's); assert "not echoed", not "missing".
 - Query builder has no `whereKey` (it becomes `where key = …`); use `where('id', …)` on `DB::table`.
+
+## 2026-10-15 — QA round 3 on PR #28
+- Refresh reuse inside the grace window is a tab race, not theft: a fresh token in the same family; the first use alone sets `used_at`.
+- Logout that must work without a valid JWT lives under the cookie Path: `/api/refresh/logout`.
+- `User::forceCreate` in /register can lose a race: catch `UniqueConstraintViolationException` and continue with the existing row.

@@ -1,6 +1,6 @@
 # Auth, refresh and package-approve contract (API ↔ gewash)
 
-Updated 2026-10-15 (PR #28, QA round 2). Backend: `backend/app/Http/Controllers/Api/AuthController.php`,
+Updated 2026-10-15 (PR #28, QA rounds 2–3). Backend: `backend/app/Http/Controllers/Api/AuthController.php`,
 `PackagesController::managerApprove`, `AppointmentsController::checkQr`, `app/Services/Security/RefreshTokens.php`.
 
 ## 1. Tokens
@@ -23,7 +23,7 @@ login, regardless of how often it is refreshed.
 
 All requests from the SPA that may set or send the cookie must use `credentials: 'include'`
 (fetch) / `withCredentials: true` (axios): `/api/login`, `/api/register/set_password`,
-`/api/refresh`, `/api/logout`. CORS: only origins in `CORS_ALLOWED_ORIGINS` (comma list, `*` is
+`/api/refresh`, `/api/refresh/logout`, `/api/logout`. CORS: only origins in `CORS_ALLOWED_ORIGINS` (comma list, `*` is
 ignored) get `Access-Control-Allow-Origin`; `Access-Control-Allow-Credentials: true`.
 
 ### POST /api/login
@@ -43,16 +43,27 @@ login and sets the refresh cookie.
   200 `{success, access_token, token_type, expires_in}` + a **new** `Set-Cookie: ap_refresh` (rotated).
   - 401 `{success:false}` + cookie cleared: unknown/expired cookie, session past its max, password
     changed / logged out everywhere / banned / reset required, or **reuse of an already rotated
-    cookie** (the whole session family is revoked — the newer cookie stops working too).
-  - 409: a parallel refresh with the same cookie is in progress. Retry once after a short delay;
-    don't log the user out on 409 or on a network error.
+    cookie more than 30 s after its rotation** (`REFRESH_REUSE_GRACE_SECONDS`): the whole session
+    family is revoked — the newer cookie stops working too.
+  - Two tabs refreshing at once: parallel calls with the same cookie wait for each other (up to 5 s);
+    a rotated cookie presented again within the 30 s grace window gets 200 with a fresh access
+    token and cookie in the same session. The last `Set-Cookie` the browser receives wins; every
+    cookie issued this way stays valid.
+  - 409: the wait above timed out (rare). Retry once; don't log the user out on 409 or on a network error.
 - **Legacy bearer flow (compat, deprecated):** no cookie, `Authorization: Bearer <still-valid access token>`.
   Rotates the access token as before (old one blacklisted; parallel → 409; past session max → 401) and
   also sets the refresh cookie, moving the client onto the cookie flow. Remove once the SPA uses the cookie.
 
-### POST /api/logout
-`Authorization: Bearer …`, `credentials: 'include'` → 200; blacklists the access token, revokes the
-refresh family and clears the cookie.
+### POST /api/refresh/logout  (public — use this one for "Sign out")
+`credentials: 'include'`, optional `Authorization: Bearer …`. Works with an expired or missing access
+token because it sits under the cookie's Path. Revokes the cookie's session, blacklists the bearer
+token if one is sent and still valid, clears the cookie (`ap_refresh=; Path=/api/refresh; Expires` in
+the past). Always 200 (idempotent, also without a cookie).
+
+### POST /api/logout  (legacy, needs a valid access token)
+`Authorization: Bearer …` → 200; blacklists the access token, revokes the session named in its `sid`
+claim and clears the cookie. 401 if the access token expired — which is why the SPA should call
+`/api/refresh/logout` instead.
 
 ### Suggested SPA flow
 1. Login → keep `access_token` in memory.

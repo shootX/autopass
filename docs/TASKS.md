@@ -274,3 +274,10 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 - [x] Contract: `docs/auth-contract.md`.
 - [ ] Ops: production needs a queue worker for the `database` queue (SMS now goes through it).
 - [ ] Frontend: switch gewash to the cookie flow (`credentials: 'include'`), handle 409.
+
+## 2026-10-15 — QA round 3 on PR #28
+- [x] D14 two-tab refresh: parallel calls wait on the cookie lock; a rotated cookie reused within 30 s (`REFRESH_REUSE_GRACE_SECONDS`) gets a fresh pair in the same family; later reuse still revokes the family.
+- [x] D15 public `POST /api/refresh/logout` (under the cookie Path) revokes the session by cookie with an expired access token and clears the cookie.
+- [x] D16 parallel /register of one new number: unique violation caught, normal answer (no 500).
+- [x] SendSms: tries=3, backoff [5, 20] s.
+- [ ] PR #29 (frontend): Sign out → `POST /api/refresh/logout` with `credentials: 'include'`.

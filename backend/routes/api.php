@@ -60,6 +60,8 @@ Route::post('/register/set_password', [AuthController::class, 'set_password'])->
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:login');
 // Public: works with the httpOnly refresh cookie after the access token expired (legacy: valid bearer).
 Route::post('/refresh', [AuthController::class, 'refresh'])->middleware('throttle:refresh');
+// Public logout by the refresh cookie (under its Path), works with an expired access token.
+Route::post('/refresh/logout', [AuthController::class, 'logoutByCookie'])->middleware('throttle:refresh');
 
 Route::post('/change_password', [AuthController::class, 'changePassword'])->middleware('throttle:otp-send');
 Route::post('/change_password/verify', [AuthController::class, 'changePasswordVerify'])->middleware('throttle:otp');

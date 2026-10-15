@@ -19,7 +19,15 @@ class SendSms implements ShouldBeEncrypted, ShouldQueue
 {
     use Queueable;
 
-    public int $tries = 1;
+    // Transient failures (e.g. a locked queue/sms DB) are retried; the dispatcher is idempotent
+    // per reference, so a retry never sends a second SMS once the gateway accepted it.
+    public int $tries = 3;
+
+    /** @return list<int> seconds before the 2nd and 3rd attempt */
+    public function backoff(): array
+    {
+        return [5, 20];
+    }
 
     public function __construct(
         public readonly ?SmsMessage $message = null,
