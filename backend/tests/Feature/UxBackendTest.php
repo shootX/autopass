@@ -50,7 +50,7 @@ it('requires the correct current password to change the corporate password', fun
 });
 
 // FE-08 / JWT TTL decision
-it('defaults JWT lifetime to 30 days', function () {
-    expect(file_get_contents(config_path('jwt.php')))->toContain("env('JWT_TTL', 43200)");
-    expect(file_get_contents(base_path('.env.example')))->toContain('JWT_TTL=43200');
+it('defaults JWT lifetime to 1 day (refresh via /api/refresh)', function () {
+    expect(file_get_contents(config_path('jwt.php')))->toContain("env('JWT_TTL', 1440)");
+    expect(file_get_contents(base_path('.env.example')))->toContain('JWT_TTL=1440');
 });

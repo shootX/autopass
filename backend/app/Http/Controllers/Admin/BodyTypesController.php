@@ -29,7 +29,7 @@ class BodyTypesController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:64|unique:body_types,name',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);
 
         if ($validator->fails()) {
@@ -59,7 +59,7 @@ class BodyTypesController extends Controller
                 'max:64',
                 Rule::unique('body_types', 'name')->ignore($bodyType->id),
             ],
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);
 
         if ($validator->fails()) {

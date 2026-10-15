@@ -11,9 +11,11 @@ use App\Services\Sms\SmsGateway;
 use App\Services\Sms\SmsMessage;
 use App\Services\Sms\SmsOfficeGateway;
 use App\Services\Sms\SmsStatus;
+use App\Support\Phone;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
@@ -51,6 +53,7 @@ class SmsGatewayTest extends TestCase
 
     public function test_inbox_is_limited_to_an_enabled_mock_admin(): void
     {
+        config(['sms.mock_inbox_phones' => ['555112201']]);
         $this->postJson('/api/register', ['phone' => '555112201'])->assertOk();
         $code = app(MockSmsGateway::class)->latestCode();
 
@@ -104,7 +107,7 @@ class SmsGatewayTest extends TestCase
             'temp_code' => $registered->json('temp_code'),
             'code' => $code,
         ])->assertStatus(422);
-        $this->assertTrue(\Illuminate\Support\Facades\Hash::check('secret12', $user->fresh()->password));
+        $this->assertTrue(Hash::check('secret12', $user->fresh()->password));
 
         $token = auth('api')->login($user->fresh());
         $this->withToken($token)->postJson('/api/change_phone/verify', [
@@ -216,13 +219,13 @@ class SmsGatewayTest extends TestCase
 
     public function test_georgian_destination_formats_normalize_to_one_number(): void
     {
-        $this->assertSame('995555112233', \App\Support\Phone::forSms('+995 555 11 22 33'));
-        $this->assertSame('995555112233', \App\Support\Phone::forSms('555112233'));
+        $this->assertSame('995555112233', Phone::forSms('+995 555 11 22 33'));
+        $this->assertSame('995555112233', Phone::forSms('555112233'));
     }
 
     private function person(string $phone, int $role): User
     {
-        $user = new User();
+        $user = new User;
         $user->name = 'Test';
         $user->phone = $phone;
         $user->password = 'secret12';

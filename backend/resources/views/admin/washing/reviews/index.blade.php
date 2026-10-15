@@ -53,9 +53,9 @@
                             <td>
                                 <div class="btn-group">
                                     @if($review->status)
-                                        <a href="{{route('admin.washings.reviews.toggle', [$washing->id, $review->id])}}"><button class="btn btn-sm btn-dark"><i class="fa-solid fa-eye"></i> {{ __('admin.hide') }}</button></a>
+                                        <form method="POST" action="{{route('admin.washings.reviews.toggle', [$washing->id, $review->id])}}" class="d-inline">@csrf<button type="submit" class="btn btn-sm btn-dark"><i class="fa-solid fa-eye"></i> {{ __('admin.hide') }}</button></form>
                                     @else
-                                        <a href="{{route('admin.washings.reviews.toggle', [$washing->id, $review->id])}}"><button class="btn btn-sm btn-dark"><i class="fa-solid fa-eye"></i> {{ __('admin.show') }}</button></a>
+                                        <form method="POST" action="{{route('admin.washings.reviews.toggle', [$washing->id, $review->id])}}" class="d-inline">@csrf<button type="submit" class="btn btn-sm btn-dark"><i class="fa-solid fa-eye"></i> {{ __('admin.show') }}</button></form>
                                     @endif
                                     <a data-id="{{$review->id}}" class="btn btn-sm btn-danger remove"><i class="fas fa-trash"></i></a>
                                 </div>

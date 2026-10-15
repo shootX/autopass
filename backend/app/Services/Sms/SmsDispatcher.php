@@ -4,21 +4,21 @@ namespace App\Services\Sms;
 
 use App\Models\SmsDispatch;
 use Illuminate\Database\UniqueConstraintViolationException;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
 
 class SmsDispatcher
 {
-    public function __construct(private SmsGateway $gateway)
-    {
-    }
+    public function __construct(private SmsGateway $gateway) {}
 
     public function send(SmsMessage $message): SmsResult
     {
-        $storeBody = config('sms.driver') === 'mock' && config('sms.mock_inbox_enabled') === true;
+        // Mock inbox keeps texts only for allowlisted test numbers, never for real customers.
+        $storeBody = SmsInbox::keeps((string) $message->destination);
         $expires = now()->addMinutes(min(10, max(1, (int) config('security.sms_ttl_minutes'))));
         if ($message->expiresAt !== null) {
-            $messageExpiry = \Illuminate\Support\Carbon::parse($message->expiresAt);
+            $messageExpiry = Carbon::parse($message->expiresAt);
             if ($messageExpiry->lt($expires)) {
                 $expires = $messageExpiry;
             }

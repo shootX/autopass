@@ -238,3 +238,18 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 - Verification: gewash 103/103 (11 new regressions), build:check/lint/i18n checks passed; 374 referenced locale keys, 0 missing in six dictionaries. Stage 3 backend 131/131, voucher 9/9 and PostgreSQL 22/22 remain prior CI evidence; backend business code and voucher application code were not changed in this follow-up.
 - Browser observed the current landing, customer login, recovery, registration, public privacy text and admin login. No credentials were submitted; private panels and full new-version workflows were not tested. Landing help redirects anonymous visitors to login; privacy is English-only. These are recorded polish tasks for the closed test.
 - No merge, target server change or deployment. Target database copy, server credentials/configuration, actual CarAPI key and mail delivery are unavailable here. See docs/TEST_LAUNCH_READINESS.md for the exact controlled launch gates. Follow-up patch must be uploaded before deploying.
+
+## 2026-10-15 — Security audit fixes (branch `security/audit-fixes`)
+- [x] C1: migration `2026_10_15_000001` locks admin/manager accounts and partners whose password matches a published default (admin123/manager123/partner123/client123/legacy hardcoded) — random password, token_version+1, web sessions deleted. Users get `password_reset_required` (API + web login refused until SMS reset); partners get an expired temporary password (admin must issue a new one). Seeders already use env/random.
+- [x] H1: package wash approve needs a booking today at the manager's branch, or `qr_code` (scanned), or the one-time `approve_token` from `GET /api/checkqr/{qr}` (10 min, bound to manager+package). Bare id → 403. Throttle 30/min on both.
+- [x] H2: `TEST_PAYMENT_MAX_AMOUNT` (default 100) on /api/testpay; /payment/sandbox is 404 in production unless test payments are enabled.
+- [x] M1: `POST /api/refresh` (rotates, blacklists old token); default `JWT_TTL` 1440 min.
+- [x] M2: `throttle:otp-send` on SMS-sending endpoints: per number per hour (any IP) + daily global budget; `users:prune-unverified` (hourly).
+- [x] M3: /register and /change_password answer the same for known and unknown numbers; login reveals unconfirmed/banned only after a correct password.
+- [x] M5: `AuditAdminRequests` middleware logs every admin write + SMS inbox views to admin_audit_logs.
+- [x] M6: composer: maatwebsite/excel 3.1.70, league/commonmark, laravel/framework, league/flysystem updated; `composer audit` clean.
+- [x] M7: corporate API key stored as sha256 (+last4, last-used); shown once after issue; existing keys hashed in place by migration `2026_10_15_000002`.
+- [x] M8: mock SMS inbox stores texts only for `SMS_MOCK_INBOX_PHONES` (default TEST_PAYMENT_PHONES); views audited.
+- [x] L2 uniform partner voucher answers; L3 no SVG uploads; L4 `@json($voucher)`; L5 review toggle is POST+CSRF; L6 `TRUSTED_PROXIES`; L7 OTP/email codes HMAC-keyed per challenge; L8 account deletion erases personal data with a unique tombstone phone.
+- [ ] Frontend: manager approve must send `qr_code`/`approve_token`; call `/api/refresh` before expiry; M4 CSP list; npm audit (maplibre-gl, react-router-dom, vite).
+- [ ] DevOps (Shota): deploy, security headers (M4), APP_ENV=production, TEST_PAYMENT_ALLOW_PRODUCTION off, TRUSTED_PROXIES, check live accounts after migrate (C1).

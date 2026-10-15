@@ -33,7 +33,8 @@ class VouchersController extends Controller
         }
 
         if (! $this->ownedByPartner($voucher)) {
-            return response()->json(['success' => false, 'message' => 'Incorrect code'], 403);
+            // Same answer as an unknown code: a partner can't probe other partners' codes.
+            return response()->json(['success' => false, 'message' => 'Incorrect code']);
         }
 
         // Dedupe: one SMS per voucher+recipient per window. The lock serialises parallel checks;
@@ -117,7 +118,7 @@ class VouchersController extends Controller
             ->where('type', 'use_voucher')
             ->first();
         if ($pending && ! $this->ownedByPartner(UserVoucher::find($pending->user_voucher_id))) {
-            return response()->json(['success' => false, 'message' => 'Incorrect SMS code'], 403);
+            return response()->json(['success' => false, 'message' => 'Incorrect SMS code'], 422);
         }
 
         try {

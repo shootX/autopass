@@ -11,3 +11,4 @@ Schedule::command('app:send-subscription-one-day-notifications')
     ->dailyAt('15:00'); // Напоминание за 1 день до окончания пакета, что он будет автоматически продлён
 Schedule::command('app:send-manager-fifteen-minutes-before')
     ->everyMinute(); // Напоминание менеджеру за 15 минут до прибытия клиента
+Schedule::command('users:prune-unverified')->hourly(); // /register stubs that never confirmed the phone

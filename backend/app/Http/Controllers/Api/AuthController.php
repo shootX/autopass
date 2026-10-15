@@ -37,10 +37,8 @@ class AuthController extends Controller
 
         $existing = User::query()->where('phone', $request->phone)->first();
         if ($existing && $existing->phone_verified_at) {
-            return response()->json([
-                'success' => false,
-                'error' => ['phone' => ['Номер уже существует']],
-            ], 422);
+            // Same answer as for a new number, so /register can't be used to list customers.
+            return $this->decoySmsJson();
         }
 
         $createdNow = false;
@@ -149,17 +147,25 @@ class AuthController extends Controller
             return response()->json(['success' => false, 'error' => 'Не верный логин либо пароль.'], 401);
         }
 
+        // Account state is only revealed after the password matched, so it can't be used to list numbers.
+        if (! Hash::check((string) $request->password, (string) $user->password)) {
+            return response()->json(['success' => false, 'error' => 'Не верный логин либо пароль.'], 401);
+        }
+
         if ((int) $user->role === User::ROLE_USER && $user->phone_verified_at === null) {
             return response()->json(['success' => false, 'error' => 'Account is not confirmed'], 403);
         }
 
         if ($user->ban) {
-            // Checked after the password so a ban doesn't reveal which numbers exist.
-            if (! Hash::check((string) $request->password, (string) $user->password)) {
-                return response()->json(['success' => false, 'error' => 'Не верный логин либо пароль.'], 401);
-            }
-
             return response()->json(['success' => false, 'error' => 'Account is blocked'], 403);
+        }
+
+        if ($user->password_reset_required) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Password reset required',
+                'password_reset_required' => true,
+            ], 403);
         }
 
         if (! $token = JWTAuth::attempt($request->only('phone', 'password'))) {
@@ -172,6 +178,24 @@ class AuthController extends Controller
             'token_type' => 'bearer',
             'expires_in' => auth('api')->factory()->getTTL() * 60,
             'user' => auth('api')->user(),
+        ]);
+    }
+
+    /** Rotate a still-valid token: a new token is issued and the presented one is blacklisted. */
+    public function refresh()
+    {
+        $user = auth('api')->user();
+        $old = JWTAuth::getToken();
+        $token = JWTAuth::fromUser($user);
+        if ($old) {
+            JWTAuth::setToken($old)->invalidate();
+        }
+
+        return response()->json([
+            'success' => true,
+            'access_token' => $token,
+            'token_type' => 'bearer',
+            'expires_in' => auth('api')->factory()->getTTL() * 60,
         ]);
     }
 
@@ -246,7 +270,7 @@ class AuthController extends Controller
     {
         Phone::matchStored($request);
         $validator = Validator::make($request->all(), [
-            'phone' => 'required|string|exists:users,phone',
+            'phone' => 'required|string',
         ]);
 
         if ($validator->fails()) {
@@ -254,6 +278,10 @@ class AuthController extends Controller
         }
 
         $user = User::query()->where('phone', $request->phone)->first();
+        if (! $user) {
+            // Unknown number: same answer, no SMS.
+            return $this->decoySmsJson();
+        }
 
         try {
             $issued = $sms->issue($user, 'reset');
@@ -305,6 +333,7 @@ class AuthController extends Controller
         }
 
         $user->password = $request->password;
+        $user->forceFill(['password_reset_required' => false]);
         $user->phone_verified_at = $user->phone_verified_at ?: now();
         $user->token_version = (int) $user->token_version + 1;
         $user->save();
@@ -315,9 +344,19 @@ class AuthController extends Controller
     public function deleteAccount(Request $request)
     {
         $user = auth()->user();
-        $user->phone = $user->phone.'-del';
-        $user->token_version = (int) $user->token_version + 1;
-        $user->save();
+        // Personal data is erased; the row stays for orders/ledger history. The phone becomes a
+        // unique tombstone, so the same number can register and be deleted again.
+        $user->forceFill([
+            'phone' => 'del-'.$user->id.'-'.Str::lower(Str::random(6)),
+            'name' => null,
+            'surname' => null,
+            'email' => null,
+            'pending_email' => null,
+            'date_of_birth' => null,
+            'sex' => null,
+            'password' => Str::password(40),
+            'token_version' => (int) $user->token_version + 1,
+        ])->save();
         $token = JWTAuth::getToken();
         if ($token) {
             JWTAuth::invalidate($token);
@@ -353,6 +392,20 @@ class AuthController extends Controller
         $user->pushTokens()->create(['push_id' => $pushID]);
 
         return response()->json(['success' => true]);
+    }
+
+    private function decoySmsJson(): JsonResponse
+    {
+        $simulated = config('sms.driver') === 'mock';
+
+        return response()->json([
+            'success' => true,
+            'temp_code' => bin2hex(random_bytes(16)),
+            'delivery' => $simulated ? SmsStatus::Simulated->value : SmsStatus::Accepted->value,
+            'message' => $simulated
+                ? 'კოდი შეიქმნა სატესტო რეჟიმში.'
+                : 'მოთხოვნა მიღებულია. შეიყვანეთ კოდი, როცა შეტყობინება მოგივათ.',
+        ]);
     }
 
     private function smsJson(IssuedSms $issued, bool $rollbackNewUser = false, ?User $user = null): JsonResponse

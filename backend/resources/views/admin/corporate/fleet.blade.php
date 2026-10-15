@@ -63,8 +63,12 @@
             <div class="card-header">{{ __('admin.fleet_api') }}</div>
             <div class="card-body">
                 @php
-                    $token = (string) $corporate->api_token;
-                    $masked = str_repeat('•', max(0, strlen($token) - 4)).substr($token, -4);
+                    // The key is shown once, right after it was issued; afterwards only its last 4 chars.
+                    $token = (string) session('corporate_api_token', '');
+                    $masked = str_repeat('•', 12).(string) $corporate->api_token_last4;
+                    if ($token === '') {
+                        $token = $masked;
+                    }
                 @endphp
                 <div class="mb-2"><code id="fleet-token" style="word-break:break-all;" data-full="{{ $token }}" data-masked="{{ $masked }}">{{ $masked }}</code></div>
                 <button class="btn btn-outline-secondary btn-sm" type="button" id="fleet-token-toggle">{{ __('admin.fleet_token_show') }}</button>

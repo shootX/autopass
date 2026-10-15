@@ -265,3 +265,10 @@ voucher-checker-ში `useVoucher`/`usePath` სახელები შეი
 - Verification: gewash 103/103 (11 new regressions), build:check/lint/i18n checks passed; 374 referenced locale keys, 0 missing in six dictionaries. Stage 3 backend 131/131, voucher 9/9 and PostgreSQL 22/22 remain prior CI evidence; backend business code and voucher application code were not changed in this follow-up.
 - Browser observed the current landing, customer login, recovery, registration, public privacy text and admin login. No credentials were submitted; private panels and full new-version workflows were not tested. Landing help redirects anonymous visitors to login; privacy is English-only. These are recorded polish tasks for the closed test.
 - No merge, target server change or deployment. Target database copy, server credentials/configuration, actual CarAPI key and mail delivery are unavailable here. See docs/TEST_LAUNCH_READINESS.md for the exact controlled launch gates. Follow-up patch must be uploaded before deploying.
+
+## 2026-10-15 — Audit fixes: rules to keep
+- Never ship known passwords: RetireDefaultPasswords::KNOWN lists the published ones; staff with `password_reset_required` can only get back in via the SMS reset.
+- Package wash approval without a booking needs the QR (`qr_code`) or a checkqr `approve_token` (cache `package-approve:{sha256}`), never a bare id.
+- Corporate API keys: only `api_token_hash` is stored; assigning `api_token` on the model hashes it, the plain key exists only in memory and in a one-time flash (`corporate_api_token`).
+- OTP/email codes: `SmsChallengeService::codeHash()` (HMAC with APP_KEY + challenge id). Rotating APP_KEY invalidates open codes only.
+- Every admin POST/PUT/DELETE is audited by middleware; add explicit `AdminAudit::record` only when field-level old/new values matter.

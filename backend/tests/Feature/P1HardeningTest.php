@@ -101,7 +101,9 @@ it('allows walk-in approval without a booking and records it on the manager bran
     $wash = washFor($mgr);
     $car = row('user_cars', ['user_id' => $client->id, 'model_id' => 1, 'plate' => 'AA555AA']);
     $pkg = userPackage($client->id, $car);
-    $this->withToken(JWTAuth::fromUser($mgr))->postJson("/api/package/{$pkg}/approve")->assertOk();
+    // Walk-in (no booking): the scanned QR code must be presented (audit H1).
+    $qr = DB::table('user_packages')->where('id', $pkg)->value('qr_code');
+    $this->withToken(JWTAuth::fromUser($mgr))->postJson("/api/package/{$pkg}/approve", ['qr_code' => $qr])->assertOk();
     $rec = DB::table('package_washes')->where('user_package_id', $pkg)->first();
     expect((int) $rec->car_wash_id)->toBe($wash)->and((bool) $rec->walk_in)->toBeTrue()->and((int) $rec->manager_id)->toBe($mgr->id);
 });
@@ -196,16 +198,17 @@ it('lets only the owning partner check and use a voucher', function () {
     row('user_vouchers', ['user_id' => $client->id, 'voucher_id' => $vNone, 'code' => 'CODE0002']);
 
     freshAuth();
-    $this->withToken($t2)->postJson('/api/partner/voucher/check', ['code' => 'CODE0001'])->assertForbidden();
+    // Foreign code answers like an unknown one (audit L2).
+    $this->withToken($t2)->postJson('/api/partner/voucher/check', ['code' => 'CODE0001'])->assertOk()->assertJsonPath('success', false);
     freshAuth();
-    $this->withToken($t1)->postJson('/api/partner/voucher/check', ['code' => 'CODE0002'])->assertForbidden();
+    $this->withToken($t1)->postJson('/api/partner/voucher/check', ['code' => 'CODE0002'])->assertOk()->assertJsonPath('success', false);
     freshAuth();
     $this->withToken($t1)->postJson('/api/partner/voucher/check', ['code' => 'CODE0001'])->assertOk()->assertJson(['success' => true]);
 
     $sms = SmsTemp::where('user_voucher_id', $uv)->first();
     $code = app(MockSmsGateway::class)->latestCode();
     freshAuth();
-    $this->withToken($t2)->postJson('/api/partner/voucher/use', ['temp_code' => $sms->public_id, 'code' => $code])->assertForbidden();
+    $this->withToken($t2)->postJson('/api/partner/voucher/use', ['temp_code' => $sms->public_id, 'code' => $code])->assertStatus(422); // same as a wrong code (audit L2)
     expect(DB::table('user_vouchers')->find($uv)->used_at)->toBeNull();
     freshAuth();
     $this->withToken($t1)->postJson('/api/partner/voucher/use', ['temp_code' => $sms->public_id, 'code' => $code])->assertOk()->assertJson(['success' => true]);
