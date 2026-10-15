@@ -449,7 +449,7 @@ class SecurityStage1Test extends TestCase
         $this->assertSame(0, (int) $active->fresh()->used_washes);
 
         $this->withToken(auth('api')->login($managerA))
-            ->postJson('/api/package/'.$active->id.'/approve', ['qr_code' => $active->qr_code])
+            ->postJson('/api/package/'.$active->id.'/approve', ['approve_token' => approveTokenFor($managerA, $active->id)])
             ->assertOk();
         $this->assertSame(1, (int) $active->fresh()->used_washes);
 

@@ -8,6 +8,8 @@ use App\Models\User;
 use App\Support\AdminAudit;
 use App\Support\TestPayments;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class PaymentsController extends Controller
@@ -30,34 +32,50 @@ class PaymentsController extends Controller
         }
         $points = (int) $raw;
 
-        // Daily budget per user across all sandbox payments that weren't declined.
+        // Daily budget per user across all sandbox payments that weren't declined. Sum and insert
+        // run under a per-user lock (and the user row lock on Postgres), so parallel calls can't
+        // both see room under the cap.
         $daily = (int) config('security.test_payment_daily_max', 300);
-        $today = (int) TbcPayment::query()
-            ->where('user_id', $user->id)
-            ->where('test_mode', true)
-            ->where('created_at', '>=', now()->startOfDay())
-            ->whereNotIn('status', ['Failed', 'Expired'])
-            ->sum('amount');
-        if ($today + $points > $daily) {
+        $lock = Cache::lock('testpay:'.$user->id, 10);
+        if (! $lock->get()) {
+            return response()->json(['success' => false, 'error' => 'Test payment already in progress'], 409);
+        }
+        try {
+            $access = bin2hex(random_bytes(32));
+            $payment = DB::transaction(function () use ($user, $points, $daily, $access) {
+                User::query()->whereKey($user->id)->lockForUpdate()->first();
+                $today = (int) TbcPayment::query()
+                    ->where('user_id', $user->id)
+                    ->where('test_mode', true)
+                    ->where('created_at', '>=', now()->startOfDay())
+                    ->whereNotIn('status', ['Failed', 'Expired'])
+                    ->sum('amount');
+                if ($today + $points > $daily) {
+                    return null;
+                }
+
+                return TbcPayment::query()->create([
+                    'merchant_payment_id' => 'T'.strtoupper(Str::random(16)),
+                    'user_id' => $user->id,
+                    'type' => 'points',
+                    'amount' => $points,
+                    'currency' => 'GEL',
+                    'status' => 'pending',
+                    'test_mode' => true,
+                    'payload' => [
+                        'points' => $points,
+                        'test' => true,
+                    ],
+                    'access_hash' => hash('sha256', $access),
+                    'access_expires_at' => now()->addMinutes((int) config('security.payment_access_minutes')),
+                ]);
+            });
+        } finally {
+            $lock->release();
+        }
+        if (! $payment) {
             return response()->json(['success' => false, 'error' => 'Daily test payment limit reached ('.$daily.').'], 422);
         }
-
-        $access = bin2hex(random_bytes(32));
-        $payment = TbcPayment::query()->create([
-            'merchant_payment_id' => 'T'.strtoupper(Str::random(16)),
-            'user_id' => $user->id,
-            'type' => 'points',
-            'amount' => $points,
-            'currency' => 'GEL',
-            'status' => 'pending',
-            'test_mode' => true,
-            'payload' => [
-                'points' => $points,
-                'test' => true,
-            ],
-            'access_hash' => hash('sha256', $access),
-            'access_expires_at' => now()->addMinutes((int) config('security.payment_access_minutes')),
-        ]);
 
         if ((int) $user->role === User::ROLE_ADMIN) {
             AdminAudit::record('tbc_payment', (int) $payment->id, 'testpay', 'amount', null, (string) $points, (int) $user->id);

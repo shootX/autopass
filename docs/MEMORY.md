@@ -278,3 +278,10 @@ voucher-checker-ში `useVoucher`/`usePath` სახელები შეი
 - One-time grants (approve_token, refresh) are consumed under `Cache::lock`; a busy lock answers 409, never a second consume.
 - Refreshed JWTs carry `sess` (first login time); `security.session_max_minutes` bounds the whole chain.
 - `AdminAudit::record(..., adminId:)` — pass it explicitly from API (JWT) routes; the default guard is web.
+
+## 2026-10-15 — QA round 2 on PR #28
+- Package approve = checkqr token only. Tests use `approveTokenFor($manager, $pkgId)` (tests/Pest.php).
+- Auth SMS goes through `SendSms` (encrypted queued job). Tests that read codes from MockSmsGateway use `Queue::fakeExcept([SendSms::class])`; plain `Queue::fake()` swallows the SMS.
+- Refresh tokens: table `refresh_tokens` (sha256 only), family = JWT claim `sid`, session start = `sess`. JSON test requests need `->withCredentials()` to send cookies.
+- Laravel's CORS with one allowed origin always returns that origin (not the caller's); assert "not echoed", not "missing".
+- Query builder has no `whereKey` (it becomes `where key = …`); use `where('id', …)` on `DB::table`.

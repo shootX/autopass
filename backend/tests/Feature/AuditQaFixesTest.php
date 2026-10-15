@@ -1,5 +1,6 @@
 <?php
 
+use App\Jobs\SendSms;
 use App\Models\TbcPayment;
 use App\Models\User;
 use App\Services\Payments\SettleTbcPayment;
@@ -17,7 +18,7 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 beforeEach(function () {
     DB::statement('PRAGMA defer_foreign_keys = ON');
     Http::fake(['*' => Http::response(['Success' => true])]);
-    Queue::fake();
+    Queue::fakeExcept([SendSms::class]); // auth SMS still runs (sync) so codes reach the mock gateway
     $this->withoutMiddleware(PreventRequestForgery::class);
     $this->withoutMiddleware(ThrottleRequests::class);
     app(MockSmsGateway::class)->reset();
@@ -94,14 +95,15 @@ it('answers 422, not 500, to array parameters', function () {
 });
 
 // D4
-it('allows one bare-id approval per booking, then requires the QR', function () {
+// Superseded in QA round 2 (D13): a booking no longer allows bare-id approvals at all.
+it('does not let a booking drain the package by bare id', function () {
     [$mgr, $client, $wash, $car, $pkg] = qaPackage('4');
     row('appointments', ['user_id' => $client->id, 'car_wash_id' => $wash, 'car_id' => $car, 'date' => now()->toDateString(), 'time' => '10:00', 'qr_code' => 'A'.uniqid()]);
     $t = JWTAuth::fromUser($mgr);
-    $this->withToken($t)->postJson("/api/package/{$pkg}/approve")->assertOk();
     $this->withToken($t)->postJson("/api/package/{$pkg}/approve")->assertForbidden();
-    $this->withToken($t)->postJson("/api/package/{$pkg}/approve", ['qr_code' => 'QAQR4000000000'])->assertOk();
-    expect((int) DB::table('user_packages')->find($pkg)->used_washes)->toBe(2);
+    $this->withToken($t)->postJson("/api/package/{$pkg}/approve", ['approve_token' => approveTokenFor($mgr, $pkg)])->assertOk();
+    $this->withToken($t)->postJson("/api/package/{$pkg}/approve")->assertForbidden();
+    expect((int) DB::table('user_packages')->find($pkg)->used_washes)->toBe(1);
 });
 
 // D5

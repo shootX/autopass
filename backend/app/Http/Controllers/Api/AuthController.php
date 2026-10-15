@@ -3,10 +3,13 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Middleware\EnsureApiSession;
+use App\Jobs\SendSms;
 use App\Models\User;
 use App\Models\UserPushToken;
 use App\Services\Security\ActionGrantService;
 use App\Services\Security\AuthChallengeException;
+use App\Services\Security\RefreshTokens;
 use App\Services\Security\SmsChallengeService;
 use App\Services\Sms\IssuedSms;
 use App\Services\Sms\SmsStatus;
@@ -15,6 +18,7 @@ use App\Support\Phone;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
@@ -22,6 +26,8 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
 {
+    public function __construct(private RefreshTokens $refreshTokens) {}
+
     public function register(Request $request, SmsChallengeService $sms)
     {
         Phone::prepare($request);
@@ -39,7 +45,7 @@ class AuthController extends Controller
         $existing = User::query()->where('phone', $request->phone)->first();
         if ($existing && $existing->phone_verified_at) {
             // Same answer as for a new number, so /register can't be used to list customers.
-            return $this->decoySmsJson();
+            return $this->decoySmsJson(hashLikeNewUser: true);
         }
 
         $createdNow = false;
@@ -64,7 +70,7 @@ class AuthController extends Controller
         }
 
         try {
-            $issued = $sms->issue($existing, 'verify');
+            $issued = $sms->issueQueued($existing, 'verify');
         } catch (AuthChallengeException $e) {
             return $this->challengeError($e);
         }
@@ -117,7 +123,8 @@ class AuthController extends Controller
         $user->token_version = (int) $user->token_version + 1;
         $user->save();
 
-        $token = JWTAuth::fromUser($user->fresh());
+        [$refresh, $family, $cookie] = $this->refreshTokens->start($user->fresh());
+        $token = JWTAuth::claims(['sess' => now()->timestamp, 'sid' => $family])->fromUser($user->fresh());
 
         return response()->json([
             'success' => true,
@@ -126,7 +133,7 @@ class AuthController extends Controller
             'token_type' => 'bearer',
             'expires_in' => auth('api')->factory()->getTTL() * 60,
             'user' => $user->fresh(),
-        ]);
+        ])->withCookie($cookie);
     }
 
     public function login(Request $request)
@@ -169,9 +176,11 @@ class AuthController extends Controller
             ], 403);
         }
 
-        if (! $token = JWTAuth::attempt($request->only('phone', 'password'))) {
+        $family = bin2hex(random_bytes(16));
+        if (! $token = JWTAuth::claims(['sess' => now()->timestamp, 'sid' => $family])->attempt($request->only('phone', 'password'))) {
             return response()->json(['success' => false, 'error' => 'Не верный логин либо пароль.'], 401);
         }
+        [, , $cookie] = $this->refreshTokens->start($user->fresh(), $family);
 
         return response()->json([
             'success' => true,
@@ -179,11 +188,59 @@ class AuthController extends Controller
             'token_type' => 'bearer',
             'expires_in' => auth('api')->factory()->getTTL() * 60,
             'user' => auth('api')->user(),
-        ]);
+        ])->withCookie($cookie);
     }
 
-    /** Rotate a still-valid token: a new token is issued and the presented one is blacklisted. */
-    public function refresh()
+    /**
+     * POST /api/refresh. Preferred: the httpOnly refresh cookie (no Authorization header needed,
+     * works after the access token expired); the cookie is rotated on every call. Legacy
+     * fallback without the cookie: a still-valid bearer token is rotated as before.
+     * See docs/auth-contract.md.
+     */
+    public function refresh(Request $request)
+    {
+        $presented = $request->cookie(RefreshTokens::COOKIE);
+        if (is_string($presented) && $presented !== '') {
+            return $this->refreshFromCookie($presented);
+        }
+
+        auth()->shouldUse('api');
+        if (! auth('api')->check()) {
+            return response()->json(['success' => false, 'error' => 'Unauthorized'], 401);
+        }
+
+        return app(EnsureApiSession::class)->handle($request, fn () => $this->refreshFromBearer());
+    }
+
+    private function refreshFromCookie(string $presented): JsonResponse
+    {
+        $lock = Cache::lock('refresh-cookie:'.hash('sha256', $presented), 10);
+        if (! $lock->get()) {
+            return response()->json(['success' => false, 'error' => 'Refresh already in progress'], 409);
+        }
+        try {
+            $consumed = $this->refreshTokens->consume($presented);
+            if (! $consumed) {
+                return response()->json(['success' => false, 'error' => 'Unauthorized'], 401)
+                    ->withCookie($this->refreshTokens->forget());
+            }
+            [$user, $family, $sess] = $consumed;
+            [, , $cookie] = $this->refreshTokens->start($user, $family, $sess);
+            $token = JWTAuth::claims(['sess' => $sess, 'sid' => $family])->fromUser($user);
+        } finally {
+            $lock->release();
+        }
+
+        return response()->json([
+            'success' => true,
+            'access_token' => $token,
+            'token_type' => 'bearer',
+            'expires_in' => auth('api')->factory()->getTTL() * 60,
+        ])->withCookie($cookie);
+    }
+
+    /** Legacy body/bearer rotation (kept for clients that don't send the cookie yet). */
+    private function refreshFromBearer(): JsonResponse
     {
         $user = auth('api')->user();
         $old = JWTAuth::getToken();
@@ -211,8 +268,11 @@ class AuthController extends Controller
             if (JWTAuth::manager()->getBlacklist()->has($payload)) {
                 return response()->json(['success' => false, 'error' => 'Unauthorized'], 401);
             }
-            $token = JWTAuth::claims(['sess' => $sess])->fromUser($user);
+            $family = $payload->get('sid') ?: bin2hex(random_bytes(16));
+            $token = JWTAuth::claims(['sess' => $sess, 'sid' => $family])->fromUser($user);
             JWTAuth::setToken($old)->invalidate();
+            // Moves legacy clients onto the cookie flow from here on.
+            [, , $cookie] = $this->refreshTokens->start($user, $family, $sess);
         } finally {
             $lock->release();
         }
@@ -222,18 +282,20 @@ class AuthController extends Controller
             'access_token' => $token,
             'token_type' => 'bearer',
             'expires_in' => auth('api')->factory()->getTTL() * 60,
-        ]);
+        ])->withCookie($cookie);
     }
 
     public function logout()
     {
         $token = JWTAuth::getToken();
         if ($token) {
+            $this->refreshTokens->revokeFamily(JWTAuth::setToken($token)->getPayload()->get('sid'));
             JWTAuth::invalidate($token);
         }
         auth()->logout();
 
-        return response()->json(['success' => true, 'message' => 'Успешный выход']);
+        return response()->json(['success' => true, 'message' => 'Успешный выход'])
+            ->withCookie($this->refreshTokens->forget());
     }
 
     public function changePhone(Request $request, SmsChallengeService $sms)
@@ -254,7 +316,7 @@ class AuthController extends Controller
         }
 
         try {
-            $issued = $sms->issue(auth()->user(), 'change', ['phone' => $request->phone], null, true, $request->phone);
+            $issued = $sms->issueQueued(auth()->user(), 'change', ['phone' => $request->phone], $request->phone);
         } catch (AuthChallengeException $e) {
             return $this->challengeError($e);
         }
@@ -316,7 +378,7 @@ class AuthController extends Controller
         }
 
         try {
-            $issued = $sms->issue($user, 'reset');
+            $issued = $sms->issueQueued($user, 'reset');
         } catch (AuthChallengeException $e) {
             return $this->challengeError($e);
         }
@@ -379,7 +441,6 @@ class AuthController extends Controller
         // Personal data is erased; the row stays for orders/ledger history. The phone becomes a
         // unique tombstone, so the same number can register and be deleted again.
         $user->forceFill([
-            'phone' => 'del-'.$user->id.'-'.Str::lower(Str::random(6)),
             'name' => null,
             'surname' => null,
             'email' => null,
@@ -389,6 +450,9 @@ class AuthController extends Controller
             'password' => Str::password(40),
             'token_version' => (int) $user->token_version + 1,
         ])->save();
+        // Written past the phone mutator (it would strip this to digits and let tombstones collide
+        // or even look like a real number). The id makes it unique; it never matches a phone rule.
+        DB::table('users')->where('id', $user->id)->update(['phone' => 'deleted-'.$user->id.'-'.Str::lower(Str::random(6))]);
         $token = JWTAuth::getToken();
         if ($token) {
             JWTAuth::invalidate($token);
@@ -426,11 +490,18 @@ class AuthController extends Controller
         return response()->json(['success' => true]);
     }
 
-    private function decoySmsJson(): JsonResponse
+    /**
+     * Answer for numbers that must not be revealed (registered / unknown / taken). Mirrors the
+     * real path's work: a queued SMS job (a no-op here) and, for /register, the bcrypt a new
+     * account costs. The real paths never call the gateway inline either (issueQueued).
+     */
+    private function decoySmsJson(bool $hashLikeNewUser = false): JsonResponse
     {
-        // Same hashing work as the real path (bcrypt of the new password), so timing doesn't tell.
-        Hash::make(Str::random(16));
-        $simulated = config('sms.driver') === 'mock';
+        if ($hashLikeNewUser) {
+            Hash::make(Str::random(16));
+        }
+        SendSms::dispatch();
+        $simulated = SmsChallengeService::queuedStatus() === SmsStatus::Simulated;
 
         return response()->json([
             'success' => true,

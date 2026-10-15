@@ -264,3 +264,13 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 - [x] D7 decoy path does a bcrypt so timing matches (SMS gateway latency not equalized).
 - [x] D8 change_phone to a taken number answers like a free one, no SMS; verify still enforces unique.
 - [x] D9 failed-validation redirects not audited; admin testpay audited with explicit admin id.
+
+## 2026-10-15 — QA round 2 on PR #28 (`tests/Feature/AuditQa2Test.php`)
+- [x] D13 approve accepts only the one-time checkqr token (static QR/bare id → 403, booking too); per-package Cache lock (409) + row lock.
+- [x] D12 testpay daily cap: sum + insert under a per-user Cache lock (409) and user row lock.
+- [x] D11 deletion tombstone `deleted-<id>-<rand>` written past the phone mutator (unique, never a phone).
+- [x] D10 register/change_password/change_phone send SMS via queued `SendSms` (decoy dispatches a no-op job); bcrypt only on the register decoy.
+- [x] Refresh: rotating httpOnly `ap_refresh` cookie (Path=/api/refresh, Secure, SameSite=Strict), reuse → family revoked; public `/api/refresh`; bearer flow kept as deprecated compat; CORS credentials for listed origins.
+- [x] Contract: `docs/auth-contract.md`.
+- [ ] Ops: production needs a queue worker for the `database` queue (SMS now goes through it).
+- [ ] Frontend: switch gewash to the cookie flow (`credentials: 'include'`), handle 409.
