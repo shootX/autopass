@@ -11,7 +11,7 @@ header {
         li {
             padding: 16px;
         &:hover {
-            color: $yellowMain;
+            color: $goldText;
         }
     }
     }
@@ -27,11 +27,11 @@ header {
     transition: color 0.5s ease;
   
     &:hover {
-      color: $yellowMain;
+      color: $goldText;
     }
   
     &.active {
-      color: $yellowMain;
+      color: $goldText;
   
       &::after {
         content: '';

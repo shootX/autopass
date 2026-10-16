@@ -158,7 +158,7 @@ export default function WashAppointment() {
             {branch?.isOpen === true && <span style={{ color: 'var(--ap-success)' }}> · {t('BranchInfoPanel.status.open')}</span>}
           </div>
         </div>
-        <button type="button" onClick={() => navigate('/branches')} style={{ border: 0, background: 'transparent', color: 'var(--ap-lime-deep)', fontWeight: 800, cursor: 'pointer' }}>
+        <button type="button" onClick={() => navigate('/branches')} style={{ border: 0, background: 'transparent', color: 'var(--ap-gold-text)', fontWeight: 800, cursor: 'pointer' }}>
           შეცვლა
         </button>
       </div>

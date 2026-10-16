@@ -1,8 +1,9 @@
 :root {
   /* autopass brand tokens */
   --ap-forest: #12284b; /* Navy — primary surfaces, logo squares, headers */
-  --ap-lime: #e4b23c; /* Gold — accent, CTA, active states */
+  --ap-lime: #e4b23c; /* Gold — accent, CTA, fills on dark */
   --ap-lime-deep: #c8922a; /* Gold pressed */
+  --ap-gold-text: #7a560c; /* Gold text on light surfaces (WCAG AA) */
   --ap-pine: #0c1b33; /* Navy 950 — darkest surface */
   --ap-moss: #1c3d6e; /* Navy 700 — secondary */
   --ap-mint: #fff6df; /* Gold tint — chips */

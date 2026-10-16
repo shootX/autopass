@@ -67,7 +67,7 @@
         font-size: 20px;
         font-weight: 600;
         text-transform: uppercase;
-        color: $yellowMain;
+        color: $goldText;
     }
     .package-warn {
         @include font-roboto-regular-blue;
@@ -267,7 +267,7 @@
           }
 
           .deatil-name {
-            color: $yellowMain;
+            color: $goldText;
           }
         }
       }
@@ -350,7 +350,7 @@
 .package-delete-popup-btns button:first-child {
   background-color: transparent;
   border: 1px solid $textSecondary;
-  color: $yellowMain;
+  color: $goldText;
 }
 
 .package-delete-popup-btns button:last-child {

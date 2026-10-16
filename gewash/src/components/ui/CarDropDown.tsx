@@ -112,7 +112,7 @@ export function CarDropDown({
                     justifyContent: "start",
                     alignItems: "center",
                     borderRadius: "12px",
-                    color: isSelected ? "#e4b23c" : "#12284b",
+                    color: isSelected ? "var(--ap-gold-text)" : "#12284b",
                     cursor: "pointer",
                     transition: "background-color 0.3s",
                   }}

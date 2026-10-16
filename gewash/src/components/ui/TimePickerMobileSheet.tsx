@@ -161,7 +161,7 @@ export function TimePickerMobileSheet({
                       color: isPast
                         ? "#9CA3AF"
                         : selectedTime === time
-                          ? "#e4b23c"
+                          ? "var(--ap-gold-text)"
                           : "#12284b",
                       cursor: isPast ? "not-allowed" : "pointer",
                       WebkitTapHighlightColor: "transparent",

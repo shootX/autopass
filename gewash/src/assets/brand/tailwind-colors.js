@@ -5,6 +5,7 @@ module.exports = {
     forest: '#12284b', // Navy
     lime: '#e4b23c', // Gold
     'lime-deep': '#c8922a', // Gold pressed
+    'gold-text': '#7a560c', // Gold text on light
     pine: '#0c1b33', // Navy 950
     moss: '#1c3d6e', // Navy 700
     mint: '#fff6df', // Gold tint

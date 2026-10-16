@@ -8,6 +8,7 @@ export default {
           forest: "#12284b",
           lime: "#e4b23c",
           "lime-deep": "#c8922a",
+          "gold-text": "#7a560c",
           pine: "#0c1b33",
           moss: "#1c3d6e",
           mint: "#fff6df",
@@ -37,7 +38,7 @@ export default {
         gold: {
           500: "#e4b23c",
           600: "#c8922a",
-          700: "#8a5a12",
+          700: "#7a560c",
           100: "#fff6df",
         },
         ink: "#14233c",

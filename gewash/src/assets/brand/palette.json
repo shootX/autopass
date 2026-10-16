@@ -20,6 +20,12 @@
       "usage": "Gold hover and pressed"
     },
     {
+      "token": "gold-text",
+      "name": "Gold Text",
+      "hex": "#7a560c",
+      "usage": "Gold as text on white, canvas, and other light surfaces (WCAG AA)"
+    },
+    {
       "token": "pine",
       "name": "Navy 950",
       "hex": "#0c1b33",

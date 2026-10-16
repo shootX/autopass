@@ -1,3 +1,7 @@
+:root {
+  --ap-gold-text: #7a560c;
+}
+
 .mono {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   font-variant-numeric: tabular-nums;
@@ -55,6 +59,7 @@
 }
 
 .auth-wrapper {
+  box-sizing: border-box;
   width: 420px;
   max-width: 100%;
   padding: 36px 28px 40px;
@@ -180,6 +185,7 @@
 }
 
 .sign-in {
+  box-sizing: border-box;
   width: 100%;
   margin-top: 4px;
   padding: 15px;
@@ -245,7 +251,7 @@
   background: #ffffff;
   box-shadow: 0 6px 18px rgba(2, 6, 23, 0.08);
   cursor: pointer;
-  color: #c8922a;
+  color: var(--ap-gold-text);
   font-weight: 600;
   -webkit-appearance: none;
   appearance: none;
@@ -470,7 +476,7 @@
 }
 
 .cv-stage--active .cv-stage__label {
-  color: #c8922a;
+  color: var(--ap-gold-text);
   font-weight: 600;
   font-size: 14px;
 }
@@ -616,7 +622,7 @@
 .cv-btn--outline {
   background: #fff;
   border: 2px solid #12284b;
-  color: #c8922a;
+  color: var(--ap-gold-text);
 }
 
 .cv-btn--primary {
@@ -884,6 +890,8 @@
     place-items: stretch;
     padding: 24px;
     background: #0c1b33;
+    min-height: 100vh;
+    min-height: 100dvh;
   }
 
   .auth-page::before {
@@ -891,6 +899,8 @@
     white-space: pre-line;
     display: flex;
     align-items: flex-end;
+    box-sizing: border-box;
+    min-width: 0;
     padding: 48px;
     color: #fff;
     font-size: 48px;
@@ -903,8 +913,11 @@
   }
 
   .auth-wrapper {
+    box-sizing: border-box;
     width: 100%;
     max-width: none;
+    min-width: 0;
+    min-height: 100%;
     border-radius: 0 28px 28px 0;
     box-shadow: none;
     display: flex;

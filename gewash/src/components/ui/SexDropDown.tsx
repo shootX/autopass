@@ -123,7 +123,7 @@ export function SexDropDown({
               style={{
                 fontSize: "16px",
                 fontWeight: 500,
-                color: currentSex === "male" ? "#e4b23c" : "#12284b",
+                color: currentSex === "male" ? "var(--ap-gold-text)" : "#12284b",
               }}
             >
               Male
@@ -163,7 +163,7 @@ export function SexDropDown({
               style={{
                 fontSize: "16px",
                 fontWeight: 500,
-                color: currentSex === "female" ? "#e4b23c" : "#12284b",
+                color: currentSex === "female" ? "var(--ap-gold-text)" : "#12284b",
               }}
             >
               Female

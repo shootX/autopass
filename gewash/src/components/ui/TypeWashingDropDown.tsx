@@ -128,7 +128,7 @@ export function TypeWashingDropDown({
                     style={{
                       fontSize: "16px",
                       fontWeight: 500,
-                      color: isSelected ? "#e4b23c" : "#12284b",
+                      color: isSelected ? "var(--ap-gold-text)" : "#12284b",
                       marginLeft: "12px",
                       whiteSpace: "nowrap",
                     }}
