@@ -144,7 +144,7 @@ export default function PhoneNumberChanging() {
             fillRule="evenodd"
             clipRule="evenodd"
             d="M8 10.1221L13.303 15.4251...Z"
-            fill="#12284b"
+            fill="#14482F"
           />
         </svg>
         }
@@ -159,7 +159,7 @@ export default function PhoneNumberChanging() {
           margin: "16px",
         }}
       >
-        <h2 style={{ color: "#12284b", fontWeight: "600", fontSize: "20px" }}>
+        <h2 style={{ color: "#14482F", fontWeight: "600", fontSize: "20px" }}>
           {t("PhoneNumberChanging.form.title")}
         </h2>
 
@@ -195,8 +195,8 @@ export default function PhoneNumberChanging() {
             onClick={handleSaveNewPhone}
             disabled={!isValid || isSubmitting}
             style={{
-              backgroundColor: !isValid ? "#a8b3c4" : "#12284b",
-              color: !isValid ? "#e4ddd0" : "#e4b23c",
+              backgroundColor: !isValid ? "#A2ABA4" : "#14482F",
+              color: !isValid ? "#DCE1DB" : "#B5DD3A",
               padding: "15px 0px",
               borderRadius: "16px",
               fontWeight: 600,
@@ -213,7 +213,7 @@ export default function PhoneNumberChanging() {
                 style={{
                   width: "18px",
                   height: "18px",
-                  border: "2px solid #e4b23c",
+                  border: "2px solid #B5DD3A",
                   borderTopColor: "transparent",
                   borderRadius: "50%",
                   animation: "spin 0.7s linear infinite",

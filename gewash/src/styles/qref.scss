@@ -1,8 +1,8 @@
-html, body { background: var(--ap-foam, #f6f3ec); }
+html, body { background: var(--ap-foam, #F7F9F4); }
 .main-container {
   max-width: 100% !important;
   margin: 0 auto;
-  background: var(--ap-foam, #f6f3ec) !important;
+  background: var(--ap-foam, #F7F9F4) !important;
   min-height: 100dvh;
   padding-bottom: 0;
 }
@@ -54,8 +54,8 @@ html, body { background: var(--ap-foam, #f6f3ec); }
   min-height: 60px;
   border: 0;
   border-radius: 18px;
-  background: var(--ap-lime, #e4b23c);
-  color: var(--ap-ink, #14233c);
+  background: var(--ap-lime, #B5DD3A);
+  color: var(--ap-ink, #0E1712);
   font-family: "Noto Sans Georgian", "Plus Jakarta Sans", sans-serif;
   font-size: 17px;
   font-weight: 700;
@@ -102,19 +102,19 @@ html, body { background: var(--ap-foam, #f6f3ec); }
 .qbook-car button { margin-left: auto; border: 0; background: transparent; color: var(--c-text-muted); min-width: 44px; min-height: 44px; }
 .qweek { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 8px 0 4px; }
 .qweek button {
-  border: 1px solid var(--ap-gray-100, #efeae2); background: #fff; border-radius: 16px; min-height: 58px;
+  border: 1px solid var(--ap-gray-100, #EDF0EC); background: #fff; border-radius: 16px; min-height: 58px;
   color: var(--c-text); font-weight: 700;
 }
 .qweek button small { display: block; font-size: 12px; font-weight: 600; color: var(--c-text-muted); }
-.qweek button.on { background: var(--ap-ink, #14233c); color: #fff; }
-.qweek button.on small { color: #8ca3b9; }
+.qweek button.on { background: var(--ap-ink, #0E1712); color: #fff; }
+.qweek button.on small { color: #A7B1AA; }
 .qtimes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .qtimes button {
   min-height: 44px; border-radius: 14px; border: 0;
   background: var(--c-surface-2); color: var(--c-text); font-weight: 700;
 }
-.qtimes button.on { background: var(--ap-lime, #e4b23c); color: var(--ap-ink, #14233c); }
-.qtimes button:disabled { opacity: 1; color: var(--ap-gray-400, #a8b3c4); background: transparent; text-decoration: line-through; }
+.qtimes button.on { background: var(--ap-lime, #B5DD3A); color: var(--ap-ink, #0E1712); }
+.qtimes button:disabled { opacity: 1; color: var(--ap-gray-400, #A2ABA4); background: transparent; text-decoration: line-through; }
 .qhead {
   display: flex; align-items: center; justify-content: space-between;
   min-height: 48px; margin-bottom: 8px;

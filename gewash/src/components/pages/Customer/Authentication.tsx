@@ -148,7 +148,7 @@ export default function Authentication() {
         </div>
 
         <div style={{ textAlign: "right", marginTop: 12 }}>
-          <Link to="/renew-password" style={{ fontWeight: 700, fontSize: 14, textDecoration: "none" }}>
+          <Link to="/renew-password" style={{ color: "var(--ap-lime)", fontWeight: 700, fontSize: 14, textDecoration: "none" }}>
             {t("Authentication.forgotPassword")}
           </Link>
         </div>
@@ -159,7 +159,7 @@ export default function Authentication() {
 
         <p className="v4-auth-switch" style={{ marginTop: 22, textAlign: "center", fontSize: 14.5 }}>
           {t("Authentication.signupPrompt")}{" "}
-          <Link to="/register" style={{ fontWeight: 800, textDecoration: "none" }}>
+          <Link to="/register" style={{ color: "#fff", fontWeight: 800, textDecoration: "none" }}>
             {t("Authentication.buttons.signUp")}
           </Link>
         </p>

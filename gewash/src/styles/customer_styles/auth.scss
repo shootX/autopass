@@ -96,7 +96,7 @@
       border: none;
   
       &:hover {
-        background: #12284b;
+        background: #14482F;
       }
       button {
         color: $yellowMain;
@@ -133,7 +133,7 @@
       pointer-events: auto;
   
       &.active {
-        fill: #c8922a;
+        fill: #8DB523;
       }
     }
   }
@@ -254,7 +254,7 @@
     justify-content: center;
     margin-top: 24px;
     hr {
-      background-color: #e4ddd0;
+      background-color: #DCE1DB;
     }
     p {
       color: $textSecondary;

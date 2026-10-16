@@ -2,30 +2,29 @@
 // tailwind.config.js -> theme.extend.colors = require('./tailwind-colors.js')
 module.exports = {
   autopass: {
-    forest: '#12284b', // Navy
-    lime: '#e4b23c', // Gold
-    'lime-deep': '#c8922a', // Gold pressed
-    'gold-text': '#7a560c', // Gold text on light
-    pine: '#0c1b33', // Navy 950
-    moss: '#1c3d6e', // Navy 700
-    mint: '#fff6df', // Gold tint
-    mist: '#e7eef8', // Navy tint
-    ink: '#14233c', // Ink
-    foam: '#f6f3ec', // Canvas
+    forest: '#14482F', // Forest
+    lime: '#B5DD3A', // Pass Lime
+    'lime-deep': '#8DB523', // Lime Deep
+    pine: '#0B2A1B', // Pine
+    moss: '#2D7F50', // Moss
+    mint: '#DCEFD0', // Mint
+    mist: '#EEF6E8', // Mist
+    ink: '#0E1712', // Ink
+    foam: '#F7F9F4', // Foam
     white: '#FFFFFF', // White
-    'gray-100': '#efeae2', // Gray 100
-    'gray-200': '#e4ddd0', // Gray 200
-    'gray-400': '#a8b3c4', // Gray 400
-    'gray-600': '#5d6e86', // Gray 600
-    'gray-800': '#1a2e4a', // Gray 800
+    'gray-100': '#EDF0EC', // Gray 100
+    'gray-200': '#DCE1DB', // Gray 200
+    'gray-400': '#A2ABA4', // Gray 400
+    'gray-600': '#5E6A62', // Gray 600
+    'gray-800': '#2B342E', // Gray 800
     success: '#1E9E5A', // Success
     warning: '#F0A020', // Warning
     error: '#D64541', // Error
     info: '#2E86D6', // Rinse Blue
   },
   // convenient semantic aliases
-  primary: { DEFAULT: '#12284b', light: '#1c3d6e', dark: '#0c1b33' },
-  accent: { DEFAULT: '#e4b23c', dark: '#c8922a' },
+  primary: { DEFAULT: '#14482F', light: '#2D7F50', dark: '#0B2A1B' },
+  accent: { DEFAULT: '#B5DD3A', dark: '#8DB523' },
   success: '#1E9E5A',
   warning: '#F0A020',
   error: '#D64541',

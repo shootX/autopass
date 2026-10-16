@@ -96,7 +96,7 @@ function DiscountRail({
       {pages.length > 1 && page < pages.length - 1 && (
         <span className="shop-offers-hint" aria-hidden="true">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-            <path d="M9 6l6 6-6 6" stroke="#12284b" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M9 6l6 6-6 6" stroke="#14482F" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </span>
       )}
@@ -186,8 +186,8 @@ export default function DiscountsPage() {
             disabled={loading || error}
           />
           <svg className="discounts-search__icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <circle cx="7" cy="7" r="5" stroke="#a8b3c4" strokeWidth="1.5"/>
-            <path d="M11 11l2.5 2.5" stroke="#a8b3c4" strokeWidth="1.5" strokeLinecap="round"/>
+            <circle cx="7" cy="7" r="5" stroke="#A2ABA4" strokeWidth="1.5"/>
+            <path d="M11 11l2.5 2.5" stroke="#A2ABA4" strokeWidth="1.5" strokeLinecap="round"/>
           </svg>
         </div>
 
