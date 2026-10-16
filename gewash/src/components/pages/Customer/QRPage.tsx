@@ -139,7 +139,7 @@ export default function QRPage() {
       {pkg && remaining != null && (
         <div className="v4-washbar v4-dk">
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 12.5, color: '#8ca3b9', fontWeight: 600 }}>დარჩენილი რეცხვა</div>
+            <div style={{ fontSize: 12.5, color: '#A7B1AA', fontWeight: 600 }}>დარჩენილი რეცხვა</div>
             {cells.length > 0 && (
               <div className="sq">{cells.map((on, i) => <i key={i} className={on ? 'on' : ''} />)}</div>
             )}

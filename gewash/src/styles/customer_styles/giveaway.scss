@@ -364,7 +364,7 @@ $shadow: 0 0 12px 0 rgba(24, 61, 105, 0.08);
     }
 
     &--new span:first-child {
-      color: $goldText;
+      color: $yellowMain;
     }
   }
 
@@ -621,7 +621,7 @@ $shadow: 0 0 12px 0 rgba(24, 61, 105, 0.08);
     gap: 4px;
 
     img { width: 32px; height: 32px; object-fit: contain; }
-    span { font-size: 18px; font-weight: 600; color: $goldText; }
+    span { font-size: 18px; font-weight: 600; color: $yellowMain; }
   }
 
   &__coin-badge {
@@ -734,7 +734,7 @@ $shadow: 0 0 12px 0 rgba(24, 61, 105, 0.08);
       line-height: 22px;
 
       &::marker {
-        color: $goldText;
+        color: $yellowMain;
       }
     }
   }
@@ -759,7 +759,7 @@ $shadow: 0 0 12px 0 rgba(24, 61, 105, 0.08);
   }
 
   &__results-link {
-    color: $goldText;
+    color: $yellowMain;
     text-decoration: none;
     font-weight: 600;
   }

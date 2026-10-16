@@ -79,7 +79,7 @@ function Calendar({
         ),
         weekdays: cn("flex mb-2", defaultClassNames.weekdays),
         weekday: cn(
-          "text-[#a8b3c4] font-normal text-[20px] leading-[23px] flex-1 text-center",
+          "text-[#A2ABA4] font-normal text-[20px] leading-[23px] flex-1 text-center",
           defaultClassNames.weekday
         ),
         week: cn("flex w-full gap-y-2 mb-1", defaultClassNames.week),
@@ -155,7 +155,7 @@ function CalendarDayButton({
       data-range-end={modifiers.range_end}
       data-range-middle={modifiers.range_middle}
       className={cn(
-        "flex items-center aspect-square w-full h-full rounded-full text-[20px] leading-[23px] font-[Roboto] text-[#12284b]",
+        "flex items-center aspect-square w-full h-full rounded-full text-[20px] leading-[23px] font-[Roboto] text-[#14482F]",
         modifiers.selected && "bg-[#CDF5D8] text-[#1E9E5A]",
         className
       )}

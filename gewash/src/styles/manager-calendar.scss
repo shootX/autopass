@@ -30,7 +30,7 @@ header {
   
     button {
       font-size: 18px;
-      color: $goldText;
+      color: $yellowMain;
       cursor: pointer;
     }
   }
@@ -65,7 +65,7 @@ header {
     background: white;
     text-align: center;
     padding: 21px 8px;
-    color: #12284b;
+    color: #14482F;
     cursor: pointer;
     outline: none;
   
@@ -114,7 +114,7 @@ header {
   .dot.new          { background-color: $yellowMain; }
   .dot.expired      { background-color: $redMain; }
   .dot.rescheduled  { background-color: $blueMain; }
-  .dot.deleted      { background-color: #a8b3c4; }
+  .dot.deleted      { background-color: #A2ABA4; }
   
 
   .date-events {

@@ -1,7 +1,3 @@
-:root {
-  --ap-gold-text: #7a560c;
-}
-
 .mono {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   font-variant-numeric: tabular-nums;
@@ -14,8 +10,8 @@
   height: 22px;
   border-radius: 50%;
   border: 2px solid transparent;
-  border-top-color: #c8922a;
-  border-right-color: #c8922a;
+  border-top-color: #8DB523;
+  border-right-color: #8DB523;
   border-left-color: rgba(245, 166, 35, 0.2);
   border-bottom-color: rgba(245, 166, 35, 0.12);
   animation: ui-spin 0.7s linear infinite;
@@ -59,7 +55,6 @@
 }
 
 .auth-wrapper {
-  box-sizing: border-box;
   width: 420px;
   max-width: 100%;
   padding: 36px 28px 40px;
@@ -89,7 +84,7 @@
 }
 
 .auth-greetings h1 {
-  color: #12284b;
+  color: #14482F;
   font-weight: 700;
   margin: 22px 0 0;
   font-size: 26px;
@@ -120,7 +115,7 @@
 }
 
 .auth-field label {
-  color: #12284b;
+  color: #14482F;
   font-size: 14px;
   font-weight: 500;
 }
@@ -132,7 +127,7 @@
   border: 1px solid #c8d1dc;
   border-radius: 14px;
   font-size: 16px;
-  color: #12284b;
+  color: #14482F;
   background: #fff;
   -webkit-appearance: none;
   appearance: none;
@@ -143,7 +138,7 @@
 }
 
 .custom-input:focus {
-  border-color: #12284b;
+  border-color: #14482F;
   outline: none;
   box-shadow: 0 0 0 3px rgba(24, 61, 105, 0.12);
 }
@@ -185,7 +180,6 @@
 }
 
 .sign-in {
-  box-sizing: border-box;
   width: 100%;
   margin-top: 4px;
   padding: 15px;
@@ -194,8 +188,8 @@
   font-weight: 700;
   cursor: pointer;
   border: none;
-  background: #12284b;
-  color: #e4b23c;
+  background: #14482F;
+  color: #B5DD3A;
   transition: background 0.2s ease, opacity 0.15s ease;
   -webkit-appearance: none;
   appearance: none;
@@ -208,7 +202,7 @@
 }
 
 .sign-in:hover:not(:disabled) {
-  background: #12284b;
+  background: #14482F;
 }
 
 .incorrect-password-error {
@@ -251,7 +245,7 @@
   background: #ffffff;
   box-shadow: 0 6px 18px rgba(2, 6, 23, 0.08);
   cursor: pointer;
-  color: var(--ap-gold-text);
+  color: #8DB523;
   font-weight: 600;
   -webkit-appearance: none;
   appearance: none;
@@ -407,7 +401,7 @@
   margin: 0;
   font-size: 20px;
   font-weight: 800;
-  color: #12284b;
+  color: #14482F;
 }
 
 .cv-success-sub {
@@ -415,13 +409,13 @@
   z-index: 1;
   margin: 6px 0 0;
   font-size: 14px;
-  color: #1c3d6e;
+  color: #2D7F50;
 }
 
 .cv-title {
   font-size: 22px;
   font-weight: 700;
-  color: #12284b;
+  color: #14482F;
 }
 
 .cv-subtitle {
@@ -462,21 +456,21 @@
 }
 
 .cv-stage--done .cv-stage__bar {
-  background: #12284b;
+  background: #14482F;
 }
 
 .cv-stage--done .cv-stage__label {
-  color: #12284b;
+  color: #14482F;
   font-weight: 600;
   font-size: 14px;
 }
 
 .cv-stage--active .cv-stage__bar {
-  background: #c8922a;
+  background: #8DB523;
 }
 
 .cv-stage--active .cv-stage__label {
-  color: var(--ap-gold-text);
+  color: #8DB523;
   font-weight: 600;
   font-size: 14px;
 }
@@ -500,7 +494,7 @@
 .cv-label {
   display: block;
   font-size: 14px;
-  color: #12284b;
+  color: #14482F;
   margin-bottom: 8px;
   font-weight: 400;
 }
@@ -514,7 +508,7 @@
   padding: 0 14px;
   box-sizing: border-box;
   font-size: 14px;
-  color: #12284b;
+  color: #14482F;
   -webkit-appearance: none;
   appearance: none;
 }
@@ -536,8 +530,8 @@
   margin-top: 14px;
   border-radius: 12px;
   border: none;
-  background: #12284b;
-  color: #c8922a;
+  background: #14482F;
+  color: #8DB523;
   font-weight: 700;
   cursor: pointer;
   -webkit-appearance: none;
@@ -592,7 +586,7 @@
   border: none;
   background: none;
   padding: 0;
-  color: #12284b;
+  color: #14482F;
   font-weight: 600;
   text-decoration: underline;
   cursor: pointer;
@@ -621,17 +615,17 @@
 
 .cv-btn--outline {
   background: #fff;
-  border: 2px solid #12284b;
-  color: var(--ap-gold-text);
+  border: 2px solid #14482F;
+  color: #8DB523;
 }
 
 .cv-btn--primary {
   background: #8b9cb0;
-  color: #c8922a;
+  color: #8DB523;
 }
 
 .cv-btn--primary:not(:disabled) {
-  background: #12284b;
+  background: #14482F;
 }
 
 .cv-btn--primary:disabled {
@@ -822,8 +816,8 @@
 @media (prefers-reduced-motion: reduce) {
   .ui-spinner {
     animation: none;
-    border-top-color: #c8922a;
-    border-right-color: #c8922a;
+    border-top-color: #8DB523;
+    border-right-color: #8DB523;
     opacity: 0.85;
   }
 
@@ -852,77 +846,6 @@
   .cv-success-check__mark {
     animation: none;
     stroke-dashoffset: 0;
-  }
-}
-
-.auth-page,
-.cv-page {
-  font-family: "Noto Sans Georgian", "Plus Jakarta Sans", system-ui, sans-serif;
-}
-
-.auth-page {
-  background: #0c1b33;
-}
-
-.sign-in,
-.cv-send,
-.cv-btn--primary {
-  background: #12284b;
-  color: #ffffff;
-}
-
-.sign-in:focus-visible,
-.cv-send:focus-visible,
-.cv-btn:focus-visible {
-  outline: 3px solid #e4b23c;
-  outline-offset: 2px;
-}
-
-.auth-greetings h1,
-.cv-title {
-  letter-spacing: -0.03em;
-}
-
-@media (min-width: 960px) {
-  .auth-page {
-    display: grid;
-    grid-template-columns: 1.15fr 0.9fr;
-    place-items: stretch;
-    padding: 24px;
-    background: #0c1b33;
-    min-height: 100vh;
-    min-height: 100dvh;
-  }
-
-  .auth-page::before {
-    content: "autopass\A სუფთა მანქანა.\A ყოველთვის.";
-    white-space: pre-line;
-    display: flex;
-    align-items: flex-end;
-    box-sizing: border-box;
-    min-width: 0;
-    padding: 48px;
-    color: #fff;
-    font-size: 48px;
-    font-weight: 800;
-    line-height: 1.05;
-    border-radius: 28px 0 0 28px;
-    background:
-      radial-gradient(90% 60% at 80% 100%, rgba(228, 178, 60, 0.55), transparent 50%),
-      linear-gradient(165deg, #1c3d6e 0%, #0c1b33 72%);
-  }
-
-  .auth-wrapper {
-    box-sizing: border-box;
-    width: 100%;
-    max-width: none;
-    min-width: 0;
-    min-height: 100%;
-    border-radius: 0 28px 28px 0;
-    box-shadow: none;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
   }
 }
 

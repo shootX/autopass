@@ -33,36 +33,36 @@ const statusColorMap: Record<
 > = {
   Confirm: {
     capBg: "#B0EFBC",
-    capText: "#12284b",
+    capText: "#14482F",
     labelBg: "#1E9E5A",
     labelText: "#FFFFFF",
   },
   Completed: {
-    capBg: "#B0EFBC", capText: "#12284b", labelBg: "#1E9E5A", labelText: "#FFFFFF",
+    capBg: "#B0EFBC", capText: "#14482F", labelBg: "#1E9E5A", labelText: "#FFFFFF",
   },
   Rescheduled: {
-    capBg: "#a8b3c4",
-    capText: "#12284b",
-    labelBg: "#12284b",
-    labelText: "#e4b23c",
+    capBg: "#A2ABA4",
+    capText: "#14482F",
+    labelBg: "#14482F",
+    labelText: "#B5DD3A",
   },
   Expired: {
     capBg: "#FFC6C6",
-    capText: "#12284b",
+    capText: "#14482F",
     labelBg: "#D64541",
-    labelText: "#e4b23c",
+    labelText: "#B5DD3A",
   },
   Deleted: {
-    capBg: "#a8b3c4",
+    capBg: "#A2ABA4",
     capText: "#FFFFFF",
-    labelBg: "#e4ddd0",
-    labelText: "#a8b3c4",
+    labelBg: "#DCE1DB",
+    labelText: "#A2ABA4",
   },
   New: {
-    capBg: "#12284b",
-    capText: "#e4b23c",
-    labelBg: "#e4b23c",
-    labelText: "#12284b",
+    capBg: "#14482F",
+    capText: "#B5DD3A",
+    labelBg: "#B5DD3A",
+    labelText: "#14482F",
   },
 };
 
@@ -70,7 +70,7 @@ const statusColorMap: Record<
 function getStatusStyle(status: Status): React.CSSProperties {
   const { labelBg, labelText } = statusColorMap[status]
 
-  const correctedBg = status === 'Deleted' ? '#e4ddd0' : labelBg
+  const correctedBg = status === 'Deleted' ? '#DCE1DB' : labelBg
 
   return {
     backgroundColor: correctedBg,

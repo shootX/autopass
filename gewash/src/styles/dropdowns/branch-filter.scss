@@ -62,7 +62,7 @@
     padding: 6px 0;
 
     &.checked {
-        color: $goldText;
+        color: $yellowMain;
         transition: color 0.4s ease;
     }
   
@@ -135,7 +135,7 @@
       }
   
       &.active {
-        color: $goldText;
+        color: $yellowMain;
   
         svg path {
           fill: $yellowMain;

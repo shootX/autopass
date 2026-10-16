@@ -45,8 +45,8 @@ export default function MyData() {
           <Link to="/settings">
             <button
               style={{
-                backgroundColor: '#12284b',
-                color: '#e4b23c',
+                backgroundColor: '#14482F',
+                color: '#B5DD3A',
                 padding: '12px',
                 borderRadius: '12px',
                 fontSize: '14px',
