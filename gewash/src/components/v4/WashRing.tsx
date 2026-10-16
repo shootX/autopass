@@ -18,7 +18,7 @@ export function WashRing({ remaining, total }: { remaining: number; total: numbe
           cy="131"
           r={r}
           fill="none"
-          stroke="#B5DD3A"
+          stroke="#e4b23c"
           strokeWidth="16"
           strokeLinecap="round"
           strokeDasharray={`${ratio * c} ${c}`}
@@ -34,7 +34,7 @@ export function WashRing({ remaining, total }: { remaining: number; total: numbe
               cx={cx + Math.cos(angle) * r}
               cy={cy + Math.sin(angle) * r}
               r="2.6"
-              fill={on ? "#0E1712" : "#B8BFB6"}
+              fill={on ? "#14233c" : "#B8BFB6"}
             />
           );
         })}

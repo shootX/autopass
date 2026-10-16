@@ -20,7 +20,7 @@
         padding: 15px 0px;
         border-radius: 16px;
         width: 100%;
-        color: #DCE1DB;
+        color: #e4ddd0;
     }
 }
 
@@ -28,8 +28,8 @@
     p {
         @include font-roboto-regular-blue;
         a {
-            color: $yellowMain;
-            border-bottom: 1px solid $yellowMain;
+            color: $goldText;
+            border-bottom: 1px solid $goldText;
         }
         margin-top: 16px;
     }
@@ -63,7 +63,7 @@
   
   .send-button {
     background: $border;
-    color: #DCE1DB;
+    color: #e4ddd0;
     border: none;
     padding: 10px 20px;
     transition: background 0.3s ease;

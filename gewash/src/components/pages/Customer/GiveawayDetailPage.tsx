@@ -220,7 +220,7 @@ export default function GiveawayDetailPage() {
         <div className="giveaway-detail__appbar">
           <button className="giveaway-detail__back" onClick={() => navigate(-1)}>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M15 18l-6-6 6-6" stroke="#14482F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M15 18l-6-6 6-6" stroke="#12284b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </button>
           <div className="giveaway-detail__balance">
@@ -305,7 +305,7 @@ export default function GiveawayDetailPage() {
           <div className="giveaway-detail__company-right">
             <span>Tbilisi</span>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M8 1.5C5.515 1.5 3.5 3.515 3.5 6c0 3.75 4.5 8.5 4.5 8.5S12.5 9.75 12.5 6c0-2.485-2.015-4.5-4.5-4.5Zm0 6.125A1.625 1.625 0 1 1 8 4.25a1.625 1.625 0 0 1 0 3.25Z" fill="#14482F"/>
+              <path d="M8 1.5C5.515 1.5 3.5 3.515 3.5 6c0 3.75 4.5 8.5 4.5 8.5S12.5 9.75 12.5 6c0-2.485-2.015-4.5-4.5-4.5Zm0 6.125A1.625 1.625 0 1 1 8 4.25a1.625 1.625 0 0 1 0 3.25Z" fill="#12284b"/>
             </svg>
           </div>
         </div>
@@ -359,7 +359,7 @@ export default function GiveawayDetailPage() {
                     <span className="giveaway-sheet__qty-label">{t("Giveaway.tickets")}</span>
                     <button className="giveaway-sheet__qty-btn" onClick={() => setQty((q) => Math.max(1, q - 1))} disabled={qty <= 1}>
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                        <path d="M5 12h14" stroke={qty <= 1 ? "#A2ABA4" : "#14482F"} strokeWidth="2" strokeLinecap="round"/>
+                        <path d="M5 12h14" stroke={qty <= 1 ? "#a8b3c4" : "#12284b"} strokeWidth="2" strokeLinecap="round"/>
                       </svg>
                     </button>
                     <input
@@ -374,7 +374,7 @@ export default function GiveawayDetailPage() {
                     />
                     <button className="giveaway-sheet__qty-btn" onClick={() => setQty((q) => q + 1)}>
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                        <path d="M12 5v14M5 12h14" stroke="#14482F" strokeWidth="2" strokeLinecap="round"/>
+                        <path d="M12 5v14M5 12h14" stroke="#12284b" strokeWidth="2" strokeLinecap="round"/>
                       </svg>
                     </button>
                   </div>
@@ -420,7 +420,7 @@ export default function GiveawayDetailPage() {
                 <div className="giveaway-sheet__sub-header">
                   <button className="giveaway-sheet__sub-back" onClick={goBack}>
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                      <path d="M15 18l-6-6 6-6" stroke="#14482F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M15 18l-6-6 6-6" stroke="#12284b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
                   </button>
                   <h2 className="giveaway-sheet__title">{t("Giveaway.notEnoughTitle")}</h2>
@@ -465,7 +465,7 @@ export default function GiveawayDetailPage() {
                 <div className="giveaway-sheet__sub-header">
                   <button className="giveaway-sheet__sub-back" onClick={goBack}>
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                      <path d="M15 18l-6-6 6-6" stroke="#14482F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M15 18l-6-6 6-6" stroke="#12284b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
                   </button>
                   <h2 className="giveaway-sheet__title giveaway-sheet__title--success">{t("Giveaway.successTitle")}</h2>

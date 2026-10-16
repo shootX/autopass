@@ -103,7 +103,7 @@ export function CalendarMobileSheet({
               textAlign: "center",
               fontSize: "20px",
               fontWeight: 600,
-              color: "#14482F",
+              color: "#12284b",
               margin: 0,
               padding: "0px"
             }}
@@ -137,7 +137,7 @@ export function CalendarMobileSheet({
               style={{
                 fontSize: "18px",
                 fontWeight: 500,
-                color: "#14482F",
+                color: "#12284b",
               }}
             >
               {month.toLocaleDateString("en-US", {
@@ -179,7 +179,7 @@ export function CalendarMobileSheet({
                 textAlign: "center",
                 fontSize: "16px",
                 fontWeight: 500,
-                color: "#14482F",
+                color: "#12284b",
               }}
             >
               {format(range.from, "d MMMM yyyy")} – {format(range.to, "d MMMM yyyy")}
@@ -196,10 +196,10 @@ export function CalendarMobileSheet({
             disabled={!range?.from || !range?.to}
             style={{
               borderRadius: "16px",
-              backgroundColor: "#14482F",
+              backgroundColor: "#12284b",
               padding: "12px 24px",
               textAlign: "center",
-              color: "#B5DD3A",
+              color: "#e4b23c",
               fontWeight: 600,
               fontSize: "14px",
               border: "none",

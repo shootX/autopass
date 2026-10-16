@@ -211,7 +211,7 @@ export function BranchMap({ branches, selectedBranchId, onSelect, variant = 'ful
               id="route-line"
               type="line"
               paint={{
-                'line-color': '#2D7F50',
+                'line-color': '#1c3d6e',
                 'line-width': 4,
               }}
             />

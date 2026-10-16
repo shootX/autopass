@@ -322,3 +322,18 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 - refresh უცვლელია: 409 ერთხელ, ქსელის შეცდომა სესიას არ წყვეტს. ტაბების lock არ დაემატა.
 - login, set_password, approve და cookie refresh უცვლელია.
 - main-ში შერწყმა და ცოცხალი სერვერი არ შეხებია.
+
+## 2026-10-16 — ვიზუალური პორტი ნავი/ოქრო (`cursor/visual-redesign-port-e825`)
+
+- [x] `41a3eae` (blue+gold) გადმოვიდა `aac2b78`-ზე ახალ შტოზე. ძველი შტო არ შერწყმულა.
+- [x] მხოლოდ ვიზუალი: SCSS/CSS, Tailwind, `redesign.scss`, `umami-admin.css`, voucher-checker სტილები, ბრენდის SVG და კომპონენტების ფერის მნიშვნელობები. პალიტრა `docs/DESIGN.md`-ში.
+- [x] არ გადმოვიდა: `src/preview/fixtures.ts`, hook-ების preview მონაცემები, `App.tsx`-ის bundled lang, `phonePrefix`, ავტორიზაცია/refresh/logout, i18n გასაღებები და მარშრუტები.
+- [x] შემოწმება: gewash lint, vitest 139/139, `build:check`, `i18n:check`; voucher-checker lint, vitest 12/12, `build:check`.
+- [ ] შერწყმა main-ში და დეპლოი არ გაკეთებულა.
+
+## 2026-10-16 — QA ფიქსები PR #30 (F1–F3)
+
+- [x] F1: voucher-checker `.auth-wrapper` და `.sign-in` იღებს `box-sizing: border-box`. დესკტოპის `.auth-page::before`-საც. სპლიტი ივსება `min-height: 100dvh`-ით.
+- [x] F2: შესვლის ბმული დესკტოპზე ნავია (`#12284b` თეთრზე), მობილურზე ოქრო მუქ პანელზე. `+995` დესკტოპის თეთრ ველზე არის `#14233c`.
+- [x] F3: ოქროს ტექსტი ღია ფონზე არის `#7a560c` (`--ap-gold-text`, `$goldText`). `#e4b23c` რჩება შევსებასა და ნავზე. ტესტი: `paletteContrast.test.ts`.
+- [ ] შერწყმა main-ში და დეპლოი არ გაკეთებულა.

@@ -3,57 +3,63 @@
   "colors": [
     {
       "token": "forest",
-      "name": "Forest",
-      "hex": "#14482F",
-      "usage": "Primary brand green — logo squares, headers, primary surfaces"
+      "name": "Navy",
+      "hex": "#12284b",
+      "usage": "Primary navy — logo squares, headers, primary surfaces"
     },
     {
       "token": "lime",
-      "name": "Pass Lime",
-      "hex": "#B5DD3A",
-      "usage": "Accent — highlight square, primary CTA buttons, active states"
+      "name": "Gold",
+      "hex": "#e4b23c",
+      "usage": "Accent — highlight square, primary CTA, active states"
     },
     {
       "token": "lime-deep",
-      "name": "Lime Deep",
-      "hex": "#8DB523",
-      "usage": "Lime hover/pressed; lime-on-light graphics"
+      "name": "Gold Pressed",
+      "hex": "#c8922a",
+      "usage": "Gold hover and pressed"
+    },
+    {
+      "token": "gold-text",
+      "name": "Gold Text",
+      "hex": "#7a560c",
+      "usage": "Gold as text on white, canvas, and other light surfaces (WCAG AA)"
     },
     {
       "token": "pine",
-      "name": "Pine",
-      "hex": "#0B2A1B",
-      "usage": "Darkest green — dark-mode background"
+      "name": "Navy 950",
+      "hex": "#0c1b33",
+      "usage": "Darkest navy — dark surfaces"
     },
     {
       "token": "moss",
-      "name": "Moss",
-      "hex": "#2D7F50",
-      "usage": "Mid green — secondary actions, dark-mode logo squares"
+      "name": "Navy 700",
+      "hex": "#1c3d6e",
+      "usage": "Secondary navy"
     },
     {
       "token": "mint",
-      "name": "Mint",
-      "hex": "#DCEFD0",
-      "usage": "Light green tint — chips, selected rows, subtle fills"
+      "name": "Gold Tint",
+      "hex": "#fff6df",
+      "usage": "Chips, selected rows, subtle fills"
     },
     {
       "token": "mist",
-      "name": "Mist",
-      "hex": "#EEF6E8",
-      "usage": "Lightest green tint — section backgrounds"
+      "name": "Navy Tint",
+      "hex": "#e7eef8",
+      "usage": "Section backgrounds"
     },
     {
       "token": "ink",
       "name": "Ink",
-      "hex": "#0E1712",
-      "usage": "Near-black — wordmark, body text"
+      "hex": "#14233c",
+      "usage": "Body text and wordmark"
     },
     {
       "token": "foam",
-      "name": "Foam",
-      "hex": "#F7F9F4",
-      "usage": "Off-white — app background"
+      "name": "Canvas",
+      "hex": "#f6f3ec",
+      "usage": "App background"
     },
     {
       "token": "white",
@@ -64,32 +70,32 @@
     {
       "token": "gray-100",
       "name": "Gray 100",
-      "hex": "#EDF0EC",
-      "usage": "Dividers on Foam, input fills"
+      "hex": "#efeae2",
+      "usage": "Dividers and input fills"
     },
     {
       "token": "gray-200",
-      "name": "Gray 200",
-      "hex": "#DCE1DB",
+      "name": "Line",
+      "hex": "#e4ddd0",
       "usage": "Borders"
     },
     {
       "token": "gray-400",
       "name": "Gray 400",
-      "hex": "#A2ABA4",
-      "usage": "Disabled, placeholders"
+      "hex": "#a8b3c4",
+      "usage": "Disabled and placeholders"
     },
     {
       "token": "gray-600",
-      "name": "Gray 600",
-      "hex": "#5E6A62",
+      "name": "Muted",
+      "hex": "#5d6e86",
       "usage": "Secondary text"
     },
     {
       "token": "gray-800",
       "name": "Gray 800",
-      "hex": "#2B342E",
-      "usage": "Strong text on light, dark-mode surfaces"
+      "hex": "#1a2e4a",
+      "usage": "Strong text on light"
     },
     {
       "token": "success",

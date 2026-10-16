@@ -1,20 +1,21 @@
 :root {
   /* autopass brand tokens */
-  --ap-forest: #14482F; /* Forest — Primary brand green — logo squares, headers, primary surfaces */
-  --ap-lime: #B5DD3A; /* Pass Lime — Accent — highlight square, primary CTA buttons, active states */
-  --ap-lime-deep: #8DB523; /* Lime Deep — Lime hover/pressed; lime-on-light graphics */
-  --ap-pine: #0B2A1B; /* Pine — Darkest green — dark-mode background */
-  --ap-moss: #2D7F50; /* Moss — Mid green — secondary actions, dark-mode logo squares */
-  --ap-mint: #DCEFD0; /* Mint — Light green tint — chips, selected rows, subtle fills */
-  --ap-mist: #EEF6E8; /* Mist — Lightest green tint — section backgrounds */
-  --ap-ink: #0E1712; /* Ink — Near-black — wordmark, body text */
-  --ap-foam: #F7F9F4; /* Foam — Off-white — app background */
+  --ap-forest: #12284b; /* Navy — primary surfaces, logo squares, headers */
+  --ap-lime: #e4b23c; /* Gold — accent, CTA, fills on dark */
+  --ap-lime-deep: #c8922a; /* Gold pressed */
+  --ap-gold-text: #7a560c; /* Gold text on light surfaces (WCAG AA) */
+  --ap-pine: #0c1b33; /* Navy 950 — darkest surface */
+  --ap-moss: #1c3d6e; /* Navy 700 — secondary */
+  --ap-mint: #fff6df; /* Gold tint — chips */
+  --ap-mist: #e7eef8; /* Navy tint — section background */
+  --ap-ink: #14233c; /* Ink — body text */
+  --ap-foam: #f6f3ec; /* Canvas — app background */
   --ap-white: #FFFFFF; /* White — Cards, inverse text */
-  --ap-gray-100: #EDF0EC; /* Gray 100 — Dividers on Foam, input fills */
-  --ap-gray-200: #DCE1DB; /* Gray 200 — Borders */
-  --ap-gray-400: #A2ABA4; /* Gray 400 — Disabled, placeholders */
-  --ap-gray-600: #5E6A62; /* Gray 600 — Secondary text */
-  --ap-gray-800: #2B342E; /* Gray 800 — Strong text on light, dark-mode surfaces */
+  --ap-gray-100: #efeae2; /* Gray 100 — Dividers on Foam, input fills */
+  --ap-gray-200: #e4ddd0; /* Gray 200 — Borders */
+  --ap-gray-400: #a8b3c4; /* Gray 400 — Disabled, placeholders */
+  --ap-gray-600: #5d6e86; /* Gray 600 — Secondary text */
+  --ap-gray-800: #1a2e4a; /* Gray 800 — Strong text on light, dark-mode surfaces */
   --ap-success: #1E9E5A; /* Success — Confirmations, valid pass */
   --ap-warning: #F0A020; /* Warning — Expiring pass, attention */
   --ap-error: #D64541; /* Error — Errors, invalid pass */
@@ -35,9 +36,9 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --ap-bg: var(--ap-pine);
-    --ap-surface: #12382A;
+    --ap-surface: #12284b;
     --ap-text: var(--ap-foam);
     --ap-text-muted: var(--ap-gray-400);
-    --ap-border: #24503A;
+    --ap-border: #1c3d6e;
   }
 }

@@ -30,12 +30,13 @@
 @use "./qref.scss";
 @use "./autopass.scss";
 @use "./v4.scss";
+@use "./redesign.scss";
 
 body {
   font-family: "Plus Jakarta Sans", "Noto Sans Georgian", sans-serif;
   -webkit-tap-highlight-color: transparent;
-  background: #F7F9F4;
-  color: #0E1712;
+  background: #f6f3ec;
+  color: #14233c;
 }
 
 .main-container {
@@ -48,7 +49,7 @@ body {
 }
 
 .yellow {
-  color: $yellowMain;
+  color: $goldText;
 }
 
 .yellow-box {

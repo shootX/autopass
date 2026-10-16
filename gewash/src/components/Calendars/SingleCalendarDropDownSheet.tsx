@@ -135,7 +135,7 @@ export function SingleCalendarMobileSheet({
 
             {/* <span
               style={{
-                color: "#14482F",
+                color: "#12284b",
                 fontWeight: 500,
                 fontSize: "16px",
               }}
@@ -155,7 +155,7 @@ export function SingleCalendarMobileSheet({
             >
               <span
                 style={{
-                  color: "#14482F",
+                  color: "#12284b",
                   fontWeight: 500,
                   fontSize: "16px",
                 }}
@@ -175,7 +175,7 @@ export function SingleCalendarMobileSheet({
                 style={{
                   border: "none",
                   background: "transparent",
-                  color: "#14482F",
+                  color: "#12284b",
                   fontWeight: 500,
                   fontSize: "16px",
                   cursor: "pointer",
@@ -223,7 +223,7 @@ export function SingleCalendarMobileSheet({
                 borderRadius: "12px",
                 padding: "12px 16px",
                 fontSize: "14px",
-                color: "#14482F",
+                color: "#12284b",
               }}
               disableBefore={disabled}
             />
@@ -235,7 +235,7 @@ export function SingleCalendarMobileSheet({
                 textAlign: "center",
                 fontSize: "18px",
                 fontWeight: 500,
-                color: "#14482F",
+                color: "#12284b",
               }}
             >
               {format(selected, "d MMMM yyyy")}
@@ -252,10 +252,10 @@ export function SingleCalendarMobileSheet({
             disabled={!selected}
             style={{
               borderRadius: "16px",
-              backgroundColor: "#14482F",
+              backgroundColor: "#12284b",
               padding: "12px 0px",
               textAlign: "center",
-              color: "#B5DD3A",
+              color: "#e4b23c",
               margin: "0px 16px",
               marginBottom: "16px",
               fontWeight: 600,

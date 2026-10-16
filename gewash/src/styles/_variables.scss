@@ -1,64 +1,65 @@
-// autopass palette. Old token names stay so existing SCSS compiles,
-// but every value is the new brand (forest / lime / foam), not Geocar navy/gold.
+// autopass palette. Token names stay so existing SCSS compiles.
+// Values are navy #12284b and gold #e4b23c (2026-10-16 visual port).
 
-$color-gray-50: #EDF0EC;
-$color-gray-100: #EDF0EC;
-$color-gray-200: #DCE1DB;
-$color-gray-300: #A2ABA4;
-$color-gray-400: #A2ABA4;
-$color-gray-500: #5E6A62;
-$color-gray-600: #5E6A62;
-$color-gray-700: #2B342E;
-$color-gray-800: #2B342E;
-$color-gray-900: #0E1712;
+$color-gray-50: #efeae2;
+$color-gray-100: #efeae2;
+$color-gray-200: #e4ddd0;
+$color-gray-300: #a8b3c4;
+$color-gray-400: #a8b3c4;
+$color-gray-500: #5d6e86;
+$color-gray-600: #5d6e86;
+$color-gray-700: #1a2e4a;
+$color-gray-800: #1a2e4a;
+$color-gray-900: #14233c;
 
-$color-blue-50: #EEF6E8;
-$color-blue-100: #EDF0EC;
-$color-blue-200: #DCE1DB;
-$color-blue-300: #A2ABA4;
-$color-blue-400: #2D7F50;
-$color-blue-500: #14482F;
-$color-blue-600: #0E1712;
-$color-blue-700: #0B2A1B;
-$color-blue-800: #0B2A1B;
-$color-blue-900: #0B2A1B;
+$color-blue-50: #e7eef8;
+$color-blue-100: #efeae2;
+$color-blue-200: #e4ddd0;
+$color-blue-300: #a8b3c4;
+$color-blue-400: #1c3d6e;
+$color-blue-500: #12284b;
+$color-blue-600: #14233c;
+$color-blue-700: #0c1b33;
+$color-blue-800: #0c1b33;
+$color-blue-900: #0c1b33;
 
-$color-yellow-50: #EEF6E8;
-$color-yellow-100: #DCEFD0;
-$color-yellow-200: #DCEFD0;
-$color-yellow-300: #B5DD3A;
-$color-yellow-400: #B5DD3A;
-$color-yellow-500: #B5DD3A;
-$color-yellow-600: #8DB523;
-$color-yellow-800: #8DB523;
-$color-yellow-900: #14482F;
+$color-yellow-50: #e7eef8;
+$color-yellow-100: #fff6df;
+$color-yellow-200: #fff6df;
+$color-yellow-300: #e4b23c;
+$color-yellow-400: #e4b23c;
+$color-yellow-500: #e4b23c;
+$color-yellow-600: #c8922a;
+$color-yellow-800: #c8922a;
+$color-yellow-900: #12284b;
 
-$color-naturals-50: #F7F9F4;
-$color-naturals-100: #EDF0EC;
-$color-naturals-200: #DCE1DB;
-$color-naturals-300: #A2ABA4;
-$color-naturals-400: #A2ABA4;
-$color-naturals-500: #5E6A62;
-$color-naturals-600: #5E6A62;
-$color-naturals-700: #2B342E;
-$color-naturals-800: #2B342E;
-$color-naturals-900: #0E1712;
+$color-naturals-50: #f6f3ec;
+$color-naturals-100: #efeae2;
+$color-naturals-200: #e4ddd0;
+$color-naturals-300: #a8b3c4;
+$color-naturals-400: #a8b3c4;
+$color-naturals-500: #5d6e86;
+$color-naturals-600: #5d6e86;
+$color-naturals-700: #1a2e4a;
+$color-naturals-800: #1a2e4a;
+$color-naturals-900: #14233c;
 
-$color-green-200: #DCEFD0;
+$color-green-200: #fff6df;
 $color-green-500: #1E9E5A;
 
-$bg: #F7F9F4;
-$blueMain: #14482F;
-$textSecondary: #5E6A62;
-$textPrimary: #0E1712;
+$bg: #f6f3ec;
+$blueMain: #12284b;
+$textSecondary: #5d6e86;
+$textPrimary: #14233c;
 $redMain: #D64541;
-$yellowMain: #B5DD3A;
-$dark: #0E1712;
-$border: #DCE1DB;
-$divider: #EDF0EC;
+$yellowMain: #e4b23c;
+$goldText: #7a560c;
+$dark: #14233c;
+$border: #e4ddd0;
+$divider: #efeae2;
 
-$shop-ui-shadow: 0 8px 24px -12px rgba(11, 42, 27, 0.18);
-$shop-card-shadow: 0 12px 32px -18px rgba(11, 42, 27, 0.18);
+$shop-ui-shadow: 0 8px 24px -12px rgba(12, 27, 51, 0.18);
+$shop-card-shadow: 0 12px 32px -18px rgba(12, 27, 51, 0.18);
 
 $font-arvo: "Plus Jakarta Sans", "Noto Sans Georgian", sans-serif;
 $font-nunito: "Plus Jakarta Sans", "Noto Sans Georgian", sans-serif;

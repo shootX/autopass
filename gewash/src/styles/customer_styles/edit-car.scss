@@ -53,7 +53,7 @@
     left: 0;
     width: 100vw;
     height: 100vh;
-    background-color: rgba(#14482F, 0.5);
+    background-color: rgba(#12284b, 0.5);
     z-index: 999;
   }
   
@@ -92,7 +92,7 @@
         flex: 1;
         padding: 12px 16px;
         border-radius: 16px;
-        color: $yellowMain;
+        color: $goldText;
         font-size: 14px;
   
         &:first-child {
@@ -103,6 +103,7 @@
         &:last-child {
           background-color: $blueMain;
           border: none;
+          color: $yellowMain;
         }
       }
     }

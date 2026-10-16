@@ -1,0 +1,122 @@
+/* Navy and gold layer ported from 41a3eae onto the current shell.
+   Layout that would fight the 1024px sidebar is not applied. */
+
+.auth-phone-input input:focus,
+.auth-password-input input:focus,
+.input-with-icon input:focus,
+.custom-input:focus,
+.form-control:focus {
+  border-color: #12284b;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(228, 178, 60, 0.45);
+}
+
+.ap-btn,
+.ap-book-btn,
+.sign-in {
+  border-radius: 999px;
+}
+
+.spinner {
+  border-top-color: #e4b23c;
+}
+
+.lang-loader {
+  background: #0c1b33;
+}
+
+body:has(.v4-auth) {
+  background: #0c1b33;
+}
+
+.v4-auth a {
+  color: #e4b23c;
+}
+
+.main-container:has(.v4-auth) {
+  background: transparent;
+}
+
+@media (min-width: 960px) {
+  .v4-auth {
+    width: min(1120px, calc(100% - 48px));
+    max-width: 1120px;
+    margin: 24px auto;
+    min-height: calc(100dvh - 48px);
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(340px, 0.9fr);
+    border-radius: 32px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
+  }
+
+  .v4-auth .top {
+    height: auto;
+    min-height: 100%;
+    background:
+      radial-gradient(90% 60% at 80% 100%, rgba(228, 178, 60, 0.55), transparent 50%),
+      radial-gradient(50% 40% at 15% 10%, rgba(255, 255, 255, 0.14), transparent 42%),
+      linear-gradient(165deg, #1c3d6e 0%, #0c1b33 72%);
+  }
+
+  .v4-auth .top::after {
+    content: "autopass\A სუფთა მანქანა.\A ყოველთვის.";
+    white-space: pre-line;
+    position: absolute;
+    left: 48px;
+    right: 48px;
+    bottom: 48px;
+    color: #fff;
+    font-family: "Noto Sans Georgian", "Plus Jakarta Sans", sans-serif;
+    font-size: 48px;
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+  }
+
+  .v4-auth .panel,
+  .v4-auth .panel.v4-dk {
+    margin: 0;
+    border-radius: 0;
+    min-height: 100%;
+    background: #fff;
+    color: #14233c;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .v4-auth h1,
+  .v4-auth label,
+  .v4-auth .sub,
+  .v4-auth .v4-auth-switch {
+    color: #14233c;
+  }
+
+  .v4-auth .v4-dinput {
+    background: #fff;
+    border-color: #e4ddd0;
+    color: #14233c;
+  }
+
+  .v4-auth .v4-dinput input,
+  .v4-auth .v4-dinput .prefix,
+  .v4-auth .v4-dinput button {
+    color: #14233c;
+  }
+
+  .v4-auth .v4-dinput .bar {
+    background: #e4ddd0;
+  }
+
+  .v4-auth .ap-btn {
+    background: #12284b;
+    color: #fff;
+    border-radius: 999px;
+  }
+
+  .v4-auth a {
+    color: #12284b;
+  }
+}
