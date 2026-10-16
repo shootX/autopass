@@ -46,7 +46,7 @@
   border-radius: 8px;
   font-weight: 600;
   background-color: $yellowMain;
-  color: #14482F;
+  color: #12284b;
 
   &.warning,
   &.expired {
@@ -125,8 +125,8 @@
             @include font-roboto-bold-blue;
             font-size: 28px;
             &.active {
-                background-color: #14482F;
-                color: #B5DD3A;
+                background-color: #12284b;
+                color: #e4b23c;
         }
     }}
 
@@ -151,8 +151,8 @@
         min-width: 0; // 👈 позволяет сжиматься до минимума
     
         &.active {
-          background-color: #14482F;
-          color: #B5DD3A;
+          background-color: #12284b;
+          color: #e4b23c;
         }
     
         span:last-child {
@@ -210,13 +210,13 @@
           padding: 4px 12px;
           background-color: $yellowMain;
           border-radius: 8px;
-          color: #14482F;
+          color: #12284b;
           font-weight: 600;
         }
       h2 {
         font-size: 18px;
         font-weight: 600;
-        color: #14482F;
+        color: #12284b;
       }
     }
       .vehicle-info {
@@ -227,7 +227,7 @@
       
         .vehicle-plate {
           font-weight: 500;
-          color: #14482F;
+          color: #12284b;
           font-weight: 700;
       
           span {

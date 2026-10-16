@@ -233,7 +233,7 @@ export default function WashAppointment() {
       )}
       {remaining != null && remaining > 0 && (
         <div className="v4-passnote">
-          <span className="v4-limeico" style={{ background: '#F3F5F2' }}><Ticket size={19} /></span>
+          <span className="v4-limeico" style={{ background: '#f3f0e8' }}><Ticket size={19} /></span>
           <div>
             <div className="v4-kicker">ჩემი პაკეტი</div>
             <div style={{ fontWeight: 800, fontSize: 14.5 }}>ჩამოიჭრება 1 რეცხვა · დარჩება {Math.max(0, remaining - 1)}</div>

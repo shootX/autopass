@@ -81,7 +81,7 @@ export function CarDropDown({
               textAlign: "center",
               fontSize: "20px",
               fontWeight: 600,
-              color: "#14482F",
+              color: "#12284b",
               padding: "0px",
             }}
           >
@@ -112,7 +112,7 @@ export function CarDropDown({
                     justifyContent: "start",
                     alignItems: "center",
                     borderRadius: "12px",
-                    color: isSelected ? "#B5DD3A" : "#14482F",
+                    color: isSelected ? "#e4b23c" : "#12284b",
                     cursor: "pointer",
                     transition: "background-color 0.3s",
                   }}
@@ -121,7 +121,7 @@ export function CarDropDown({
                     <img
                       style={{
                         padding: "4px",
-                        backgroundColor: "#14482F",
+                        backgroundColor: "#12284b",
                         borderRadius: "8px",
                         marginRight: "8px",
                       }}

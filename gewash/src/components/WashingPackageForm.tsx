@@ -156,12 +156,12 @@ export function WashingPackageForm({
               onClick={() => availableCars.length > 1 && setCarDropOpen(true)}
               style={{ width: "100%", textAlign: "left", border: 0, cursor: availableCars.length > 1 ? "pointer" : "default" }}
             >
-              <div className="v4-kicker" style={{ color: "#A7B1AA" }}>{t("WashingPackageForm.vehicle.label")}</div>
+              <div className="v4-kicker" style={{ color: "#8ca3b9" }}>{t("WashingPackageForm.vehicle.label")}</div>
               <h2>{carParts(selectedCar).title || selectedCar.plate}</h2>
               <div style={{ display: "flex", gap: 8, marginTop: 10, alignItems: "center" }}>
                 <span className="ap-plate" style={{ borderColor: "#fff" }}><b>GE</b><span>{selectedCar.plate}</span></span>
                 {bodyLabel(carParts(selectedCar).type) && (
-                  <span className="v4-chip" style={{ background: "#26332B", color: "#D9E3DB" }}>{bodyLabel(carParts(selectedCar).type)}</span>
+                  <span className="v4-chip" style={{ background: "#243656", color: "#D9E3DB" }}>{bodyLabel(carParts(selectedCar).type)}</span>
                 )}
               </div>
               <span className="v4-limeico" style={{ position: "absolute", right: 16, top: 16 }}>

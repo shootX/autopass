@@ -15,21 +15,21 @@
 }
 
 :root {
-  --ap-forest: #14482f;
-  --ap-lime: #b5dd3a;
-  --ap-lime-deep: #8db523;
-  --ap-pine: #0b2a1b;
-  --ap-moss: #2d7f50;
-  --ap-mint: #dcefd0;
-  --ap-mist: #eef6e8;
-  --ap-ink: #0e1712;
-  --ap-foam: #f7f9f4;
+  --ap-forest: #12284b;
+  --ap-lime: #e4b23c;
+  --ap-lime-deep: #c8922a;
+  --ap-pine: #0c1b33;
+  --ap-moss: #1c3d6e;
+  --ap-mint: #fff6df;
+  --ap-mist: #e7eef8;
+  --ap-ink: #14233c;
+  --ap-foam: #f6f3ec;
   --ap-white: #ffffff;
-  --ap-gray-100: #edf0ec;
-  --ap-gray-200: #dce1db;
-  --ap-gray-400: #a2aba4;
-  --ap-gray-600: #5e6a62;
-  --ap-gray-800: #2b342e;
+  --ap-gray-100: #efeae2;
+  --ap-gray-200: #e4ddd0;
+  --ap-gray-400: #a8b3c4;
+  --ap-gray-600: #5d6e86;
+  --ap-gray-800: #1a2e4a;
   --ap-success: #1e9e5a;
   --ap-warning: #f0a020;
   --ap-error: #d64541;
@@ -44,6 +44,12 @@
   --c-on-primary: var(--ap-ink);
   --c-success-soft: #e3f4e9;
   --c-success-text: #137443;
+  --navy-950: #0c1b33;
+  --navy-900: #12284b;
+  --gold-500: #e4b23c;
+  --gold-700: #8a5a12;
+  --canvas: #f6f3ec;
+  --ink: #14233c;
 }
 
 @tailwind base;

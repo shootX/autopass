@@ -164,7 +164,7 @@ export default function Home() {
         {activePackage && remaining != null ? (
           <div className="v4-stats">
             <div className="v4-st v4-dk">
-              <div className="v4-kicker" style={{ color: "#A7B1AA" }}>დარჩენილი რეცხვა</div>
+              <div className="v4-kicker" style={{ color: "#8ca3b9" }}>დარჩენილი რეცხვა</div>
               <div className="n">{remaining}{total != null && <span> / {total}</span>}</div>
               {cells.length > 0 && (
                 <div className="sq">{cells.map((on, i) => <i key={i} className={on ? "on" : ""} />)}</div>
@@ -195,7 +195,7 @@ export default function Home() {
             <span className="v4-kicker">შემდეგი ჯავშანი{nextBooking?.branch ? ` · ${nextBooking.branch}` : ""}</span>
             <b>{nextBooking ? `${nextBooking.label} · ${nextBooking.time}` : "ჯავშანი ჯერ არ არის"}</b>
           </span>
-          <ChevronRight size={20} color="#A2ABA4" />
+          <ChevronRight size={20} color="#a8b3c4" />
         </button>
 
         <button type="button" className="ap-btn" style={{ marginTop: 12 }} onClick={() => navigate("/wash-appointment", { state: { selectedBranchId: branch?.id } })}>

@@ -158,7 +158,7 @@ export default function CustomerMyData() {
           height="18"
           viewBox="0 0 24 24"
           fill="none"
-          stroke={isFormFilled ? '#14482F' : '#A2ABA4'}
+          stroke={isFormFilled ? '#12284b' : '#a8b3c4'}
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"

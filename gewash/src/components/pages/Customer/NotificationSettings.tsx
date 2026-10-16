@@ -20,22 +20,22 @@ export default function NotificationSettings({
 
   return (
     <div id="notifications" style={{ padding: "16px", backgroundColor: "#fff", borderRadius: "16px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", margin: "16px", fontFamily: "Roboto, sans-serif" }}>
-      <h1 style={{ fontSize: "20px", color: "#14482F", fontWeight: 600, marginBottom: "24px" }}>
+      <h1 style={{ fontSize: "20px", color: "#12284b", fontWeight: 600, marginBottom: "24px" }}>
         {t("NotificationSettings.title")}
       </h1>
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: "16px" }}>
-        <p style={{ margin: 0, fontSize: "15px", color: "#14482F", fontWeight: 500 }}>{t("NotificationSettings.options.wash")}</p>
+        <p style={{ margin: 0, fontSize: "15px", color: "#12284b", fontWeight: 500 }}>{t("NotificationSettings.options.wash")}</p>
         <Switch checked={wash} onCheckedChange={setWash} />
       </div>
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: "16px" }}>
-        <p style={{ margin: 0, fontSize: "15px", color: "#14482F", fontWeight: 500 }}>{t("NotificationSettings.options.subscription")}</p>
+        <p style={{ margin: 0, fontSize: "15px", color: "#12284b", fontWeight: 500 }}>{t("NotificationSettings.options.subscription")}</p>
         <Switch checked={subscription} onCheckedChange={setSubscription} />
       </div>
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
-        <p style={{ margin: 0, fontSize: "15px", color: "#14482F", fontWeight: 500 }}>{t("NotificationSettings.options.promo")}</p>
+        <p style={{ margin: 0, fontSize: "15px", color: "#12284b", fontWeight: 500 }}>{t("NotificationSettings.options.promo")}</p>
         <Switch checked={promo} onCheckedChange={setPromo} />
       </div>
     </div>

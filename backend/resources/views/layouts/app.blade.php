@@ -9,7 +9,7 @@
 
     <title>autopass</title>
     <link rel="icon" href="/brand/favicon.svg" type="image/svg+xml">
-    <meta name="theme-color" content="#14482F">
+    <meta name="theme-color" content="#12284b">
 
     <!-- Scripts -->
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])

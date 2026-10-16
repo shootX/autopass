@@ -91,11 +91,11 @@ export default function ProfilePage() {
       </div>
 
       <div className="v4-balance v4-dk">
-        <div className="v4-kicker" style={{ color: "#A7B1AA" }}>{t("MyPoints.balance.label")}</div>
+        <div className="v4-kicker" style={{ color: "#8ca3b9" }}>{t("MyPoints.balance.label")}</div>
         <div style={{ marginTop: 4 }}>
           <span className="n">{balance.real}</span>
           {balance.test > 0 && (
-            <div className="v4-kicker" style={{ color: "#A7B1AA" }}>
+            <div className="v4-kicker" style={{ color: "#8ca3b9" }}>
               {balance.test} {t("Points.test")}
             </div>
           )}
@@ -106,7 +106,7 @@ export default function ProfilePage() {
         </span>
         <div className="foot">
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 12, color: "#A7B1AA" }}>{t("MyPoints.referrals.label")}</div>
+            <div style={{ fontSize: 12, color: "#8ca3b9" }}>{t("MyPoints.referrals.label")}</div>
             <div style={{ fontWeight: 800 }}>
               {user?.referralsCount ?? 0} {t("MyPoints.referrals.unit")}
             </div>
@@ -127,7 +127,7 @@ export default function ProfilePage() {
               <span className="ii"><Icon size={20} /></span>
               <span style={{ flex: 1 }}>{item.label}</span>
               {item.value && <span className="v">{item.value}</span>}
-              <ChevronRight size={18} color="#A2ABA4" />
+              <ChevronRight size={18} color="#a8b3c4" />
             </Link>
           );
         })}

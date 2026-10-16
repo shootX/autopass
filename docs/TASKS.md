@@ -322,3 +322,11 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 - refresh უცვლელია: 409 ერთხელ, ქსელის შეცდომა სესიას არ წყვეტს. ტაბების lock არ დაემატა.
 - login, set_password, approve და cookie refresh უცვლელია.
 - main-ში შერწყმა და ცოცხალი სერვერი არ შეხებია.
+
+## 2026-10-16 — ვიზუალური პორტი ნავი/ოქრო (`cursor/visual-redesign-port-e825`)
+
+- [x] `41a3eae` (blue+gold) გადმოვიდა `aac2b78`-ზე ახალ შტოზე. ძველი შტო არ შერწყმულა.
+- [x] მხოლოდ ვიზუალი: SCSS/CSS, Tailwind, `redesign.scss`, `umami-admin.css`, voucher-checker სტილები, ბრენდის SVG და კომპონენტების ფერის მნიშვნელობები. პალიტრა `docs/DESIGN.md`-ში.
+- [x] არ გადმოვიდა: `src/preview/fixtures.ts`, hook-ების preview მონაცემები, `App.tsx`-ის bundled lang, `phonePrefix`, ავტორიზაცია/refresh/logout, i18n გასაღებები და მარშრუტები.
+- [x] შემოწმება: gewash lint, vitest 139/139, `build:check`, `i18n:check`; voucher-checker lint, vitest 12/12, `build:check`.
+- [ ] შერწყმა main-ში და დეპლოი არ გაკეთებულა.

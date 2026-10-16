@@ -242,11 +242,11 @@ export default function CodeVerificationPage({ onLogout, onMustChange }: Props) 
               <div className="cv-success-glow" aria-hidden />
               <div className="cv-success-check-wrap">
                 <svg className="cv-success-check" viewBox="0 0 64 64" fill="none" aria-hidden>
-                  <circle className="cv-success-check__ring" cx="32" cy="32" r="28" stroke="#14482F" strokeWidth="3" />
+                  <circle className="cv-success-check__ring" cx="32" cy="32" r="28" stroke="#12284b" strokeWidth="3" />
                   <path
                     className="cv-success-check__mark"
                     d="M20 33l8 8 16-20"
-                    stroke="#8DB523"
+                    stroke="#c8922a"
                     strokeWidth="3.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
