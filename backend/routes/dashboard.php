@@ -40,11 +40,11 @@ Route::prefix('dashboard')
         Route::get('/search_managers', [WashingController::class, 'search'])->name('admin.search_managers');
         Route::get('/search_wash', [WashingController::class, 'search_wash'])->name('admin.search_wash');
         Route::get('/search_clients', [WashingController::class, 'search_clients'])->name('admin.search_clients');
-        Route::get('/search_user_cars', [WashingController::class, 'search_user_cars'])->name('admin.search_clients');
-        Route::get('/search_wash_services', [WashingController::class, 'search_wash_services'])->name('admin.search_clients');
+        Route::get('/search_user_cars', [WashingController::class, 'search_user_cars'])->name('admin.search_user_cars');
+        Route::get('/search_wash_services', [WashingController::class, 'search_wash_services'])->name('admin.search_wash_services');
 
         Route::get('/search_car_brands', [ClientsController::class, 'search_car_brands'])->name('admin.search_car_brands');
-        Route::get('/search_car_models', [ClientsController::class, 'search_car_models'])->name('admin.search_car_brands');
+        Route::get('/search_car_models', [ClientsController::class, 'search_car_models'])->name('admin.search_car_models');
 
         Route::post('/set_manager_washing', [WashingController::class, 'set_manager_washing'])->name('admin.set_manager');
 

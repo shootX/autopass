@@ -337,3 +337,7 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 - [x] F2: შესვლის ბმული დესკტოპზე ნავია (`#12284b` თეთრზე), მობილურზე ოქრო მუქ პანელზე. `+995` დესკტოპის თეთრ ველზე არის `#14233c`.
 - [x] F3: ოქროს ტექსტი ღია ფონზე არის `#7a560c` (`--ap-gold-text`, `$goldText`). `#e4b23c` რჩება შევსებასა და ნავზე. ტესტი: `paletteContrast.test.ts`.
 - [ ] შერწყმა main-ში და დეპლოი არ გაკეთებულა.
+
+## 2026-10-16 — Fix duplicate route names (`route:cache` failed on main bc7a766)
+- [x] `dashboard/search_user_cars` → `admin.search_user_cars`, `dashboard/search_wash_services` → `admin.search_wash_services`, `dashboard/search_car_models` → `admin.search_car_models` (were duplicates of `admin.search_clients` / `admin.search_car_brands`).
+- [x] `tests/Feature/RouteNamesTest.php`: no duplicate names, each search name resolves to its own URL, `route:cache` succeeds.

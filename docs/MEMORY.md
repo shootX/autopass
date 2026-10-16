@@ -348,3 +348,6 @@ JWT httpOnly cookie არ არის: `access_token` რჩება მე�
 დესკტოპის შესვლაზე „დაგავიწყდათ პაროლი?“ ნავია, `+995` კი `#14233c`. მობილურზე ბმული ოქროა მუქ პანელზე, პრეფიქსი `#97a29a` მუქ ველზე. voucher-checker-ის `.auth-wrapper` არის `border-box`, სპლიტი `100dvh`.
 
 `#5d6e86` ნავის სექციის სათაურზე და cream ჩიპზე კვლავ 4.5-ზე ქვემოთაა. ეს ოქრო არ არის და ამ ფიქსში არ შეცვლილა. დეპლოი არ ყოფილა.
+
+## 2026-10-16 — Route names must be unique
+- A duplicated `->name()` breaks `php artisan route:cache` (deploy) and silently makes `route('name')` point at the last route registered. `RouteNamesTest` guards it; give every new route its own name.
