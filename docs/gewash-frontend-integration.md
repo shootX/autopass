@@ -47,3 +47,12 @@ Frontend (Stage 3): AddCar sends `source: model.source, brand_id: brand.id, mode
 ## Appointment statuses — 2026-10-14
 
 Shared codes: 0 pending, 1 confirmed, 2 cancelled, 3 completed, 4 expired, 5 rescheduled. A moved date/time produces 5. Cancellation retains history; terminal bookings cannot be reactivated/rescheduled. Client upcoming lists exclude 2/3/4. Manager, reports and statistics use the same meanings. New booking validation errors follow `Accept-Language: ka|en|ru`.
+
+## Car catalog trims and photos (2026-10-25)
+
+- `GET /api/cars/brands` → each brand adds `logo` (https URL or null).
+- `GET /api/cars/models/{model_id}/generations?brand_id={brand}&year={year?}` (auth, carapi ids) → `generations[]: { id, name, year_start, year_end, body_type, photo }`. `photo` is our proxy URL or null.
+- `GET /api/cars/models/{model_id}/generations/{generation_id}/modifications?year={year?}` → `modifications[]: { id, name, engine_volume_cc, transmission, fuel, power_hp, drive, year_start, year_end }`.
+- `GET /api/cars/modifications/{id}` → `modification` with `specs` and `equipment`.
+- `GET /api/cars/models/{model_id}/photo?generation={id?}` (public) → image bytes, 404 when there is no checked photo.
+- `POST /api/mycars/add` and `/edit` accept `generation_id`, `modification_id` with `source=carapi`. A wrong pair → 422. `mycars` and `car` add `generation {id,name}|null`, `modification {id,name}|null`, `body_type`; `image` prefers the catalog photo.

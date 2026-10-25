@@ -341,3 +341,12 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 ## 2026-10-16 — Fix duplicate route names (`route:cache` failed on main bc7a766)
 - [x] `dashboard/search_user_cars` → `admin.search_user_cars`, `dashboard/search_wash_services` → `admin.search_wash_services`, `dashboard/search_car_models` → `admin.search_car_models` (were duplicates of `admin.search_clients` / `admin.search_car_brands`).
 - [x] `tests/Feature/RouteNamesTest.php`: no duplicate names, each search name resolves to its own URL, `route:cache` succeeds.
+
+## 2026-10-25 — geoapi.ge catalog: logos, generations, modifications, photos (`feat/geoapi-catalog`)
+- [x] `CARAPI_URL` default and `.env.example` point to `https://geoapi.ge/api/v1`; `CARAPI_SECRET` is the `geoapi_sk_` key, server only.
+- [x] `GET /api/cars/brands` adds `logo` (`logo_url_light`, https only). Models no longer expose upstream `photo_url`.
+- [x] `GET /api/cars/models/{model}/generations?brand_id=&year=`, `GET /api/cars/models/{model}/generations/{generation}/modifications?year=`, `GET /api/cars/modifications/{id}` (specs + equipment). Lists cached 6–24 h.
+- [x] Public `GET /api/cars/models/{model}/photo?generation=` proxies the geoapi.ge photo with the secret key, stores it on the local disk, caches a 404 for a day. Only ids the server knows (a generation list it loaded, a model a user saved) cost an upstream request.
+- [x] `user_cars`: `generation_id`, `generation_name`, `modification_id`, `modification_name`, `body_type`, `photo` (additive, nullable). Names, body type and photo come from the catalog, not from the client. `image` in `mycars` prefers the saved photo.
+- [ ] Set `CARAPI_URL` / `CARAPI_SECRET` on the server, run the migration. Live geoapi.ge fields verified only with fakes here.
+- [ ] Open question: should `body_type` from the generation pick the package `car_type` (prices)? Not changed.

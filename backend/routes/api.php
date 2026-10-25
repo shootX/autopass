@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\SmsInboxController;
 use App\Http\Controllers\Api\AppointmentsController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\CarCatalogController;
 use App\Http\Controllers\Api\CarsController;
 use App\Http\Controllers\Api\ContactsController;
 use App\Http\Controllers\Api\CorporateFleetController;
@@ -67,6 +68,10 @@ Route::post('/change_password', [AuthController::class, 'changePassword'])->midd
 Route::post('/change_password/verify', [AuthController::class, 'changePasswordVerify'])->middleware('throttle:otp');
 Route::post('/change_password/verify_submit', [AuthController::class, 'changePasswordVerifySubmit'])->middleware('throttle:otp');
 
+// Public: image views send no token. Only ids the server already knows reach geoapi.ge (CarTrims::photo).
+Route::get('/cars/models/{model_id}/photo', [CarCatalogController::class, 'photo'])
+    ->whereNumber('model_id')->middleware('throttle:120,1');
+
 Route::middleware(['auth:api', CorsMiddleware::class, EnsureApiSession::class])->group(function () {
 
     Route::post('/device/push', [AuthController::class, 'setDevicePushId']);
@@ -94,6 +99,10 @@ Route::middleware(['auth:api', CorsMiddleware::class, EnsureApiSession::class])-
     Route::get('/cars/brands', [CarsController::class, 'brands']);
     Route::get('/cars/years', [CarsController::class, 'years']);
     Route::get('/cars/brands/{brand_id}/models', [CarsController::class, 'models']);
+    Route::get('/cars/models/{model_id}/generations', [CarCatalogController::class, 'generations'])->whereNumber('model_id');
+    Route::get('/cars/models/{model_id}/generations/{generation_id}/modifications', [CarCatalogController::class, 'modifications'])
+        ->whereNumber(['model_id', 'generation_id']);
+    Route::get('/cars/modifications/{id}', [CarCatalogController::class, 'modification'])->whereNumber('id');
 
     Route::prefix('/mycars')->group(function () {
         Route::get('/', [CarsController::class, 'mycars']);

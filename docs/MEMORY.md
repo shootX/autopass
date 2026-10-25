@@ -351,3 +351,9 @@ JWT httpOnly cookie არ არის: `access_token` რჩება მე�
 
 ## 2026-10-16 — Route names must be unique
 - A duplicated `->name()` breaks `php artisan route:cache` (deploy) and silently makes `route('name')` point at the last route registered. `RouteNamesTest` guards it; give every new route its own name.
+
+## 2026-10-25 — geoapi.ge is the car catalog
+
+CarAPI client (`CarCatalog`) speaks the geoapi.ge v1 shape: Bearer `geoapi_sk_`, `data` + `meta.total`, ids as strings (cast to int), up to 1000 rows a page. Free plan is 1000 requests a month and 15 a minute, so every list is cached and photos are kept on the `local` disk under `carapi-photos/`.
+
+Photo `photo_url` and `/models/{id}/photo` need the secret key. The app never gets the upstream link, only `/api/cars/models/{id}/photo?generation=`. The proxy never sends the key to another host. `UserCar::imageUrl()` = saved photo path, else the model/brand/body-type image. `body_type` is stored but does not change package pricing.
