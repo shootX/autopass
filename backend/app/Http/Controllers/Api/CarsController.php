@@ -8,8 +8,11 @@ use App\Models\CarBrand;
 use App\Models\CarModel;
 use App\Models\UserCar;
 use App\Services\CarCatalog;
+use App\Services\CarTrims;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 
 class CarsController extends Controller
 {
@@ -19,6 +22,7 @@ class CarsController extends Controller
             $brands = array_map(fn (array $brand) => [
                 'id' => $brand['id'],
                 'name' => $brand['name'],
+                'logo' => $brand['logo'] ?? null,
                 'source' => $brand['source'],
             ], app(CarCatalog::class)->brands());
 
@@ -42,7 +46,8 @@ class CarsController extends Controller
             return response()->json([
                 'success' => true,
                 'brand' => ['id' => (int) $brand_id, 'name' => $brand['name'] ?? '', 'source' => $brand['source'] ?? CarCatalog::LOCAL],
-                'models' => $models,
+                // photo_url needs our secret key; the app gets photos through /cars/models/{id}/photo instead.
+                'models' => array_map(fn (array $m) => array_diff_key($m, ['photo_url' => true]), $models),
             ]);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'error' => 'Ошибка'], 400);
@@ -66,8 +71,8 @@ class CarsController extends Controller
                     'year' => $car->year,
                     'model' => $m,
                     'brand' => $b,
-                    'image' => $m->image,
-                ];
+                    'image' => $car->imageUrl(),
+                ] + $car->trimPayload();
             });
 
             return response()->json([
@@ -123,13 +128,17 @@ class CarsController extends Controller
                 'error' => 'Модель не найдена',
             ], 422);
         }
+        $trim = $this->trimAttributes($request);
+        if (is_string($trim)) {
+            return response()->json(['success' => false, 'error' => $trim], 422);
+        }
 
         $car = UserCar::create([
             'user_id' => $user->id,
             'model_id' => $modelId,
             'plate' => $request->plate,
             'year' => $request->filled('year') ? (int) $request->input('year') : null,
-        ]);
+        ] + $trim);
 
         return response()->json([
             'success' => true,
@@ -167,6 +176,31 @@ class CarsController extends Controller
         );
     }
 
+    private const TRIM_COLUMNS = ['generation_id', 'generation_name', 'modification_id', 'modification_name', 'body_type', 'photo'];
+
+    /** Generation/modification columns for a remote pick, [] for none, or the error text. */
+    private function trimAttributes(Request $request): array|string
+    {
+        if ($request->input('source') !== CarCatalog::REMOTE || ! $request->filled('model_id')) {
+            return [];
+        }
+        try {
+            return array_filter(app(CarTrims::class)->attributes(
+                (int) $request->input('brand_id'),
+                (int) $request->input('model_id'),
+                $request->filled('generation_id') ? (int) $request->input('generation_id') : null,
+                $request->filled('modification_id') ? (int) $request->input('modification_id') : null,
+            ), fn ($value) => $value !== null);
+        } catch (ValidationException $e) {
+            return (string) collect($e->errors())->flatten()->first();
+        } catch (\Throwable $e) {
+            // Catalog down: keep the car, just without trim details.
+            Log::warning('car_trim_unavailable', ['exception' => $e::class]);
+
+            return [];
+        }
+    }
+
     /** model_id is only meaningful with its id space (source); year is optional. */
     private function catalogValidator(Request $request): ?string
     {
@@ -175,6 +209,8 @@ class CarsController extends Controller
             'model_id' => ['nullable', 'integer', 'min:1'],
             'brand_id' => ['nullable', 'integer', 'min:1', 'required_if:source,'.CarCatalog::REMOTE],
             'year' => ['nullable', 'integer', 'between:'.CarCatalog::MIN_YEAR.','.((int) now()->year + 1)],
+            'generation_id' => ['nullable', 'integer', 'min:1'],
+            'modification_id' => ['nullable', 'integer', 'min:1'],
         ]);
         if ($v->fails()) {
             return $v->errors()->first();
@@ -217,7 +253,7 @@ class CarsController extends Controller
         $car->loadMissing('model.brand');
 
         return ['id' => $car->id, 'plate' => $car->plate, 'year' => $car->year,
-            'model' => $car->model, 'brand' => $car->model->brand, 'image' => $car->model->image];
+            'model' => $car->model, 'brand' => $car->model->brand, 'image' => $car->imageUrl()] + $car->trimPayload();
     }
 
     public function editMyCar(Request $request, $carid)
@@ -265,6 +301,12 @@ class CarsController extends Controller
                     return response()->json(['success' => false, 'error' => 'Модель не найдена'], 422);
                 }
                 $data['model_id'] = $modelId;
+                $trim = $this->trimAttributes($request);
+                if (is_string($trim)) {
+                    return response()->json(['success' => false, 'error' => $trim], 422);
+                }
+                // A new model always replaces the old trim, so a stale generation never sticks.
+                $data += $trim + array_fill_keys(self::TRIM_COLUMNS, null);
             }
             $car->update($data);
 

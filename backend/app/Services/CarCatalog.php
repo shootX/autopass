@@ -6,6 +6,7 @@ use App\Models\BodyType;
 use App\Models\CarBrand;
 use App\Models\CarModel;
 use Illuminate\Database\UniqueConstraintViolationException;
+use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -143,12 +144,10 @@ class CarCatalog
             return null;
         }
         try {
-            $brand = collect($this->remoteBrands())->firstWhere('id', $brandId);
-            if (! $brand || ! collect($this->remoteModels($brand))->contains('id', $modelId)) {
+            if (! $this->remoteModel($brandId, $modelId)) {
                 return null;
             }
-            $rows = Cache::remember('carapi.generations.'.$modelId, 60 * 60 * 6,
-                fn () => $this->pages('/models/'.$modelId.'/generations'));
+            $rows = $this->remoteGenerations($modelId);
             $years = [];
             foreach ($rows as $row) {
                 $start = $row['year_start'] ?? $row['start_year'] ?? null;
@@ -174,6 +173,26 @@ class CarCatalog
         }
     }
 
+    /** The remote model under a remote brand, or null when either is unknown. Throws when CarAPI is down. */
+    public function remoteModel(int $brandId, int $modelId): ?array
+    {
+        $brand = collect($this->remoteBrands())->firstWhere('id', $brandId);
+
+        return $brand ? collect($this->remoteModels($brand))->firstWhere('id', $modelId) : null;
+    }
+
+    /** Raw generation rows of a remote model, cached; shared by years and the generation picker. */
+    public function remoteGenerations(int $modelId): array
+    {
+        return Cache::remember('carapi.generations.'.$modelId, 60 * 60 * 6,
+            fn () => $this->pages('/models/'.$modelId.'/generations'));
+    }
+
+    public static function httpsUrl(mixed $url): ?string
+    {
+        return is_string($url) && str_starts_with($url, 'https://') ? $url : null;
+    }
+
     public static function years(): array
     {
         return range((int) now()->year + 1, self::MIN_YEAR);
@@ -186,6 +205,7 @@ class CarCatalog
                 'id' => (int) $row['id'],
                 'name' => (string) $row['name'],
                 'slug' => (string) $row['slug'],
+                'logo' => self::httpsUrl($row['logo_url_light'] ?? null),
                 'source' => self::REMOTE,
             ], $this->pages('/brands'));
         });
@@ -197,26 +217,19 @@ class CarCatalog
             return array_map(fn (array $row) => [
                 'id' => (int) $row['id'],
                 'name' => (string) $row['name'],
+                'photo_url' => self::httpsUrl($row['photo_url'] ?? null),
                 'source' => self::REMOTE,
             ], $this->pages('/brands/'.rawurlencode($brand['slug']).'/models'));
         });
     }
 
-    private function pages(string $path): array
+    /** Every row of a list endpoint. geoapi.ge serves up to 1000 rows a page, which keeps the monthly quota low. */
+    public function pages(string $path, array $query = []): array
     {
-        $secret = (string) config('services.carapi.secret');
-        $base = rtrim((string) config('services.carapi.url'), '/');
-        if ($secret === '' || $base === '') {
-            throw new RuntimeException('CarAPI is not configured');
-        }
-
         $all = [];
         $page = 1;
         do {
-            $response = Http::withToken($secret)
-                ->acceptJson()
-                ->timeout(8)
-                ->get($base.$path, ['page' => $page, 'per_page' => 100]);
+            $response = $this->request()->acceptJson()->get($this->base().$path, $query + ['page' => $page, 'per_page' => 1000]);
 
             if (! $response->successful()) {
                 throw new RuntimeException('CarAPI HTTP '.$response->status());
@@ -229,5 +242,35 @@ class CarCatalog
         } while (count($all) < $total && $page <= 50);
 
         return $all;
+    }
+
+    /** A single-object endpoint; null on 404. */
+    public function item(string $path): ?array
+    {
+        $response = $this->request()->acceptJson()->get($this->base().$path);
+        if ($response->status() === 404) {
+            return null;
+        }
+        if (! $response->successful()) {
+            throw new RuntimeException('CarAPI HTTP '.$response->status());
+        }
+
+        return $response->json('data') ?? $response->json();
+    }
+
+    public function base(): string
+    {
+        $base = rtrim((string) config('services.carapi.url'), '/');
+        if ($base === '' || (string) config('services.carapi.secret') === '') {
+            throw new RuntimeException('CarAPI is not configured');
+        }
+
+        return $base;
+    }
+
+    /** The secret key stays on the server; clients never call CarAPI themselves. */
+    public function request(): PendingRequest
+    {
+        return Http::withToken((string) config('services.carapi.secret'))->timeout(8);
     }
 }

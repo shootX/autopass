@@ -36,7 +36,7 @@ return [
     ],
 
     'carapi' => [
-        'url' => env('CARAPI_URL', 'https://car.socialsave.cc/api/v1'),
+        'url' => env('CARAPI_URL', 'https://geoapi.ge/api/v1'),
         'secret' => env('CARAPI_SECRET'),
     ],
 
