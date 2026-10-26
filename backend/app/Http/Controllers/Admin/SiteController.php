@@ -55,9 +55,18 @@ class SiteController extends Controller
             }
         }
 
+        $stored = SitePages::stored($page)['lists'] ?? [];
         foreach ($defaults['lists'] as $name => $list) {
+            // A list the form did not send keeps what it had; the editor always sends each list (its empty add row).
+            if (! array_key_exists($name, $lists)) {
+                if (isset($stored[$name])) {
+                    $data['lists'][$name] = $stored[$name];
+                }
+
+                continue;
+            }
             $items = [];
-            foreach (array_slice((array) ($lists[$name] ?? []), 0, self::MAX_ITEMS + 1) as $row) {
+            foreach (array_slice((array) $lists[$name], 0, self::MAX_ITEMS + 1) as $row) {
                 if (! is_array($row) || ! empty($row['delete'])) {
                     continue;
                 }
