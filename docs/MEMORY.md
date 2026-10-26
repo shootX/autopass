@@ -374,3 +374,12 @@ Two roles, two tables. Corporate clients (`corporate_clients`, panel `/partner`,
 A fleet car has a driver phone and a status: `invited` (SMS sent, the default, also for cars that existed before), `active` (that phone signed in or opened the app: `POST /api/login`, `set_password` or `GET /api/me` call `FleetInvites::activateFor`) or `blocked`. Activation links the car to the driver's `user_cars` row by plate (created from the fleet brand/model when missing). A plate held by another app user stays invited with `activation_error = plate_taken`. While linked, the driver can't delete the car or change its plate (`error_code: company_car`).
 
 The company report (`WashReportQuery::forFleet`) shows only bookings of the linked app car created between `activated_at` and `blocked_at`. Changing the driver resets the link, so the old driver's washes disappear from the report. A plate typed into a fleet alone shows nothing. Driver phones are stored normalized (`5XX XX XX XX`); a resend is refused for 60 s. `/api/corporate/*` is limited to 120 requests a minute per key.
+
+## 2026-10-26 — Corporate clients stage 2: washes
+
+A company owns a pool of washes (`corporate_clients.washes_balance`). It counts every wash the company has, the ones given to cars included: 100 in the pool and 4 on car X become 99 and 3 after one wash. Free = pool minus the sum of `fleet_cars.washes_left`. Only `App\Services\CorporateWashes` changes these numbers, always inside a transaction that locks the company row first (then the car), and every change writes a `corporate_wash_moves` row (`credit`, `correction`, `allocate`, `wash`, `release`). For `allocate` and `release` the amount is the car's change; for the others it is the pool's change. `balance_after` is always the pool after the move.
+
+Packages (`corporate_packages`) belong to one company and only say how many washes a credit adds and at what price (for the invoices of stage 4). The admin credits after the invoice is paid; the company can't credit itself.
+
+The company QR is separate from package QR: `fleet_cars.qr_code` starts with `fc`, lives 5 minutes and is replaced on every fetch, on a driver change and on a block. `checkqr` looks up packages first, then company codes (410 when expired). The approve grant is one-time and manager-bound like the package one (`App\Support\ApproveGrant`, scope `corporate-approve`); a car that can't wash (company blocked, car not active, discount mode, no washes) gets no grant and a `reason`. Discount mode is selectable but not approvable until the discount package exists.
+

@@ -5,11 +5,14 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\CorporateClient;
 use App\Models\FleetCar;
+use App\Services\CorporateWashes;
 use App\Services\FleetCars;
 use App\Services\FleetInvites;
+use App\Support\Phone;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class CorporateFleetController extends Controller
 {
@@ -20,16 +23,29 @@ class CorporateFleetController extends Controller
             return $client;
         }
 
-        $cars = $client->cars()->orderBy('plate')->get(['plate', 'brand', 'model', 'status', 'driver_phone'])
+        $cars = $client->cars()->orderBy('plate')->get(['plate', 'brand', 'model', 'status', 'driver_phone', 'mode', 'washes_left'])
             ->map(fn (FleetCar $car) => [
                 'plate' => $car->plate,
                 'brand' => $car->brand,
                 'model' => $car->model,
                 'status' => $car->status,
                 'phone' => $car->driver_phone,
+                'mode' => $car->mode,
+                'washes' => (int) $car->washes_left,
             ]);
 
         return response()->json(['ok' => true, 'vehicles' => $cars]);
+    }
+
+    /** GET /balance: the company's washes, how many are given to cars and how many are free. */
+    public function balance(Request $request)
+    {
+        $client = $this->client($request);
+        if ($client instanceof JsonResponse) {
+            return $client;
+        }
+
+        return response()->json(['ok' => true] + CorporateWashes::balance($client));
     }
 
     public function store(Request $request)
@@ -74,7 +90,10 @@ class CorporateFleetController extends Controller
         return response()->json(['ok' => true, 'added' => $added, 'skipped' => $skipped]);
     }
 
-    /** PATCH /vehicles/{plate}: {"phone": "5xx xx xx xx"} invites a new driver, {"blocked": true|false} toggles the car. */
+    /**
+     * PATCH /vehicles/{plate}: {"phone": "5xx xx xx xx"} invites a new driver, {"blocked": true|false} toggles
+     * the car, {"mode": "washes"|"discount"} picks how it washes, {"washes": 4} sets its share of the pool.
+     */
     public function update(Request $request, string $plate)
     {
         $client = $this->client($request);
@@ -90,24 +109,41 @@ class CorporateFleetController extends Controller
         $validator = Validator::make($request->all(), [
             'phone' => ['sometimes', 'required', 'string', 'max:32'],
             'blocked' => ['sometimes', 'boolean'],
+            'mode' => ['sometimes', 'string', Rule::in(FleetCar::MODES)],
+            'washes' => ['sometimes', 'integer', 'min:0', 'max:100000'],
         ]);
         if ($validator->fails()) {
             return response()->json(['ok' => false, 'message' => $validator->errors()->first()], 422);
+        }
+
+        // Checks that can fail run first, so a refused request changes nothing.
+        if ($request->has('phone') && Phone::normalize(trim((string) $request->input('phone'))) === null) {
+            return response()->json(['ok' => false, 'message' => 'Invalid phone'], 422);
+        }
+        if ($request->has('washes')
+            && CorporateWashes::allocate($car, $request->integer('washes'), 'api') === 'not_enough') {
+            return response()->json(['ok' => false, 'message' => 'Not enough free washes', 'free' => CorporateWashes::balance($client)['free']], 422);
         }
 
         $car->setRelation('client', $client);
         $invite = null;
         if ($request->has('phone')) {
             $invite = FleetInvites::setDriver($car, (string) $request->input('phone'));
-            if ($invite === 'phone_invalid') {
-                return response()->json(['ok' => false, 'message' => 'Invalid phone'], 422);
-            }
         }
         if ($request->has('blocked')) {
             FleetInvites::setBlocked($car, $request->boolean('blocked'));
         }
+        if ($request->has('mode')) {
+            CorporateWashes::setMode($car, (string) $request->input('mode'));
+        }
 
-        return response()->json(['ok' => true, 'status' => $car->status, 'invite' => $invite]);
+        return response()->json([
+            'ok' => true,
+            'status' => $car->status,
+            'invite' => $invite,
+            'mode' => $car->mode,
+            'washes' => (int) $car->washes_left,
+        ]);
     }
 
     public function destroy(Request $request, string $plate)
@@ -126,7 +162,7 @@ class CorporateFleetController extends Controller
             return response()->json(['ok' => false, 'message' => 'Not found'], 404);
         }
 
-        $car->delete();
+        CorporateWashes::deleteCar($car, 'api');
 
         return response()->json(['ok' => true]);
     }

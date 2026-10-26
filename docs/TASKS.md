@@ -370,3 +370,15 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 - [ ] App (GeocarAPP): show the company badge from `mycars.company`, explain `company_car` errors. Not done here.
 - [ ] Next stages: wash packages, discount packages, invoices (see the plan artifact).
 
+## 2026-10-26 — Corporate clients stage 2: wash packages and QR debit (`claude/project-thread-8emdwh`)
+
+- [x] Per-company packages (`corporate_packages`: title, washes, price) created by the admin on the company page. Regular app packages are untouched.
+- [x] Company wash pool (`corporate_clients.washes_balance`) with a ledger (`corporate_wash_moves`): admin credit (a package or a manual amount), signed correction with a reason, allocation to cars, wash, deleted car. The pool never drops below the washes on cars.
+- [x] Car `mode` (`washes` / `discount`) and `washes_left`, set by the company in the panel (fleet table) and over the API (`PATCH /vehicles/{plate}` with `mode`, `washes`; `GET /balance`). Admin can do the same.
+- [x] Driver QR for a company car: `GET /api/mycars/{id}/company-qr` (SVG, `X-QR-Expires`, 5 minutes, reset on driver change and block). `mycars` returns `company_car` (mode, washes left).
+- [x] Manager scan: `checkqr` answers `kind: corporate` with company, mode and balances; `POST /api/corporate-wash/{id}/approve` takes one wash from the car and the pool (`corporate_washes` row). Web manager screen shows it.
+- [x] Company panel page „რეცხვები“: balance, packages, ledger.
+- [ ] iOS app: driver QR for a company car and the manager result card (separate GeocarAPP PR).
+- [ ] A car in `discount` mode can't be approved until stage 3 adds the discount package.
+- [ ] Company reports still count bookings only; walk-in corporate washes are in the ledger, not in the report yet.
+

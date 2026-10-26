@@ -8,6 +8,7 @@ use App\Models\CarBrand;
 use App\Models\CarModel;
 use App\Models\CorporateClient;
 use App\Models\FleetCar;
+use App\Services\CorporateWashes;
 use App\Services\FleetCars;
 use App\Services\Security\TemporaryPassword;
 use App\Support\AdminAudit;
@@ -132,8 +133,11 @@ class CorporateController extends Controller
     public function show(CorporateClient $corporate)
     {
         $cars = $corporate->cars()->orderByDesc('id')->paginate(20);
+        $balance = CorporateWashes::balance($corporate);
+        $packages = $corporate->packages()->orderByDesc('is_active')->orderBy('washes')->get();
+        $moves = CorporateWashes::ledger($corporate);
 
-        return view('admin.corporate.show', compact('corporate', 'cars'));
+        return view('admin.corporate.show', compact('corporate', 'cars', 'balance', 'packages', 'moves'));
     }
 
     public function storeCar(Request $request, CorporateClient $corporate)
@@ -154,7 +158,7 @@ class CorporateController extends Controller
     public function deleteCar(CorporateClient $corporate, FleetCar $car)
     {
         abort_unless($car->corporate_client_id === $corporate->id, 404);
-        $car->delete();
+        CorporateWashes::deleteCar($car, 'admin', (int) auth()->id());
 
         return redirect()->route('admin.corporate.show', $corporate)->with('message', __('admin.fleet_car_deleted'));
     }

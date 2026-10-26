@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\ReferralsController;
 use App\Http\Controllers\PartnerFleetController;
 use App\Http\Controllers\PartnerPanelController;
+use App\Http\Controllers\PartnerWashesController;
 use App\Http\Middleware\CorporatePanel;
 use App\Http\Controllers\WebHook\FlittWebHookController;
 use App\Http\Controllers\WebHook\TbcCheckoutController;
@@ -34,6 +35,9 @@ Route::prefix('partner')->group(function () {
         Route::post('/cars/{car}/driver', [PartnerFleetController::class, 'driver'])->name('partner.cars.driver');
         Route::post('/cars/{car}/invite', [PartnerFleetController::class, 'invite'])->middleware('throttle:20,1')->name('partner.cars.invite');
         Route::post('/cars/{car}/block', [PartnerFleetController::class, 'block'])->name('partner.cars.block');
+        Route::post('/cars/{car}/mode', [PartnerFleetController::class, 'mode'])->name('partner.cars.mode');
+        Route::post('/cars/{car}/washes', [PartnerFleetController::class, 'washes'])->name('partner.cars.washes');
+        Route::get('/washes', [PartnerWashesController::class, 'index'])->name('partner.washes');
         Route::post('/import', [PartnerPanelController::class, 'import'])->name('partner.import');
         Route::get('/template', [PartnerPanelController::class, 'template'])->name('partner.template');
         Route::post('/token', [PartnerPanelController::class, 'token'])->name('partner.token');

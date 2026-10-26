@@ -8,6 +8,7 @@ use App\Models\CarModel;
 use App\Models\CarWash;
 use App\Models\CorporateClient;
 use App\Models\FleetCar;
+use App\Services\CorporateWashes;
 use App\Services\FleetCars;
 use App\Services\WashReportQuery;
 use Illuminate\Http\RedirectResponse;
@@ -249,7 +250,7 @@ class PartnerPanelController extends Controller
     {
         $corporate = $this->client($request);
         abort_unless($car->corporate_client_id === $corporate->id, 404);
-        $car->delete();
+        CorporateWashes::deleteCar($car, 'company');
 
         return redirect()->route('partner.fleet')->with('message', __('admin.fleet_car_deleted'));
     }

@@ -1,5 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { approvePackageBody, approveShouldRescan, approveShowsError, packageQrReady, spendApproveToken } from "./packageApprove";
+import {
+  approvePackageBody,
+  approveShouldRescan,
+  approveShowsError,
+  corporateCanApprove,
+  isCorporateCheck,
+  packageQrReady,
+  spendApproveToken,
+  type CorporateCheck,
+} from "./packageApprove";
 
 describe("package approve", () => {
   it("does not approve with a package id alone", () => {
@@ -48,5 +57,37 @@ describe("package approve", () => {
         },
       }),
     ).toBe(true);
+  });
+});
+describe("company car scan", () => {
+  const scan = (overrides: Partial<CorporateCheck["corporate"]> = {}, token: string | null = "tok"): CorporateCheck => ({
+    success: true,
+    kind: "corporate",
+    approve_token: token,
+    corporate: {
+      id: 7,
+      company: "Wash Co",
+      mode: "washes",
+      plate: "AA123BB",
+      washes_left: 4,
+      company_washes: 100,
+      can_approve: true,
+      reason: null,
+      ...overrides,
+    },
+  });
+
+  it("tells a company car code from a package code", () => {
+    expect(isCorporateCheck(scan())).toBe(true);
+    expect(isCorporateCheck({ success: true, approve_token: "tok", package: { id: 1 } })).toBe(false);
+    expect(isCorporateCheck({ success: false, kind: "corporate" })).toBe(false);
+    expect(isCorporateCheck(null)).toBe(false);
+  });
+
+  it("approves only with a token and the server's go-ahead", () => {
+    expect(corporateCanApprove(scan())).toBe(true);
+    expect(corporateCanApprove(scan({}, null))).toBe(false);
+    expect(corporateCanApprove(scan({}, "  "))).toBe(false);
+    expect(corporateCanApprove(scan({ can_approve: false, reason: "no_washes" }))).toBe(false);
   });
 });

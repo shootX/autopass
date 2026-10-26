@@ -41,5 +41,7 @@
             'tokenUrl' => route('admin.corporate.token', $corporate),
             'carBase' => url('/dashboard/corporate/'.$corporate->id.'/cars'),
         ])
+
+        @include('admin.corporate.washes', ['manage' => true])
     </div>
 @endsection

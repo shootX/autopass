@@ -77,6 +77,9 @@ class FleetInvites
             'activation_error' => null,
             'activated_at' => null,
             'invited_at' => null,
+            // The old driver's QR stops working with the change.
+            'qr_code' => null,
+            'qr_expires_at' => null,
         ])->save();
 
         // Linking waits for the driver to sign in or open the app after the SMS, even when the
@@ -87,7 +90,12 @@ class FleetInvites
     public static function setBlocked(FleetCar $car, bool $blocked): void
     {
         if ($blocked) {
-            $car->forceFill(['status' => FleetCar::STATUS_BLOCKED, 'blocked_at' => now()])->save();
+            $car->forceFill([
+                'status' => FleetCar::STATUS_BLOCKED,
+                'blocked_at' => now(),
+                'qr_code' => null,
+                'qr_expires_at' => null,
+            ])->save();
 
             return;
         }

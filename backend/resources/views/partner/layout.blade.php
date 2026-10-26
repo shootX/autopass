@@ -36,6 +36,10 @@
                         <div class="sb-nav-link-icon"><i class="fas fa-car"></i></div>
                         {{ __('admin.fleet') }}
                     </a>
+                    <a class="nav-link @if(Route::is('partner.washes')) active @endif" href="{{ route('partner.washes') }}">
+                        <div class="sb-nav-link-icon"><i class="fas fa-droplet"></i></div>
+                        {{ __('admin.cw_title') }}
+                    </a>
                     <a class="nav-link @if(Route::is('partner.reports')) active @endif" href="{{ route('partner.reports') }}">
                         <div class="sb-nav-link-icon"><i class="fas fa-file-excel"></i></div>
                         {{ __('admin.reports') }}

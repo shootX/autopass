@@ -84,7 +84,12 @@
                 </form>
                 <pre class="mt-3 mb-0" style="white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;">POST {{ url('/api/corporate/vehicles') }}
 X-Api-Key: <span id="fleet-token-inline">{{ $masked }}</span>
-{"plate":"AB123CD","brand":"Toyota","model":"Camry","phone":"555 12 34 56"}</pre>
+{"plate":"AB123CD","brand":"Toyota","model":"Camry","phone":"555 12 34 56"}
+
+PATCH {{ url('/api/corporate/vehicles/AB123CD') }}
+{"mode":"washes","washes":4}
+
+GET {{ url('/api/corporate/balance') }}</pre>
             </div>
         </div>
     </div>
@@ -106,9 +111,10 @@ X-Api-Key: <span id="fleet-token-inline">{{ $masked }}</span>
 
 @php
     $statusBadge = ['invited' => 'bg-warning text-dark', 'active' => 'bg-success', 'blocked' => 'bg-danger'];
+    $freeWashes = \App\Services\CorporateWashes::balance($corporate)['free'];
 @endphp
 <div class="card mt-4 mb-4">
-    <div class="card-header">{{ __('admin.fleet') }} · {{ $cars->total() }}</div>
+    <div class="card-header">{{ __('admin.fleet') }} · {{ $cars->total() }} <span class="text-muted ms-2">{{ __('admin.cw_free') }}: {{ $freeWashes }}</span></div>
     <div class="card-body table-responsive">
         <table class="table table-hover">
             <thead>
@@ -118,6 +124,8 @@ X-Api-Key: <span id="fleet-token-inline">{{ $masked }}</span>
                 <th>{{ __('admin.model') }}</th>
                 <th>{{ __('admin.fleet_driver_phone') }}</th>
                 <th>{{ __('admin.status') }}</th>
+                <th>{{ __('admin.cw_mode') }}</th>
+                <th>{{ __('admin.cw_car_washes') }}</th>
                 <th>{{ __('admin.fleet_source') }}</th>
                 <th>{{ __('admin.actions') }}</th>
             </tr>
@@ -137,6 +145,23 @@ X-Api-Key: <span id="fleet-token-inline">{{ $masked }}</span>
                             <small class="d-block text-muted">{{ __('admin.fleet_invite_no_phone') }}</small>
                         @endif
                     </td>
+                    <td>
+                        <form method="POST" action="{{ $carBase.'/'.$car->id.'/mode' }}" class="d-inline" onsubmit="return confirm(@json(__('admin.cw_mode_confirm')))">
+                            @csrf
+                            <input type="hidden" name="mode" value="{{ $car->mode === 'washes' ? 'discount' : 'washes' }}">
+                            <button type="submit" class="btn btn-sm {{ $car->mode === 'washes' ? 'btn-outline-primary' : 'btn-outline-warning' }}" title="{{ __('admin.cw_mode_switch') }}">{{ __('admin.cw_mode_'.$car->mode) }} <i class="fas fa-right-left ms-1"></i></button>
+                        </form>
+                        @if($car->mode === 'discount')
+                            <small class="d-block text-muted">{{ __('admin.cw_discount_not_ready') }}</small>
+                        @endif
+                    </td>
+                    <td>
+                        @if($car->mode === 'washes')
+                            <a class="btn btn-sm btn-outline-secondary fleet-washes" data-id="{{ $car->id }}" data-washes="{{ (int) $car->washes_left }}" title="{{ __('admin.cw_allocate') }}">{{ (int) $car->washes_left }} <i class="fas fa-pen ms-1"></i></a>
+                        @else
+                            —
+                        @endif
+                    </td>
                     <td>{{ __('admin.fleet_source_'.$car->source) }}</td>
                     <td>
                         <div class="btn-group">
@@ -150,7 +175,7 @@ X-Api-Key: <span id="fleet-token-inline">{{ $masked }}</span>
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="7" class="umami-empty">{{ __('admin.fleet_empty') }}</td></tr>
+                <tr><td colspan="9" class="umami-empty">{{ __('admin.fleet_empty') }}</td></tr>
             @endforelse
             </tbody>
         </table>
@@ -207,6 +232,31 @@ X-Api-Key: <span id="fleet-token-inline">{{ $masked }}</span>
                 buttons: {
                     yes: { text: I18N.yes, btnClass: 'btn-red', action: function () {
                         window.deleteRequest(@json($carBase) + '/' + id + '/delete');
+                    }},
+                    no: { text: I18N.no }
+                }
+            });
+        });
+
+        $('.fleet-washes').on('click', function () {
+            const id = $(this).data('id');
+            const current = Number($(this).data('washes') || 0);
+            const free = @json($freeWashes);
+            $.confirm({
+                title: I18N.cw_allocate,
+                content: '<div class="form-group"><label for="fleet_washes_input">' + I18N.cw_car_washes + '</label>'
+                    + '<input class="form-control" id="fleet_washes_input" type="number" min="0" max="' + (current + free) + '">'
+                    + '<small class="d-block mt-1">' + I18N.cw_allocate_hint.replace(':free', free) + '</small></div>',
+                onContentReady: function () { this.$content.find('#fleet_washes_input').val(current).trigger('focus'); },
+                buttons: {
+                    yes: { text: I18N.save, btnClass: 'btn-blue', action: function () {
+                        const value = String(this.$content.find('#fleet_washes_input').val() || '').trim();
+                        if (value === '' || Number(value) < 0) return false;
+                        const form = $('<form method="POST" style="display:none"></form>').attr('action', @json($carBase) + '/' + id + '/washes');
+                        form.append($('<input type="hidden" name="_token">').val(@json(csrf_token())));
+                        form.append($('<input type="hidden" name="washes">').val(value));
+                        $('body').append(form);
+                        form.trigger('submit');
                     }},
                     no: { text: I18N.no }
                 }
