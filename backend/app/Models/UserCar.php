@@ -18,7 +18,11 @@ class UserCar extends Model
         'modification_name',
         'body_type',
         'photo',
+        'fuel_type',
     ];
+
+    /** Codes stored in user_cars.fuel_type; labels live in lang/{ka,en,ru}/cars.php and in the apps. */
+    public const FUEL_TYPES = ['regular', 'premium', 'super', 'diesel', 'electric', 'gas_petrol', 'cng', 'lpg', 'hydrogen'];
 
     protected $casts = ['year' => 'integer', 'generation_id' => 'integer', 'modification_id' => 'integer'];
 
@@ -34,6 +38,7 @@ class UserCar extends Model
             'generation' => $this->generation_id ? ['id' => $this->generation_id, 'name' => $this->generation_name] : null,
             'modification' => $this->modification_id ? ['id' => $this->modification_id, 'name' => $this->modification_name] : null,
             'body_type' => $this->body_type,
+            'fuel_type' => $this->fuel_type,
         ];
     }
 

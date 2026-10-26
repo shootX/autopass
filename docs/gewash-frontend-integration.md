@@ -56,3 +56,5 @@ Shared codes: 0 pending, 1 confirmed, 2 cancelled, 3 completed, 4 expired, 5 res
 - `GET /api/cars/modifications/{id}` → `modification` with `specs` and `equipment`.
 - `GET /api/cars/models/{model_id}/photo?generation={id?}` (public) → image bytes, 404 when there is no checked photo.
 - `POST /api/mycars/add` and `/edit` accept `generation_id`, `modification_id` with `source=carapi`. A wrong pair → 422. `mycars` and `car` add `generation {id,name}|null`, `modification {id,name}|null`, `body_type`; `image` prefers the catalog photo.
+- `POST /api/mycars/add` and `/edit` accept `fuel_type`: one of `regular`, `premium`, `super`, `diesel`, `electric`, `gas_petrol`, `cng`, `lpg`, `hydrogen` (else 422). Cars return `fuel_type` (code or null).
+- A generation without its own photo returns the model photo in `photo`.

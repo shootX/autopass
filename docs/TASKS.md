@@ -350,3 +350,9 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 - [x] `user_cars`: `generation_id`, `generation_name`, `modification_id`, `modification_name`, `body_type`, `photo` (additive, nullable). Names, body type and photo come from the catalog, not from the client. `image` in `mycars` prefers the saved photo.
 - [ ] Set `CARAPI_URL` / `CARAPI_SECRET` on the server, run the migration. Live geoapi.ge fields verified only with fakes here.
 - [ ] Open question: should `body_type` from the generation pick the package `car_type` (prices)? Not changed.
+
+## 2026-10-26 — Fuel type and model photo fallback (`feat/car-fuel`)
+- [x] `user_cars.fuel_type` (nullable, codes in `UserCar::FUEL_TYPES`: regular, premium, super, diesel, electric, gas_petrol, cng, lpg, hydrogen). Add/edit validate it; `mycars` and `car` return it. Labels in `lang/{ka,en,ru}/cars.php`.
+- [x] Web AddCar: required fuel select (petrol grades grouped), sent as `fuel_type`. Strings in `gewash/*.json` and `backend/public/lang/*.json`.
+- [x] Generations without their own photo return the model photo; the photo proxy also serves a model whose generation list was just loaded.
+- [ ] Web AddCar has no generation/trim steps yet (the iOS app has them).

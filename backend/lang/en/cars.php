@@ -6,4 +6,15 @@ return [
     'photo_missing' => 'This model has no photo yet.',
     'generation_invalid' => 'The generation does not belong to this model.',
     'modification_invalid' => 'The modification does not belong to this generation.',
+    'fuel' => [
+        'regular' => 'Regular (RON 92–95)',
+        'premium' => 'Premium (RON 95)',
+        'super' => 'Super (Premium RON 98)',
+        'diesel' => 'Diesel',
+        'electric' => 'Electricity',
+        'gas_petrol' => 'Gas/petrol',
+        'cng' => 'Natural gas CNG',
+        'lpg' => 'Liquefied gas LPG',
+        'hydrogen' => 'Hydrogen',
+    ],
 ];

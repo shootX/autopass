@@ -138,6 +138,7 @@ class CarsController extends Controller
             'model_id' => $modelId,
             'plate' => $request->plate,
             'year' => $request->filled('year') ? (int) $request->input('year') : null,
+            'fuel_type' => $request->input('fuel_type') ?: null,
         ] + $trim);
 
         return response()->json([
@@ -211,6 +212,7 @@ class CarsController extends Controller
             'year' => ['nullable', 'integer', 'between:'.CarCatalog::MIN_YEAR.','.((int) now()->year + 1)],
             'generation_id' => ['nullable', 'integer', 'min:1'],
             'modification_id' => ['nullable', 'integer', 'min:1'],
+            'fuel_type' => ['nullable', 'string', 'in:'.implode(',', UserCar::FUEL_TYPES)],
         ]);
         if ($v->fails()) {
             return $v->errors()->first();
@@ -294,6 +296,9 @@ class CarsController extends Controller
             $data = $request->only(['plate']);
             if ($request->has('year')) {
                 $data['year'] = $request->filled('year') ? (int) $request->input('year') : null;
+            }
+            if ($request->has('fuel_type')) {
+                $data['fuel_type'] = $request->input('fuel_type') ?: null;
             }
             if ($request->filled('model_id') || ($request->filled('brand_name') && $request->filled('model_name'))) {
                 $modelId = $this->localModelId($request);
