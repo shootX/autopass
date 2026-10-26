@@ -7,6 +7,7 @@ use App\Mail\TemporaryPasswordMail;
 use App\Models\CarBrand;
 use App\Models\CarModel;
 use App\Models\CorporateClient;
+use App\Models\CorporateInvoice;
 use App\Models\FleetCar;
 use App\Services\CorporateWashes;
 use App\Services\FleetCars;
@@ -42,7 +43,9 @@ class CorporateController extends Controller
             ->paginate(15)
             ->withQueryString();
 
-        return view('admin.corporate.index', compact('clients', 'q'));
+        $openInvoices = CorporateInvoice::query()->where('status', CorporateInvoice::STATUS_ISSUED)->count();
+
+        return view('admin.corporate.index', compact('clients', 'q', 'openInvoices'));
     }
 
     public function addPage()
@@ -135,7 +138,9 @@ class CorporateController extends Controller
     {
         $cars = $corporate->cars()->with('userCar.model')->orderByDesc('id')->paginate(20);
 
-        return view('admin.corporate.show', compact('corporate', 'cars') + CorporateWashPanel::data($corporate, true));
+        $invoices = $corporate->invoices()->orderByDesc('id')->paginate(10, ['*'], 'invoices')->fragment('invoices');
+
+        return view('admin.corporate.show', compact('corporate', 'cars', 'invoices') + CorporateWashPanel::data($corporate, true));
     }
 
     public function storeCar(Request $request, CorporateClient $corporate)

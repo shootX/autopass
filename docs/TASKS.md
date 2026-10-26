@@ -385,10 +385,21 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 ## 2026-10-26 — Corporate clients stage 3: discount package (`claude/project-thread-8emdwh`)
 
 - [x] Company packages move to the admin Packages menu, tab „კორპორატიული პაკეტები“ (`/dashboard/packages/corporate`). Only the Autopass admin makes them; each belongs to one company, picked at creation and fixed after. The company page and the company panel only show them.
-- [x] Package `type`: `washes` (stage 2) or `discount`. A discount package has a row per body type (`corporate_package_prices`: full price, percent). A company has one active discount package; saving another active one switches the old one off.
+- [x] Package `type`: `washes` (stage 2) or `discount`. A discount package has a row per body type (`corporate_package_prices`: full price, percent). A company has one active discount package; saving another active one switches the old one off. (Changed in stage 4: several active packages, one per car.)
 - [x] Manager scan of a discount car: `checkqr` returns `corporate.discount` (car_type, full_price, percent, to_pay); approve records the wash with the package, price, percent and what the driver pays on site. The pool and the car's washes stay as they are.
 - [x] `mycars` `company_car.discount` tells the driver the price for the car's body type.
 - [x] Admin company page and panel: discount table, per-car price in the fleet, wash history with this month's totals (`corporate_washes`, walk-ins included).
 - [x] Body type rename and delete keep the price rows in step.
-- [ ] iOS app: show the discount price to the driver and the manager (GeocarAPP PR).
-- [ ] Stage 4: invoices.
+- [x] iOS app: show the discount price to the driver and the manager (GeocarAPP PR #15).
+- [x] Stage 4: invoices (see below).
+
+## 2026-10-26 — Corporate clients stage 4: invoices (`claude/project-thread-8emdwh`)
+
+- [x] `corporate_invoices`: number `AP-000001`, package, washes, amount, VAT rate, buyer and seller details copied at issue, due date, status `issued` / `paid` / `cancelled`.
+- [x] Company panel „ინვოისები“ (`/partner/invoices`): orders one of its active wash packages that has a price, sees its invoices, prints or saves one as PDF, cancels an unpaid one. At most 3 unpaid invoices at a time.
+- [x] Admin: company page block „ინვოისები“ (issue for a package, mark paid, cancel) and the list of all invoices (`/dashboard/corporate/invoices`, unpaid by default). „გადახდილია“ credits the package's washes once; the ledger row links to the invoice.
+- [x] Seller details and VAT come from `INVOICE_*` env values (`config/invoices.php`).
+- [x] Correction from the user: a company may have several active discount packages, and the company picks the package for each discount car (`fleet_cars.corporate_package_id`, migration `2026_10_26_000006`). Fleet in the panel and admin: package picker under the mode; API: `GET /api/corporate/discounts`, `PATCH /api/corporate/vehicles/{plate}` with `discount_package_id`. Today's discount cars keep the company's active package.
+- [ ] Open: who pays the discount difference (full price minus what the driver pays). Not invoiced until the user decides.
+- [ ] A real PDF file (needs a PDF library, which needs approval). Today the invoice is a print-ready page.
+- [ ] Stage 5: panel redesign and company API (washes, webhook, docs).

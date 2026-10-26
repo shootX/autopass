@@ -40,6 +40,10 @@
                         <div class="sb-nav-link-icon"><i class="fas fa-droplet"></i></div>
                         {{ __('admin.cw_title') }}
                     </a>
+                    <a class="nav-link @if(Route::is('partner.invoices*')) active @endif" href="{{ route('partner.invoices') }}">
+                        <div class="sb-nav-link-icon"><i class="fas fa-file-invoice"></i></div>
+                        {{ __('admin.inv_title') }}
+                    </a>
                     <a class="nav-link @if(Route::is('partner.reports')) active @endif" href="{{ route('partner.reports') }}">
                         <div class="sb-nav-link-icon"><i class="fas fa-file-excel"></i></div>
                         {{ __('admin.reports') }}

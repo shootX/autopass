@@ -30,7 +30,7 @@ class CorporateWashes
     public static function ledger(CorporateClient $client): LengthAwarePaginator
     {
         return $client->washMoves()
-            ->with(['package:id,title', 'wash:id,car_wash_id', 'wash.washing:id,name'])
+            ->with(['package:id,title', 'invoice:id,number', 'wash:id,car_wash_id', 'wash.washing:id,name'])
             ->orderByDesc('id')
             ->paginate(20, ['*'], 'moves')
             ->withQueryString();
@@ -43,13 +43,13 @@ class CorporateWashes
      * @param  'credit'|'correction'  $type
      * @return 'ok'|'zero'|'below_allocated'
      */
-    public static function credit(CorporateClient $client, string $type, int $amount, ?CorporatePackage $package, ?string $note, int $adminId): string
+    public static function credit(CorporateClient $client, string $type, int $amount, ?CorporatePackage $package, ?string $note, int $adminId, ?int $invoiceId = null): string
     {
         if ($amount === 0 || ($type === CorporateWashMove::TYPE_CREDIT && $amount < 0)) {
             return 'zero';
         }
 
-        return DB::transaction(function () use ($client, $type, $amount, $package, $note, $adminId) {
+        return DB::transaction(function () use ($client, $type, $amount, $package, $note, $adminId, $invoiceId) {
             $locked = self::lockClient($client->id);
             $next = (int) $locked->washes_balance + $amount;
             if ($next < self::allocated($locked->id)) {
@@ -63,6 +63,7 @@ class CorporateWashes
             $client->syncOriginalAttribute('washes_balance');
             self::move($locked, $type, $amount, [
                 'corporate_package_id' => $package?->id,
+                'corporate_invoice_id' => $invoiceId,
                 'actor' => 'admin',
                 'actor_id' => $adminId,
                 'note' => $note,
@@ -110,12 +111,19 @@ class CorporateWashes
         });
     }
 
-    public static function setMode(FleetCar $car, string $mode): bool
+    /**
+     * Washes mode, or discount mode at one of the company's active discount packages (check it with
+     * CorporateDiscounts::find). Without a package the car keeps its own or gets the company's only one;
+     * with none it can't wash until the company picks one.
+     */
+    public static function setMode(FleetCar $car, string $mode, ?CorporatePackage $package = null): bool
     {
         if (! in_array($mode, FleetCar::MODES, true)) {
             return false;
         }
-        $car->forceFill(['mode' => $mode])->save();
+        $package = $mode === FleetCar::MODE_DISCOUNT ? ($package ?? CorporateDiscounts::fallback($car)) : null;
+        $car->forceFill(['mode' => $mode, 'corporate_package_id' => $package?->id])->save();
+        $car->setRelation('discountPackage', $package);
 
         return true;
     }
@@ -151,7 +159,7 @@ class CorporateWashes
             return 'car_blocked';
         }
         if ($car->mode === FleetCar::MODE_DISCOUNT) {
-            // A discount car needs a row for its body type in the company's active discount package.
+            // A discount car needs an active discount package with a row for its body type.
             return CorporateDiscounts::forCar($car) ? null : 'discount_not_ready';
         }
         if ((int) $car->washes_left < 1 || (int) $car->client?->washes_balance < 1) {
@@ -173,7 +181,7 @@ class CorporateWashes
         return DB::transaction(function () use ($car, $at) {
             $client = self::lockClient((int) $car->corporate_client_id);
             $locked = FleetCar::query()->whereKey($car->id)->lockForUpdate()->firstOrFail();
-            $locked->setRelation('client', $client)->load('userCar.model');
+            $locked->setRelation('client', $client)->load(['userCar.model', 'discountPackage.prices']);
             $blocker = self::blocker($locked);
             if ($blocker !== null) {
                 return ['result' => $blocker];

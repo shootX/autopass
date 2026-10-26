@@ -13,8 +13,8 @@ use Illuminate\Validation\ValidationException;
 
 /**
  * Packages menu, corporate tab: the admin makes a package for one company. A wash package is
- * credited from the company page after the invoice is paid; a discount package gives a price per
- * body type. A company has one active discount package: saving another active one switches it off.
+ * credited when its invoice is paid; a discount package gives a price per body type. A company may
+ * have several active discount packages and picks one for each discount car.
  */
 class CorporatePackagesController extends Controller
 {
@@ -112,13 +112,6 @@ class CorporatePackagesController extends Controller
             if ($discount) {
                 $package->prices()->delete();
                 $package->prices()->createMany($rows);
-                if ($package->is_active) {
-                    CorporatePackage::query()
-                        ->where('corporate_client_id', $package->corporate_client_id)
-                        ->where('type', CorporatePackage::TYPE_DISCOUNT)
-                        ->whereKeyNot($package->id)
-                        ->update(['is_active' => false]);
-                }
             }
         });
     }

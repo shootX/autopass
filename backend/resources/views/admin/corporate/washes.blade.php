@@ -127,7 +127,7 @@
                     <td>{{ $move->balance_after }}</td>
                     <td>{{ $move->car_balance_after ?? '—' }}</td>
                     <td>{{ $move->type === 'wash' ? ($move->wash?->washing?->name ?? __('admin.cw_actor_manager')) : __('admin.cw_actor_'.$move->actor) }}</td>
-                    <td>{{ $move->package?->title ?? $move->note ?? '' }}</td>
+                    <td>{{ $move->invoice ? __('admin.inv_credit_note', ['number' => $move->invoice->number]) : ($move->package?->title ?? $move->note ?? '') }}</td>
                 </tr>
             @empty
                 <tr><td colspan="8" class="umami-empty">{{ __('admin.cw_ledger_empty') }}</td></tr>

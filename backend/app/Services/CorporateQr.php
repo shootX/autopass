@@ -41,7 +41,7 @@ class CorporateQr
             return null;
         }
         $car = FleetCar::query()->where('qr_code', $qr)
-            ->with(['client', 'user:id,name,surname', 'userCar.model'])
+            ->with(['client', 'user:id,name,surname', 'userCar.model', 'discountPackage.prices'])
             ->first();
         if (! $car) {
             return null;

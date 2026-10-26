@@ -71,7 +71,10 @@
 
                     <label class="d-block"><input type="checkbox" name="is_active" value="1" @checked(old('is_active', $package->is_active))> {{ __('admin.cw_package_active') }}</label>
                     @if($package->isDiscount())
-                        <small class="d-block text-muted">{{ __('admin.cp_one_discount') }}</small>
+                        <small class="d-block text-muted">{{ __('admin.cp_many_discounts') }}</small>
+                        @if($package->exists && ($carCount = $package->cars()->count()) > 0)
+                            <small class="d-block text-danger">{{ __('admin.cp_discount_cars', ['count' => $carCount]) }}</small>
+                        @endif
                     @endif
 
                     <button class="btn btn-primary mt-3" type="submit">{{ __('admin.save') }}</button>

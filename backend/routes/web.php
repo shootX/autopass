@@ -2,13 +2,12 @@
 
 use App\Http\Controllers\Api\ReferralsController;
 use App\Http\Controllers\PartnerFleetController;
+use App\Http\Controllers\PartnerInvoicesController;
 use App\Http\Controllers\PartnerPanelController;
 use App\Http\Controllers\PartnerWashesController;
-use App\Http\Middleware\CorporatePanel;
 use App\Http\Controllers\WebHook\FlittWebHookController;
 use App\Http\Controllers\WebHook\TbcCheckoutController;
-use App\Jobs\SendPush;
-use App\Models\User;
+use App\Http\Middleware\CorporatePanel;
 use Illuminate\Support\Facades\Route;
 
 Auth::routes(['register' => false]);
@@ -38,6 +37,10 @@ Route::prefix('partner')->group(function () {
         Route::post('/cars/{car}/mode', [PartnerFleetController::class, 'mode'])->name('partner.cars.mode');
         Route::post('/cars/{car}/washes', [PartnerFleetController::class, 'washes'])->name('partner.cars.washes');
         Route::get('/washes', [PartnerWashesController::class, 'index'])->name('partner.washes');
+        Route::get('/invoices', [PartnerInvoicesController::class, 'index'])->name('partner.invoices');
+        Route::post('/invoices', [PartnerInvoicesController::class, 'store'])->middleware('throttle:10,1')->name('partner.invoices.store');
+        Route::get('/invoices/{invoice}', [PartnerInvoicesController::class, 'show'])->name('partner.invoices.show');
+        Route::post('/invoices/{invoice}/cancel', [PartnerInvoicesController::class, 'cancel'])->name('partner.invoices.cancel');
         Route::post('/import', [PartnerPanelController::class, 'import'])->name('partner.import');
         Route::get('/template', [PartnerPanelController::class, 'template'])->name('partner.template');
         Route::post('/token', [PartnerPanelController::class, 'token'])->name('partner.token');
@@ -60,4 +63,3 @@ Route::any('/callback/tbc/payment', [TbcCheckoutController::class, 'callback'])
 
 Route::any('/callback/flitt/payment', [FlittWebHookController::class, 'callback'])
     ->name('callback.flitt.payment');
-

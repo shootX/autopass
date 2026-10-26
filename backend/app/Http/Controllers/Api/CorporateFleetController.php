@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\CorporateClient;
 use App\Models\FleetCar;
+use App\Services\CorporateDiscounts;
 use App\Services\CorporateWashes;
 use App\Services\FleetCars;
 use App\Services\FleetInvites;
@@ -23,7 +24,7 @@ class CorporateFleetController extends Controller
             return $client;
         }
 
-        $cars = $client->cars()->orderBy('plate')->get(['plate', 'brand', 'model', 'status', 'driver_phone', 'mode', 'washes_left'])
+        $cars = $client->cars()->orderBy('plate')->get(['plate', 'brand', 'model', 'status', 'driver_phone', 'mode', 'corporate_package_id', 'washes_left'])
             ->map(fn (FleetCar $car) => [
                 'plate' => $car->plate,
                 'brand' => $car->brand,
@@ -31,6 +32,7 @@ class CorporateFleetController extends Controller
                 'status' => $car->status,
                 'phone' => $car->driver_phone,
                 'mode' => $car->mode,
+                'discount_package_id' => $car->corporate_package_id,
                 'washes' => (int) $car->washes_left,
             ]);
 
@@ -46,6 +48,23 @@ class CorporateFleetController extends Controller
         }
 
         return response()->json(['ok' => true] + CorporateWashes::balance($client));
+    }
+
+    /** GET /discounts: the company's active discount packages; PATCH a car with `discount_package_id` to use one. */
+    public function discounts(Request $request)
+    {
+        $client = $this->client($request);
+        if ($client instanceof JsonResponse) {
+            return $client;
+        }
+
+        $packages = $client->discountPackages()->with('prices')->get()->map(fn ($package) => [
+            'id' => (int) $package->id,
+            'title' => $package->title,
+            'prices' => $package->prices->map(fn ($row) => CorporateDiscounts::payload($row))->values(),
+        ]);
+
+        return response()->json(['ok' => true, 'discount_packages' => $packages]);
     }
 
     public function store(Request $request)
@@ -110,6 +129,7 @@ class CorporateFleetController extends Controller
             'phone' => ['sometimes', 'required', 'string', 'max:32'],
             'blocked' => ['sometimes', 'boolean'],
             'mode' => ['sometimes', 'string', Rule::in(FleetCar::MODES)],
+            'discount_package_id' => ['sometimes', 'integer'],
             'washes' => ['sometimes', 'integer', 'min:0', 'max:100000'],
         ]);
         if ($validator->fails()) {
@@ -119,6 +139,14 @@ class CorporateFleetController extends Controller
         // Checks that can fail run first, so a refused request changes nothing.
         if ($request->has('phone') && Phone::normalize(trim((string) $request->input('phone'))) === null) {
             return response()->json(['ok' => false, 'message' => 'Invalid phone'], 422);
+        }
+        // A discount package puts the car in discount mode at that package.
+        $package = null;
+        if ($request->has('discount_package_id')) {
+            $package = CorporateDiscounts::find($client, $request->integer('discount_package_id'));
+            if (! $package || $request->input('mode', FleetCar::MODE_DISCOUNT) !== FleetCar::MODE_DISCOUNT) {
+                return response()->json(['ok' => false, 'message' => 'Unknown discount package'], 422);
+            }
         }
         if ($request->has('washes')
             && CorporateWashes::allocate($car, $request->integer('washes'), 'api') === 'not_enough') {
@@ -133,8 +161,8 @@ class CorporateFleetController extends Controller
         if ($request->has('blocked')) {
             FleetInvites::setBlocked($car, $request->boolean('blocked'));
         }
-        if ($request->has('mode')) {
-            CorporateWashes::setMode($car, (string) $request->input('mode'));
+        if ($request->has('mode') || $package) {
+            CorporateWashes::setMode($car, (string) $request->input('mode', FleetCar::MODE_DISCOUNT), $package);
         }
 
         return response()->json([
@@ -142,6 +170,7 @@ class CorporateFleetController extends Controller
             'status' => $car->status,
             'invite' => $invite,
             'mode' => $car->mode,
+            'discount_package_id' => $car->corporate_package_id,
             'washes' => (int) $car->washes_left,
         ]);
     }

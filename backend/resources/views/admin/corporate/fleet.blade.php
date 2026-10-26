@@ -112,7 +112,7 @@ GET {{ url('/api/corporate/balance') }}</pre>
 @php
     $statusBadge = ['invited' => 'bg-warning text-dark', 'active' => 'bg-success', 'blocked' => 'bg-danger'];
     $freeWashes = \App\Services\CorporateWashes::balance($corporate)['free'];
-    $discountsByType = $corporate->discountPackage?->prices->keyBy('car_type') ?? collect();
+    $discountPackages = $corporate->discountPackages()->with('prices')->get()->keyBy('id');
 @endphp
 <div class="card mt-4 mb-4">
     <div class="card-header">{{ __('admin.fleet') }} · {{ $cars->total() }} <span class="text-muted ms-2">{{ __('admin.cw_free') }}: {{ $freeWashes }}</span></div>

@@ -29,7 +29,7 @@ class FleetCar extends Model
         'source',
     ];
     // status, driver_phone, user_id, user_car_id and the invite timestamps are set by FleetInvites only;
-    // mode, washes_left and the QR code by CorporateWashes and CorporateQr.
+    // mode, corporate_package_id, washes_left and the QR code by CorporateWashes and CorporateQr.
 
     protected $casts = [
         'invited_at' => 'datetime',
@@ -52,5 +52,11 @@ class FleetCar extends Model
     public function userCar(): BelongsTo
     {
         return $this->belongsTo(UserCar::class);
+    }
+
+    /** The discount package the company picked for this car; used only in discount mode and while active. */
+    public function discountPackage(): BelongsTo
+    {
+        return $this->belongsTo(CorporatePackage::class, 'corporate_package_id');
     }
 }

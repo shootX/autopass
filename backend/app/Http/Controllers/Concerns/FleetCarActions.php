@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Concerns;
 
 use App\Models\FleetCar;
+use App\Services\CorporateDiscounts;
 use App\Services\CorporateWashes;
 use App\Services\FleetInvites;
 use Illuminate\Http\RedirectResponse;
@@ -43,10 +44,21 @@ trait FleetCarActions
         return redirect($back)->with('message', __($block ? 'admin.fleet_car_blocked' : 'admin.fleet_car_unblocked'));
     }
 
+    /** Discount mode may name the company's discount package for the car. */
     protected function changeMode(Request $request, FleetCar $car, string $back): RedirectResponse
     {
-        $data = $request->validate(['mode' => ['required', 'string', Rule::in(FleetCar::MODES)]]);
-        CorporateWashes::setMode($car, $data['mode']);
+        $data = $request->validate([
+            'mode' => ['required', 'string', Rule::in(FleetCar::MODES)],
+            'discount_package_id' => ['nullable', 'integer'],
+        ]);
+        $package = null;
+        if ($data['mode'] === FleetCar::MODE_DISCOUNT && ! empty($data['discount_package_id'])) {
+            $package = CorporateDiscounts::find($car->client, (int) $data['discount_package_id']);
+            if (! $package) {
+                return redirect($back)->withErrors(['fleet' => __('admin.cd_package_unknown')]);
+            }
+        }
+        CorporateWashes::setMode($car, $data['mode'], $package);
 
         return redirect($back)->with('message', __('admin.cw_mode_saved'));
     }

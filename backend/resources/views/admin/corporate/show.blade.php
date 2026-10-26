@@ -43,5 +43,10 @@
         ])
 
         @include('admin.corporate.washes', ['manage' => true])
+
+        @include('admin.corporate.invoices', [
+            'manage' => true,
+            'orderable' => $packages->filter(fn ($package) => \App\Services\CorporateInvoices::orderable($corporate, $package)),
+        ])
     </div>
 @endsection

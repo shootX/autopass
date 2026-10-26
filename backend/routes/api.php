@@ -194,6 +194,7 @@ Route::middleware('throttle:public')->get('/promo', function () {
 
 Route::prefix('/corporate')->middleware('throttle:corporate-api')->group(function () {
     Route::get('/balance', [CorporateFleetController::class, 'balance']);
+    Route::get('/discounts', [CorporateFleetController::class, 'discounts']);
     Route::get('/vehicles', [CorporateFleetController::class, 'index']);
     Route::post('/vehicles', [CorporateFleetController::class, 'store']);
     Route::patch('/vehicles/{plate}', [CorporateFleetController::class, 'update']);

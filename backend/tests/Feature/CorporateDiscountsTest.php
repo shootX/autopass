@@ -9,17 +9,23 @@ use App\Models\CorporateWashMove;
 use App\Services\CorporateWashes;
 use Illuminate\Support\Facades\Hash;
 
-/** A sedan company car in discount mode; the company's active discount package has sedan at 30 ₾ and 50%. */
+/** A sedan company car in discount mode at the company's only discount package: sedan at 30 ₾ and 50%. */
 function cdFleet(): array
 {
     $fleet = cwFleet(10, 2);
+    $fleet['package'] = cdPackage($fleet['corp'], 'ფასდაკლება');
+    $fleet['price'] = $fleet['package']->prices()->create(['car_type' => 'sedan', 'full_price' => 30, 'percent' => 50]);
     CorporateWashes::setMode($fleet['car'], 'discount');
-    $package = new CorporatePackage(['title' => 'ფასდაკლება', 'washes' => 0, 'is_active' => true]);
-    $package->forceFill(['corporate_client_id' => $fleet['corp']->id, 'type' => 'discount'])->save();
-    $fleet['package'] = $package;
-    $fleet['price'] = $package->prices()->create(['car_type' => 'sedan', 'full_price' => 30, 'percent' => 50]);
 
     return $fleet;
+}
+
+function cdPackage(CorporateClient $corp, string $title, bool $active = true): CorporatePackage
+{
+    $package = new CorporatePackage(['title' => $title, 'washes' => 0, 'is_active' => $active]);
+    $package->forceFill(['corporate_client_id' => $corp->id, 'type' => 'discount'])->save();
+
+    return $package;
 }
 
 it('rounds what the driver pays to the tetri', function () {
@@ -49,18 +55,17 @@ it('lets the admin make a discount package for one company in the packages menu'
     ]])->assertSessionHasNoErrors();
     $first = CorporatePackage::query()->sole();
     expect($first->type)->toBe('discount')->and($first->washes)->toBe(0)
-        ->and($first->prices->pluck('car_type')->all())->toBe(['sedan'])
-        ->and($corp->discountPackage->id)->toBe($first->id);
+        ->and($first->prices->pluck('car_type')->all())->toBe(['sedan']);
 
-    // A second active discount package switches the first one off.
+    // A company may have several active discount packages.
     $this->actingAs($admin)->post('/dashboard/packages/corporate/store', ['title' => 'ახალი', 'prices' => ['suv' => ['full_price' => 40, 'percent' => 25]]] + $form)
         ->assertSessionHasNoErrors();
-    expect($first->fresh()->is_active)->toBeFalse()
-        ->and($corp->fresh()->discountPackage->title)->toBe('ახალი')
-        ->and($corp->fresh()->discountPackage->prices->first()->toPay())->toBe('30.00');
+    $second = CorporatePackage::query()->where('title', 'ახალი')->sole();
+    expect($first->fresh()->is_active)->toBeTrue()
+        ->and($corp->discountPackages()->pluck('title')->all())->toBe(['ახალი', 'ფასდაკლება'])
+        ->and($second->prices->first()->toPay())->toBe('30.00');
 
     // Editing keeps the company and the type, and replaces the rows.
-    $second = $corp->fresh()->discountPackage;
     $other = CorporateClient::forceCreate(['name' => 'O', 'username' => 'o3', 'password' => Hash::make('x'), 'session_version' => 1]);
     $this->actingAs($admin)->post('/dashboard/packages/corporate/'.$second->id.'/save', [
         'corporate_client_id' => $other->id, 'type' => 'washes', 'title' => 'ახალი', 'is_active' => 1,
@@ -82,7 +87,7 @@ it('lets the admin make a discount package for one company in the packages menu'
 
     $this->actingAs($admin)->delete('/dashboard/packages/corporate/'.$second->id.'/delete')->assertRedirect();
     expect(CorporatePackagePrice::query()->where('corporate_package_id', $second->id)->exists())->toBeFalse()
-        ->and($corp->fresh()->discountPackage)->toBeNull();
+        ->and($corp->discountPackages()->pluck('id')->all())->toBe([$first->id]);
 });
 
 it('approves a discount car without touching the washes and records the price', function () {
@@ -171,4 +176,78 @@ it('renames the price rows with their body type and keeps a used type from delet
 
     $this->actingAs($admin)->delete('/dashboard/body-types/'.$suv->id.'/delete')->assertSessionHas('error');
     expect(BodyType::query()->whereKey($suv->id)->exists())->toBeTrue();
+});
+
+it('lets the company give each discount car its own package', function () {
+    $fleet = cdFleet();
+    $corp = $fleet['corp'];
+    $second = cwFleet(0, 0, 'BB222CC', $corp);
+    $gold = cdPackage($corp, 'ოქრო');
+    $gold->prices()->create(['car_type' => 'sedan', 'full_price' => 30, 'percent' => 80]);
+    $off = cdPackage($corp, 'გამორთული', false);
+    $foreign = cdPackage(CorporateClient::forceCreate(['name' => 'O', 'username' => 'o5', 'password' => Hash::make('x'), 'session_version' => 1]), 'სხვისი');
+    $session = ['corporate_client_id' => $corp->id, 'corporate_session_version' => 1];
+
+    // With two packages a car switched to discount waits for the company to pick one.
+    $this->withSession($session)->post('/partner/cars/'.$second['car']->id.'/mode', ['mode' => 'discount'])->assertSessionHasNoErrors();
+    expect($second['car']->fresh()->corporate_package_id)->toBeNull();
+    $this->withSession($session)->get('/partner/fleet')->assertOk()
+        ->assertSee(__('admin.cd_car_no_package'))->assertSee('ოქრო')->assertDontSee('გამორთული');
+    $manager = cwManager();
+    $qr = cwDriverQr($this, $second);
+    $this->withToken(cwAs($manager))->getJson('/api/checkqr/'.$qr)->assertOk()
+        ->assertJsonPath('corporate.reason', 'discount_not_ready');
+
+    // Only the company's own active discount packages can be picked.
+    foreach ([$off, $foreign] as $wrong) {
+        $this->withSession($session)->post('/partner/cars/'.$second['car']->id.'/mode', ['mode' => 'discount', 'discount_package_id' => $wrong->id])
+            ->assertSessionHasErrors('fleet');
+    }
+    $this->withSession($session)->post('/partner/cars/'.$second['car']->id.'/mode', ['mode' => 'discount', 'discount_package_id' => $gold->id])
+        ->assertSessionHasNoErrors();
+
+    // Each car washes at its own package.
+    $qr = cwDriverQr($this, $second);
+    $this->withToken(cwAs($manager))->getJson('/api/checkqr/'.$qr)->assertOk()
+        ->assertJsonPath('corporate.can_approve', true)->assertJsonPath('corporate.discount.to_pay', 6);
+    $qr = cwDriverQr($this, $fleet);
+    $this->withToken(cwAs($manager))->getJson('/api/checkqr/'.$qr)->assertOk()
+        ->assertJsonPath('corporate.discount.to_pay', 15);
+    $this->withToken(cwAs($second['driver']))->getJson('/api/mycars')->assertJsonPath('cars.0.company_car.discount.percent', 80);
+    $this->withSession($session)->get('/partner/washes')->assertOk()->assertSee(__('admin.cd_cars', ['count' => 1]));
+
+    // Switching a package off stops its cars; washes mode drops the package.
+    $gold->update(['is_active' => false]);
+    $qr = cwDriverQr($this, $second);
+    $this->withToken(cwAs($manager))->getJson('/api/checkqr/'.$qr)->assertOk()
+        ->assertJsonPath('corporate.reason', 'discount_not_ready');
+    $this->withSession($session)->post('/partner/cars/'.$second['car']->id.'/mode', ['mode' => 'washes'])->assertSessionHasNoErrors();
+    expect($second['car']->fresh()->only(['mode', 'corporate_package_id']))->toBe(['mode' => 'washes', 'corporate_package_id' => null]);
+});
+
+it('lets the company API list discount packages and set one on a car', function () {
+    $fleet = cdFleet();
+    $key = CorporateClient::makeToken();
+    $fleet['corp']->forceFill(['api_token' => $key])->save();
+    $headers = ['X-Api-Key' => $key];
+    $gold = cdPackage($fleet['corp'], 'ოქრო');
+    $gold->prices()->create(['car_type' => 'sedan', 'full_price' => 30, 'percent' => 80]);
+    $off = cdPackage($fleet['corp'], 'გამორთული', false);
+
+    $this->getJson('/api/corporate/discounts', $headers)->assertOk()
+        ->assertJsonCount(2, 'discount_packages')
+        ->assertJsonPath('discount_packages.1.title', 'ფასდაკლება')
+        ->assertJsonPath('discount_packages.1.prices.0.to_pay', 15);
+
+    $this->patchJson('/api/corporate/vehicles/AA123BB', ['discount_package_id' => $off->id], $headers)->assertStatus(422);
+    $this->patchJson('/api/corporate/vehicles/AA123BB', ['mode' => 'washes', 'discount_package_id' => $gold->id], $headers)->assertStatus(422);
+    expect((int) $fleet['car']->fresh()->corporate_package_id)->toBe((int) $fleet['package']->id);
+
+    $this->patchJson('/api/corporate/vehicles/AA123BB', ['discount_package_id' => $gold->id], $headers)->assertOk()
+        ->assertJsonPath('mode', 'discount')->assertJsonPath('discount_package_id', $gold->id);
+    $this->getJson('/api/corporate/vehicles', $headers)->assertJsonPath('vehicles.0.discount_package_id', $gold->id);
+
+    // Back to discount mode without a package keeps the car's own one.
+    $this->patchJson('/api/corporate/vehicles/AA123BB', ['mode' => 'discount'], $headers)->assertOk()
+        ->assertJsonPath('discount_package_id', $gold->id);
 });

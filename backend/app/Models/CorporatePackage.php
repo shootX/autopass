@@ -37,6 +37,12 @@ class CorporatePackage extends Model
         return $this->hasMany(CorporatePackagePrice::class)->orderBy('car_type');
     }
 
+    /** The company cars washing at this discount package. */
+    public function cars(): HasMany
+    {
+        return $this->hasMany(FleetCar::class)->where('mode', FleetCar::MODE_DISCOUNT);
+    }
+
     public function isDiscount(): bool
     {
         return $this->type === self::TYPE_DISCOUNT;
