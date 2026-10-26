@@ -36,13 +36,13 @@
                         </div>
                     @endif
                 </form>
-                <form action="{{ route('admin.partners.temporary_password', $client) }}" method="post" class="mt-3">
+                <form action="{{ route('admin.partners.temporary_password', $client) }}" method="post" class="mt-3" onsubmit="return confirm(@json(__('admin.temp_password_confirm')))">
                     @csrf
-                    <button class="btn btn-outline-secondary" type="submit">{{ __('admin.temp_password_sent') }}</button>
+                    <button class="btn btn-outline-secondary" type="submit">{{ __('admin.temp_password_send') }}</button>
                 </form>
-                <form action="{{ route('admin.partners.ban', $client) }}" method="post" class="mt-3">
+                <form action="{{ route('admin.partners.ban', $client) }}" method="post" class="mt-3" onsubmit="return confirm(@json($client->ban ? __('admin.unblock_confirm') : __('admin.block_confirm')))">
                     @csrf
-                    <button class="btn {{ $client->ban ? 'btn-warning' : 'btn-dark' }}" type="submit"><i class="fas fa-ban"></i> {{ $client->ban ? __('admin.unbanned') : __('admin.banned') }}</button>
+                    <button class="btn {{ $client->ban ? 'btn-warning' : 'btn-dark' }}" type="submit"><i class="fas fa-ban"></i> {{ $client->ban ? __('admin.action_unblock') : __('admin.action_block') }}</button>
                 </form>
             </div>
         </div>

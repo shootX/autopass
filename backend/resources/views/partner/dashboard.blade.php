@@ -6,6 +6,7 @@
             <a class="umami-metric" href="{{ route('partner.fleet') }}">
                 <span class="umami-metric-label">{{ __('admin.fleet') }}</span>
                 <span class="umami-metric-value">{{ $stats['cars'] }}</span>
+                <span class="umami-metric-hint">{{ __('admin.fleet_status_invited') }} {{ $stats['invited'] }}</span>
             </a>
             <a class="umami-metric" href="{{ route('partner.reports') }}">
                 <span class="umami-metric-label">{{ __('admin.wash_report') }}</span>

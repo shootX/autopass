@@ -68,10 +68,9 @@ class PartnerPanelController extends Controller
     public function dashboard(Request $request)
     {
         $corporate = $this->client($request);
-        $plates = $corporate->cars()->pluck('plate')->all();
         $today = now()->toDateString();
         $from = now()->subDays(13)->startOfDay();
-        $washes = $this->washes($plates);
+        $washes = WashReportQuery::forFleet([], (int) $corporate->id);
 
         $dayCounts = (clone $washes)
             ->reorder()
@@ -111,6 +110,7 @@ class PartnerPanelController extends Controller
 
         $stats = [
             'cars' => $corporate->cars()->count(),
+            'invited' => $corporate->cars()->where('status', FleetCar::STATUS_INVITED)->count(),
             'washes' => (clone $washes)->count(),
             'today' => (clone $washes)->whereDate('date', $today)->count(),
             'pending' => (clone $washes)->where('approved', 0)->count(),
@@ -132,23 +132,16 @@ class PartnerPanelController extends Controller
             'export' => 'nullable',
         ]);
 
-        $plates = $corporate->cars()->pluck('plate')->all();
-        if (! empty($filters['plate'])) {
-            $asked = FleetCars::plate($filters['plate']);
-            $own = array_map(fn ($plate) => FleetCars::plate((string) $plate), $plates);
-            if (! in_array($asked, $own, true)) {
-                $plates = [];
-            }
-        }
+        $plate = empty($filters['plate']) ? null : (string) $filters['plate'];
 
         if ($request->filled('export')) {
             return Excel::download(
-                new PartnerFleetReportExport($filters, $plates),
+                new PartnerFleetReportExport($filters, (int) $corporate->id, $plate),
                 'fleet-'.now()->format('Y-m-d-His').'.xlsx'
             );
         }
 
-        $appointments = WashReportQuery::forPlates($filters, $plates)->paginate(20)->withQueryString();
+        $appointments = WashReportQuery::forFleet($filters, (int) $corporate->id, $plate)->paginate(20)->withQueryString();
 
         return view('partner.reports', [
             'appointments' => $appointments,
@@ -185,7 +178,7 @@ class PartnerPanelController extends Controller
             'username' => ['required', 'string', 'min:3', 'max:64', Rule::unique('corporate_clients', 'username')->ignore($corporate->id)],
             // UX-30: current password is only needed to set a new password.
             'current_password' => ['required_with:password', 'nullable', 'string'],
-            'password' => ['nullable', 'string', 'min:6', 'confirmed'],
+            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
         ]);
 
         if (! empty($data['password']) && ! Hash::check((string) $data['current_password'], (string) $corporate->password)) {
@@ -244,11 +237,9 @@ class PartnerPanelController extends Controller
             return $data;
         }
 
-        $result = FleetCars::add($corporate, $data['plate'], $data['brand'], $data['model'], 'manual');
+        $result = FleetCars::add($corporate, $data['plate'], $data['brand'], $data['model'], 'manual', $data['phone']);
         if ($result !== 'added') {
-            return redirect()->back()->withInput()->withErrors([
-                'plate' => $result === 'duplicate' ? __('admin.fleet_plate_taken') : __('admin.fleet_plate_format'),
-            ]);
+            return redirect()->back()->withInput()->withErrors(FleetCars::addError($result));
         }
 
         return redirect()->route('partner.fleet')->with('message', __('admin.fleet_car_added'));
@@ -273,7 +264,9 @@ class PartnerPanelController extends Controller
         $sheet = IOFactory::load($request->file('file')->getRealPath())->getActiveSheet()->toArray();
         $result = FleetCars::importSheet($corporate, $sheet, 'excel');
 
-        return redirect()->route('partner.fleet')->with('message', __('admin.fleet_imported', $result));
+        return redirect()->route('partner.fleet')
+            ->with('message', __('admin.fleet_imported', ['added' => $result['added'], 'skipped' => $result['skipped']]))
+            ->with('fleet_import_errors', array_slice($result['errors'], 0, 50));
     }
 
     public function template()
@@ -300,6 +293,7 @@ class PartnerPanelController extends Controller
     {
         $data = $request->validate([
             'plate' => ['required', 'string', 'max:20'],
+            'phone' => ['required', 'string', 'max:32'],
             'brand_id' => ['required', 'integer', 'exists:car_brands,id'],
             'model_id' => ['required', 'integer', Rule::exists('car_models', 'id')->where(fn ($query) => $query->where('brand_id', $request->integer('brand_id')))],
         ]);
@@ -310,6 +304,7 @@ class PartnerPanelController extends Controller
 
         return [
             'plate' => $data['plate'],
+            'phone' => $data['phone'],
             'brand' => CarBrand::query()->find($data['brand_id'])->name,
             'model' => CarModel::query()->find($data['model_id'])->name,
         ];
@@ -318,10 +313,5 @@ class PartnerPanelController extends Controller
     private function client(Request $request): CorporateClient
     {
         return $request->attributes->get('corporate');
-    }
-
-    private function washes(array $plates)
-    {
-        return WashReportQuery::forPlates([], $plates);
     }
 }

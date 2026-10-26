@@ -366,3 +366,11 @@ Photo `photo_url` and `/models/{id}/photo` need the secret key. The app never ge
 
 `/dashboard/clients/{id}` (`admin.clients.show`, admin only like all of `/dashboard`). Numbers come from `App\Services\ClientProfile`. A visit is one `package_washes` row or one completed booking (status 3) that no package wash points at, so a package wash made from a booking is not counted twice. Money paid (LTV) is `tbc_payments` with status `succeeded` and `test_mode` false; `transactions` are only points moves and are not money. Segment thresholds are constants on the class (new < 30 days since signup, active ≤ 30 days since visit, lapsed > 60, at risk in between or a non-renewing package ending within 7 days, VIP = top 10% by money paid). Tabs show the latest 200 rows; the KPIs count everything.
 
+
+## 2026-10-26 — Corporate clients and vendors (stage 1)
+
+Two roles, two tables. Corporate clients (`corporate_clients`, panel `/partner`, API `/api/corporate/*`) are companies with a fleet. Vendors (`partners`, `gewash/voucher-checker`, `/api/partner/*`) offer vouchers to app users. In the admin menu they are „კორპორატიული კლიენტები“ and „ვენდორები“ (`admin.partners` lists vendors again). The unit of a future corporate package is „რეცხვა“, never „ქულა“ (user points are a different thing).
+
+A fleet car has a driver phone and a status: `invited` (SMS sent, the default, also for cars that existed before), `active` (that phone signed in or opened the app: `POST /api/login`, `set_password` or `GET /api/me` call `FleetInvites::activateFor`) or `blocked`. Activation links the car to the driver's `user_cars` row by plate (created from the fleet brand/model when missing). A plate held by another app user stays invited with `activation_error = plate_taken`. While linked, the driver can't delete the car or change its plate (`error_code: company_car`).
+
+The company report (`WashReportQuery::forFleet`) shows only bookings of the linked app car created between `activated_at` and `blocked_at`. Changing the driver resets the link, so the old driver's washes disappear from the report. A plate typed into a fleet alone shows nothing. Driver phones are stored normalized (`5XX XX XX XX`); a resend is refused for 60 s. `/api/corporate/*` is limited to 120 requests a minute per key.

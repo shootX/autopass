@@ -10,7 +10,7 @@
             'importUrl' => route('partner.import'),
             'templateUrl' => route('partner.template'),
             'tokenUrl' => route('partner.token'),
-            'deleteBase' => url('/partner/cars'),
+            'carBase' => url('/partner/cars'),
         ])
     </div>
 @endsection

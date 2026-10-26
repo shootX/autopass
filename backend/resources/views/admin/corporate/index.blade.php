@@ -8,7 +8,7 @@
 
         <div class="card mt-4 mb-4">
             <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
-                <div>{{ __('admin.partners') }}</div>
+                <div>{{ __('admin.corporate_clients') }}</div>
                 <a href="{{ route('admin.corporate.add') }}" class="btn btn-primary"><i class="fa fa-plus"></i> {{ __('admin.add') }}</a>
             </div>
             <div class="card-body">
@@ -29,6 +29,7 @@
                             <th>{{ __('admin.identification_code') }}</th>
                             <th>{{ __('admin.phone') }}</th>
                             <th>{{ __('admin.fleet') }}</th>
+                            <th>{{ __('admin.status') }}</th>
                             <th>{{ __('admin.actions') }}</th>
                         </tr>
                         </thead>
@@ -40,17 +41,18 @@
                                 <td>{{ $client->identification_code }}</td>
                                 <td>{{ $client->phone }}</td>
                                 <td>{{ $client->cars_count }}</td>
+                                <td><span class="badge {{ $client->ban ? 'bg-danger' : 'bg-success' }}">{{ $client->ban ? __('admin.status_blocked') : __('admin.active') }}</span></td>
                                 <td>
                                     <div class="btn-group">
                                         <a class="btn btn-sm btn-success" href="{{ route('admin.corporate.show', $client) }}">{{ __('admin.fleet') }}</a>
-                                        <form method="POST" action="{{ route('admin.corporate.ban', $client) }}" class="d-inline">@csrf<button type="submit" class="btn btn-sm {{ $client->ban ? 'btn-warning' : 'btn-dark' }}" title="{{ $client->ban ? __('admin.unbanned') : __('admin.banned') }}"><i class="fas fa-ban"></i></button></form>
+                                        <form method="POST" action="{{ route('admin.corporate.ban', $client) }}" class="d-inline" onsubmit="return confirm(@json($client->ban ? __('admin.unblock_confirm') : __('admin.block_confirm')))">@csrf<button type="submit" class="btn btn-sm {{ $client->ban ? 'btn-warning' : 'btn-dark' }}" title="{{ $client->ban ? __('admin.action_unblock') : __('admin.action_block') }}"><i class="fas fa-ban"></i></button></form>
                                         <a class="btn btn-sm btn-primary" href="{{ route('admin.corporate.edit', $client) }}"><i class="fas fa-edit"></i></a>
                                         <a class="btn btn-sm btn-danger remove-corporate" data-id="{{ $client->id }}"><i class="fas fa-trash"></i></a>
                                     </div>
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="6" class="umami-empty">{{ __('admin.corporate_empty') }}</td></tr>
+                            <tr><td colspan="7" class="umami-empty">{{ __('admin.corporate_empty') }}</td></tr>
                         @endforelse
                         </tbody>
                     </table>

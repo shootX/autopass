@@ -143,11 +143,9 @@ class CorporateController extends Controller
             return $data;
         }
 
-        $result = FleetCars::add($corporate, $data['plate'], $data['brand'], $data['model'], 'manual');
+        $result = FleetCars::add($corporate, $data['plate'], $data['brand'], $data['model'], 'manual', $data['phone']);
         if ($result !== 'added') {
-            return redirect()->back()->withInput()->withErrors([
-                'plate' => $result === 'duplicate' ? __('admin.fleet_plate_taken') : __('admin.fleet_plate_format'),
-            ]);
+            return redirect()->back()->withInput()->withErrors(FleetCars::addError($result));
         }
 
         return redirect()->route('admin.corporate.show', $corporate)->with('message', __('admin.fleet_car_added'));
@@ -170,10 +168,9 @@ class CorporateController extends Controller
         $sheet = IOFactory::load($request->file('file')->getRealPath())->getActiveSheet()->toArray();
         $result = FleetCars::importSheet($corporate, $sheet, 'excel');
 
-        return redirect()->route('admin.corporate.show', $corporate)->with(
-            'message',
-            __('admin.fleet_imported', $result)
-        );
+        return redirect()->route('admin.corporate.show', $corporate)
+            ->with('message', __('admin.fleet_imported', ['added' => $result['added'], 'skipped' => $result['skipped']]))
+            ->with('fleet_import_errors', array_slice($result['errors'], 0, 50));
     }
 
     public function template()
@@ -242,6 +239,7 @@ class CorporateController extends Controller
     {
         $data = $request->validate([
             'plate' => ['required', 'string', 'max:20'],
+            'phone' => ['required', 'string', 'max:32'],
             'brand_id' => ['required', 'integer', 'exists:car_brands,id'],
             'model_id' => ['required', 'integer', Rule::exists('car_models', 'id')->where(fn ($query) => $query->where('brand_id', $request->integer('brand_id')))],
         ]);
@@ -252,6 +250,7 @@ class CorporateController extends Controller
 
         return [
             'plate' => $data['plate'],
+            'phone' => $data['phone'],
             'brand' => CarBrand::query()->find($data['brand_id'])->name,
             'model' => CarModel::query()->find($data['model_id'])->name,
         ];
@@ -277,6 +276,7 @@ class CorporateController extends Controller
             'email' => ['required', 'email', 'max:160', Rule::unique('corporate_clients', 'email')->ignore($current?->id)],
             'website' => ['nullable', 'url', 'max:200'],
             'vat_payer' => ['required', 'boolean'],
+            'note' => ['nullable', 'string', 'max:2000'],
         ]);
     }
 }

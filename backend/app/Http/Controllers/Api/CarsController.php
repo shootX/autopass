@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\BodyType;
 use App\Models\CarBrand;
 use App\Models\CarModel;
+use App\Models\FleetCar;
 use App\Models\UserCar;
 use App\Services\CarCatalog;
 use App\Services\CarTrims;
+use App\Services\FleetInvites;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
@@ -60,8 +62,11 @@ class CarsController extends Controller
             $user = auth()->user();
 
             $cars = $user->cars()->with(['model.brand'])->get();
+            $companies = FleetCar::query()->whereIn('user_car_id', $cars->pluck('id'))
+                ->where('status', FleetCar::STATUS_ACTIVE)->with('client:id,name')->get()
+                ->mapWithKeys(fn (FleetCar $fleet) => [(int) $fleet->user_car_id => $fleet->client?->name]);
 
-            $cars = $cars->map(function ($car) {
+            $cars = $cars->map(function ($car) use ($companies) {
                 $m = $car->model;
                 $b = $m->brand;
 
@@ -72,6 +77,8 @@ class CarsController extends Controller
                     'model' => $m,
                     'brand' => $b,
                     'image' => $car->imageUrl(),
+                    // Name of the company whose fleet holds this car, null for a private car.
+                    'company' => $companies[(int) $car->id] ?? null,
                 ] + $car->trimPayload();
             });
 
@@ -284,6 +291,9 @@ class CarsController extends Controller
             if (! $car) {
                 return response()->json(['success' => false, 'error' => 'Машина не найдена'], 404);
             }
+            if ($request->filled('plate') && $request->input('plate') !== $car->plate && FleetInvites::isCompanyCar((int) $car->id)) {
+                return response()->json(['success' => false, 'error' => __('admin.fleet_company_car_locked'), 'error_code' => 'company_car'], 403);
+            }
 
             if ($request->filled('year') && ! $request->filled('model_id') && ! $request->filled('model_name') && $car->model->source === CarCatalog::REMOTE) {
                 $years = app(CarCatalog::class)->modelYears(CarCatalog::REMOTE, (int) $car->model->brand->external_brand_id, (int) $car->model->external_model_id);
@@ -331,6 +341,10 @@ class CarsController extends Controller
     {
         try {
             $user = auth()->user();
+            $owned = $user->cars()->where('id', $carid)->value('id');
+            if ($owned !== null && FleetInvites::isCompanyCar((int) $owned)) {
+                return response()->json(['success' => false, 'error' => __('admin.fleet_company_car_locked'), 'error_code' => 'company_car'], 403);
+            }
             $deleted = $user->cars()->where('id', $carid)->delete();
             if ($deleted === 0) {
                 return response()->json(['success' => false, 'error' => 'Машина не найдена'], 404);

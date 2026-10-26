@@ -12,13 +12,15 @@ use Maatwebsite\Excel\Concerns\WithMapping;
 
 class PartnerFleetReportExport implements FromQuery, WithHeadings, WithMapping, ShouldAutoSize
 {
-    public function __construct(private readonly array $filters, private readonly array $plates)
-    {
-    }
+    public function __construct(
+        private readonly array $filters,
+        private readonly int $corporateClientId,
+        private readonly ?string $plate = null,
+    ) {}
 
     public function query()
     {
-        return WashReportQuery::forPlates($this->filters, $this->plates);
+        return WashReportQuery::forFleet($this->filters, $this->corporateClientId, $this->plate);
     }
 
     public function headings(): array

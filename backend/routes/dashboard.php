@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\BodyTypesController;
 use App\Http\Controllers\Admin\CarBrandsController;
 use App\Http\Controllers\Admin\ClientProfileController;
 use App\Http\Controllers\Admin\ClientsController;
+use App\Http\Controllers\Admin\CorporateCarsController;
 use App\Http\Controllers\Admin\CorporateController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ManagerController;
@@ -186,6 +187,9 @@ Route::prefix('dashboard')
             Route::get('/{corporate}', [CorporateController::class, 'show'])->name('admin.corporate.show');
             Route::post('/{corporate}/cars', [CorporateController::class, 'storeCar'])->name('admin.corporate.cars.store');
             Route::delete('/{corporate}/cars/{car}/delete', [CorporateController::class, 'deleteCar'])->name('admin.corporate.cars.delete');
+            Route::post('/{corporate}/cars/{car}/driver', [CorporateCarsController::class, 'driver'])->name('admin.corporate.cars.driver');
+            Route::post('/{corporate}/cars/{car}/invite', [CorporateCarsController::class, 'invite'])->name('admin.corporate.cars.invite');
+            Route::post('/{corporate}/cars/{car}/block', [CorporateCarsController::class, 'block'])->name('admin.corporate.cars.block');
             Route::post('/{corporate}/import', [CorporateController::class, 'import'])->name('admin.corporate.import');
             Route::post('/{corporate}/token', [CorporateController::class, 'token'])->name('admin.corporate.token');
             Route::post('/{corporate}/temporary-password', [CorporateController::class, 'temporaryPassword'])->name('admin.corporate.temporary_password');

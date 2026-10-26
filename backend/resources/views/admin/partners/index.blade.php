@@ -31,6 +31,7 @@
                             <th scope="col">{{ __('admin.name') }}</th>
                             <th scope="col">{{ __('admin.login_name') }}</th>
                             <th scope="col">{{ __('admin.description') }}</th>
+                            <th scope="col">{{ __('admin.status') }}</th>
                             <th scope="col">{{ __('admin.created_at') }}</th>
                             <th scope="col">{{ __('admin.actions') }}</th>
                         </tr>
@@ -42,6 +43,7 @@
                             <td>{{$client->name}}</td>
                             <td>{{$client->login}}</td>
                             <td>{{$client->description}}</td>
+                            <td><span class="badge {{ $client->ban ? 'bg-danger' : 'bg-success' }}">{{ $client->ban ? __('admin.status_blocked') : __('admin.active') }}</span></td>
                             <td>{{\Carbon\Carbon::parse($client->created_at)->format('d.m.Y - H:i')}}</td>
                             <td>
                                 <div class="btn-group">
@@ -51,7 +53,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="6">{{ __('admin.dash_empty') }}</td></tr>
+                        <tr><td colspan="7">{{ __('admin.dash_empty') }}</td></tr>
                     @endforelse
                     </tbody>
                 </table>
