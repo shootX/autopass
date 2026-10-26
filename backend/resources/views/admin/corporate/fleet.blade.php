@@ -15,6 +15,12 @@
                         @error('plate')<small class="d-block" style="color:red;">{{ $message }}</small>@enderror
                     </div>
                     <div class="form-group mt-3">
+                        <label for="fleet_phone">{{ __('admin.fleet_driver_phone') }}<span class="text-danger">*</span></label>
+                        <input class="form-control" id="fleet_phone" name="phone" required maxlength="32" placeholder="5XX XX XX XX" value="{{ old('phone') }}">
+                        <small>{{ __('admin.fleet_phone_hint') }}</small>
+                        @error('phone')<small class="d-block" style="color:red;">{{ $message }}</small>@enderror
+                    </div>
+                    <div class="form-group mt-3">
                         <label for="fleet_brand">{{ __('admin.brand') }}<span class="text-danger">*</span></label>
                         <select class="form-control" id="fleet_brand" name="brand_id" required>
                             <option value="">{{ __('admin.select_brand') }}</option>
@@ -78,12 +84,29 @@
                 </form>
                 <pre class="mt-3 mb-0" style="white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;">POST {{ url('/api/corporate/vehicles') }}
 X-Api-Key: <span id="fleet-token-inline">{{ $masked }}</span>
-{"plate":"AB123CD","brand":"Toyota","model":"Camry"}</pre>
+{"plate":"AB123CD","brand":"Toyota","model":"Camry","phone":"555 12 34 56"}</pre>
             </div>
         </div>
     </div>
 </div>
 
+@if(session('fleet_import_errors'))
+    <div class="alert alert-warning mt-4 mb-0">
+        <div>{{ __('admin.fleet_import_errors') }}</div>
+        <ul class="mb-0">
+            @foreach(session('fleet_import_errors') as $row)
+                <li>{{ __('admin.fleet_import_row', ['row' => $row['row'], 'plate' => $row['plate'] ?: '—']) }}: {{ __('admin.fleet_reason_'.$row['reason']) }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+@error('fleet')
+    <div class="alert alert-danger mt-4 mb-0">{{ $message }}</div>
+@enderror
+
+@php
+    $statusBadge = ['invited' => 'bg-warning text-dark', 'active' => 'bg-success', 'blocked' => 'bg-danger'];
+@endphp
 <div class="card mt-4 mb-4">
     <div class="card-header">{{ __('admin.fleet') }} · {{ $cars->total() }}</div>
     <div class="card-body table-responsive">
@@ -93,6 +116,8 @@ X-Api-Key: <span id="fleet-token-inline">{{ $masked }}</span>
                 <th>{{ __('admin.plate') }}</th>
                 <th>{{ __('admin.brand') }}</th>
                 <th>{{ __('admin.model') }}</th>
+                <th>{{ __('admin.fleet_driver_phone') }}</th>
+                <th>{{ __('admin.status') }}</th>
                 <th>{{ __('admin.fleet_source') }}</th>
                 <th>{{ __('admin.actions') }}</th>
             </tr>
@@ -103,11 +128,29 @@ X-Api-Key: <span id="fleet-token-inline">{{ $masked }}</span>
                     <td>{{ \App\Services\FleetCars::formatPlate($car->plate) }}</td>
                     <td>{{ $car->brand }}</td>
                     <td>{{ $car->model }}</td>
+                    <td>{{ $car->driver_phone ?: '—' }}</td>
+                    <td>
+                        <span class="badge {{ $statusBadge[$car->status] ?? 'bg-secondary' }}">{{ __('admin.fleet_status_'.$car->status) }}</span>
+                        @if($car->activation_error)
+                            <small class="d-block text-danger">{{ __('admin.fleet_activation_'.$car->activation_error) }}</small>
+                        @elseif($car->status === 'invited' && ! $car->driver_phone)
+                            <small class="d-block text-muted">{{ __('admin.fleet_invite_no_phone') }}</small>
+                        @endif
+                    </td>
                     <td>{{ __('admin.fleet_source_'.$car->source) }}</td>
-                    <td><a class="btn btn-sm btn-danger remove-car" data-id="{{ $car->id }}"><i class="fas fa-trash"></i></a></td>
+                    <td>
+                        <div class="btn-group">
+                            <a class="btn btn-sm btn-outline-secondary fleet-driver" data-id="{{ $car->id }}" data-phone="{{ $car->driver_phone }}" title="{{ __('admin.fleet_change_driver') }}"><i class="fas fa-phone"></i></a>
+                            @if($car->status === 'invited' && $car->driver_phone)
+                                <form method="POST" action="{{ $carBase.'/'.$car->id.'/invite' }}" class="d-inline">@csrf<button type="submit" class="btn btn-sm btn-outline-primary" title="{{ __('admin.fleet_invite_resend') }}"><i class="fas fa-paper-plane"></i></button></form>
+                            @endif
+                            <form method="POST" action="{{ $carBase.'/'.$car->id.'/block' }}" class="d-inline" onsubmit="return confirm(@json($car->status === 'blocked' ? __('admin.unblock_confirm') : __('admin.block_confirm')))">@csrf<button type="submit" class="btn btn-sm {{ $car->status === 'blocked' ? 'btn-warning' : 'btn-dark' }}" title="{{ $car->status === 'blocked' ? __('admin.action_unblock') : __('admin.action_block') }}"><i class="fas fa-ban"></i></button></form>
+                            <a class="btn btn-sm btn-danger remove-car" data-id="{{ $car->id }}"><i class="fas fa-trash"></i></a>
+                        </div>
+                    </td>
                 </tr>
             @empty
-                <tr><td colspan="5" class="umami-empty">{{ __('admin.fleet_empty') }}</td></tr>
+                <tr><td colspan="7" class="umami-empty">{{ __('admin.fleet_empty') }}</td></tr>
             @endforelse
             </tbody>
         </table>
@@ -163,7 +206,31 @@ X-Api-Key: <span id="fleet-token-inline">{{ $masked }}</span>
                 type: 'red',
                 buttons: {
                     yes: { text: I18N.yes, btnClass: 'btn-red', action: function () {
-                        window.deleteRequest(@json($deleteBase) + '/' + id + '/delete');
+                        window.deleteRequest(@json($carBase) + '/' + id + '/delete');
+                    }},
+                    no: { text: I18N.no }
+                }
+            });
+        });
+
+        $('.fleet-driver').on('click', function () {
+            const id = $(this).data('id');
+            const phone = String($(this).data('phone') || '');
+            $.confirm({
+                title: I18N.fleet_change_driver,
+                content: '<div class="form-group"><label for="fleet_driver_input">' + I18N.fleet_driver_phone + '</label>'
+                    + '<input class="form-control" id="fleet_driver_input" maxlength="32" placeholder="5XX XX XX XX">'
+                    + '<small class="d-block mt-1">' + I18N.fleet_change_driver_hint + '</small></div>',
+                onContentReady: function () { this.$content.find('#fleet_driver_input').val(phone).trigger('focus'); },
+                buttons: {
+                    yes: { text: I18N.save, btnClass: 'btn-blue', action: function () {
+                        const value = String(this.$content.find('#fleet_driver_input').val() || '').trim();
+                        if (value === '') return false;
+                        const form = $('<form method="POST" style="display:none"></form>').attr('action', @json($carBase) + '/' + id + '/driver');
+                        form.append($('<input type="hidden" name="_token">').val(@json(csrf_token())));
+                        form.append($('<input type="hidden" name="phone">').val(value));
+                        $('body').append(form);
+                        form.trigger('submit');
                     }},
                     no: { text: I18N.no }
                 }

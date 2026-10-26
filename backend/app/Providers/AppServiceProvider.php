@@ -73,5 +73,11 @@ class AppServiceProvider extends ServiceProvider
         ]);
 
         RateLimiter::for('public', fn (Request $request) => Limit::perMinute(60)->by($request->ip()));
+        // Per API key (hashed, never the key itself); a request without one is limited by IP.
+        RateLimiter::for('corporate-api', function (Request $request) {
+            $key = (string) ($request->bearerToken() ?: $request->header('X-Api-Key'));
+
+            return Limit::perMinute(120)->by('corp:'.($key !== '' ? hash('sha256', $key) : $request->ip()));
+        });
     }
 }

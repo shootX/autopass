@@ -357,3 +357,16 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 - [x] Web AddCar: required fuel select (petrol grades grouped), sent as `fuel_type`. Strings in `gewash/*.json` and `backend/public/lang/*.json`.
 - [x] Generations without their own photo return the model photo; the photo proxy also serves a model whose generation list was just loaded.
 - [ ] Web AddCar has no generation/trim steps yet (the iOS app has them).
+
+## 2026-10-26 — Corporate clients stage 1 (`claude/project-thread-8emdwh`)
+
+- [x] Vendors (`partners`) have their menu item, list and add page again; corporate clients are named as such in the menu, dashboard and texts.
+- [x] Fleet car driver phone and status `invited` / `active` / `blocked` (migration `2026_10_26_000002`). Manual add requires the phone; Excel (4th column „ტელეფონი“) and API take it optionally.
+- [x] Invite SMS on add, on phone change and on resend (60 s guard). Activation on driver login, password set or `/api/me`.
+- [x] Panel and admin: change driver, resend invite, block/unblock per car. API: `PATCH /api/corporate/vehicles/{plate}` with `phone` and/or `blocked`; `GET` returns `status` and `phone`.
+- [x] Company report and dashboard count only washes of activated cars booked after activation (closes the "type any plate, see its washes" leak).
+- [x] Small fixes: temporary password button label + confirm, block confirm and status badges, company note field, import lists skipped rows with reasons, company password min 8, API rate limit, `mycars` returns `company`.
+- [ ] After deploy, existing fleet cars are `invited` without a phone: companies have to add driver phones before their reports fill again.
+- [ ] App (GeocarAPP): show the company badge from `mycars.company`, explain `company_car` errors. Not done here.
+- [ ] Next stages: wash packages, discount packages, invoices (see the plan artifact).
+

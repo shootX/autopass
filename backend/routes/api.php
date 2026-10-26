@@ -189,9 +189,10 @@ Route::middleware('throttle:public')->get('/promo', function () {
     return response()->json(['success' => true, 'promo' => $promo]);
 });
 
-Route::prefix('/corporate')->group(function () {
+Route::prefix('/corporate')->middleware('throttle:corporate-api')->group(function () {
     Route::get('/vehicles', [CorporateFleetController::class, 'index']);
     Route::post('/vehicles', [CorporateFleetController::class, 'store']);
+    Route::patch('/vehicles/{plate}', [CorporateFleetController::class, 'update']);
     Route::delete('/vehicles/{plate}', [CorporateFleetController::class, 'destroy']);
 });
 

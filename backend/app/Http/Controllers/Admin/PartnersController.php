@@ -28,7 +28,9 @@ class PartnersController extends Controller
             );
         }
 
-        return redirect()->route('admin.corporate');
+        $clients = Partner::query()->orderByDesc('id')->paginate(15);
+
+        return view('admin.partners.index', compact('clients'));
     }
 
     public function ban(Partner $client)
@@ -52,7 +54,7 @@ class PartnersController extends Controller
 
     public function addPage(Request $request)
     {
-        return redirect()->route('admin.corporate.add');
+        return view('admin.partners.add');
     }
 
     public function editPage(Request $request, Partner $client)

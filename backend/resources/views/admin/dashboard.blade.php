@@ -30,9 +30,13 @@
                 <span class="umami-metric-label">{{ __('admin.managers') }}</span>
                 <span class="umami-metric-value">{{ $stats['managers'] }}</span>
             </a>
+            <a class="umami-metric" href="{{ route('admin.corporate') }}">
+                <span class="umami-metric-label">{{ __('admin.corporate_clients') }}</span>
+                <span class="umami-metric-value">{{ $stats['partners'] }}</span>
+            </a>
             <a class="umami-metric" href="{{ route('admin.partners') }}">
                 <span class="umami-metric-label">{{ __('admin.partners') }}</span>
-                <span class="umami-metric-value">{{ $stats['partners'] }}</span>
+                <span class="umami-metric-value">{{ $stats['vendors'] }}</span>
             </a>
             <a class="umami-metric" href="{{ route('admin.washings') }}">
                 <span class="umami-metric-label">{{ __('admin.washings') }}</span>

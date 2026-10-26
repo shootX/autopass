@@ -7,6 +7,7 @@ use App\Models\Appointment;
 use App\Models\CarBrand;
 use App\Models\CarWash;
 use App\Models\CorporateClient;
+use App\Models\Partner;
 use App\Models\Review;
 use App\Models\Ticket;
 use App\Models\Transaction;
@@ -34,6 +35,7 @@ class DashboardController extends Controller
             'banned' => (clone $clients)->where('ban', true)->count(),
             'managers' => User::query()->where('role', User::ROLE_MANAGER)->count(),
             'partners' => CorporateClient::query()->count(),
+            'vendors' => Partner::query()->count(),
             'washes' => CarWash::query()->count(),
             'cars' => UserCar::query()->count(),
             'brands' => CarBrand::query()->count(),

@@ -128,28 +128,30 @@ class WashReportQuery
         return $query->orderByDesc('date')->orderByDesc('time')->orderByDesc('id');
     }
 
-    public static function forPlates(array $filters, array $plates): Builder
+    /**
+     * Washes a company may see: bookings of its cars' linked app cars, made while the car was
+     * active for that company (from activation, until a block). A plate typed into the fleet
+     * alone shows nothing.
+     */
+    public static function forFleet(array $filters, int $corporateClientId, ?string $plate = null): Builder
     {
-        $query = self::make($filters);
-        $normalized = [];
-        foreach ($plates as $plate) {
-            $plate = FleetCars::plate((string) $plate);
-            if ($plate !== '') {
-                $normalized[$plate] = $plate;
+        $query = self::make(array_diff_key($filters, ['plate' => true]));
+        $plate = $plate === null ? null : FleetCars::plate($plate);
+
+        return $query->whereExists(function ($fleet) use ($corporateClientId, $plate) {
+            $fleet->selectRaw('1')
+                ->from('fleet_cars')
+                ->whereColumn('fleet_cars.user_car_id', 'appointments.car_id')
+                ->where('fleet_cars.corporate_client_id', $corporateClientId)
+                ->whereNotNull('fleet_cars.activated_at')
+                ->whereColumn('appointments.created_at', '>=', 'fleet_cars.activated_at')
+                ->where(function ($open) {
+                    $open->whereNull('fleet_cars.blocked_at')
+                        ->orWhereColumn('appointments.created_at', '<', 'fleet_cars.blocked_at');
+                });
+            if ($plate !== null && $plate !== '') {
+                $fleet->where('fleet_cars.plate', $plate);
             }
-        }
-        $normalized = array_values($normalized);
-
-        if ($normalized === []) {
-            return $query->whereRaw('1 = 0');
-        }
-
-        return $query->whereHas('car', function (Builder $car) use ($normalized) {
-            $marks = implode(',', array_fill(0, count($normalized), '?'));
-            $car->whereRaw(
-                "upper(regexp_replace(plate, '\\s+', '', 'g')) in ($marks)",
-                $normalized
-            );
         });
     }
 

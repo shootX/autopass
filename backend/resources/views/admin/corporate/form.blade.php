@@ -28,6 +28,7 @@
                         </select>
                         @error('vat_payer')<small style="color:red;">{{ $message }}</small>@enderror
                     </div>
+                    <x-form-input type="textarea" rows="3" title="{{ __('admin.note') }}" name="note" :value="$client->note ?? null"/>
                     @unless($client)
                         <small class="d-block mt-3">{{ __('admin.partner_initial_login') }}</small>
                     @endunless

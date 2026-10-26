@@ -8,7 +8,7 @@
 
         <div class="card mt-4">
             <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;">
-                <div>{{ $corporate->name }}</div>
+                <div>{{ $corporate->name }} <span class="badge {{ $corporate->ban ? 'bg-danger' : 'bg-success' }}">{{ $corporate->ban ? __('admin.status_blocked') : __('admin.active') }}</span></div>
                 <a class="btn btn-sm btn-primary" href="{{ route('admin.corporate.edit', $corporate) }}">{{ __('admin.edit') }}</a>
             </div>
             <div class="card-body">
@@ -22,11 +22,14 @@
                 <div>{{ __('admin.email') }}: {{ $corporate->email }}</div>
                 <div>{{ __('admin.website') }}: {{ $corporate->website ?: '—' }}</div>
                 <div>{{ __('admin.vat_payer') }}: {{ $corporate->vat_payer ? __('admin.vat_yes') : __('admin.vat_no') }}</div>
+                @if($corporate->note)
+                    <div style="white-space:pre-line;">{{ __('admin.note') }}: {{ $corporate->note }}</div>
+                @endif
                 <div class="mt-2">{{ __('admin.partner_login_user') }}: {{ $corporate->username }}</div>
                 <div><a href="{{ route('partner.login') }}">{{ url('/partner/login') }}</a></div>
-                <form class="mt-3" action="{{ route('admin.corporate.temporary_password', $corporate) }}" method="post">
+                <form class="mt-3" action="{{ route('admin.corporate.temporary_password', $corporate) }}" method="post" onsubmit="return confirm(@json(__('admin.temp_password_confirm')))">
                     @csrf
-                    <button class="btn btn-outline-secondary btn-sm" type="submit">{{ __('admin.temp_password_sent') }}</button>
+                    <button class="btn btn-outline-secondary btn-sm" type="submit">{{ __('admin.temp_password_send') }}</button>
                 </form>
             </div>
         </div>
@@ -36,7 +39,7 @@
             'importUrl' => route('admin.corporate.import', $corporate),
             'templateUrl' => route('admin.corporate.template'),
             'tokenUrl' => route('admin.corporate.token', $corporate),
-            'deleteBase' => url('/dashboard/corporate/'.$corporate->id.'/cars'),
+            'carBase' => url('/dashboard/corporate/'.$corporate->id.'/cars'),
         ])
     </div>
 @endsection

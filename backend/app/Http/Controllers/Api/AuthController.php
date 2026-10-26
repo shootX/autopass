@@ -7,6 +7,7 @@ use App\Http\Middleware\EnsureApiSession;
 use App\Jobs\SendSms;
 use App\Models\User;
 use App\Models\UserPushToken;
+use App\Services\FleetInvites;
 use App\Services\Security\ActionGrantService;
 use App\Services\Security\AuthChallengeException;
 use App\Services\Security\RefreshTokens;
@@ -139,6 +140,7 @@ class AuthController extends Controller
 
         [$refresh, $family, $cookie] = $this->refreshTokens->start($user->fresh());
         $token = JWTAuth::claims(['sess' => now()->timestamp, 'sid' => $family])->fromUser($user->fresh());
+        FleetInvites::activateFor($user);
 
         return response()->json([
             'success' => true,
@@ -195,6 +197,7 @@ class AuthController extends Controller
             return response()->json(['success' => false, 'error' => 'Не верный логин либо пароль.'], 401);
         }
         [, , $cookie] = $this->refreshTokens->start($user->fresh(), $family);
+        FleetInvites::activateFor($user);
 
         return response()->json([
             'success' => true,

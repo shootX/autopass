@@ -6,6 +6,7 @@ use App\Models\CarBrand;
 use App\Models\CarModel;
 use App\Models\CorporateClient;
 use App\Models\FleetCar;
+use App\Support\Phone;
 use Illuminate\Database\QueryException;
 
 class FleetCars
@@ -32,64 +33,70 @@ class FleetCars
 
     /**
      * @param  array<int, array<int, mixed>>  $rows
-     * @return array{added: int, skipped: int}
+     * @return array{added: int, skipped: int, errors: list<array{row: int, plate: string, reason: string}>}
      */
     public static function importSheet(CorporateClient $client, array $rows, string $source): array
     {
         $added = 0;
-        $skipped = 0;
+        $errors = [];
         $header = self::headerMap($rows[0] ?? []);
         $start = $header === null ? 0 : 1;
 
         for ($i = $start; $i < count($rows); $i++) {
             $row = $rows[$i];
-            if ($header === null) {
-                $plate = (string) ($row[0] ?? '');
-                $brand = (string) ($row[1] ?? '');
-                $model = (string) ($row[2] ?? '');
-            } else {
-                $plate = (string) ($row[$header['plate']] ?? '');
-                $brand = (string) ($row[$header['brand']] ?? '');
-                $model = (string) ($row[$header['model']] ?? '');
-            }
+            $cell = fn (string $field, int $fallback) => (string) ($row[$header === null ? $fallback : ($header[$field] ?? -1)] ?? '');
+            $plate = $cell('plate', 0);
+            $brand = $cell('brand', 1);
+            $model = $cell('model', 2);
+            $phone = $cell('phone', 3);
 
-            $result = self::add($client, $plate, $brand, $model, $source);
+            $result = self::add($client, $plate, $brand, $model, $source, $phone);
             if ($result === 'added') {
                 $added++;
             } elseif ($plate !== '' || $brand !== '' || $model !== '') {
-                $skipped++;
+                $errors[] = ['row' => $i + 1, 'plate' => self::plate($plate), 'reason' => $result];
             }
         }
 
-        return ['added' => $added, 'skipped' => $skipped];
+        return ['added' => $added, 'skipped' => count($errors), 'errors' => $errors];
     }
 
     /**
-     * @return 'added'|'duplicate'|'invalid'
+     * Adds a car and, when a driver phone is given, sends the driver the invite SMS.
+     *
+     * @return 'added'|'duplicate'|'invalid'|'unknown_model'|'phone_invalid'
      */
-    public static function add(CorporateClient $client, string $plate, string $brand, string $model, string $source): string
+    public static function add(CorporateClient $client, string $plate, string $brand, string $model, string $source, ?string $phone = null): string
     {
         $plate = self::plate($plate);
         $brandName = trim($brand);
         $modelName = trim($model);
-        $brandRow = $brandName === '' ? null : CarBrand::query()->where('name', 'ilike', $brandName)->first();
-        $modelRow = $brandRow
-            ? CarModel::query()->where('brand_id', $brandRow->id)->where('name', 'ilike', $modelName)->first()
-            : null;
+        $phone = trim((string) $phone);
 
-        if (!self::validPlate($plate) || !$brandRow || !$modelRow) {
+        if (! self::validPlate($plate)) {
             return 'invalid';
+        }
+        if ($phone !== '' && Phone::normalize($phone) === null) {
+            return 'phone_invalid';
+        }
+
+        $brandRow = $brandName === '' ? null : CarBrand::query()->whereRaw('lower(name) = ?', [mb_strtolower($brandName)])->first();
+        $modelRow = $brandRow
+            ? CarModel::query()->where('brand_id', $brandRow->id)->whereRaw('lower(name) = ?', [mb_strtolower($modelName)])->first()
+            : null;
+        if (! $brandRow || ! $modelRow) {
+            return 'unknown_model';
         }
 
         $taken = FleetCar::query()
-            ->whereRaw("upper(regexp_replace(plate, '[^A-Z0-9]', '', 'g')) = ?", [$plate])
+            ->whereRaw("upper(replace(replace(plate, ' ', ''), '-', '')) = ?", [$plate])
             ->exists();
         if ($taken) {
             return 'duplicate';
         }
 
         try {
-            FleetCar::query()->create([
+            $car = FleetCar::query()->create([
                 'corporate_client_id' => $client->id,
                 'plate' => $plate,
                 'brand' => $brandRow->name,
@@ -100,19 +107,33 @@ class FleetCars
             return 'duplicate';
         }
 
+        $car->setRelation('client', $client);
+        FleetInvites::setDriver($car, $phone);
+
         return 'added';
+    }
+
+    /** Form errors for an add() result other than 'added'. */
+    public static function addError(string $result): array
+    {
+        return match ($result) {
+            'duplicate' => ['plate' => __('admin.fleet_plate_taken')],
+            'phone_invalid' => ['phone' => __('admin.fleet_phone_invalid')],
+            'unknown_model' => ['model_id' => __('admin.fleet_reason_unknown_model')],
+            default => ['plate' => __('admin.fleet_plate_format')],
+        };
     }
 
     public static function templateCsv(): string
     {
         $model = CarModel::query()->with('brand')->orderBy('id')->first();
 
-        return "\xEF\xBB\xBFნომერი,მარკა,მოდელი\nAB123CD,".($model?->brand?->name ?? 'Brand').','.($model?->name ?? 'Model')."\n";
+        return "\xEF\xBB\xBFნომერი,მარკა,მოდელი,ტელეფონი\nAB123CD,".($model?->brand?->name ?? 'Brand').','.($model?->name ?? 'Model').",555 12 34 56\n";
     }
 
     /**
      * @param  array<int, mixed>  $row
-     * @return array{plate: int, brand: int, model: int}|null
+     * @return array{plate: int, brand: int, model: int, phone?: int}|null
      */
     private static function headerMap(array $row): ?array
     {
@@ -120,6 +141,7 @@ class FleetCars
             'plate' => ['plate', 'ნომერი', 'номер', 'number'],
             'brand' => ['brand', 'მარკა', 'ბრენდი', 'марка'],
             'model' => ['model', 'მოდელი', 'модель'],
+            'phone' => ['phone', 'ტელეფონი', 'მძღოლის ტელეფონი', 'телефон'],
         ];
         $map = [];
         foreach ($row as $index => $cell) {

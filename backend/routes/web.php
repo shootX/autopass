@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\ReferralsController;
+use App\Http\Controllers\PartnerFleetController;
 use App\Http\Controllers\PartnerPanelController;
 use App\Http\Middleware\CorporatePanel;
 use App\Http\Controllers\WebHook\FlittWebHookController;
@@ -30,6 +31,9 @@ Route::prefix('partner')->group(function () {
         Route::post('/account', [PartnerPanelController::class, 'saveAccount'])->name('partner.account.save');
         Route::post('/cars', [PartnerPanelController::class, 'storeCar'])->name('partner.cars.store');
         Route::delete('/cars/{car}/delete', [PartnerPanelController::class, 'deleteCar'])->name('partner.cars.delete');
+        Route::post('/cars/{car}/driver', [PartnerFleetController::class, 'driver'])->name('partner.cars.driver');
+        Route::post('/cars/{car}/invite', [PartnerFleetController::class, 'invite'])->middleware('throttle:20,1')->name('partner.cars.invite');
+        Route::post('/cars/{car}/block', [PartnerFleetController::class, 'block'])->name('partner.cars.block');
         Route::post('/import', [PartnerPanelController::class, 'import'])->name('partner.import');
         Route::get('/template', [PartnerPanelController::class, 'template'])->name('partner.template');
         Route::post('/token', [PartnerPanelController::class, 'token'])->name('partner.token');

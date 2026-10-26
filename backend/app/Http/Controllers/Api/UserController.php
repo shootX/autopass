@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Services\FleetInvites;
 use App\Services\Security\AuthChallengeException;
 use App\Services\Security\EmailChallengeService;
 use App\Services\Security\SmsDeliveryException;
@@ -14,6 +15,9 @@ class UserController extends Controller
 {
     public function me()
     {
+        // Opening the app after a company's invite SMS activates the invited fleet cars.
+        FleetInvites::activateFor(auth()->user());
+
         return response()->json(['success' => true, 'user' => auth()->user()]);
     }
 

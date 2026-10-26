@@ -22,6 +22,10 @@
             </a>
             <a class="nav-link @if(Route::is('admin.corporate*')) active @endif" href="{{ route('admin.corporate') }}">
                 <div class="sb-nav-link-icon"><i class="fa-regular fa-handshake"></i></div>
+                {{ __('admin.corporate_clients') }}
+            </a>
+            <a class="nav-link @if(Route::is('admin.partners*')) active @endif" href="{{ route('admin.partners') }}">
+                <div class="sb-nav-link-icon"><i class="fas fa-ticket"></i></div>
                 {{ __('admin.partners') }}
             </a>
             <a class="nav-link @if(Route::is('admin.appointments')) active @endif" href="{{route('admin.appointments')}}">
