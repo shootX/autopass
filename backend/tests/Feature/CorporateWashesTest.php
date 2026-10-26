@@ -14,13 +14,13 @@ it('credits a company package and corrects the pool, never below the washes on c
     $admin = cwAdmin();
 
     $this->actingAs($admin)->post('/dashboard/packages/corporate/store', [
-        'corporate_client_id' => $corp->id, 'type' => 'washes', 'title' => '100 რეცხვა', 'washes' => 100, 'price' => 1500, 'is_active' => 1,
+        'corporate_client_id' => $corp->id, 'type' => 'washes', 'car_type' => 'sedan', 'title' => '100 რეცხვა', 'washes' => 100, 'price' => 1500, 'is_active' => 1,
     ])->assertSessionHasNoErrors();
     $package = CorporatePackage::query()->where('corporate_client_id', $corp->id)->firstOrFail();
 
     $this->actingAs($admin)->post('/dashboard/corporate/'.$corp->id.'/washes/credit', ['corporate_package_id' => $package->id])
         ->assertSessionHasNoErrors();
-    expect(CorporateWashes::balance($corp))->toBe(['total' => 100, 'allocated' => 0, 'free' => 100]);
+    expect(CorporateWashes::balance($corp))->toMatchArray(['total' => 100, 'allocated' => 0, 'free' => 100]);
     $credit = CorporateWashMove::query()->firstOrFail();
     expect($credit->type)->toBe('credit')->and($credit->amount)->toBe(100)->and($credit->balance_after)->toBe(100)
         ->and((int) $credit->corporate_package_id)->toBe((int) $package->id)->and((int) $credit->actor_id)->toBe((int) $admin->id);
@@ -28,17 +28,18 @@ it('credits a company package and corrects the pool, never below the washes on c
     // Another company's package can't be credited here.
     $other = CorporateClient::forceCreate(['name' => 'Other', 'username' => 'other', 'password' => Hash::make('x'), 'session_version' => 1]);
     $foreign = $other->packages()->create(['title' => 'X', 'washes' => 5]);
+    $foreign->forceFill(['car_type' => 'sedan'])->save();
     $this->actingAs($admin)->post('/dashboard/corporate/'.$corp->id.'/washes/credit', ['corporate_package_id' => $foreign->id])
         ->assertSessionHasErrors('corporate_package_id');
 
     expect(CorporateWashes::allocate($fleet['car'], 30, 'company'))->toBe('ok');
-    $this->actingAs($admin)->post('/dashboard/corporate/'.$corp->id.'/washes/correct', ['amount' => -80, 'note' => 'შეცდომა'])
+    $this->actingAs($admin)->post('/dashboard/corporate/'.$corp->id.'/washes/correct', ['amount' => -80, 'car_type' => 'sedan', 'note' => 'შეცდომა'])
         ->assertSessionHasErrors('washes');
-    $this->actingAs($admin)->post('/dashboard/corporate/'.$corp->id.'/washes/correct', ['amount' => -70])
+    $this->actingAs($admin)->post('/dashboard/corporate/'.$corp->id.'/washes/correct', ['amount' => -70, 'car_type' => 'sedan'])
         ->assertSessionHasErrors('note');
-    $this->actingAs($admin)->post('/dashboard/corporate/'.$corp->id.'/washes/correct', ['amount' => -70, 'note' => 'შეცდომა'])
+    $this->actingAs($admin)->post('/dashboard/corporate/'.$corp->id.'/washes/correct', ['amount' => -70, 'car_type' => 'sedan', 'note' => 'შეცდომა'])
         ->assertSessionHasNoErrors();
-    expect(CorporateWashes::balance($corp))->toBe(['total' => 30, 'allocated' => 30, 'free' => 0]);
+    expect(CorporateWashes::balance($corp))->toMatchArray(['total' => 30, 'allocated' => 30, 'free' => 0]);
 
     $this->get('/dashboard/corporate/'.$corp->id)->assertOk()
         ->assertSee('100 რეცხვა')->assertSee(__('admin.cw_type_correction'))->assertSee('შეცდომა');
@@ -52,7 +53,7 @@ it('lets the company give washes to a car only from the free pool', function () 
     $this->withSession($session)->post('/partner/cars/'.$car->id.'/washes', ['washes' => 11])->assertSessionHasErrors('fleet');
     $this->withSession($session)->post('/partner/cars/'.$car->id.'/washes', ['washes' => 4])->assertSessionHasNoErrors();
     expect($car->fresh()->washes_left)->toBe(4)
-        ->and(CorporateWashes::balance($fleet['corp']))->toBe(['total' => 10, 'allocated' => 4, 'free' => 6]);
+        ->and(CorporateWashes::balance($fleet['corp']))->toMatchArray(['total' => 10, 'allocated' => 4, 'free' => 6]);
 
     $this->withSession($session)->post('/partner/cars/'.$car->id.'/washes', ['washes' => 1])->assertSessionHasNoErrors();
     $moves = CorporateWashMove::query()->orderBy('id')->get();
@@ -92,7 +93,7 @@ it('sets mode and washes over the API and reports the balance', function () {
 
     // Deleting the car returns its washes to the pool.
     $this->deleteJson('/api/corporate/vehicles/AA123BB', [], $headers)->assertOk();
-    expect(CorporateWashes::balance($fleet['corp']))->toBe(['total' => 5, 'allocated' => 0, 'free' => 5])
+    expect(CorporateWashes::balance($fleet['corp']))->toMatchArray(['total' => 5, 'allocated' => 0, 'free' => 5])
         ->and(CorporateWashMove::query()->latest('id')->first()->only(['type', 'amount', 'plate']))
         ->toBe(['type' => 'release', 'amount' => -3, 'plate' => 'AA123BB']);
 });

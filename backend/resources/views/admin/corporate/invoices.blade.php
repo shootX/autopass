@@ -13,7 +13,7 @@
                     <label class="form-label" for="inv_package">{{ __('admin.inv_package') }}</label>
                     <select class="form-select" id="inv_package" name="corporate_package_id" required>
                         @foreach($orderable as $package)
-                            <option value="{{ $package->id }}">{{ $package->title }} · {{ __('admin.cp_washes_count', ['count' => $package->washes]) }} · {{ number_format((float) $package->price, 2) }} ₾</option>
+                            <option value="{{ $package->id }}">{{ $package->title }} · {{ __('admin.cp_washes_count', ['count' => $package->washes]) }}@if($package->car_type) · {{ \App\Models\BodyType::labelFor($package->car_type) }}@endif · {{ number_format((float) $package->price, 2) }} ₾</option>
                         @endforeach
                     </select>
                 </div>

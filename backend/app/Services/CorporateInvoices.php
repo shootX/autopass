@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\BodyType;
 use App\Models\CorporateClient;
 use App\Models\CorporateInvoice;
 use App\Models\CorporatePackage;
@@ -44,7 +45,8 @@ class CorporateInvoices
             return self::create($locked, [
                 'kind' => CorporateInvoice::KIND_WASHES,
                 'corporate_package_id' => $package->id,
-                'title' => $package->title,
+                // The body type the washes are for is part of what is bought, so it is on the invoice too.
+                'title' => mb_substr($package->title.' · '.BodyType::labelFor($package->car_type), 0, 120),
                 'washes' => (int) $package->washes,
                 'amount' => $package->price,
                 'ordered_by' => $by,
@@ -116,6 +118,7 @@ class CorporateInvoices
     {
         return (int) $package->corporate_client_id === (int) $client->id
             && $package->type === CorporatePackage::TYPE_WASHES
+            && $package->car_type !== null
             && $package->is_active
             && $package->price !== null
             && (float) $package->price > 0

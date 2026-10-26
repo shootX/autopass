@@ -54,7 +54,7 @@
                         <small class="d-block">{{ __('admin.fleet_body_hint') }}</small>
                         @error('body_type')<small style="color:red;">{{ $message }}</small>@enderror
                     </div>
-                    <small class="d-block mt-2 text-danger" id="fleet_catalog_error" hidden>{{ __('admin.fleet_catalog_failed') }}</small>
+                    <div class="small mt-2 text-danger" id="fleet_catalog_error" hidden>{{ __('admin.fleet_catalog_failed') }}</div>
                     <button class="btn btn-primary mt-3" type="submit">{{ __('admin.add') }}</button>
                 </form>
             </div>
@@ -125,12 +125,14 @@ GET {{ url('/api/corporate/balance') }}</pre>
 
 @php
     $statusBadge = ['invited' => 'bg-warning text-dark', 'active' => 'bg-success', 'blocked' => 'bg-danger'];
-    $freeWashes = \App\Services\CorporateWashes::balance($corporate)['free'];
+    $washBalance = \App\Services\CorporateWashes::balance($corporate);
+    // A car gets washes from its own body type's pool only.
+    $freeByType = collect($washBalance['types'])->map(fn ($row) => $row['free']);
     $discountPackages = $corporate->discountPackages()->with('prices')->get()->keyBy('id');
     $discountUsed = \App\Services\CorporateDiscounts::usedThisMonthByCar($corporate);
 @endphp
 <div class="card mt-4 mb-4">
-    <div class="card-header">{{ __('admin.fleet') }} · {{ $cars->total() }} <span class="text-muted ms-2">{{ __('admin.cw_free') }}: {{ $freeWashes }}</span></div>
+    <div class="card-header">{{ __('admin.fleet') }} · {{ $cars->total() }} <span class="text-muted ms-2">{{ __('admin.cw_free') }}: {{ $washBalance['free'] }}</span></div>
     <div class="card-body table-responsive">
         <table class="table table-hover">
             <thead>
@@ -165,7 +167,7 @@ GET {{ url('/api/corporate/balance') }}</pre>
                     <td>@include('admin.corporate.fleet-mode')</td>
                     <td>
                         @if($car->mode === 'washes')
-                            <a class="btn btn-sm btn-outline-secondary fleet-washes" data-id="{{ $car->id }}" data-washes="{{ (int) $car->washes_left }}" title="{{ __('admin.cw_allocate') }}">{{ (int) $car->washes_left }} <i class="fas fa-pen ms-1"></i></a>
+                            <a class="btn btn-sm btn-outline-secondary fleet-washes" data-id="{{ $car->id }}" data-washes="{{ (int) $car->washes_left }}" data-free="{{ (int) ($freeByType[$car->carType()] ?? 0) }}" title="{{ __('admin.cw_allocate') }}">{{ (int) $car->washes_left }} <i class="fas fa-pen ms-1"></i></a>
                         @else
                             —
                         @endif
@@ -298,7 +300,7 @@ GET {{ url('/api/corporate/balance') }}</pre>
         $('.fleet-washes').on('click', function () {
             const id = $(this).data('id');
             const current = Number($(this).data('washes') || 0);
-            const free = @json($freeWashes);
+            const free = Number($(this).data('free') || 0);
             $.confirm({
                 title: I18N.cw_allocate,
                 content: '<div class="form-group"><label for="fleet_washes_input">' + I18N.cw_car_washes + '</label>'

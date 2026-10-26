@@ -78,6 +78,12 @@ class CorporateClient extends Model
         return $this->hasMany(CorporateWashMove::class);
     }
 
+    /** The washes per body type; washes_balance is their sum. */
+    public function washPools(): HasMany
+    {
+        return $this->hasMany(CorporateWashPool::class);
+    }
+
     public static function makeToken(): string
     {
         return Str::random(48);

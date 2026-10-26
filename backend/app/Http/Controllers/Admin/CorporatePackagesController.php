@@ -94,6 +94,8 @@ class CorporatePackagesController extends Controller
         $data = $request->validate([
             'title' => ['required', 'string', 'max:120'],
             'washes' => $discount ? ['nullable'] : ['required', 'integer', 'min:1', 'max:100000'],
+            // A wash package is bought for one body type; its washes go to that type's pool.
+            'car_type' => $discount ? ['nullable'] : ['required', 'string', Rule::exists('body_types', 'name')],
             'price' => ['nullable', 'numeric', 'min:0', 'max:99999999'],
             'monthly_limit' => ['nullable', 'integer', 'min:1', 'max:1000'],
             'prices' => [$discount ? 'required' : 'nullable', 'array'],
@@ -103,6 +105,8 @@ class CorporatePackagesController extends Controller
         $rows = $discount ? $this->priceRows($data['prices'] ?? []) : [];
 
         DB::transaction(function () use ($request, $package, $data, $discount, $rows) {
+            // Changing it later only moves future credits: ledger rows keep the type they were made with.
+            $package->car_type = $discount ? null : $data['car_type'];
             $package->fill([
                 'title' => $data['title'],
                 'washes' => $discount ? 0 : (int) $data['washes'],

@@ -41,7 +41,7 @@ class CorporateFleetController extends Controller
         return response()->json(['ok' => true, 'vehicles' => $cars]);
     }
 
-    /** GET /balance: the company's washes, how many are given to cars and how many are free. */
+    /** GET /balance: the company's washes, how many are given to cars and how many are free, in all and per body type. */
     public function balance(Request $request)
     {
         $client = $this->client($request);
@@ -146,9 +146,16 @@ class CorporateFleetController extends Controller
                 return response()->json(['ok' => false, 'message' => 'Unknown discount package'], 422);
             }
         }
-        if ($request->has('washes')
-            && CorporateWashes::allocate($car, $request->integer('washes'), 'api') === 'not_enough') {
-            return response()->json(['ok' => false, 'message' => 'Not enough free washes', 'free' => CorporateWashes::balance($client)['free']], 422);
+        $allocated = $request->has('washes') ? CorporateWashes::allocate($car, $request->integer('washes'), 'api') : 'ok';
+        if ($allocated === 'not_enough') {
+            // Free washes of the car's own body type, the only ones it can get.
+            $type = $car->carType();
+
+            return response()->json(['ok' => false, 'message' => 'Not enough free washes of this body type', 'body_type' => $type,
+                'free' => CorporateWashes::balance($client)['types'][$type]['free'] ?? 0], 422);
+        }
+        if ($allocated === 'no_body_type') {
+            return response()->json(['ok' => false, 'message' => 'The car has no body type'], 422);
         }
 
         $car->setRelation('client', $client);

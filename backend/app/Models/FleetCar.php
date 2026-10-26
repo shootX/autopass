@@ -49,7 +49,7 @@ class FleetCar extends Model
     /** The body type the company gave; a car added before that goes by the driver's app car. */
     public function carType(): ?string
     {
-        return $this->car_type ?: $this->userCar?->carType();
+        return $this->car_type ?: $this->userCar?->carType() ?: null;
     }
 
     public function client(): BelongsTo

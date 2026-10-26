@@ -19,7 +19,8 @@ class CorporatePackage extends Model
     public const TYPES = [self::TYPE_WASHES, self::TYPE_DISCOUNT];
 
     protected $fillable = ['title', 'washes', 'price', 'is_active', 'monthly_limit'];
-    // corporate_client_id and type are set once, when the package is created.
+    // corporate_client_id and type are set once, when the package is created; car_type (the body type a
+    // wash package is for) by CorporatePackagesController.
 
     protected $casts = [
         'washes' => 'integer',
