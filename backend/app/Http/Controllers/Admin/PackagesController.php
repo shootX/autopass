@@ -19,7 +19,7 @@ class PackagesController extends Controller
 
     public function create(Request $request)
     {
-        $carTypes = BodyType::query()->orderBy('name')->pluck('name');
+        $carTypes = BodyType::query()->ordered()->pluck('name');
 
         return view('admin.packages.add', compact('carTypes'));
     }
@@ -81,7 +81,7 @@ class PackagesController extends Controller
 
     public function edit(Request $request, Package $package)
     {
-        $carTypes = BodyType::query()->orderBy('name')->pluck('name');
+        $carTypes = BodyType::query()->ordered()->pluck('name');
         if ($package->car_type && ! $carTypes->contains($package->car_type)) {
             $carTypes->prepend($package->car_type);
         }

@@ -412,3 +412,10 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 - [x] Discount package limit (user chose per car per month): `corporate_packages.monthly_limit`, empty = unlimited. Over the limit the scan answers `discount_limit`; `discount.monthly_limit` and `discount.left` in `checkqr`, `mycars` and the approve answer. Fleet shows each car's use this month.
 - [x] Wash history shows what the company owes for this month so far.
 - [ ] Server: the scheduler (`schedule:run` every minute) must be running, as for the other scheduled commands.
+
+## 2026-10-26 — Body types: no photo, fixed list of 16 in Georgian and English (`claude/project-thread-tm2e1r`)
+
+- [x] Migration `2026_10_26_000009_reset_body_types`: drops `body_types.image`, adds `name_ka`, `name_en`, `sort`, and sets the list: sedan, hatchback, liftback, coupe, convertible, wagon, suv, pickup, minivan, van, panel_van, bus, truck, chassis_cab, flatbed_truck, tractor_unit.
+- [x] Old types move onto the new keys (crossover/jeep → suv, cabriolet/roadster → convertible, estate/universal → wagon, and so on) in models, packages and discount prices. An unknown type is deleted if unused and kept (with a log warning) if used.
+- [x] Dashboard: add/edit take the Georgian and English names; the key is made from the English name and never changes. Lists and selects show the name in the panel's language.
+- [ ] Server: `php artisan migrate`.

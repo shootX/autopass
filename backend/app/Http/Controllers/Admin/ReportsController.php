@@ -60,7 +60,7 @@ class ReportsController extends Controller
             'managers' => User::query()->where('role', User::ROLE_MANAGER)->orderBy('name')->get(['id', 'name', 'surname']),
             'services' => CarWashService::query()->orderBy('name')->get(['id', 'name']),
             'brands' => CarBrand::query()->orderBy('name')->get(['id', 'name']),
-            'carTypes' => BodyType::query()->orderBy('name')->pluck('name'),
+            'carTypes' => BodyType::query()->ordered()->pluck('name'),
             'packageTypes' => Package::query()->distinct()->orderBy('car_type')->pluck('car_type'),
             'washCounts' => Package::query()->distinct()->orderBy('count_washes')->pluck('count_washes'),
         ]);

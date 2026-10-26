@@ -64,9 +64,9 @@
                             @foreach($bodyTypes as $type)
                                 @php($row = $prices->get($type))
                                 <tr>
-                                    <td>{{ $type }}</td>
-                                    <td><input class="form-control form-control-sm" type="number" name="prices[{{ $type }}][full_price]" min="0.01" max="99999" step="0.01" value="{{ old('prices.'.$type.'.full_price', $row?->full_price) }}" aria-label="{{ $type }} {{ __('admin.cd_full_price') }}"></td>
-                                    <td><input class="form-control form-control-sm" type="number" name="prices[{{ $type }}][percent]" min="1" max="100" value="{{ old('prices.'.$type.'.percent', $row?->percent) }}" aria-label="{{ $type }} {{ __('admin.cd_percent') }}"></td>
+                                    <td>{{ \App\Models\BodyType::labelFor($type) }}</td>
+                                    <td><input class="form-control form-control-sm" type="number" name="prices[{{ $type }}][full_price]" min="0.01" max="99999" step="0.01" value="{{ old('prices.'.$type.'.full_price', $row?->full_price) }}" aria-label="{{ \App\Models\BodyType::labelFor($type) }} {{ __('admin.cd_full_price') }}"></td>
+                                    <td><input class="form-control form-control-sm" type="number" name="prices[{{ $type }}][percent]" min="1" max="100" value="{{ old('prices.'.$type.'.percent', $row?->percent) }}" aria-label="{{ \App\Models\BodyType::labelFor($type) }} {{ __('admin.cd_percent') }}"></td>
                                 </tr>
                             @endforeach
                             </tbody>

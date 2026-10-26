@@ -8,24 +8,45 @@ class BodyType extends Model
 {
     protected $fillable = [
         'name',
-        'image',
+        'name_ka',
+        'name_en',
+        'sort',
     ];
 
-    protected static ?array $images = null;
+    protected static ?array $labels = null;
 
-    public static function imageFor(?string $name): ?string
+    /** The type's name in the current language; `name` is the key other tables store. */
+    public function label(): string
     {
-        if (self::$images === null) {
-            self::$images = static::query()->pluck('image', 'name')->all();
-        }
+        $label = app()->getLocale() === 'ka' ? $this->name_ka : $this->name_en;
 
-        $image = self::$images[$name] ?? null;
-
-        return $image !== null && $image !== '' ? $image : null;
+        return $label !== null && $label !== '' ? $label : $this->name;
     }
 
-    public static function forgetImages(): void
+    /** The label for a stored key, or the key itself when no such type exists. */
+    public static function labelFor(?string $name): string
     {
-        self::$images = null;
+        if ($name === null || $name === '') {
+            return '';
+        }
+        self::$labels ??= static::query()->get()->keyBy('name')->all();
+
+        return isset(self::$labels[$name]) ? self::$labels[$name]->label() : $name;
+    }
+
+    /** key => label for select boxes, in the list's own order. */
+    public static function options(): array
+    {
+        return static::query()->ordered()->get()->mapWithKeys(fn (self $type) => [$type->name => $type->label()])->all();
+    }
+
+    public function scopeOrdered($query)
+    {
+        return $query->orderBy('sort')->orderBy('id');
+    }
+
+    public static function forgetLabels(): void
+    {
+        self::$labels = null;
     }
 }

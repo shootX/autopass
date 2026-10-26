@@ -115,7 +115,7 @@
                             <select class="form-select" id="car_type" name="car_type">
                                 <option value="">{{ __('admin.all') }}</option>
                                 @foreach($carTypes as $type)
-                                    <option value="{{ $type }}" @selected(request('car_type') === $type)>{{ $type }}</option>
+                                    <option value="{{ $type }}" @selected(request('car_type') === $type)>{{ \App\Models\BodyType::labelFor($type) }}</option>
                                 @endforeach
                             </select>
                         </div>

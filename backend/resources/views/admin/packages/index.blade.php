@@ -38,7 +38,7 @@
                     @forelse($packages as $pack)
                         <tr>
                             <td>{{$pack->id}}</td>
-                            <td>{{$pack->car_type}}</td>
+                            <td>{{ \App\Models\BodyType::labelFor($pack->car_type) }}</td>
                             <td>{{$pack->count_washes}}</td>
                             <td>{{ $pack->priceForMonth(1)?->price ?? '—' }} ₾</td>
                             <td>{{ $pack->priceForMonth(3)?->price ?? '—' }} ₾</td>

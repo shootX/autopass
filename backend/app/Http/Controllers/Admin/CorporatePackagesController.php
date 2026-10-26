@@ -83,7 +83,7 @@ class CorporatePackagesController extends Controller
         return view('admin.packages.corporate.form', [
             'package' => $package,
             'companies' => CorporateClient::query()->orderBy('name')->get(['id', 'name']),
-            'bodyTypes' => BodyType::query()->orderBy('name')->pluck('name'),
+            'bodyTypes' => BodyType::query()->ordered()->pluck('name'),
             'prices' => $package->exists ? $package->prices->keyBy('car_type') : collect(),
         ]);
     }

@@ -43,11 +43,6 @@ class CarModel extends Model
             $brand = $this->brand;
             $img = $brand->img;
             if (is_null($img)) {
-                $typeImage = BodyType::imageFor($this->type);
-                if ($typeImage) {
-                    return $typeImage;
-                }
-
                 return self::IMAGES[$this->type] ?? '/assets/images/car_types/sedan_image.png';
             }
         }
