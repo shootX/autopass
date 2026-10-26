@@ -52,6 +52,10 @@
                 <div class="sb-nav-link-icon"><i class="fas fa-car-side"></i></div>
                 {{ __('admin.body_types') }}
             </a>
+            <a class="nav-link @if(Route::is('admin.site.*')) active @endif" href="{{ route('admin.site.page') }}">
+                <div class="sb-nav-link-icon"><i class="fas fa-globe"></i></div>
+                {{ __('admin.site') }}
+            </a>
             <a class="nav-link @if(Route::is('admin.tickets')) active @endif" href="{{route('admin.tickets')}}">
                 <div class="sb-nav-link-icon"><i class="fa-solid fa-ticket-simple"></i></div>
                 {{ __('admin.tickets') }}

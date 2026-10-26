@@ -1,7 +1,9 @@
 /* Page text in ka/en/ru. Georgian keys missing here come from index/business.html itself.
-   The admin site editor will replace this file. */
+   Admin > Website edits this text; the page loads the edited copy from /api/site/{page} and keeps this one as a fallback.
+   After changing a default here, rebuild backend/resources/site/*.json (see lending/README.md). */
 window.AP_TEXT = {
  "ka": {
+  "form.bad": "შეამოწმეთ კომპანიის სახელი და ტელეფონის ნომერი.",
   "form.ok": "გმადლობთ. მენეჯერი მალე დაგიკავშირდებათ.",
   "doc": "Autopass ბიზნესისთვის",
   "faq": [["მოდელი", "რომელი მოდელი ავირჩიოთ?", "თუ რეცხვის საფასურს კომპანია ფარავს, აირჩიეთ რეცხვების პაკეტი. თუ გსურთ, რომ მძღოლებმა თავად გადაიხადონ, ოღონდ ნაკლები, აირჩიეთ ფასდაკლება."], ["მძღოლი", "მძღოლს აპი სჭირდება?", "დიახ. მძღოლი აპში ხედავს კომპანიის მანქანას და მის QR კოდს, ფილიალში კი სწორედ ამ კოდს აჩვენებს."], ["დაბლოკვა", "რა ხდება, როცა მანქანას ვბლოკავთ?", "დაბლოკილი მანქანის QR კოდი აღარ მუშაობს და ფილიალში რეცხვა ვერ დადასტურდება. იგივე ხდება, თუ მთელი კომპანიის ანგარიშია დაბლოკილი."], ["ნაშთი", "რა ხდება, როცა რეცხვები ამოიწურება?", "მანქანის QR კოდი აღარ იმუშავებს. დაგვიკავშირდით და რეცხვებს დაგიმატებთ."], ["ძარა", "ფასდაკლება ყველა მანქანაზე ერთნაირია?", "არა. პროცენტი ძარის ტიპის მიხედვით თანხმდება. თუ რომელიმე ძარაზე ფასდაკლება შეთანხმებული არ არის, ასეთი მანქანის QR კოდი არ იმუშავებს."]],
@@ -12,6 +14,7 @@ window.AP_TEXT = {
   "form.mail": "გაიხსნა ელფოსტა მზა მოთხოვნით. გააგზავნეთ და მენეჯერი დაგიკავშირდებათ."
  },
  "en": {
+  "form.bad": "Check the company name and the phone number.",
   "nav.how": "How it works",
   "nav.price": "Prices",
   "nav.biz": "For business",
@@ -87,6 +90,7 @@ window.AP_TEXT = {
   "form.mail": "Your e-mail app has opened with the request. Send it and a manager will be in touch."
  },
  "ru": {
+  "form.bad": "Проверьте название компании и номер телефона.",
   "nav.how": "Как это работает",
   "nav.price": "Цены",
   "nav.biz": "Для бизнеса",

@@ -427,4 +427,5 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 - [x] No inline scripts (CSP `script-src 'self'`); settings in `config.js`, en/ru text and lists in `content/*.js`.
 - [x] Mockup forms are not faked: SMS form hidden until `AUTOPASS_SMS_URL`, business form posts to `AUTOPASS_LEAD_URL` or opens an e-mail. App Store buttons open the web app until `AUTOPASS_IOS_URL`.
 - [ ] Owner: real prices, branches, phone, e-mail, privacy/terms links (`config.js`, `content/home.js`).
-- [ ] Next: admin "site management" page to add, edit and delete the landing's content (owner's requirement), and a lead endpoint.
+- [x] Admin > Website (`/dashboard/site`): every text of both pages in ka/en/ru, lists (FAQ, package points, branches) with add/edit/delete, sections on/off and order, settings (prices, hours, contacts, App Store, legal links, branches from the car washes), business requests. Landing reads `GET /api/site/{page}`; the business form posts to `POST /api/site/lead`.
+- [ ] Server: `php artisan migrate`, then `sh lending/build.sh` and upload `lending/dist/`.

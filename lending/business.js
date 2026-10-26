@@ -21,28 +21,38 @@
   };
   $("cars").oninput = renderBiz;
 
-  /* POST to the server when config.js names an endpoint, otherwise an e-mail to the contact address. */
+  /* POST to the server (admin > Website > Requests); without an endpoint, or when it fails, an e-mail to the contact address. */
   var form = $("leadForm");
   form.addEventListener("submit", function (e) {
     e.preventDefault();
     var note = form.querySelector(".note");
     var company = form.elements.company.value.trim();
     var phone = form.elements.phone.value.trim();
-    var url = window.AUTOPASS_LEAD_URL || "";
-    if (url) {
-      fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({ company: company, phone: phone, lang: AP.lang })
-      }).then(function (res) {
-        note.textContent = AP.I(res.ok ? "form.ok" : "form.err");
-        if (res.ok) form.reset();
-      }).catch(function () {
-        note.textContent = AP.I("form.err");
-      });
+    var url = AP.cfg.lead_url;
+    if (!url) {
+      mail(company, phone, note);
       return;
     }
-    var email = window.AUTOPASS_EMAIL || "";
+    fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({ company: company, phone: phone, lang: AP.lang })
+    }).then(function (res) {
+      if (res.ok) {
+        note.textContent = AP.I("form.ok");
+        form.reset();
+      } else if (res.status === 422) {
+        note.textContent = AP.I("form.bad");
+      } else {
+        mail(company, phone, note);
+      }
+    }).catch(function () {
+      mail(company, phone, note);
+    });
+  });
+
+  function mail(company, phone, note) {
+    var email = AP.cfg.email;
     if (!email) {
       note.textContent = AP.I("form.err");
       return;
@@ -50,7 +60,7 @@
     var body = AP.I("form.co") + ": " + company + "\n" + AP.I("form.ph") + ": " + phone;
     location.href = "mailto:" + email + "?subject=" + encodeURIComponent(AP.I("form.h")) + "&body=" + encodeURIComponent(body);
     note.textContent = AP.I("form.mail");
-  });
+  }
 
   AP.onLang(function () {
     document.title = AP.I("doc");

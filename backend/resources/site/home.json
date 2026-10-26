@@ -1,0 +1,769 @@
+{
+ "sections": [
+  "hero",
+  "how",
+  "price",
+  "biz",
+  "feat",
+  "branches",
+  "app",
+  "faq"
+ ],
+ "groups": [
+  "nav",
+  "hero",
+  "how",
+  "price",
+  "biz",
+  "feat",
+  "branches",
+  "app",
+  "faq",
+  "footer",
+  "general"
+ ],
+ "texts": {
+  "nav.how": {
+   "group": "nav",
+   "ka": "როგორ მუშაობს",
+   "en": "How it works",
+   "ru": "Как это работает"
+  },
+  "nav.price": {
+   "group": "nav",
+   "ka": "ფასები",
+   "en": "Prices",
+   "ru": "Цены"
+  },
+  "nav.biz": {
+   "group": "nav",
+   "ka": "ბიზნესისთვის",
+   "en": "For business",
+   "ru": "Для бизнеса"
+  },
+  "nav.br": {
+   "group": "nav",
+   "ka": "ფილიალები",
+   "en": "Branches",
+   "ru": "Филиалы"
+  },
+  "nav.faq": {
+   "group": "nav",
+   "ka": "კითხვები",
+   "en": "FAQ",
+   "ru": "Вопросы"
+  },
+  "nav.get": {
+   "group": "nav",
+   "ka": "აპის ჩამოტვირთვა",
+   "en": "Get the app",
+   "ru": "Скачать приложение"
+  },
+  "hero.h1": {
+   "group": "hero",
+   "ka": "რეცხვა გამოწერით",
+   "en": "Car wash, monthly",
+   "ru": "Мойка по подписке"
+  },
+  "hero.p": {
+   "group": "hero",
+   "ka": "შეიძინეთ 4, 8 ან 12 რეცხვის პაკეტი ან ულიმიტო აპში და ნებისმიერ ფილიალში უბრალოდ აჩვენეთ QR კოდი. რგოლზე ყოველთვის ჩანს, რამდენი რეცხვა დაგრჩათ.",
+   "en": "Buy a pack of 4, 8 or 12 washes, or go unlimited, in the app, then just show your QR code at any branch. The ring always shows how many washes you have left.",
+   "ru": "Купите в приложении пакет на 4, 8 или 12 моек или безлимит и просто покажите QR-код в любом филиале. Кольцо всегда показывает, сколько моек осталось."
+  },
+  "hero.cta": {
+   "group": "hero",
+   "ka": "ჩამოტვირთეთ App Store-დან",
+   "en": "Download on the App Store",
+   "ru": "Скачать в App Store"
+  },
+  "hero.biz": {
+   "group": "hero",
+   "ka": "კომპანიებისთვის ›",
+   "en": "For companies ›",
+   "ru": "Для компаний ›"
+  },
+  "card.left": {
+   "group": "hero",
+   "ka": "დარჩენილია 6 რეცხვა",
+   "en": "6 washes left",
+   "ru": "Осталось 6 моек"
+  },
+  "card.of": {
+   "group": "hero",
+   "ka": "8-დან · 18 დღე, 8 ნოემბრამდე",
+   "en": "of 8 · 18 days, until 8 November",
+   "ru": "из 8 · 18 дней, до 8 ноября"
+  },
+  "card.auto": {
+   "group": "hero",
+   "ka": "ავტოგანახლება",
+   "en": "Auto-renew",
+   "ru": "Автопродление"
+  },
+  "how.h2": {
+   "group": "how",
+   "ka": "სამი ნაბიჯი, ოცი წუთი",
+   "en": "Three steps, twenty minutes",
+   "ru": "Три шага, двадцать минут"
+  },
+  "how.p": {
+   "group": "how",
+   "ka": "პაკეტის საფასურს აპში იხდით, ფილიალში კი მხოლოდ QR კოდს აჩვენებთ. წინასწარ ჩაწერა საჭირო არ არის.",
+   "en": "Pay for the package in the app; at the branch you only show your QR code. No booking needed.",
+   "ru": "Пакет оплачиваете в приложении, в филиале только показываете QR-код. Записываться заранее не нужно."
+  },
+  "how.d1": {
+   "group": "how",
+   "ka": "2 წუთი",
+   "en": "2 minutes",
+   "ru": "2 минуты"
+  },
+  "how.c1": {
+   "group": "how",
+   "ka": "ჯერ აპში ირჩევთ პაკეტს და იხდით ბარათით.",
+   "en": "First, pick a package in the app and pay by card.",
+   "ru": "Сначала выбираете пакет в приложении и оплачиваете картой."
+  },
+  "how.d2": {
+   "group": "how",
+   "ka": "10 წამი",
+   "en": "10 seconds",
+   "ru": "10 секунд"
+  },
+  "how.c2": {
+   "group": "how",
+   "ka": "შემდეგ ფილიალში აჩვენებთ QR კოდს, მენეჯერი კი მას ასკანერებს.",
+   "en": "Then show your QR code at the branch, and the manager scans it.",
+   "ru": "Затем показываете QR-код в филиале, менеджер его сканирует."
+  },
+  "how.d3": {
+   "group": "how",
+   "ka": "დაახლოებით 20 წუთი",
+   "en": "About 20 minutes",
+   "ru": "Около 20 минут"
+  },
+  "how.c3": {
+   "group": "how",
+   "ka": "ბოლოს მანქანა ირეცხება და რგოლზე ერთი რეცხვა აკლდება.",
+   "en": "Finally, the car is washed and the ring drops by one.",
+   "ru": "Машину моют, а в кольце становится на одну мойку меньше."
+  },
+  "price.h2": {
+   "group": "price",
+   "ka": "ერთი ფასი თვეში",
+   "en": "One price a month",
+   "ru": "Одна цена в месяц"
+  },
+  "price.p": {
+   "group": "price",
+   "ka": "აირჩიეთ, თვეში რამდენჯერ გსურთ მანქანის რეცხვა. ფასები სედანისთვისაა, სხვა ძარის ფასს აპი გაჩვენებთ.",
+   "en": "Choose how often you want the car washed each month. Prices are for a sedan; the app shows the price for other body types.",
+   "ru": "Выберите, сколько раз в месяц хотите мыть машину. Цены указаны для седана, цену для другого кузова покажет приложение."
+  },
+  "price.per": {
+   "group": "price",
+   "ka": "/ თვე",
+   "en": "/ month",
+   "ru": "/ мес"
+  },
+  "price.buy": {
+   "group": "price",
+   "ka": "იყიდეთ აპში",
+   "en": "Buy in the app",
+   "ru": "Купить в приложении"
+  },
+  "biz.h1": {
+   "group": "biz",
+   "ka": "Autopass",
+   "en": "Autopass",
+   "ru": "Autopass"
+  },
+  "biz.h2": {
+   "group": "biz",
+   "ka": "ბიზნესისთვის",
+   "en": "for business",
+   "ru": "для бизнеса"
+  },
+  "biz.p": {
+   "group": "biz",
+   "ka": "კომპანიის მანქანები ერთ ანგარიშზე. კომპანიას შეუძლია თავად შეიძინოს რეცხვები თავისი მანქანებისთვის ან მძღოლებს ფილიალში ფასდაკლება მისცეს.",
+   "en": "All your company cars on one account. The company can buy washes for its cars itself, or give its drivers a discount at the branch.",
+   "ru": "Все машины компании на одном счёте. Компания может сама покупать мойки для своих машин или дать водителям скидку в филиале."
+  },
+  "biz.go": {
+   "group": "biz",
+   "ka": "კორპორატიული შეთავაზება",
+   "en": "Corporate offer",
+   "ru": "Корпоративное предложение"
+  },
+  "biz.req": {
+   "group": "biz",
+   "ka": "მოთხოვნის გაგზავნა ›",
+   "en": "Send a request ›",
+   "ru": "Отправить заявку ›"
+  },
+  "feat.h": {
+   "group": "feat",
+   "ka": "ყველაფერი აპშია",
+   "en": "It's all in the app",
+   "ru": "Всё в приложении"
+  },
+  "feat.qr": {
+   "group": "feat",
+   "ka": "QR პასი",
+   "en": "QR pass",
+   "ru": "QR-пропуск"
+  },
+  "feat.qrs": {
+   "group": "feat",
+   "ka": "კოდი თავისით ახლდება, ამიტომ ეკრანის სურათი არ იმუშავებს.",
+   "en": "The code refreshes itself, so a screenshot won't work.",
+   "ru": "Код обновляется сам, поэтому скриншот не сработает."
+  },
+  "feat.ring": {
+   "group": "feat",
+   "ka": "დარჩენილი რეცხვები",
+   "en": "Washes left",
+   "ru": "Остаток моек"
+  },
+  "feat.rings": {
+   "group": "feat",
+   "ka": "მთავარ ეკრანზე ყოველთვის ჩანს, რამდენი რეცხვა და დღე დაგრჩათ.",
+   "en": "The home screen always shows how many washes and days you have left.",
+   "ru": "На главном экране всегда видно, сколько осталось моек и дней."
+  },
+  "feat.auto": {
+   "group": "feat",
+   "ka": "ავტოგანახლება",
+   "en": "Auto-renew",
+   "ru": "Автопродление"
+  },
+  "feat.autos": {
+   "group": "feat",
+   "ka": "ვადის ბოლოს პაკეტი ავტომატურად განახლდება.",
+   "en": "The package renews automatically when the term ends.",
+   "ru": "В конце срока пакет продлевается автоматически."
+  },
+  "feat.pts": {
+   "group": "feat",
+   "ka": "ქულები",
+   "en": "Points",
+   "ru": "Баллы"
+  },
+  "feat.ptss": {
+   "group": "feat",
+   "ka": "ქულებს მოწვეული მეგობრების პაკეტებიდან იღებთ ან ბარათით ყიდულობთ.",
+   "en": "Earn points from the packages of friends you invite, or buy them by card.",
+   "ru": "Баллы начисляются за пакеты приглашённых друзей, их можно и купить картой."
+  },
+  "feat.cars": {
+   "group": "feat",
+   "ka": "რამდენიმე მანქანა",
+   "en": "Several cars",
+   "ru": "Несколько машин"
+  },
+  "feat.carss": {
+   "group": "feat",
+   "ka": "მარკას, მოდელს და ძარას კატალოგიდან ირჩევთ. ყოველ მანქანას თავისი პაკეტი აქვს.",
+   "en": "Pick the make, model and body from the catalogue. Each car has its own package.",
+   "ru": "Марку, модель и кузов выбираете из каталога. У каждой машины свой пакет."
+  },
+  "feat.openw": {
+   "group": "feat",
+   "ka": "ღიაა",
+   "en": "Open",
+   "ru": "Открыто"
+  },
+  "feat.map": {
+   "group": "feat",
+   "ka": "ფილიალები რუკაზე",
+   "en": "Branches on a map",
+   "ru": "Филиалы на карте"
+  },
+  "feat.maps": {
+   "group": "feat",
+   "ka": "სამუშაო საათები და მარშრუტი.",
+   "en": "Opening hours and directions.",
+   "ru": "Часы работы и маршрут."
+  },
+  "feat.vch": {
+   "group": "feat",
+   "ka": "მაღაზია და ვაუჩერები",
+   "en": "Shop and vouchers",
+   "ru": "Магазин и ваучеры"
+  },
+  "feat.vchs": {
+   "group": "feat",
+   "ka": "ქულებს ცვლით პარტნიორების ვაუჩერებზე და გათამაშების ბილეთებზე.",
+   "en": "Swap points for partner vouchers and giveaway tickets.",
+   "ru": "Меняйте баллы на ваучеры партнёров и билеты розыгрышей."
+  },
+  "br.h": {
+   "group": "branches",
+   "ka": "ფილიალები",
+   "en": "Branches",
+   "ru": "Филиалы"
+  },
+  "cta.alt": {
+   "group": "app",
+   "ka": "დაიწყეთ რეცხვა Autopass-ით",
+   "en": "Start washing with Autopass",
+   "ru": "Начните мыть с Autopass"
+  },
+  "cta.h": {
+   "group": "app",
+   "ka": "აპის ბმულს გამოგიგზავნით ნომერზე",
+   "en": "We'll text the app link to",
+   "ru": "Пришлём ссылку на приложение на номер"
+  },
+  "cta.btn": {
+   "group": "app",
+   "ka": "გაგზავნა",
+   "en": "Send",
+   "ru": "Отправить"
+  },
+  "cta.why": {
+   "group": "app",
+   "ka": "მიიღებთ ერთ SMS-ს ბმულით და მეტს არაფერს.",
+   "en": "You'll get one SMS with the link and nothing else.",
+   "ru": "Придёт одно SMS со ссылкой, больше ничего."
+  },
+  "cta.qr": {
+   "group": "app",
+   "ka": "ან დაასკანერეთ კოდი ტელეფონის კამერით და გადადით App Store-ში.",
+   "en": "Or scan the code with your phone camera to open the App Store.",
+   "ru": "Или отсканируйте код камерой телефона и перейдите в App Store."
+  },
+  "faq.h": {
+   "group": "faq",
+   "ka": "ხშირი კითხვები",
+   "en": "Common questions",
+   "ru": "Частые вопросы"
+  },
+  "ft.p": {
+   "group": "footer",
+   "ka": "მომხმარებლებს",
+   "en": "Drivers",
+   "ru": "Водителям"
+  },
+  "ft.b": {
+   "group": "footer",
+   "ka": "ბიზნესს",
+   "en": "Business",
+   "ru": "Бизнесу"
+  },
+  "ft.offer": {
+   "group": "footer",
+   "ka": "კორპორატიული შეთავაზება",
+   "en": "Corporate offer",
+   "ru": "Корпоративное предложение"
+  },
+  "ft.req": {
+   "group": "footer",
+   "ka": "მოთხოვნის გაგზავნა",
+   "en": "Send a request",
+   "ru": "Отправить заявку"
+  },
+  "ft.c": {
+   "group": "footer",
+   "ka": "კომპანია",
+   "en": "Company",
+   "ru": "Компания"
+  },
+  "ft.priv": {
+   "group": "footer",
+   "ka": "კონფიდენციალურობა",
+   "en": "Privacy",
+   "ru": "Конфиденциальность"
+  },
+  "ft.terms": {
+   "group": "footer",
+   "ka": "წესები და პირობები",
+   "en": "Terms",
+   "ru": "Условия"
+  },
+  "ft.a": {
+   "group": "footer",
+   "ka": "აპი",
+   "en": "App",
+   "ru": "Приложение"
+  },
+  "ft.store": {
+   "group": "footer",
+   "ka": "App Store",
+   "en": "App Store",
+   "ru": "App Store"
+  },
+  "ft.call": {
+   "group": "footer",
+   "ka": "დაგვირეკეთ ან მოგვწერეთ",
+   "en": "Call or write to us",
+   "ru": "Позвоните или напишите нам"
+  },
+  "ft.up": {
+   "group": "footer",
+   "ka": "ზემოთ ↑",
+   "en": "Back to top ↑",
+   "ru": "Наверх ↑"
+  },
+  "cta.ph": {
+   "group": "app",
+   "ka": "5__ __ __ __",
+   "en": "5__ __ __ __",
+   "ru": "5__ __ __ __"
+  },
+  "hero.carAlt": {
+   "group": "hero",
+   "ka": "ვერცხლისფერი სედანი",
+   "en": "Silver sedan",
+   "ru": "Серебристый седан"
+  },
+  "br.dir": {
+   "group": "branches",
+   "ka": "მარშრუტი ›",
+   "en": "Directions ›",
+   "ru": "Маршрут ›"
+  },
+  "cta.ok": {
+   "group": "app",
+   "ka": "გაიგზავნა. შეამოწმეთ შეტყობინებები.",
+   "en": "Sent. Check your messages.",
+   "ru": "Отправлено. Проверьте сообщения."
+  },
+  "plan.each": {
+   "group": "price",
+   "ka": "ერთი რეცხვა: ",
+   "en": "One wash: ",
+   "ru": "Одна мойка: "
+  },
+  "plan.u_fig": {
+   "group": "price",
+   "ka": "−20%",
+   "en": "−20%",
+   "ru": "−20%"
+  },
+  "plan.u_per": {
+   "group": "price",
+   "ka": "ყოველ რეცხვაზე",
+   "en": "every wash",
+   "ru": "на каждую мойку"
+  },
+  "plan.u_each": {
+   "group": "price",
+   "ka": "რამდენჯერაც გსურთ, პაკეტის მთელ ვადაში",
+   "en": "As often as you like, for the whole term",
+   "ru": "Сколько угодно раз, весь срок"
+  },
+  "hero.web": {
+   "group": "hero",
+   "ka": "გახსენით Autopass",
+   "en": "Open Autopass",
+   "ru": "Открыть Autopass"
+  },
+  "ft.web": {
+   "group": "footer",
+   "ka": "ვებ-აპი",
+   "en": "Web app",
+   "ru": "Веб-приложение"
+  },
+  "cta.err": {
+   "group": "app",
+   "ka": "ვერ გაიგზავნა. სცადეთ ცოტა ხანში.",
+   "en": "Couldn't send. Please try again shortly.",
+   "ru": "Не удалось отправить. Попробуйте чуть позже."
+  }
+ },
+ "lists": {
+  "faq": {
+   "group": "faq",
+   "fields": [
+    "q",
+    "a"
+   ],
+   "items": [
+    {
+     "ka": [
+      "რამდენ ხანს მოქმედებს პაკეტი?",
+      "1, 3 ან 6 თვე, ვადას ყიდვისას ირჩევთ. დარჩენილი დღეები აპის მთავარ ეკრანზე ჩანს."
+     ],
+     "en": [
+      "How long does a package last?",
+      "1, 3 or 6 months, you choose when you buy. The days left are on the app's home screen."
+     ],
+     "ru": [
+      "Сколько действует пакет?",
+      "1, 3 или 6 месяцев, срок выбираете при покупке. Оставшиеся дни видны на главном экране приложения."
+     ]
+    },
+    {
+     "ka": [
+      "შემიძლია რამდენიმე მანქანის დამატება?",
+      "დიახ. ყოველ მანქანას თავისი ნომერი და თავისი პაკეტი აქვს. QR კოდის ეკრანზე ირჩევთ, რომელ მანქანას რეცხავთ."
+     ],
+     "en": [
+      "Can I add more than one car?",
+      "Yes. Each car has its own plate and its own package. On the QR code screen you pick which car you're washing."
+     ],
+     "ru": [
+      "Можно добавить несколько машин?",
+      "Да. У каждой машины свой номер и свой пакет. На экране QR-кода выбираете, какую машину моете."
+     ]
+    },
+    {
+     "ka": [
+      "როგორ მუშაობს ულიმიტო პაკეტი?",
+      "პაკეტის ვადაში მანქანას რამდენჯერაც გსურთ, იმდენჯერ რეცხავთ, თანაც ყოველი რეცხვა 20%-ით იაფი ჯდება."
+     ],
+     "en": [
+      "How does the unlimited package work?",
+      "During the term you wash the car as often as you like, and every wash costs 20% less."
+     ],
+     "ru": [
+      "Как работает безлимитный пакет?",
+      "В течение срока моете машину сколько угодно, и каждая мойка обходится на 20% дешевле."
+     ]
+    },
+    {
+     "ka": [
+      "რისთვის მჭირდება ქულები?",
+      "ქულებს მოწვეული მეგობრების პაკეტებიდან იღებთ ან ბარათით ყიდულობთ. მათ ცვლით პარტნიორების ვაუჩერებზე ან გათამაშების ბილეთებზე."
+     ],
+     "en": [
+      "What are points for?",
+      "You earn points from the packages of friends you invite, or buy them by card. Swap them for partner vouchers or giveaway tickets."
+     ],
+     "ru": [
+      "Зачем нужны баллы?",
+      "Баллы начисляются за пакеты приглашённых друзей, их можно и купить картой. Меняйте их на ваучеры партнёров или билеты розыгрышей."
+     ]
+    },
+    {
+     "ka": [
+      "როგორ გავთიშო ავტოგანახლება?",
+      "პროფილში, პაკეტის გვერდზე. გათიშვის შემდეგაც პაკეტი ვადის ბოლომდე მოქმედებს."
+     ],
+     "en": [
+      "How do I turn off auto-renew?",
+      "In your profile, on the package page. The package still runs to the end of its term."
+     ],
+     "ru": [
+      "Как отключить автопродление?",
+      "В профиле, на странице пакета. После отключения пакет действует до конца срока."
+     ]
+    },
+    {
+     "ka": [
+      "რატომ არ მუშაობს QR კოდი?",
+      "კოდი წყვეტს მუშაობას, როცა პაკეტს ვადა გაუვიდა ან რეცხვები ამოიწურა. აპში შეიძინეთ ახალი პაკეტი და კოდი ისევ იმუშავებს."
+     ],
+     "en": [
+      "Why doesn't my QR code work?",
+      "The code stops working when the package has expired or its washes have run out. Buy a new package in the app and it works again."
+     ],
+     "ru": [
+      "Почему не работает QR-код?",
+      "Код перестаёт работать, когда срок пакета истёк или мойки закончились. Купите новый пакет в приложении, и код снова заработает."
+     ]
+    }
+   ]
+  },
+  "branches": {
+   "group": "branches",
+   "fields": [
+    "name",
+    "address"
+   ],
+   "items": [
+    {
+     "ka": [
+      "ვაკე",
+      "ჭავჭავაძის გამზ. 37"
+     ],
+     "en": [
+      "Vake",
+      "37 Chavchavadze Ave."
+     ],
+     "ru": [
+      "Ваке",
+      "пр. Чавчавадзе, 37"
+     ]
+    },
+    {
+     "ka": [
+      "საბურთალო",
+      "ვაჟა-ფშაველას გამზ. 45"
+     ],
+     "en": [
+      "Saburtalo",
+      "45 Vazha-Pshavela Ave."
+     ],
+     "ru": [
+      "Сабуртало",
+      "пр. Важа-Пшавела, 45"
+     ]
+    },
+    {
+     "ka": [
+      "დიდუბე",
+      "წერეთლის გამზ. 116"
+     ],
+     "en": [
+      "Didube",
+      "116 Tsereteli Ave."
+     ],
+     "ru": [
+      "Дидубе",
+      "пр. Церетели, 116"
+     ]
+    },
+    {
+     "ka": [
+      "ისანი",
+      "მოსკოვის გამზ. 12"
+     ],
+     "en": [
+      "Isani",
+      "12 Moscow Ave."
+     ],
+     "ru": [
+      "Исани",
+      "Московский пр., 12"
+     ]
+    },
+    {
+     "ka": [
+      "გლდანი",
+      "ხიზანიშვილის ქ. 3"
+     ],
+     "en": [
+      "Gldani",
+      "3 Khizanishvili St."
+     ],
+     "ru": [
+      "Глдани",
+      "ул. Хизанишвили, 3"
+     ]
+    },
+    {
+     "ka": [
+      "დიღომი",
+      "აღმაშენებლის ხეივანი, მე-12 კმ"
+     ],
+     "en": [
+      "Digomi",
+      "12th km, Aghmashenebeli Alley"
+     ],
+     "ru": [
+      "Дигоми",
+      "Аллея Агмашенебели, 12 км"
+     ]
+    }
+   ]
+  },
+  "plan.l": {
+   "group": "price",
+   "fields": [
+    "text"
+   ],
+   "items": [
+    {
+     "ka": [
+      "{n} რეცხვა ერთ მანქანაზე, 30 დღე"
+     ],
+     "en": [
+      "{n} washes for one car, 30 days"
+     ],
+     "ru": [
+      "{n} моек для одной машины, 30 дней"
+     ]
+    },
+    {
+     "ka": [
+      "Autopass-ის ნებისმიერი ფილიალი"
+     ],
+     "en": [
+      "Any Autopass branch"
+     ],
+     "ru": [
+      "Любой филиал Autopass"
+     ]
+    },
+    {
+     "ka": [
+      "ავტოგანახლება, რომელსაც პროფილში გამორთავთ"
+     ],
+     "en": [
+      "Auto-renew, switch it off in your profile"
+     ],
+     "ru": [
+      "Автопродление, отключается в профиле"
+     ]
+    },
+    {
+     "ka": [
+      "ქულები მოწვეული მეგობრების პაკეტებიდან"
+     ],
+     "en": [
+      "Points from the packages of friends you invite"
+     ],
+     "ru": [
+      "Баллы за пакеты приглашённых друзей"
+     ]
+    }
+   ]
+  },
+  "plan.lu": {
+   "group": "price",
+   "fields": [
+    "text"
+   ],
+   "items": [
+    {
+     "ka": [
+      "რეცხვა რამდენჯერაც გსურთ, პაკეტის მთელ ვადაში"
+     ],
+     "en": [
+      "Wash as often as you like for the whole term"
+     ],
+     "ru": [
+      "Мойте сколько угодно весь срок"
+     ]
+    },
+    {
+     "ka": [
+      "ყოველი რეცხვა 20%-ით იაფია"
+     ],
+     "en": [
+      "Every wash costs 20% less"
+     ],
+     "ru": [
+      "Каждая мойка на 20% дешевле"
+     ]
+    },
+    {
+     "ka": [
+      "ავტოგანახლება, რომელსაც პროფილში გამორთავთ"
+     ],
+     "en": [
+      "Auto-renew, switch it off in your profile"
+     ],
+     "ru": [
+      "Автопродление, отключается в профиле"
+     ]
+    },
+    {
+     "ka": [
+      "ქულები მოწვეული მეგობრების პაკეტებიდან"
+     ],
+     "en": [
+      "Points from the packages of friends you invite"
+     ],
+     "ru": [
+      "Баллы за пакеты приглашённых друзей"
+     ]
+    }
+   ]
+  }
+ }
+}

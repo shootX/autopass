@@ -1,5 +1,6 @@
 /* Page text in ka/en/ru. Georgian keys missing here come from index/business.html itself.
-   The admin site editor will replace this file. */
+   Admin > Website edits this text; the page loads the edited copy from /api/site/{page} and keeps this one as a fallback.
+   After changing a default here, rebuild backend/resources/site/*.json (see lending/README.md). */
 window.AP_TEXT = {
  "ka": {
   "br.dir": "მარშრუტი ›",

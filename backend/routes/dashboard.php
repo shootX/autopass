@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\PackagesController;
 use App\Http\Controllers\Admin\PartnersController;
 use App\Http\Controllers\Admin\PromoController;
 use App\Http\Controllers\Admin\ReportsController;
+use App\Http\Controllers\Admin\SiteController;
 use App\Http\Controllers\Admin\SmsInboxController;
 use App\Http\Controllers\Admin\TicketsController;
 use App\Http\Controllers\Admin\VouchersController;
@@ -127,6 +128,17 @@ Route::prefix('dashboard')
             Route::post('/store', [PackagesController::class, 'store'])->name('admin.packages.store');
             Route::delete('/{package}/delete', [PackagesController::class, 'delete'])->name('admin.packages.delete');
 
+        });
+
+        Route::prefix('/site')->group(function () {
+            Route::get('/settings', [SiteController::class, 'settings'])->name('admin.site.settings');
+            Route::post('/settings', [SiteController::class, 'saveSettings'])->name('admin.site.settings.save');
+            Route::get('/leads', [SiteController::class, 'leads'])->name('admin.site.leads');
+            Route::post('/leads/{lead}/handle', [SiteController::class, 'handleLead'])->name('admin.site.leads.handle');
+            Route::delete('/leads/{lead}', [SiteController::class, 'deleteLead'])->name('admin.site.leads.delete');
+            Route::get('/{page?}', [SiteController::class, 'edit'])->whereIn('page', ['home', 'business'])->name('admin.site.page');
+            Route::post('/{page}', [SiteController::class, 'save'])->whereIn('page', ['home', 'business'])->name('admin.site.save');
+            Route::post('/{page}/reset', [SiteController::class, 'reset'])->whereIn('page', ['home', 'business'])->name('admin.site.reset');
         });
 
         Route::prefix('/body-types')->group(function () {

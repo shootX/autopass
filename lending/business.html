@@ -25,7 +25,7 @@
 <link rel="stylesheet" href="styles.css?v=20261026">
 <link rel="stylesheet" href="responsive.css?v=20261026">
 </head>
-<body>
+<body data-page="business">
 
 <header class="nav wrap">
   <a href="index.html" class="logo" aria-label="Autopass"><img src="img/logo.svg" alt="autopass" width="501" height="197"></a>
@@ -55,7 +55,7 @@
 
 <main id="top">
 <!-- CORPORATE: the band from the home page, now the whole page -->
-<section class="biz page" id="calc">
+<section class="biz page" id="calc" data-section="calc">
   <svg class="ring-band" viewBox="0 0 100 100" aria-hidden="true">
     <circle cx="50" cy="50" r="34" fill="none" stroke="#1C4A82" stroke-width="27"/>
     <path d="M74.04 25.96A34 34 0 1 1 25.96 74.04" fill="none" stroke="#0B2545" stroke-width="27" stroke-linecap="round"/>
@@ -101,7 +101,7 @@
 </section>
 
 <!-- MODELS: who pays for the wash -->
-<section class="models wrap" id="models">
+<section class="models wrap" id="models" data-section="models">
   <div class="how-head"><h2 data-rise data-i18n="mod.h">ორი მოდელი</h2><p data-rise style="--i:1" data-i18n="mod.p">თქვენ წყვეტთ, ვინ იხდის რეცხვის საფასურს: კომპანია თუ მძღოლი.</p></div>
   <div class="mgrid">
     <article class="mdl m1" data-rise>
@@ -145,7 +145,7 @@
 </section>
 
 <!-- START: the stage bar, three equal steps -->
-<section class="how wrap" id="start">
+<section class="how wrap" id="start" data-section="start">
   <div class="how-head"><h2 data-rise data-i18n="st.h">როგორ ვიწყებთ</h2><p data-rise style="--i:1" data-i18n="st.p">მოთხოვნიდან პირველ რეცხვამდე სამი ნაბიჯია.</p></div>
   <div class="bar even" data-ui>
     <div class="seg" style="--i:0"><div><b data-i18n="st.d1">შეთანხმება</b><span class="clause" hidden data-i18n="st.c1">ვირჩევთ მოდელს და ფასს ავტოპარკის ზომის მიხედვით ვათანხმებთ.</span></div></div>
@@ -160,13 +160,13 @@
 </section>
 
 <!-- FAQ: tabbed index cards -->
-<section class="faq wrap" id="faq">
+<section class="faq wrap" id="faq" data-section="faq">
   <h2 data-rise data-i18n="faq.h">კითხვები ბიზნესისთვის</h2>
   <div class="cards" id="cards"></div>
 </section>
 
 <!-- GO: one last door to the form -->
-<section class="go wrap">
+<section class="go wrap" data-section="go">
   <div class="how-head"><h2 data-rise data-i18n="go.h">დაიწყეთ ერთი მოთხოვნით</h2><div data-rise style="--i:1"><p data-i18n="go.p">დატოვეთ ნომერი და მენეჯერი დაგიკავშირდებათ.</p><a class="btn" href="#lead" data-i18n="form.send">მოთხოვნის გაგზავნა</a></div></div>
 </section>
 </main>
