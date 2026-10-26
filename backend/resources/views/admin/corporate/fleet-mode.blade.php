@@ -34,5 +34,9 @@
         @else
             <small class="d-block text-muted">{{ __('admin.cd_car_unknown') }}</small>
         @endif
+        @if($carPackage?->monthly_limit)
+            @php($carUsed = $discountUsed->get($car->id, 0))
+            <small class="d-block {{ $carUsed >= $carPackage->monthly_limit ? 'text-danger' : 'text-muted' }}">{{ __('admin.cd_car_month', ['used' => $carUsed, 'limit' => $carPackage->monthly_limit]) }}</small>
+        @endif
     @endif
 @endif

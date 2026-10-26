@@ -8,6 +8,7 @@
             <div><div class="text-muted">{{ __('admin.ch_month_discount') }}</div><div class="fs-4 fw-bold">{{ $month['discount'] }}</div></div>
             <div><div class="text-muted">{{ __('admin.ch_month_full') }}</div><div class="fs-4 fw-bold">{{ number_format($month['full'], 2) }} ₾</div></div>
             <div><div class="text-muted">{{ __('admin.ch_month_paid') }}</div><div class="fs-4 fw-bold">{{ number_format($month['paid'], 2) }} ₾</div></div>
+            <div><div class="text-muted">{{ __('admin.ch_month_company') }}</div><div class="fs-4 fw-bold">{{ number_format($month['full'] - $month['paid'], 2) }} ₾</div></div>
         </div>
         <table class="table table-hover">
             <thead>

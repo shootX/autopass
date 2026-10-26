@@ -61,6 +61,7 @@ class CorporateFleetController extends Controller
         $packages = $client->discountPackages()->with('prices')->get()->map(fn ($package) => [
             'id' => (int) $package->id,
             'title' => $package->title,
+            'monthly_limit' => $package->monthly_limit,
             'prices' => $package->prices->map(fn ($row) => CorporateDiscounts::payload($row))->values(),
         ]);
 

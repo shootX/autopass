@@ -18,13 +18,15 @@ class CorporatePackage extends Model
 
     public const TYPES = [self::TYPE_WASHES, self::TYPE_DISCOUNT];
 
-    protected $fillable = ['title', 'washes', 'price', 'is_active'];
+    protected $fillable = ['title', 'washes', 'price', 'is_active', 'monthly_limit'];
     // corporate_client_id and type are set once, when the package is created.
 
     protected $casts = [
         'washes' => 'integer',
         'price' => 'decimal:2',
         'is_active' => 'boolean',
+        // Discount packages only: discount washes per car in a calendar month; null is unlimited.
+        'monthly_limit' => 'integer',
     ];
 
     public function client(): BelongsTo

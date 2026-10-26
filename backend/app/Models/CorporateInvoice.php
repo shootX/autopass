@@ -4,10 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * An invoice for one wash package of one company. Its washes are credited when the admin marks it paid.
- * Every column is set by CorporateInvoices only; the buyer and seller are copies made at issue time.
+ * A company invoice. `washes`: one wash package, paid first; its washes are credited when the admin
+ * marks it paid. `discount`: the month's discount washes, billed after the service; `lines` group them
+ * by package, body type and price. Every column is set by CorporateInvoices only; the buyer and seller
+ * are copies made at issue time.
  */
 class CorporateInvoice extends Model
 {
@@ -17,6 +20,10 @@ class CorporateInvoice extends Model
 
     public const STATUS_CANCELLED = 'cancelled';
 
+    public const KIND_WASHES = 'washes';
+
+    public const KIND_DISCOUNT = 'discount';
+
     protected $guarded = ['*'];
 
     protected $casts = [
@@ -25,6 +32,8 @@ class CorporateInvoice extends Model
         'vat_rate' => 'integer',
         'buyer' => 'array',
         'seller' => 'array',
+        'lines' => 'array',
+        'period' => 'date',
         'due_date' => 'date',
         'paid_at' => 'datetime',
         'cancelled_at' => 'datetime',
@@ -40,9 +49,28 @@ class CorporateInvoice extends Model
         return $this->belongsTo(CorporatePackage::class, 'corporate_package_id');
     }
 
+    /** The discount washes this invoice billed. */
+    public function discountWashes(): HasMany
+    {
+        return $this->hasMany(CorporateWash::class);
+    }
+
     public function isOpen(): bool
     {
         return $this->status === self::STATUS_ISSUED;
+    }
+
+    public function isDiscount(): bool
+    {
+        return $this->kind === self::KIND_DISCOUNT;
+    }
+
+    /** The package title, or the month a discount invoice bills, in the reader's language. */
+    public function displayTitle(): string
+    {
+        return $this->isDiscount() && $this->period
+            ? __('admin.inv_discount_title', ['month' => $this->period->format('m.Y')])
+            : (string) $this->title;
     }
 
     /** The VAT inside the amount, rounded to the tetri; 0 when the seller charges none. */

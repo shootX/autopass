@@ -10,7 +10,7 @@ use App\Services\CorporateInvoices;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
-/** Admin side of corporate invoices: the list across companies, issuing one, paid and cancel. */
+/** Admin side of corporate invoices: the list across companies, issuing one, the month's discount invoices, paid and cancel. */
 class CorporateInvoicesController extends Controller
 {
     private const STATUSES = [CorporateInvoice::STATUS_ISSUED, CorporateInvoice::STATUS_PAID, CorporateInvoice::STATUS_CANCELLED];
@@ -43,6 +43,14 @@ class CorporateInvoicesController extends Controller
         return $this->back($corporate->id, __('admin.inv_ordered', ['number' => $result->number]));
     }
 
+    /** The month-end run by hand, for the month that just ended; it never bills a wash twice. */
+    public function discounts()
+    {
+        $count = CorporateInvoices::issueMonth(now()->subMonthNoOverflow());
+
+        return redirect()->route('admin.corporate.invoices')->with('message', __('admin.inv_discount_issued', ['count' => $count]));
+    }
+
     public function show(CorporateInvoice $invoice)
     {
         return view('invoices.document', ['invoice' => $invoice]);
@@ -54,7 +62,9 @@ class CorporateInvoicesController extends Controller
             return $this->back($invoice->corporate_client_id, null, __('admin.inv_error_not_open'));
         }
 
-        return $this->back($invoice->corporate_client_id, __('admin.inv_paid', ['count' => $invoice->washes]));
+        return $this->back($invoice->corporate_client_id, $invoice->isDiscount()
+            ? __('admin.inv_paid_discount')
+            : __('admin.inv_paid', ['count' => $invoice->washes]));
     }
 
     public function cancel(CorporateInvoice $invoice)

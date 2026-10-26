@@ -25,14 +25,15 @@
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 10px 8px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
         th { font-size: 12px; color: var(--muted); font-weight: 600; }
-        td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+        td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+        td.num { white-space: nowrap; }
         .totals { margin-left: auto; margin-top: 12px; width: 320px; max-width: 100%; }
         .totals td { border: 0; padding: 4px 8px; }
         .totals .grand td { font-size: 18px; font-weight: 700; border-top: 2px solid var(--ink); padding-top: 8px; }
         .note { margin-top: 28px; padding: 12px 14px; background: #f6f7f5; border-left: 3px solid var(--accent); }
         .actions { max-width: 800px; margin: 0 auto 24px; text-align: right; }
         .actions button { font: inherit; padding: 8px 16px; border: 0; border-radius: 6px; background: var(--accent); color: #fff; cursor: pointer; }
-        @media (max-width: 600px) { .sheet { padding: 24px 16px; margin: 0; border: 0; } .parties { grid-template-columns: 1fr; } .actions { padding: 16px; } }
+        @media (max-width: 600px) { .sheet { padding: 24px 16px; margin: 0; border: 0; } .parties { grid-template-columns: 1fr; } .actions { padding: 16px; } th, td { padding: 8px 4px; } }
         @media print { body { background: #fff; } .sheet { margin: 0; border: 0; padding: 0; max-width: none; } .actions { display: none; } }
     </style>
 </head>
@@ -42,6 +43,9 @@
         <div>
             <h1>{{ __('admin.inv_doc_title') }} {{ $invoice->number }}</h1>
             <div class="meta">{{ __('admin.inv_date') }}: {{ $invoice->created_at?->format('d.m.Y') }}</div>
+            @if($invoice->period)
+                <div class="meta">{{ __('admin.inv_period') }}: {{ $invoice->period->format('m.Y') }}</div>
+            @endif
             @if($invoice->due_date)
                 <div class="meta">{{ __('admin.inv_due') }}: {{ $invoice->due_date->format('d.m.Y') }}</div>
             @endif
@@ -68,22 +72,49 @@
         @endforeach
     </div>
 
-    <table>
-        <thead>
-        <tr>
-            <th>{{ __('admin.inv_doc_item') }}</th>
-            <th class="num">{{ __('admin.inv_doc_qty') }}</th>
-            <th class="num">{{ __('admin.inv_amount') }}</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr>
-            <td>{{ $invoice->title }}</td>
-            <td class="num">{{ __('admin.cp_washes_count', ['count' => $invoice->washes]) }}</td>
-            <td class="num">{{ $amount }} ₾</td>
-        </tr>
-        </tbody>
-    </table>
+    @if($invoice->isDiscount())
+        {{-- Per wash the company pays the full price minus what the driver paid on site. --}}
+        <table>
+            <thead>
+            <tr>
+                <th>{{ __('admin.inv_doc_item') }}</th>
+                <th class="num">{{ __('admin.inv_doc_qty') }}</th>
+                <th class="num">{{ __('admin.inv_doc_share') }}</th>
+                <th class="num">{{ __('admin.inv_amount') }}</th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach($invoice->lines ?? [] as $line)
+                <tr>
+                    <td>
+                        {{ $line['package'] ?? $invoice->displayTitle() }}@if(! empty($line['car_type'])) · {{ $line['car_type'] }}@endif
+                        <div class="meta">{{ __('admin.inv_doc_discount_line', ['full' => $line['full_price'], 'percent' => $line['percent'], 'pay' => $line['to_pay']]) }}</div>
+                    </td>
+                    <td class="num">{{ $line['count'] }}</td>
+                    <td class="num">{{ number_format((float) $line['share'], 2, '.', ' ') }} ₾</td>
+                    <td class="num">{{ number_format((float) $line['sum'], 2, '.', ' ') }} ₾</td>
+                </tr>
+            @endforeach
+            </tbody>
+        </table>
+    @else
+        <table>
+            <thead>
+            <tr>
+                <th>{{ __('admin.inv_doc_item') }}</th>
+                <th class="num">{{ __('admin.inv_doc_qty') }}</th>
+                <th class="num">{{ __('admin.inv_amount') }}</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>{{ $invoice->title }}</td>
+                <td class="num">{{ __('admin.cp_washes_count', ['count' => $invoice->washes]) }}</td>
+                <td class="num">{{ $amount }} ₾</td>
+            </tr>
+            </tbody>
+        </table>
+    @endif
 
     <table class="totals">
         @if($invoice->vat_rate > 0)

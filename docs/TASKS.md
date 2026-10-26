@@ -400,6 +400,15 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 - [x] Admin: company page block „ინვოისები“ (issue for a package, mark paid, cancel) and the list of all invoices (`/dashboard/corporate/invoices`, unpaid by default). „გადახდილია“ credits the package's washes once; the ledger row links to the invoice.
 - [x] Seller details and VAT come from `INVOICE_*` env values (`config/invoices.php`).
 - [x] Correction from the user: a company may have several active discount packages, and the company picks the package for each discount car (`fleet_cars.corporate_package_id`, migration `2026_10_26_000006`). Fleet in the panel and admin: package picker under the mode; API: `GET /api/corporate/discounts`, `PATCH /api/corporate/vehicles/{plate}` with `discount_package_id`. Today's discount cars keep the company's active package.
-- [ ] Open: who pays the discount difference (full price minus what the driver pays). Not invoiced until the user decides.
+- [x] Who pays the discount difference: the company, by a monthly invoice (see below).
 - [ ] A real PDF file (needs a PDF library, which needs approval). Today the invoice is a print-ready page.
 - [ ] Stage 5: panel redesign and company API (washes, webhook, docs).
+
+## 2026-10-26 — Corporate clients: monthly discount invoice and discount limit (`claude/project-thread-8emdwh`)
+
+- [x] User's answer: the discount difference (full price minus what the driver paid on site) is billed to the company at month end, after the service.
+- [x] `corporate:discount-invoices` runs on the 1st at 01:00 (`routes/console.php`) and makes one `discount` invoice per company for the month that ended, with lines per package, body type and price. Each billed wash points at its invoice (`corporate_washes.corporate_invoice_id`), so a wash is never billed twice. Admin can run it by hand from the invoices list; `--month=YYYY-MM` for a past month.
+- [x] A discount invoice credits nothing when paid; only the admin can cancel it, and its washes go into the next run. It doesn't count toward the company's 3 unpaid package orders.
+- [x] Discount package limit (user chose per car per month): `corporate_packages.monthly_limit`, empty = unlimited. Over the limit the scan answers `discount_limit`; `discount.monthly_limit` and `discount.left` in `checkqr`, `mycars` and the approve answer. Fleet shows each car's use this month.
+- [x] Wash history shows what the company owes for this month so far.
+- [ ] Server: the scheduler (`schedule:run` every minute) must be running, as for the other scheduled commands.
