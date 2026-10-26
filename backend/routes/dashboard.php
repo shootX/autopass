@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AppointmentsController;
 use App\Http\Controllers\Admin\BodyTypesController;
 use App\Http\Controllers\Admin\CarBrandsController;
+use App\Http\Controllers\Admin\ClientProfileController;
 use App\Http\Controllers\Admin\ClientsController;
 use App\Http\Controllers\Admin\CorporateController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -53,6 +54,7 @@ Route::prefix('dashboard')
             Route::get('/', [ClientsController::class, 'index'])->name('admin.clients');
 
             Route::prefix('/{client}')->group(function () {
+                Route::get('/', [ClientProfileController::class, 'show'])->name('admin.clients.show');
                 Route::post('/ban', [ClientsController::class, 'ban'])->name('admin.clients.ban');
                 Route::get('/edit', [ClientsController::class, 'edit'])->name('admin.clients.edit');
                 Route::post('/edit_save', [ClientsController::class, 'edit_save'])->name('admin.clients.edit_save');
