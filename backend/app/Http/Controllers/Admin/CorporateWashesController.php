@@ -20,12 +20,14 @@ class CorporateWashesController extends Controller
             'corporate_package_id' => ['nullable', 'integer', Rule::exists('corporate_packages', 'id')
                 ->where('corporate_client_id', $corporate->id)->where('type', CorporatePackage::TYPE_WASHES)],
             'amount' => ['required_without:corporate_package_id', 'nullable', 'integer', 'min:1', 'max:100000'],
+            // A manual amount goes to the pool of this body type; a package's to its own type's.
+            'car_type' => ['required_without:corporate_package_id', 'nullable', 'string', Rule::exists('body_types', 'name')],
             'note' => ['nullable', 'string', 'max:255'],
         ]);
         $package = empty($data['corporate_package_id']) ? null : CorporatePackage::query()->find($data['corporate_package_id']);
         $amount = $package ? (int) $package->washes : (int) $data['amount'];
 
-        $result = CorporateWashes::credit($corporate, CorporateWashMove::TYPE_CREDIT, $amount, $package, $data['note'] ?? null, (int) auth()->id());
+        $result = CorporateWashes::credit($corporate, CorporateWashMove::TYPE_CREDIT, $amount, $package, $data['note'] ?? null, (int) auth()->id(), null, $data['car_type'] ?? null);
 
         return $this->result($corporate, $result, __('admin.cw_credited', ['count' => $amount]));
     }
@@ -35,10 +37,11 @@ class CorporateWashesController extends Controller
     {
         $data = $request->validate([
             'amount' => ['required', 'integer', 'between:-100000,100000', 'not_in:0'],
+            'car_type' => ['required', 'string', Rule::exists('body_types', 'name')],
             'note' => ['required', 'string', 'max:255'],
         ]);
 
-        $result = CorporateWashes::credit($corporate, CorporateWashMove::TYPE_CORRECTION, (int) $data['amount'], null, $data['note'], (int) auth()->id());
+        $result = CorporateWashes::credit($corporate, CorporateWashMove::TYPE_CORRECTION, (int) $data['amount'], null, $data['note'], (int) auth()->id(), null, $data['car_type']);
 
         return $this->result($corporate, $result, __('admin.cw_corrected'));
     }

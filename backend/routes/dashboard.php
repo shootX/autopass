@@ -21,6 +21,7 @@ use App\Http\Controllers\Admin\SmsInboxController;
 use App\Http\Controllers\Admin\TicketsController;
 use App\Http\Controllers\Admin\VouchersController;
 use App\Http\Controllers\Admin\WashingController;
+use App\Http\Controllers\FleetCatalogController;
 use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\AuditAdminRequests;
 use Illuminate\Auth\Middleware\Authenticate;
@@ -204,6 +205,9 @@ Route::prefix('dashboard')
             Route::get('/add', [CorporateController::class, 'addPage'])->name('admin.corporate.add');
             Route::post('/store', [CorporateController::class, 'store'])->name('admin.corporate.store');
             Route::get('/template', [CorporateController::class, 'template'])->name('admin.corporate.template');
+            Route::get('/catalog/brands/{brand}/models', [FleetCatalogController::class, 'models'])->whereNumber('brand');
+            Route::get('/catalog/years', [FleetCatalogController::class, 'years']);
+            Route::get('/catalog/body-types', [FleetCatalogController::class, 'bodyTypes']);
             Route::get('/invoices', [CorporateInvoicesController::class, 'index'])->name('admin.corporate.invoices');
             Route::post('/invoices/discounts', [CorporateInvoicesController::class, 'discounts'])->name('admin.corporate.invoices.discounts');
             Route::get('/invoices/{invoice}', [CorporateInvoicesController::class, 'show'])->name('admin.corporate.invoices.show');

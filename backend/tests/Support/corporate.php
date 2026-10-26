@@ -5,6 +5,7 @@
 use App\Models\CarBrand;
 use App\Models\CarModel;
 use App\Models\CorporateClient;
+use App\Models\CorporateWashPool;
 use App\Models\FleetCar;
 use App\Models\User;
 use App\Models\UserCar;
@@ -28,8 +29,12 @@ function cwFleet(int $pool = 0, int $onCar = 0, string $plate = 'AA123BB', ?Corp
     $car = FleetCar::query()->create(['corporate_client_id' => $corp->id, 'plate' => $plate, 'brand' => 'Toyota', 'model' => 'Camry', 'source' => 'manual']);
     $car->forceFill([
         'status' => FleetCar::STATUS_ACTIVE, 'driver_phone' => $phone, 'user_id' => $driver->id, 'user_car_id' => $userCar->id,
-        'activated_at' => now(), 'washes_left' => $onCar,
+        'activated_at' => now(), 'washes_left' => $onCar, 'car_type' => 'sedan',
     ])->save();
+    // The company's washes are sedan washes, the type of this car.
+    if ($pool > 0) {
+        CorporateWashPool::query()->updateOrCreate(['corporate_client_id' => $corp->id, 'car_type' => 'sedan'])->forceFill(['balance' => $pool])->save();
+    }
 
     return ['corp' => $corp, 'car' => $car, 'driver' => $driver, 'userCar' => $userCar];
 }

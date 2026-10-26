@@ -3,6 +3,7 @@
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Tests\TestCase;
@@ -34,4 +35,19 @@ function approveTokenFor(User $manager, int $packageId): string
     ], now()->addMinutes(10));
 
     return $token;
+}
+
+/** A Toyota Avensis (geoapi brand 501, model 7) built as a sedan and a wagon in 2014-2018, as an SUV from 2019. */
+function fakeYearCatalog(array $generations = [
+    ['id' => '71', 'name' => 'T27 Sedan', 'year_start' => 2012, 'year_end' => 2018, 'body_type' => 'Sedan'],
+    ['id' => '72', 'name' => 'T27 Wagon', 'year_start' => 2014, 'year_end' => 2018, 'body_type' => 'Station wagon'],
+    ['id' => '73', 'name' => 'T28', 'year_start' => 2019, 'year_end' => null, 'body_type' => 'Crossover'],
+]): void {
+    Cache::flush();
+    config(['services.carapi.url' => 'https://geoapi.test/api/v1', 'services.carapi.secret' => 'geoapi_sk_test']);
+    Http::fake([
+        'geoapi.test/api/v1/models/7/generations*' => Http::response(['data' => $generations, 'meta' => ['total' => count($generations)]]),
+        'geoapi.test/api/v1/brands/toyota/models*' => Http::response(['data' => [['id' => '7', 'name' => 'Avensis']], 'meta' => ['total' => 1]]),
+        'geoapi.test/api/v1/brands*' => Http::response(['data' => [['id' => '501', 'name' => 'Toyota', 'slug' => 'toyota']], 'meta' => ['total' => 1]]),
+    ]);
 }

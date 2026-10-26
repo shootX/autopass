@@ -22,6 +22,7 @@ class CorporateWashMove extends Model
     protected $fillable = [
         'corporate_client_id',
         'type',
+        'car_type',
         'amount',
         'balance_after',
         'fleet_car_id',

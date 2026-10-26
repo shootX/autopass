@@ -103,6 +103,7 @@ Route::middleware(['auth:api', CorsMiddleware::class, EnsureApiSession::class])-
 
     Route::get('/cars/brands', [CarsController::class, 'brands']);
     Route::get('/cars/years', [CarsController::class, 'years']);
+    Route::get('/cars/body-types', [CarsController::class, 'bodyTypes']);
     Route::get('/cars/brands/{brand_id}/models', [CarsController::class, 'models']);
     Route::get('/cars/models/{model_id}/generations', [CarCatalogController::class, 'generations'])->whereNumber('model_id');
     Route::get('/cars/models/{model_id}/generations/{generation_id}/modifications', [CarCatalogController::class, 'modifications'])

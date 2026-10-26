@@ -4,8 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Mail\TemporaryPasswordMail;
-use App\Models\CarBrand;
-use App\Models\CarModel;
 use App\Models\CorporateClient;
 use App\Models\CorporateInvoice;
 use App\Models\FleetCar;
@@ -150,7 +148,7 @@ class CorporateController extends Controller
             return $data;
         }
 
-        $result = FleetCars::add($corporate, $data['plate'], $data['brand'], $data['model'], 'manual', $data['phone']);
+        $result = FleetCars::add($corporate, $data, 'manual');
         if ($result !== 'added') {
             return redirect()->back()->withInput()->withErrors(FleetCars::addError($result));
         }
@@ -242,25 +240,23 @@ class CorporateController extends Controller
         return redirect()->route('admin.corporate.show', $corporate)->with('message', __('admin.temp_password_sent'));
     }
 
+    /** The form's car: catalog brand and model ids, year and, when the year has several, the body type. */
     private function carFields(Request $request): array|RedirectResponse
     {
         $data = $request->validate([
             'plate' => ['required', 'string', 'max:20'],
             'phone' => ['required', 'string', 'max:32'],
-            'brand_id' => ['required', 'integer', 'exists:car_brands,id'],
-            'model_id' => ['required', 'integer', Rule::exists('car_models', 'id')->where(fn ($query) => $query->where('brand_id', $request->integer('brand_id')))],
+            'brand_id' => ['required', 'integer', 'min:1'],
+            'model_id' => ['required', 'integer', 'min:1'],
+            'year' => ['required', 'integer'],
+            'body_type' => ['nullable', 'string', 'max:32'],
         ]);
 
         if (! FleetCars::validPlate($data['plate'])) {
             return back()->withInput()->withErrors(['plate' => __('admin.fleet_plate_format')]);
         }
 
-        return [
-            'plate' => $data['plate'],
-            'phone' => $data['phone'],
-            'brand' => CarBrand::query()->find($data['brand_id'])->name,
-            'model' => CarModel::query()->find($data['model_id'])->name,
-        ];
+        return $data;
     }
 
     private function validateClient(Request $request, ?CorporateClient $current = null): array

@@ -24,11 +24,13 @@ class CorporateFleetController extends Controller
             return $client;
         }
 
-        $cars = $client->cars()->orderBy('plate')->get(['plate', 'brand', 'model', 'status', 'driver_phone', 'mode', 'corporate_package_id', 'washes_left'])
+        $cars = $client->cars()->with('userCar.model')->orderBy('plate')->get()
             ->map(fn (FleetCar $car) => [
                 'plate' => $car->plate,
                 'brand' => $car->brand,
                 'model' => $car->model,
+                'year' => $car->year ?? $car->userCar?->year,
+                'body_type' => $car->carType(),
                 'status' => $car->status,
                 'phone' => $car->driver_phone,
                 'mode' => $car->mode,
@@ -39,7 +41,7 @@ class CorporateFleetController extends Controller
         return response()->json(['ok' => true, 'vehicles' => $cars]);
     }
 
-    /** GET /balance: the company's washes, how many are given to cars and how many are free. */
+    /** GET /balance: the company's washes, how many are given to cars and how many are free, in all and per body type. */
     public function balance(Request $request)
     {
         $client = $this->client($request);
@@ -77,12 +79,7 @@ class CorporateFleetController extends Controller
 
         $payload = $request->input('vehicles');
         if (! is_array($payload)) {
-            $payload = [[
-                'plate' => $request->input('plate'),
-                'brand' => $request->input('brand'),
-                'model' => $request->input('model'),
-                'phone' => $request->input('phone'),
-            ]];
+            $payload = [$request->only(['plate', 'brand', 'model', 'year', 'body_type', 'phone'])];
         }
 
         if (count($payload) > 500) {
@@ -97,13 +94,13 @@ class CorporateFleetController extends Controller
 
                 continue;
             }
-            $plate = (string) ($row['plate'] ?? '');
-            $phone = isset($row['phone']) && is_scalar($row['phone']) ? (string) $row['phone'] : null;
-            $result = FleetCars::add($client, $plate, (string) ($row['brand'] ?? ''), (string) ($row['model'] ?? ''), 'api', $phone);
+            $result = FleetCars::add($client, $row, 'api', $bodyTypes);
             if ($result === 'added') {
                 $added++;
             } else {
-                $skipped[] = ['plate' => FleetCars::plate($plate), 'reason' => $result];
+                // A body type error lists the types the year has, to send one of them as body_type.
+                $skipped[] = ['plate' => FleetCars::plate(is_scalar($row['plate'] ?? null) ? (string) $row['plate'] : ''), 'reason' => $result]
+                    + (str_starts_with($result, 'body_type') ? ['body_types' => $bodyTypes] : []);
             }
         }
 
@@ -149,9 +146,16 @@ class CorporateFleetController extends Controller
                 return response()->json(['ok' => false, 'message' => 'Unknown discount package'], 422);
             }
         }
-        if ($request->has('washes')
-            && CorporateWashes::allocate($car, $request->integer('washes'), 'api') === 'not_enough') {
-            return response()->json(['ok' => false, 'message' => 'Not enough free washes', 'free' => CorporateWashes::balance($client)['free']], 422);
+        $allocated = $request->has('washes') ? CorporateWashes::allocate($car, $request->integer('washes'), 'api') : 'ok';
+        if ($allocated === 'not_enough') {
+            // Free washes of the car's own body type, the only ones it can get.
+            $type = $car->carType();
+
+            return response()->json(['ok' => false, 'message' => 'Not enough free washes of this body type', 'body_type' => $type,
+                'free' => CorporateWashes::balance($client)['types'][$type]['free'] ?? 0], 422);
+        }
+        if ($allocated === 'no_body_type') {
+            return response()->json(['ok' => false, 'message' => 'The car has no body type'], 422);
         }
 
         $car->setRelation('client', $client);

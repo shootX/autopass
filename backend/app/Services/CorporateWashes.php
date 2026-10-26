@@ -2,28 +2,50 @@
 
 namespace App\Services;
 
+use App\Models\BodyType;
 use App\Models\CorporateClient;
 use App\Models\CorporatePackage;
 use App\Models\CorporateWash;
 use App\Models\CorporateWashMove;
+use App\Models\CorporateWashPool;
 use App\Models\FleetCar;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 
 /**
- * A company's wash pool and each car's share of it. The pool counts every wash the company owns,
- * the ones given to cars included: 100 in the pool and 4 on car X become 99 and 3 after one wash.
+ * A company's wash pools, one per body type, and each car's share of its own type's pool. A pool counts
+ * every wash of that type the company owns, the ones given to cars included: 100 sedan washes with 4 on
+ * sedan X become 99 and 3 after one wash. washes_balance on the company is the sum of its pools.
  * Every write locks the company row first, so washes, credits and allocations never interleave.
  */
 class CorporateWashes
 {
-    /** @return array{total: int, allocated: int, free: int} */
+    /**
+     * The whole pool and, per body type, what the company owns, has given to cars and has free.
+     *
+     * @return array{total: int, allocated: int, free: int, types: array<string, array{total: int, allocated: int, free: int}>}
+     */
     public static function balance(CorporateClient $client): array
     {
-        $total = (int) CorporateClient::query()->whereKey($client->id)->value('washes_balance');
-        $allocated = self::allocated($client->id);
+        $pools = CorporateWashPool::query()->where('corporate_client_id', $client->id)->pluck('balance', 'car_type');
+        $allocated = self::allocatedByType($client->id);
+        $types = [];
+        foreach ($pools->keys()->merge(array_keys($allocated))->unique() as $type) {
+            $total = (int) ($pools[$type] ?? 0);
+            $given = $allocated[$type] ?? 0;
+            if ($total !== 0 || $given !== 0) {
+                $types[$type] = ['total' => $total, 'allocated' => $given, 'free' => max(0, $total - $given)];
+            }
+        }
+        $order = array_flip(array_keys(BodyType::options()));
+        uksort($types, fn (string $a, string $b) => ($order[$a] ?? PHP_INT_MAX) <=> ($order[$b] ?? PHP_INT_MAX));
 
-        return ['total' => $total, 'allocated' => $allocated, 'free' => max(0, $total - $allocated)];
+        return [
+            'total' => (int) $pools->sum(),
+            'allocated' => array_sum($allocated),
+            'free' => array_sum(array_column($types, 'free')),
+            'types' => $types,
+        ];
     }
 
     /** The newest ledger rows first, for the admin and the company panel. */
@@ -37,31 +59,38 @@ class CorporateWashes
     }
 
     /**
-     * Admin only. A credit adds a paid package or a manual amount; a correction may be negative.
-     * The pool never drops below the washes already given to cars.
+     * Admin only. A credit adds a paid package (to its body type's pool) or a manual amount; a correction may
+     * be negative. A pool never drops below the washes already given to cars of its type.
      *
      * @param  'credit'|'correction'  $type
-     * @return 'ok'|'zero'|'below_allocated'
+     * @return 'ok'|'zero'|'below_allocated'|'no_body_type'
      */
-    public static function credit(CorporateClient $client, string $type, int $amount, ?CorporatePackage $package, ?string $note, int $adminId, ?int $invoiceId = null): string
+    public static function credit(CorporateClient $client, string $type, int $amount, ?CorporatePackage $package, ?string $note, int $adminId, ?int $invoiceId = null, ?string $carType = null): string
     {
         if ($amount === 0 || ($type === CorporateWashMove::TYPE_CREDIT && $amount < 0)) {
             return 'zero';
         }
+        $carType = $package?->car_type ?: $carType;
+        if ($carType === null || $carType === '') {
+            return 'no_body_type';
+        }
 
-        return DB::transaction(function () use ($client, $type, $amount, $package, $note, $adminId, $invoiceId) {
+        return DB::transaction(function () use ($client, $type, $amount, $package, $note, $adminId, $invoiceId, $carType) {
             $locked = self::lockClient($client->id);
-            $next = (int) $locked->washes_balance + $amount;
-            if ($next < self::allocated($locked->id)) {
+            $pool = self::lockPool($locked->id, $carType);
+            $next = (int) $pool->balance + $amount;
+            if ($next < (self::allocatedByType($locked->id)[$carType] ?? 0)) {
                 return 'below_allocated';
             }
 
-            $locked->forceFill(['washes_balance' => $next])->save();
+            $pool->forceFill(['balance' => $next])->save();
+            $locked->forceFill(['washes_balance' => (int) $locked->washes_balance + $amount])->save();
             // Mirror the saved value without marking it dirty: a later save() of the caller's copy
             // must not write a stale balance over a parallel wash.
-            $client->washes_balance = $next;
+            $client->washes_balance = $locked->washes_balance;
             $client->syncOriginalAttribute('washes_balance');
             self::move($locked, $type, $amount, [
+                'car_type' => $carType,
                 'corporate_package_id' => $package?->id,
                 'corporate_invoice_id' => $invoiceId,
                 'actor' => 'admin',
@@ -74,10 +103,11 @@ class CorporateWashes
     }
 
     /**
-     * Sets how many of the pool's washes one car may use. Taking washes back returns them to the pool.
+     * Sets how many of its body type's washes one car may use. Taking washes back returns them to the pool.
+     * The car's body type is kept on it from then on, so its washes always come from and go back to one pool.
      *
      * @param  'admin'|'company'|'api'  $actor
-     * @return 'ok'|'invalid'|'not_enough'
+     * @return 'ok'|'invalid'|'not_enough'|'no_body_type'
      */
     public static function allocate(FleetCar $car, int $washes, string $actor, ?int $actorId = null): string
     {
@@ -88,18 +118,26 @@ class CorporateWashes
         return DB::transaction(function () use ($car, $washes, $actor, $actorId) {
             $client = self::lockClient((int) $car->corporate_client_id);
             $locked = FleetCar::query()->whereKey($car->id)->lockForUpdate()->firstOrFail();
+            $carType = $locked->carType();
+            if ($carType === null) {
+                return 'no_body_type';
+            }
             $delta = $washes - (int) $locked->washes_left;
             if ($delta === 0) {
                 return 'ok';
             }
-            if ($delta > 0 && $delta > (int) $client->washes_balance - self::allocated($client->id)) {
+            $pool = self::lockPool($client->id, $carType);
+            if ($delta > 0 && $delta > (int) $pool->balance - (self::allocatedByType($client->id)[$carType] ?? 0)) {
                 return 'not_enough';
             }
 
-            $locked->forceFill(['washes_left' => $washes])->save();
+            $locked->forceFill(['washes_left' => $washes, 'car_type' => $carType])->save();
             $car->washes_left = $washes;
+            $car->car_type = $carType;
             $car->syncOriginalAttribute('washes_left');
+            $car->syncOriginalAttribute('car_type');
             self::move($client, CorporateWashMove::TYPE_ALLOCATE, $delta, [
+                'car_type' => $carType,
                 'fleet_car_id' => $locked->id,
                 'plate' => $locked->plate,
                 'car_balance_after' => $washes,
@@ -139,6 +177,7 @@ class CorporateWashes
             }
             if ((int) $locked->washes_left > 0) {
                 self::move($client, CorporateWashMove::TYPE_RELEASE, -(int) $locked->washes_left, [
+                    'car_type' => $locked->car_type,
                     'plate' => $locked->plate,
                     'car_balance_after' => 0,
                     'actor' => $actor,
@@ -166,7 +205,7 @@ class CorporateWashes
 
             return CorporateDiscounts::left($car) === 0 ? 'discount_limit' : null;
         }
-        if ((int) $car->washes_left < 1 || (int) $car->client?->washes_balance < 1) {
+        if ((int) $car->washes_left < 1 || self::poolBalance((int) $car->corporate_client_id, $car->carType()) < 1) {
             return 'no_washes';
         }
 
@@ -213,15 +252,19 @@ class CorporateWashes
                     'result' => 'ok',
                     'mode' => $locked->mode,
                     'washes_left' => (int) $locked->washes_left,
-                    'company_washes' => (int) $client->washes_balance,
+                    'company_washes' => self::poolBalance($client->id, $locked->carType()),
                     'discount' => CorporateDiscounts::payload($discount, $locked),
                 ];
             }
 
+            // A car with washes has its body type kept on it (allocate), so this is the pool they came from.
+            $pool = self::lockPool($client->id, (string) $locked->carType());
+            $pool->forceFill(['balance' => (int) $pool->balance - 1])->save();
             $client->forceFill(['washes_balance' => (int) $client->washes_balance - 1])->save();
             $locked->forceFill(['washes_left' => (int) $locked->washes_left - 1])->save();
             $wash = CorporateWash::query()->create($row);
             self::move($client, CorporateWashMove::TYPE_WASH, -1, [
+                'car_type' => $locked->carType(),
                 'fleet_car_id' => $locked->id,
                 'plate' => $locked->plate,
                 'car_balance_after' => (int) $locked->washes_left,
@@ -234,7 +277,7 @@ class CorporateWashes
                 'result' => 'ok',
                 'mode' => $locked->mode,
                 'washes_left' => (int) $locked->washes_left,
-                'company_washes' => (int) $client->washes_balance,
+                'company_washes' => (int) $pool->balance,
                 'discount' => null,
             ];
         });
@@ -245,9 +288,28 @@ class CorporateWashes
         return CorporateClient::query()->whereKey($id)->lockForUpdate()->firstOrFail();
     }
 
-    private static function allocated(int $clientId): int
+    /** Washes of one type the company owns; 0 for a type it has none of. */
+    public static function poolBalance(int $clientId, ?string $carType): int
     {
-        return (int) FleetCar::query()->where('corporate_client_id', $clientId)->sum('washes_left');
+        return $carType === null ? 0
+            : (int) CorporateWashPool::query()->where('corporate_client_id', $clientId)->where('car_type', $carType)->value('balance');
+    }
+
+    private static function lockPool(int $clientId, string $carType): CorporateWashPool
+    {
+        $keys = ['corporate_client_id' => $clientId, 'car_type' => $carType];
+        // The company row is locked already, so no parallel request can create the same pool.
+        CorporateWashPool::query()->firstOrCreate($keys);
+
+        return CorporateWashPool::query()->where($keys)->lockForUpdate()->firstOrFail();
+    }
+
+    /** @return array<string, int> washes given to cars, per body type */
+    private static function allocatedByType(int $clientId): array
+    {
+        return FleetCar::query()->where('corporate_client_id', $clientId)->where('washes_left', '>', 0)->whereNotNull('car_type')
+            ->groupBy('car_type')->selectRaw('car_type, SUM(washes_left) AS given')->pluck('given', 'car_type')
+            ->map(fn ($given) => (int) $given)->all();
     }
 
     private static function move(CorporateClient $client, string $type, int $amount, array $fields): void
@@ -256,7 +318,8 @@ class CorporateWashes
             'corporate_client_id' => $client->id,
             'type' => $type,
             'amount' => $amount,
-            'balance_after' => (int) $client->washes_balance,
+            // The pool of the row's body type after it; the whole pool for a row without one.
+            'balance_after' => isset($fields['car_type']) ? self::poolBalance($client->id, $fields['car_type']) : (int) $client->washes_balance,
         ] + $fields);
     }
 }

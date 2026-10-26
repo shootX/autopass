@@ -75,10 +75,10 @@ it('gives a new catalog model and a new car the body type the catalog names', fu
     $this->withToken($token)->getJson('/api/packages?carid='.$car->id)->assertOk()
         ->assertJsonPath('packages.0.car_type', 'panel_van')->assertJsonCount(1, 'packages');
 
-    // Without a generation the car goes by its model's type.
+    // Without a generation the car takes the body type its year was built in.
     $this->withToken($token)->postJson('/api/mycars/add', [
-        'source' => 'carapi', 'brand_id' => 501, 'model_id' => 9, 'plate' => 'AA102AA',
-    ])->assertOk()->assertJsonPath('car.car_type', 'suv');
+        'source' => 'carapi', 'brand_id' => 501, 'model_id' => 9, 'year' => 2015, 'plate' => 'AA102AA',
+    ])->assertOk()->assertJsonPath('car.car_type', 'suv')->assertJsonPath('car.generation.id', 91);
     $types = collect($this->withToken($token)->getJson('/api/mycars')->assertOk()->json('cars'))->pluck('car_type', 'plate')->all();
     expect($types)->toBe(['AA101AA' => 'panel_van', 'AA102AA' => 'suv']);
 });

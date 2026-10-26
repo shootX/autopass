@@ -7,10 +7,13 @@ import AddCar from "./AddCar";
 import carReducer, { setBrand, setModel } from "@/store/carSlice";
 import { saveAccessToken } from "@/lib/accessToken";
 
-const mock = vi.hoisted(() => ({ fetch: vi.fn() }));
+const mock = vi.hoisted(() => ({ fetch: vi.fn(), bodyTypes: [] as { key: string; name: string }[] }));
 vi.mock("@/utils/customFetch", () => ({ customFetch: mock.fetch }));
 vi.mock("@/hooks/useCarBrands", () => ({ useCarBrands: () => ({ brands: [], loading: false, error: false }) }));
 vi.mock("@/hooks/useCarYears", () => ({ useCarYears: () => ({ years: [2020], source: "catalog", loading: false, failed: false, retry: vi.fn() }) }));
+vi.mock("@/hooks/useCarBodyTypes", () => ({ useCarBodyTypes: () => ({
+  types: mock.bodyTypes, choose: mock.bodyTypes.length > 1, loading: false, failed: false, retry: vi.fn(),
+}) }));
 vi.mock("@/hooks/useTranslation", () => ({ useTranslation: () => (key: string) => key }));
 vi.mock("@/components/Header", () => ({ default: () => null }));
 
@@ -26,6 +29,7 @@ function renderSelectedCar() {
 beforeEach(() => {
   saveAccessToken("review-token");
   mock.fetch.mockReset();
+  mock.bodyTypes = [];
 });
 afterEach(() => { cleanup(); localStorage.clear(); });
 
@@ -44,6 +48,30 @@ describe("car creation integration", () => {
     expect(body).toMatchObject({ source: "carapi", brand_id: 901, model_id: 7, year: 2020, plate: "AA123BB", fuel_type: "premium" });
     await waitFor(() => expect(store.getState().car.cars[0]?.id).toBe(12));
     expect(store.getState().car.cars[0]?.year).toBe(2020);
+  });
+
+  it("asks for the body type only when the year has several, and sends the pick", async () => {
+    mock.fetch.mockResolvedValue(new Response(JSON.stringify({ success: true, car: {
+      id: 13, plate: "AA123BB", year: 2020, car_type: "wagon", model: { id: 3, name: "Remote model", type: "sedan", brand: { name: "Remote brand" } },
+    } }), { status: 200 }));
+    mock.bodyTypes = [{ key: "sedan", name: "Sedan" }, { key: "wagon", name: "Wagon" }];
+    renderSelectedCar();
+    fireEvent.change(screen.getByLabelText("AddCar.labels.year"), { target: { value: "2020" } });
+    fireEvent.change(screen.getByLabelText("AddCar.labels.fuel"), { target: { value: "premium" } });
+    const add = screen.getByRole("button", { name: "AddCar.buttons.add" }) as HTMLButtonElement;
+    expect(add.disabled).toBe(true);
+    fireEvent.change(screen.getByLabelText("AddCar.labels.bodyType"), { target: { value: "wagon" } });
+    expect(add.disabled).toBe(false);
+    fireEvent.click(add);
+    await waitFor(() => expect(mock.fetch).toHaveBeenCalledTimes(1));
+    expect(JSON.parse(String((mock.fetch.mock.calls[0][1] as RequestInit).body))).toMatchObject({ car_type: "wagon", year: 2020 });
+  });
+
+  it("shows no body type field when the year has one type", () => {
+    mock.bodyTypes = [{ key: "suv", name: "SUV" }];
+    renderSelectedCar();
+    fireEvent.change(screen.getByLabelText("AddCar.labels.year"), { target: { value: "2020" } });
+    expect(screen.queryByLabelText("AddCar.labels.bodyType")).toBeNull();
   });
 
   it("requires a year before submitting a new car", () => {

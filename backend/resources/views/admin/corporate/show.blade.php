@@ -39,6 +39,7 @@
             'importUrl' => route('admin.corporate.import', $corporate),
             'templateUrl' => route('admin.corporate.template'),
             'tokenUrl' => route('admin.corporate.token', $corporate),
+            'catalogUrl' => url('/dashboard/corporate/catalog'),
             'carBase' => url('/dashboard/corporate/'.$corporate->id.'/cars'),
         ])
 

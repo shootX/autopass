@@ -37,6 +37,15 @@
                     <input class="form-control mb-3" id="cp_title" name="title" required maxlength="120" value="{{ old('title', $package->title) }}">
 
                     @unless($package->isDiscount())
+                        <label class="form-label" for="cp_car_type">{{ __('admin.body_type') }}</label>
+                        <select class="form-select" id="cp_car_type" name="car_type" required>
+                            <option value="">—</option>
+                            @foreach($bodyTypes as $type)
+                                <option value="{{ $type }}" @selected(old('car_type', $package->car_type) === $type)>{{ \App\Models\BodyType::labelFor($type) }}</option>
+                            @endforeach
+                        </select>
+                        <small class="d-block text-muted mb-3">{{ __('admin.cp_car_type_hint') }}</small>
+                        @error('car_type')<small class="d-block text-danger mb-3">{{ $message }}</small>@enderror
                         <label class="form-label" for="cp_washes">{{ __('admin.cw_package_washes') }}</label>
                         <input class="form-control mb-3" id="cp_washes" type="number" name="washes" required min="1" max="100000" value="{{ old('washes', $package->washes) }}">
                     @endunless

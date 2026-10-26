@@ -446,3 +446,12 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 - [x] `mycars` and the car payload carry `car_type`; the web app shows it. Admin > Body types shows cars per type, types with cars but no package, and catalog names it could not read.
 - [x] `php artisan cars:sync-body-types [--dry-run] [--cars-only]` sets the type of cars and catalog models added before (one cached geoapi.ge request per catalog model).
 - [ ] Server: `php artisan migrate`, then `php artisan cars:sync-body-types --dry-run`, check, and run it without `--dry-run`. Make sure every type that has cars has a package.
+
+## 2026-10-26 — Body type from brand, model and year (`claude/project-thread-fw494k`)
+
+- [x] `CarBody` (backend): the body types of the geoapi.ge generations built in the car's year. One type is set on its own; several (a sedan and a wagon) are offered. `GET /api/cars/body-types?source&brand_id&model_id&year` answers `{body_types, choose, car_type}`.
+- [x] `mycars/add` and `edit`: without a generation the car takes the year's type, and `car_type` is needed only when the year has several (`422 body_type_required` / `body_type_invalid` with `body_types`). The newest generation of that type gives the name and photo. A changed year reads the type again.
+- [x] Web app add-car form: the body type field shows only when the year has several.
+- [x] Company cars (`fleet_cars.year`, `car_type`, catalog ids, `generation_id`): the panel form picks brand, model and year from the catalog (`/partner/catalog/*`, `/dashboard/corporate/catalog/*`) and shows the body type only when needed; sheets get `წელი` and `ძარა` columns; the API takes `year` and `body_type` and lists the fitting types when one is missing. The driver's app car is made from this on sign-in. `FleetCar::carType()` (company's type first) prices discounts.
+- [x] Company washes per body type (`corporate_wash_pools`): a wash package has a body type and credits that type's pool; a car gets washes from its own type's pool only and keeps its type (`fleet_cars.car_type`) once it has washes. Manual credits and corrections name the type. `GET /api/corporate/balance` adds `types`. The migration splits a company's existing washes: each car's share to its type, the free rest to the type most of its cars have (also given to old wash packages).
+- [ ] Server: `php artisan migrate` (000012, 000013), `php artisan route:cache`, rebuild gewash. Check each company's split in Admin > company > Washes and correct it if needed. Tell API clients that `year` is now required.

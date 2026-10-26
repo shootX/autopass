@@ -293,7 +293,7 @@ it('caps the discount washes of each car per month when the package has a limit'
     $fleet['package']->update(['monthly_limit' => null]);
     $approve()->assertJsonPath('corporate.discount.monthly_limit', null)->assertJsonPath('corporate.discount.left', null);
     $this->actingAs($admin)->post('/dashboard/packages/corporate/store', [
-        'corporate_client_id' => $fleet['corp']->id, 'type' => 'washes', 'title' => '10', 'washes' => 10, 'monthly_limit' => 3, 'is_active' => 1,
+        'corporate_client_id' => $fleet['corp']->id, 'type' => 'washes', 'car_type' => 'sedan', 'title' => '10', 'washes' => 10, 'monthly_limit' => 3, 'is_active' => 1,
     ])->assertSessionHasNoErrors();
     expect(CorporatePackage::query()->where('type', 'washes')->sole()->monthly_limit)->toBeNull();
 });

@@ -67,13 +67,14 @@ class CorporateQr
                 'company' => (string) $car->client?->name,
                 'mode' => $car->mode,
                 'plate' => $car->plate,
-                'car_type' => $car->userCar?->carType(),
+                'car_type' => $car->carType(),
                 'user' => [
                     'name' => $car->user?->name,
                     'surname' => $car->user?->surname,
                 ],
                 'washes_left' => (int) $car->washes_left,
-                'company_washes' => (int) $car->client?->washes_balance,
+                // The washes of the car's own body type, the only ones it can wash from.
+                'company_washes' => CorporateWashes::poolBalance((int) $car->corporate_client_id, $car->carType()),
                 // Discount mode: the full price, the percent and what the driver pays on site.
                 'discount' => $car->mode === FleetCar::MODE_DISCOUNT ? CorporateDiscounts::payload(CorporateDiscounts::forCar($car), $car) : null,
                 'can_approve' => $blocker === null,

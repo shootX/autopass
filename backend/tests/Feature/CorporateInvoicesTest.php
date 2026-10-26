@@ -14,7 +14,8 @@ use Illuminate\Support\Facades\Hash;
 function ciPackage(CorporateClient $corp, array $fields = []): CorporatePackage
 {
     $package = new CorporatePackage($fields + ['title' => '100 რეცხვა', 'washes' => 100, 'price' => 1500, 'is_active' => true]);
-    $package->forceFill(['corporate_client_id' => $corp->id, 'type' => $fields['type'] ?? 'washes'])->save();
+    $type = $fields['type'] ?? 'washes';
+    $package->forceFill(['corporate_client_id' => $corp->id, 'type' => $type, 'car_type' => $type === 'washes' ? 'sedan' : null])->save();
 
     return $package;
 }

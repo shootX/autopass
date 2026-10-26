@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\ReferralsController;
+use App\Http\Controllers\FleetCatalogController;
 use App\Http\Controllers\PartnerFleetController;
 use App\Http\Controllers\PartnerInvoicesController;
 use App\Http\Controllers\PartnerPanelController;
@@ -42,6 +43,9 @@ Route::prefix('partner')->group(function () {
         Route::get('/invoices/{invoice}', [PartnerInvoicesController::class, 'show'])->name('partner.invoices.show');
         Route::post('/invoices/{invoice}/cancel', [PartnerInvoicesController::class, 'cancel'])->name('partner.invoices.cancel');
         Route::post('/import', [PartnerPanelController::class, 'import'])->name('partner.import');
+        Route::get('/catalog/brands/{brand}/models', [FleetCatalogController::class, 'models'])->whereNumber('brand')->middleware('throttle:60,1');
+        Route::get('/catalog/years', [FleetCatalogController::class, 'years'])->middleware('throttle:60,1');
+        Route::get('/catalog/body-types', [FleetCatalogController::class, 'bodyTypes'])->middleware('throttle:60,1');
         Route::get('/template', [PartnerPanelController::class, 'template'])->name('partner.template');
         Route::post('/token', [PartnerPanelController::class, 'token'])->name('partner.token');
     });

@@ -15,10 +15,10 @@ use Illuminate\Support\Collection;
  */
 class CorporateDiscounts
 {
-    /** The body type of the driver's own car; unknown until the driver signs in and the car is linked. */
+    /** The body type the company gave the car, else that of the driver's own car once it is linked. */
     public static function carType(FleetCar $car): ?string
     {
-        return $car->userCar?->carType();
+        return $car->carType();
     }
 
     /** The car's discount package while it is active, else null (switched off, deleted or never picked). */
