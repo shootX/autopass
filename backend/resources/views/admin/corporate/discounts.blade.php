@@ -1,7 +1,7 @@
-{{-- The company's active discount package: full price, percent and what the driver pays per body type. --}}
+{{-- The company's active discount packages: full price, percent and what the driver pays per body type, and how many cars use each. --}}
 <div id="discounts"></div>
 <div class="card mt-4">
-    <div class="card-header">{{ __('admin.cd_title') }}@if($discount) · {{ $discount->title }}@endif</div>
+    <div class="card-header">{{ __('admin.cd_title') }}</div>
     <div class="card-body table-responsive">
         <small class="d-block mb-2">{{ __($manage ? 'admin.cd_hint' : 'admin.cd_hint_company') }}</small>
         <table class="table table-hover align-middle">
@@ -14,13 +14,18 @@
             </tr>
             </thead>
             <tbody>
-            @forelse($discount?->prices ?? [] as $row)
-                <tr>
-                    <td>{{ $row->car_type }}</td>
-                    <td>{{ $row->full_price }} ₾</td>
-                    <td>{{ $row->percent }}%</td>
-                    <td class="fw-bold">{{ $row->toPay() }} ₾</td>
+            @forelse($discounts as $discount)
+                <tr class="table-light">
+                    <th colspan="4">{{ $discount->title }} <span class="text-muted fw-normal ms-2">{{ __('admin.cd_cars', ['count' => $discount->cars_count]) }}</span></th>
                 </tr>
+                @foreach($discount->prices as $row)
+                    <tr>
+                        <td>{{ $row->car_type }}</td>
+                        <td>{{ $row->full_price }} ₾</td>
+                        <td>{{ $row->percent }}%</td>
+                        <td class="fw-bold">{{ $row->toPay() }} ₾</td>
+                    </tr>
+                @endforeach
             @empty
                 <tr><td colspan="4" class="umami-empty">{{ __('admin.cd_empty') }}</td></tr>
             @endforelse

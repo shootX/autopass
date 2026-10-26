@@ -18,7 +18,7 @@ class CorporateWashPanel
             'balance' => CorporateWashes::balance($corporate),
             'packages' => ($manage ? $packages : $packages->where('is_active', true))->get(),
             'moves' => CorporateWashes::ledger($corporate),
-            'discount' => $corporate->discountPackage()->with('prices')->first(),
+            'discounts' => $corporate->discountPackages()->with('prices')->withCount('cars')->get(),
             'history' => self::history($corporate),
             'month' => self::month($corporate),
             'manage' => $manage,

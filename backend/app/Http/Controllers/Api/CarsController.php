@@ -65,7 +65,7 @@ class CarsController extends Controller
             $cars = $user->cars()->with(['model.brand'])->get();
             $companies = FleetCar::query()->whereIn('user_car_id', $cars->pluck('id'))
                 ->where('user_id', $user->id)
-                ->where('status', FleetCar::STATUS_ACTIVE)->with(['client:id,name,ban', 'client.discountPackage.prices'])->get()
+                ->where('status', FleetCar::STATUS_ACTIVE)->with(['client:id,name,ban', 'discountPackage.prices'])->get()
                 ->keyBy(fn (FleetCar $fleet) => (int) $fleet->user_car_id);
 
             $cars = $cars->map(function ($car) use ($companies) {
@@ -87,9 +87,9 @@ class CarsController extends Controller
                         'mode' => $fleet->mode,
                         'washes_left' => (int) $fleet->washes_left,
                         'blocked' => (bool) $fleet->client?->ban,
-                        // Discount mode: the company's price for this body type, null when it has none.
+                        // Discount mode: the price of the car's discount package for this body type, null when there is none.
                         'discount' => $fleet->mode === FleetCar::MODE_DISCOUNT
-                            ? CorporateDiscounts::payload($fleet->client?->discountPackage?->prices->firstWhere('car_type', $m->type))
+                            ? CorporateDiscounts::payload(CorporateDiscounts::forCar($fleet->setRelation('userCar', $car)))
                             : null,
                     ] : null,
                 ] + $car->trimPayload();

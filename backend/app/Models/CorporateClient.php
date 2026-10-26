@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Str;
 
 class CorporateClient extends Model
@@ -55,12 +54,13 @@ class CorporateClient extends Model
         return $this->hasMany(CorporatePackage::class);
     }
 
-    /** The one active discount package; saving another active one switches the old one off. */
-    public function discountPackage(): HasOne
+    /** The active discount packages; the company picks one of them for each discount car. */
+    public function discountPackages(): HasMany
     {
-        return $this->hasOne(CorporatePackage::class)
+        return $this->hasMany(CorporatePackage::class)
             ->where('type', CorporatePackage::TYPE_DISCOUNT)
-            ->where('is_active', true);
+            ->where('is_active', true)
+            ->orderBy('title');
     }
 
     public function washes(): HasMany

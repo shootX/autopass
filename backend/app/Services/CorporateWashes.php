@@ -111,12 +111,19 @@ class CorporateWashes
         });
     }
 
-    public static function setMode(FleetCar $car, string $mode): bool
+    /**
+     * Washes mode, or discount mode at one of the company's active discount packages (check it with
+     * CorporateDiscounts::find). Without a package the car keeps its own or gets the company's only one;
+     * with none it can't wash until the company picks one.
+     */
+    public static function setMode(FleetCar $car, string $mode, ?CorporatePackage $package = null): bool
     {
         if (! in_array($mode, FleetCar::MODES, true)) {
             return false;
         }
-        $car->forceFill(['mode' => $mode])->save();
+        $package = $mode === FleetCar::MODE_DISCOUNT ? ($package ?? CorporateDiscounts::fallback($car)) : null;
+        $car->forceFill(['mode' => $mode, 'corporate_package_id' => $package?->id])->save();
+        $car->setRelation('discountPackage', $package);
 
         return true;
     }
@@ -152,7 +159,7 @@ class CorporateWashes
             return 'car_blocked';
         }
         if ($car->mode === FleetCar::MODE_DISCOUNT) {
-            // A discount car needs a row for its body type in the company's active discount package.
+            // A discount car needs an active discount package with a row for its body type.
             return CorporateDiscounts::forCar($car) ? null : 'discount_not_ready';
         }
         if ((int) $car->washes_left < 1 || (int) $car->client?->washes_balance < 1) {
@@ -174,7 +181,7 @@ class CorporateWashes
         return DB::transaction(function () use ($car, $at) {
             $client = self::lockClient((int) $car->corporate_client_id);
             $locked = FleetCar::query()->whereKey($car->id)->lockForUpdate()->firstOrFail();
-            $locked->setRelation('client', $client)->load('userCar.model');
+            $locked->setRelation('client', $client)->load(['userCar.model', 'discountPackage.prices']);
             $blocker = self::blocker($locked);
             if ($blocker !== null) {
                 return ['result' => $blocker];
