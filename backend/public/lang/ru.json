@@ -1131,6 +1131,9 @@
         "modeDiscount": "Моется со скидкой",
         "carWashes": "Осталось у машины",
         "companyWashes": "Осталось у компании",
+        "fullPrice": "Полная цена",
+        "discountPercent": "Скидка",
+        "driverPays": "Водитель платит на месте",
         "approve": "Подтвердить",
         "approved": "Мойка подтверждена",
         "cannotWash": "Мойку нельзя подтвердить."

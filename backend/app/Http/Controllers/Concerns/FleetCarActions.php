@@ -60,6 +60,6 @@ trait FleetCarActions
             return redirect($back)->withErrors(['fleet' => __('admin.cw_error_'.$result)]);
         }
 
-        return redirect($back)->with('message', __('admin.cw_allocated', ['plate' => $car->plate, 'count' => (int) $data['washes']]));
+        return redirect($back)->with('message', __('admin.cw_car_washes_saved', ['plate' => $car->plate, 'count' => (int) $data['washes']]));
     }
 }

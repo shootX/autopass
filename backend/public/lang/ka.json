@@ -1131,6 +1131,9 @@
         "modeDiscount": "ირეცხება ფასდაკლებით",
         "carWashes": "მანქანაზე დარჩა",
         "companyWashes": "კომპანიას დარჩა",
+        "fullPrice": "სრული ფასი",
+        "discountPercent": "ფასდაკლება",
+        "driverPays": "მძღოლი იხდის ადგილზე",
         "approve": "დადასტურება",
         "approved": "რეცხვა დადასტურდა",
         "cannotWash": "რეცხვა ვერ დადასტურდება."

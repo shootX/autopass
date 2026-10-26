@@ -378,7 +378,17 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 - [x] Driver QR for a company car: `GET /api/mycars/{id}/company-qr` (SVG, `X-QR-Expires`, 5 minutes, reset on driver change and block). `mycars` returns `company_car` (mode, washes left).
 - [x] Manager scan: `checkqr` answers `kind: corporate` with company, mode and balances; `POST /api/corporate-wash/{id}/approve` takes one wash from the car and the pool (`corporate_washes` row). Web manager screen shows it.
 - [x] Company panel page „რეცხვები“: balance, packages, ledger.
-- [ ] iOS app: driver QR for a company car and the manager result card (separate GeocarAPP PR).
-- [ ] A car in `discount` mode can't be approved until stage 3 adds the discount package.
-- [ ] Company reports still count bookings only; walk-in corporate washes are in the ledger, not in the report yet.
+- [x] iOS app: driver QR for a company car and the manager result card (GeocarAPP PR #14).
+- [x] A car in `discount` mode can't be approved until stage 3 adds the discount package (done in stage 3).
+- [ ] Company reports still count bookings only; walk-in corporate washes are in the ledger and, since stage 3, in the wash history, not in the report yet.
 
+## 2026-10-26 — Corporate clients stage 3: discount package (`claude/project-thread-8emdwh`)
+
+- [x] Company packages move to the admin Packages menu, tab „კორპორატიული პაკეტები“ (`/dashboard/packages/corporate`). Only the Autopass admin makes them; each belongs to one company, picked at creation and fixed after. The company page and the company panel only show them.
+- [x] Package `type`: `washes` (stage 2) or `discount`. A discount package has a row per body type (`corporate_package_prices`: full price, percent). A company has one active discount package; saving another active one switches the old one off.
+- [x] Manager scan of a discount car: `checkqr` returns `corporate.discount` (car_type, full_price, percent, to_pay); approve records the wash with the package, price, percent and what the driver pays on site. The pool and the car's washes stay as they are.
+- [x] `mycars` `company_car.discount` tells the driver the price for the car's body type.
+- [x] Admin company page and panel: discount table, per-car price in the fleet, wash history with this month's totals (`corporate_washes`, walk-ins included).
+- [x] Body type rename and delete keep the price rows in step.
+- [ ] iOS app: show the discount price to the driver and the manager (GeocarAPP PR).
+- [ ] Stage 4: invoices.

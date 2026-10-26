@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\BodyType;
 use App\Models\CarModel;
+use App\Models\CorporatePackagePrice;
 use App\Models\Package;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -76,6 +77,7 @@ class BodyTypesController extends Controller
             if ($oldName !== $data['name']) {
                 CarModel::query()->where('type', $oldName)->update(['type' => $data['name']]);
                 Package::query()->where('car_type', $oldName)->update(['car_type' => $data['name']]);
+                CorporatePackagePrice::query()->where('car_type', $oldName)->update(['car_type' => $data['name']]);
             }
             $bodyType->update($data);
         });
@@ -87,7 +89,8 @@ class BodyTypesController extends Controller
     public function delete(BodyType $bodyType)
     {
         $used = CarModel::query()->where('type', $bodyType->name)->exists()
-            || Package::query()->where('car_type', $bodyType->name)->exists();
+            || Package::query()->where('car_type', $bodyType->name)->exists()
+            || CorporatePackagePrice::query()->where('car_type', $bodyType->name)->exists();
 
         if ($used) {
             return redirect()->route('admin.body_types')->with('error', __('admin.body_type_in_use'));

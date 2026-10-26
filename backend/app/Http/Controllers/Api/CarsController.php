@@ -10,6 +10,7 @@ use App\Models\FleetCar;
 use App\Models\UserCar;
 use App\Services\CarCatalog;
 use App\Services\CarTrims;
+use App\Services\CorporateDiscounts;
 use App\Services\FleetInvites;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -64,7 +65,7 @@ class CarsController extends Controller
             $cars = $user->cars()->with(['model.brand'])->get();
             $companies = FleetCar::query()->whereIn('user_car_id', $cars->pluck('id'))
                 ->where('user_id', $user->id)
-                ->where('status', FleetCar::STATUS_ACTIVE)->with('client:id,name,ban')->get()
+                ->where('status', FleetCar::STATUS_ACTIVE)->with(['client:id,name,ban', 'client.discountPackage.prices'])->get()
                 ->keyBy(fn (FleetCar $fleet) => (int) $fleet->user_car_id);
 
             $cars = $cars->map(function ($car) use ($companies) {
@@ -86,6 +87,10 @@ class CarsController extends Controller
                         'mode' => $fleet->mode,
                         'washes_left' => (int) $fleet->washes_left,
                         'blocked' => (bool) $fleet->client?->ban,
+                        // Discount mode: the company's price for this body type, null when it has none.
+                        'discount' => $fleet->mode === FleetCar::MODE_DISCOUNT
+                            ? CorporateDiscounts::payload($fleet->client?->discountPackage?->prices->firstWhere('car_type', $m->type))
+                            : null,
                     ] : null,
                 ] + $car->trimPayload();
             });

@@ -150,9 +150,9 @@ class CorporateWashes
         if ($car->status !== FleetCar::STATUS_ACTIVE || ! $car->user_car_id) {
             return 'car_blocked';
         }
-        if ($car->mode !== FleetCar::MODE_WASHES) {
-            // The discount package comes with the next stage; until then a discount car can't be approved.
-            return 'discount_not_ready';
+        if ($car->mode === FleetCar::MODE_DISCOUNT) {
+            // A discount car needs a row for its body type in the company's active discount package.
+            return CorporateDiscounts::forCar($car) ? null : 'discount_not_ready';
         }
         if ((int) $car->washes_left < 1 || (int) $car->client?->washes_balance < 1) {
             return 'no_washes';
@@ -162,31 +162,53 @@ class CorporateWashes
     }
 
     /**
-     * Takes one wash from the car and from the pool and records it.
+     * Records one wash. A wash-package car gives one wash to it and to the pool; a discount car
+     * keeps the price, the percent and what the driver pays on site, and the pool stays as it is.
      *
      * @param  array{car_wash_id: int, manager_id: int, appointment_id: ?int, walk_in: bool}  $at
-     * @return array{result: string, washes_left?: int, company_washes?: int}
+     * @return array{result: string, mode?: string, washes_left?: int, company_washes?: int, discount?: ?array}
      */
-    public static function debit(FleetCar $car, array $at): array
+    public static function wash(FleetCar $car, array $at): array
     {
         return DB::transaction(function () use ($car, $at) {
             $client = self::lockClient((int) $car->corporate_client_id);
             $locked = FleetCar::query()->whereKey($car->id)->lockForUpdate()->firstOrFail();
-            $locked->setRelation('client', $client);
+            $locked->setRelation('client', $client)->load('userCar.model');
             $blocker = self::blocker($locked);
             if ($blocker !== null) {
                 return ['result' => $blocker];
             }
 
-            $client->forceFill(['washes_balance' => (int) $client->washes_balance - 1])->save();
-            $locked->forceFill(['washes_left' => (int) $locked->washes_left - 1])->save();
-            $wash = CorporateWash::query()->create([
+            $row = [
                 'corporate_client_id' => $client->id,
                 'fleet_car_id' => $locked->id,
                 'plate' => $locked->plate,
                 'mode' => $locked->mode,
                 'user_id' => $locked->user_id,
-            ] + $at);
+                'car_type' => CorporateDiscounts::carType($locked),
+            ] + $at;
+
+            if ($locked->mode === FleetCar::MODE_DISCOUNT) {
+                $discount = CorporateDiscounts::forCar($locked);
+                CorporateWash::query()->create($row + [
+                    'corporate_package_id' => $discount->corporate_package_id,
+                    'full_price' => $discount->full_price,
+                    'discount_percent' => $discount->percent,
+                    'to_pay' => $discount->toPay(),
+                ]);
+
+                return [
+                    'result' => 'ok',
+                    'mode' => $locked->mode,
+                    'washes_left' => (int) $locked->washes_left,
+                    'company_washes' => (int) $client->washes_balance,
+                    'discount' => CorporateDiscounts::payload($discount),
+                ];
+            }
+
+            $client->forceFill(['washes_balance' => (int) $client->washes_balance - 1])->save();
+            $locked->forceFill(['washes_left' => (int) $locked->washes_left - 1])->save();
+            $wash = CorporateWash::query()->create($row);
             self::move($client, CorporateWashMove::TYPE_WASH, -1, [
                 'fleet_car_id' => $locked->id,
                 'plate' => $locked->plate,
@@ -198,8 +220,10 @@ class CorporateWashes
 
             return [
                 'result' => 'ok',
+                'mode' => $locked->mode,
                 'washes_left' => (int) $locked->washes_left,
                 'company_washes' => (int) $client->washes_balance,
+                'discount' => null,
             ];
         });
     }
