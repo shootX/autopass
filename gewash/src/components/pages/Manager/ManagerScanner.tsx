@@ -10,7 +10,8 @@ import Header from "@/components/Header";
 import { releaseScanner } from "@/lib/releaseScanner";
 import { useTranslation } from "@/hooks/useTranslation";
 import { readAccessToken } from "@/lib/accessToken";
-import { approvePackageBody, approveShouldRescan, approveShowsError, packageQrReady, spendApproveToken } from "@/lib/packageApprove";
+import { approvePackageBody, approveShouldRescan, approveShowsError, isCorporateCheck, packageQrReady, spendApproveToken } from "@/lib/packageApprove";
+import CorporateResultCard from "./CorporateResultCard";
 
 const SCAN_CONFIG = {
   fps: 10,
@@ -79,7 +80,7 @@ export default function ManagerScanner(): React.JSX.Element {
 
   useEffect(() => {
     if (result) setShowResultCard(true);
-    setGrant(result?.approve_token ?? null);
+    setGrant(result && !isCorporateCheck(result) ? result.approve_token ?? null : null);
     if (result) setRescanNote(false);
   }, [result]);
 
@@ -138,11 +139,18 @@ export default function ManagerScanner(): React.JSX.Element {
   };
 
 
-  const pkgMeta = result?.package;
+  const corporate = isCorporateCheck(result) ? result : null;
+  const packageResult = result && !isCorporateCheck(result) ? result : null;
+  const pkgMeta = packageResult?.package;
   const user = pkgMeta?.user;
   const pkg = pkgMeta?.package;
 
-  const isValid = packageQrReady(result) && user != null && pkgMeta != null && pkg != null;
+  const isValid = packageQrReady(packageResult) && user != null && pkgMeta != null && pkg != null;
+
+  const rescanCorporate = (showError: boolean) => {
+    if (showError) setRescanNote(true);
+    scanAgain();
+  };
 
   return (
     <div>
@@ -173,6 +181,9 @@ export default function ManagerScanner(): React.JSX.Element {
       <div className='scanner-result'>
         {loading && <p style={{ textAlign: "center", marginTop: "16px" }}>Checking QR code...</p>}
         {error && <p className='error'>{error.message}</p>}
+        {corporate && showResultCard && (
+          <CorporateResultCard key={corporate.approve_token ?? corporate.corporate.id} result={corporate} onClose={handleCloseCard} onRescan={rescanCorporate} />
+        )}
         {isValid && showResultCard && (
           <div className='qr-result-card'>
             <div className='qr-client-block'>
@@ -235,7 +246,7 @@ export default function ManagerScanner(): React.JSX.Element {
             )}
           </div>
         )}
-        {!loading && !error && scannedCode && !isValid && (
+        {!loading && !error && scannedCode && !isValid && !corporate && (
           <p className='warning'>
             QR scanned, but data is not valid or not full
           </p>

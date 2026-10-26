@@ -63,12 +63,14 @@ class CarsController extends Controller
 
             $cars = $user->cars()->with(['model.brand'])->get();
             $companies = FleetCar::query()->whereIn('user_car_id', $cars->pluck('id'))
-                ->where('status', FleetCar::STATUS_ACTIVE)->with('client:id,name')->get()
-                ->mapWithKeys(fn (FleetCar $fleet) => [(int) $fleet->user_car_id => $fleet->client?->name]);
+                ->where('user_id', $user->id)
+                ->where('status', FleetCar::STATUS_ACTIVE)->with('client:id,name,ban')->get()
+                ->keyBy(fn (FleetCar $fleet) => (int) $fleet->user_car_id);
 
             $cars = $cars->map(function ($car) use ($companies) {
                 $m = $car->model;
                 $b = $m->brand;
+                $fleet = $companies->get((int) $car->id);
 
                 return [
                     'id' => $car->id,
@@ -78,7 +80,13 @@ class CarsController extends Controller
                     'brand' => $b,
                     'image' => $car->imageUrl(),
                     // Name of the company whose fleet holds this car, null for a private car.
-                    'company' => $companies[(int) $car->id] ?? null,
+                    'company' => $fleet?->client?->name,
+                    // How the company car washes; its QR comes from /mycars/{id}/company-qr.
+                    'company_car' => $fleet ? [
+                        'mode' => $fleet->mode,
+                        'washes_left' => (int) $fleet->washes_left,
+                        'blocked' => (bool) $fleet->client?->ban,
+                    ] : null,
                 ] + $car->trimPayload();
             });
 

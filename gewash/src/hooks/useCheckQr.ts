@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { customFetch } from "@/utils/customFetch";
 import { readAccessToken } from "@/lib/accessToken";
+import type { CorporateCheck } from "@/lib/packageApprove";
 
 export interface QrCheckResponse {
   success: boolean;
@@ -27,8 +28,11 @@ export interface QrCheckResponse {
   };
 }
 
+/** A package QR answers with `package`, a company car QR with `kind: "corporate"`. */
+export type QrCheckResult = QrCheckResponse | CorporateCheck;
+
 export const useCheckQr = (qrCode: string | null) => {
-  const [result, setResult] = useState<QrCheckResponse | null>(null);
+  const [result, setResult] = useState<QrCheckResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -49,8 +53,12 @@ export const useCheckQr = (qrCode: string | null) => {
           },
         });
 
-        if (!res.ok) throw new Error(`Request failed: ${res.status}`);
-        const data: QrCheckResponse = await res.json();
+        if (!res.ok) {
+          // An expired company car code (410) says so in the user's language.
+          const body = res.status === 410 ? await res.json().catch(() => null) : null;
+          throw new Error(typeof body?.error === "string" ? body.error : `Request failed: ${res.status}`);
+        }
+        const data: QrCheckResult = await res.json();
         setResult(data);
       } catch (err) {
         setError(err as Error);

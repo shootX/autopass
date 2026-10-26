@@ -997,7 +997,15 @@
     "Scanner": {
         "cameraRequired": "Camera access is required",
         "retry": "Try again",
-        "rescan": "This code was already used. Scan again."
+        "rescan": "This code was already used. Scan again.",
+        "companyCar": "Company car",
+        "modeWashes": "Washes with the wash package",
+        "modeDiscount": "Washes at a discount",
+        "carWashes": "Left on the car",
+        "companyWashes": "Left for the company",
+        "approve": "Approve",
+        "approved": "Wash approved",
+        "cannotWash": "The wash can't be approved."
     },
     "Help": {
         "title": "Help",

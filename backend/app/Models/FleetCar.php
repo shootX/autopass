@@ -13,6 +13,14 @@ class FleetCar extends Model
 
     public const STATUS_BLOCKED = 'blocked';
 
+    /** The car washes from its share of the company's washes. */
+    public const MODE_WASHES = 'washes';
+
+    /** The car washes at the company's discount and the driver pays the rest on site. */
+    public const MODE_DISCOUNT = 'discount';
+
+    public const MODES = [self::MODE_WASHES, self::MODE_DISCOUNT];
+
     protected $fillable = [
         'corporate_client_id',
         'plate',
@@ -20,12 +28,15 @@ class FleetCar extends Model
         'model',
         'source',
     ];
-    // status, driver_phone, user_id, user_car_id and the invite timestamps are set by FleetInvites only.
+    // status, driver_phone, user_id, user_car_id and the invite timestamps are set by FleetInvites only;
+    // mode, washes_left and the QR code by CorporateWashes and CorporateQr.
 
     protected $casts = [
         'invited_at' => 'datetime',
         'activated_at' => 'datetime',
         'blocked_at' => 'datetime',
+        'qr_expires_at' => 'datetime',
+        'washes_left' => 'integer',
     ];
 
     public function client(): BelongsTo

@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\CarCatalogController;
 use App\Http\Controllers\Api\CarsController;
 use App\Http\Controllers\Api\ContactsController;
 use App\Http\Controllers\Api\CorporateFleetController;
+use App\Http\Controllers\Api\CorporateWashController;
 use App\Http\Controllers\Api\FaqController;
 use App\Http\Controllers\Api\PackagesController;
 use App\Http\Controllers\Api\PaymentsController;
@@ -110,6 +111,7 @@ Route::middleware(['auth:api', CorsMiddleware::class, EnsureApiSession::class])-
         Route::get('/{carid}', [CarsController::class, 'showMyCar']);
         Route::post('/{carid}/edit', [CarsController::class, 'editMyCar']);
         Route::delete('/{carid}/remove', [CarsController::class, 'removeMyCar']);
+        Route::get('/{carid}/company-qr', [CorporateWashController::class, 'qr'])->whereNumber('carid')->middleware('throttle:30,1');
     });
 
     Route::prefix('/tickets')->group(function () {
@@ -168,6 +170,7 @@ Route::middleware(['auth:api', CorsMiddleware::class, EnsureApiSession::class])-
     });
 
     Route::post('/package/{id}/approve', [PackagesController::class, 'managerApprove'])->middleware('throttle:30,1');
+    Route::post('/corporate-wash/{id}/approve', [CorporateWashController::class, 'approve'])->whereNumber('id')->middleware('throttle:30,1');
 
     Route::get('/manager/my-washes', [StatisticsController::class, 'my_washes']);
     Route::get('/manager/report', [StatisticsController::class, 'report']);
@@ -190,6 +193,7 @@ Route::middleware('throttle:public')->get('/promo', function () {
 });
 
 Route::prefix('/corporate')->middleware('throttle:corporate-api')->group(function () {
+    Route::get('/balance', [CorporateFleetController::class, 'balance']);
     Route::get('/vehicles', [CorporateFleetController::class, 'index']);
     Route::post('/vehicles', [CorporateFleetController::class, 'store']);
     Route::patch('/vehicles/{plate}', [CorporateFleetController::class, 'update']);

@@ -10,6 +10,7 @@ use App\Models\CarWashService;
 use App\Models\User;
 use App\Models\UserPackage;
 use App\Services\BookingService;
+use App\Services\CorporateQr;
 use App\Support\Phone;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -247,6 +248,15 @@ class AppointmentsController extends Controller
                 ->first();
 
             if (! $userPackage) {
+                // Not a package: maybe a company car's code.
+                $fleetCar = CorporateQr::find((string) $qr);
+                if ($fleetCar === 'expired') {
+                    return response()->json(['success' => false, 'error' => __('corporate.qr_expired')], 410);
+                }
+                if ($fleetCar) {
+                    return response()->json(CorporateQr::scan($fleetCar, (int) $user->id));
+                }
+
                 return response()->json(['success' => false, 'error' => 'Not found'], 404);
             }
 

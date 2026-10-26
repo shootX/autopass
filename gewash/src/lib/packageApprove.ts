@@ -58,3 +58,39 @@ export function packageQrReady(result: CheckedPackage | null | undefined): boole
       typeof result.approve_token === "string" && result.approve_token.trim() !== "",
   );
 }
+
+/** checkqr answer for a company car (`kind: "corporate"`). Only an approvable car carries an approve_token. */
+export type CorporateCheck = {
+  success?: boolean;
+  kind: "corporate";
+  approve_token?: string | null;
+  corporate: {
+    id: number;
+    company: string;
+    mode: "washes" | "discount";
+    plate: string | null;
+    car_type?: string | null;
+    user?: { name?: string | null; surname?: string | null };
+    washes_left: number;
+    company_washes: number;
+    can_approve: boolean;
+    reason?: string | null;
+    reason_text?: string | null;
+  };
+};
+
+export function isCorporateCheck(result: unknown): result is CorporateCheck {
+  const value = result as Partial<CorporateCheck> | null | undefined;
+  return Boolean(
+    value?.success &&
+      value.kind === "corporate" &&
+      typeof value.corporate?.id === "number" &&
+      typeof value.corporate.company === "string" &&
+      typeof value.corporate.washes_left === "number",
+  );
+}
+
+/** A company car is approvable only with a token and the server's go-ahead. */
+export function corporateCanApprove(result: CorporateCheck): boolean {
+  return result.corporate.can_approve && typeof result.approve_token === "string" && result.approve_token.trim() !== "";
+}

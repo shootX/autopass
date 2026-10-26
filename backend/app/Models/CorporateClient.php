@@ -25,7 +25,8 @@ class CorporateClient extends Model
         'note',
     ];
     // username, password, credentials_custom, api_token, password_must_change, temp_password_expires_at,
-    // session_version, credentials_retired_at and ban are set explicitly by server code only.
+    // session_version, credentials_retired_at and ban are set explicitly by server code only;
+    // washes_balance by CorporateWashes only.
 
     protected $hidden = [
         'password',
@@ -40,11 +41,22 @@ class CorporateClient extends Model
         'password_must_change' => 'boolean',
         'temp_password_expires_at' => 'datetime',
         'credentials_retired_at' => 'datetime',
+        'washes_balance' => 'integer',
     ];
 
     public function cars(): HasMany
     {
         return $this->hasMany(FleetCar::class);
+    }
+
+    public function packages(): HasMany
+    {
+        return $this->hasMany(CorporatePackage::class);
+    }
+
+    public function washMoves(): HasMany
+    {
+        return $this->hasMany(CorporateWashMove::class);
     }
 
     public static function makeToken(): string
