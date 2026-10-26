@@ -104,16 +104,49 @@ class CarCatalog
             ['source' => self::REMOTE, 'external_brand_id' => $brandId],
             ['name' => mb_substr($brand['name'], 0, 64)],
         );
-        $local = $this->firstOrCreateUnique(CarModel::class,
-            ['source' => self::REMOTE, 'external_model_id' => $modelId],
-            [
-                'name' => mb_substr($model['name'], 0, 64),
-                'brand_id' => $localBrand->id,
-                'type' => BodyType::query()->where('name', 'sedan')->value('name') ?? BodyType::query()->orderBy('id')->value('name') ?? 'sedan',
-            ],
-        );
+        $keys = ['source' => self::REMOTE, 'external_model_id' => $modelId];
+        $local = CarModel::query()->where($keys)->first() ?? $this->firstOrCreateUnique(CarModel::class, $keys, [
+            'name' => mb_substr($model['name'], 0, 64),
+            'brand_id' => $localBrand->id,
+            'type' => $this->remoteModelType($modelId) ?? self::defaultType(),
+        ]);
 
         return (int) $local->id;
+    }
+
+    /**
+     * Our body type key for a remote model, from the body types of its generations: the most common one,
+     * the newest generation's on a tie. null when the catalog names none we know or is down.
+     */
+    public function remoteModelType(int $modelId): ?string
+    {
+        try {
+            $rows = $this->remoteGenerations($modelId);
+        } catch (\Throwable $e) {
+            Log::warning('CarAPI generations unavailable for the body type.', ['exception' => $e::class]);
+
+            return null;
+        }
+        $types = [];
+        foreach ($rows as $row) {
+            $type = BodyType::fromCatalog($row['body_type'] ?? null);
+            if ($type === null) {
+                continue;
+            }
+            $year = is_numeric($row['year_start'] ?? null) ? (int) $row['year_start'] : 0;
+            $types[$type] ??= ['count' => 0, 'year' => 0];
+            $types[$type]['count']++;
+            $types[$type]['year'] = max($types[$type]['year'], $year);
+        }
+        uasort($types, fn (array $a, array $b) => [$b['count'], $b['year']] <=> [$a['count'], $a['year']]);
+
+        return array_key_first($types);
+    }
+
+    /** The type a model gets when nothing better is known. */
+    public static function defaultType(): string
+    {
+        return BodyType::query()->where('name', 'sedan')->value('name') ?? BodyType::query()->orderBy('id')->value('name') ?? 'sedan';
     }
 
     /**

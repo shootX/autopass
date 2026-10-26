@@ -21,7 +21,7 @@ export function readCar(value: unknown): Car | null {
       source: model?.source === "carapi" ? "carapi" : "local",
       external_model_id: typeof model?.external_model_id === "number" ? model.external_model_id : null,
       name: typeof model?.name === "string" ? model.name : typeof car.model === "string" ? car.model : "",
-      type: typeof model?.type === "string" ? model.type : typeof car.type === "string" ? car.type : "",
+      type: typeof car.car_type === "string" && car.car_type ? car.car_type : typeof model?.type === "string" ? model.type : typeof car.type === "string" ? car.type : "",
       brand: {
         id: typeof brand?.id === "number" ? brand.id : undefined,
         source: brand?.source === "carapi" ? "carapi" : "local",

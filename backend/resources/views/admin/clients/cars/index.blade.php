@@ -33,7 +33,7 @@
                             <td>{{$car->id}}</td>
                             <td>{{$car->model->brand->name}}</td>
                             <td>{{$car->model->name}}</td>
-                            <td>{{ \App\Models\BodyType::labelFor($car->model->type) }}</td>
+                            <td>{{ \App\Models\BodyType::labelFor($car->carType()) }}</td>
                             <td>{{$car->plate}}</td>
                             <td>
                                 @if($car->package)

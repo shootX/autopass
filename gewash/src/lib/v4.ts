@@ -19,6 +19,13 @@ const BODY_KA: Record<string, string> = {
   convertible: "კაბრიოლეტი",
   minivan: "მინივენი",
   van: "ფურგონი",
+  liftback: "ლიფტბექი",
+  panel_van: "დახურული ფურგონი",
+  bus: "ავტობუსი",
+  truck: "სატვირთო",
+  chassis_cab: "შასი კაბინით",
+  flatbed_truck: "ბორტიანი სატვირთო",
+  tractor_unit: "საწევარი",
 };
 
 type LooseCar = {

@@ -57,7 +57,8 @@ function loadCars(): Promise<EnrichedCar[]> {
           id: Number.isFinite(id) ? id : 0,
           plate: readString(car?.plate, ""),
           year: typeof car?.year === "number" ? car.year : null,
-          type: readString(model?.type, "Unknown"),
+          // car_type: the car's own body type from the catalog; the model's type is the fallback.
+          type: readString(car?.car_type, readString(model?.type, "Unknown")),
           model: readString(model?.name, "Unknown"),
           brand: readString(brand?.name, "Unknown"),
           image: typeof car?.image === "string" ? car.image : null,

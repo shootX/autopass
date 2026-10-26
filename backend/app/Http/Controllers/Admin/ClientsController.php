@@ -207,7 +207,7 @@ class ClientsController extends Controller
     {
         try {
             if ($car) {
-                $type = $car->model->type;
+                $type = $car->carType();
 
                 $package = Package::where('car_type', $type)
                     ->with('prices')

@@ -437,3 +437,12 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 - [x] Phone: the page no longer slides off to the left under 992px, and the menu opens under the top bar so its button can close it.
 - [x] Company panel: the logout button is readable on the navy sidebar.
 - [ ] Not changed: page markup and functions, e-mail templates, the client web app (gewash) still in the old green.
+
+## 2026-10-26 — Body type from the car catalog (`claude/project-thread-fw494k`)
+
+- [x] `BodyType::fromCatalog()` reads our key from a geoapi.ge body name (English, Russian, Georgian words; "pickup truck" → pickup, "coupe SUV" → suv, "cargo van" → panel_van). Unknown names give null.
+- [x] New `user_cars.car_type`: the car's own type from the generation it was added with. `UserCar::carType()` = that, else the model's type. Packages, package purchase, company discounts, the QR answer, reports and exports go by it.
+- [x] A catalog model added from geoapi.ge takes the most common type of its generations (newest on a tie) instead of always sedan.
+- [x] `mycars` and the car payload carry `car_type`; the web app shows it. Admin > Body types shows cars per type, types with cars but no package, and catalog names it could not read.
+- [x] `php artisan cars:sync-body-types [--dry-run] [--cars-only]` sets the type of cars and catalog models added before (one cached geoapi.ge request per catalog model).
+- [ ] Server: `php artisan migrate`, then `php artisan cars:sync-body-types --dry-run`, check, and run it without `--dry-run`. Make sure every type that has cars has a package.

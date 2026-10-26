@@ -68,7 +68,7 @@ class WashReportExport implements FromQuery, WithHeadings, WithMapping, ShouldAu
             $car?->plate,
             $model?->brand?->name,
             $model?->name,
-            $model?->type,
+            $car?->carType(),
             $wash?->name,
             $wash?->address,
             $manager ? trim($manager->name.' '.$manager->surname) : null,

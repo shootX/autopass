@@ -101,15 +101,14 @@ class WashReportQuery
                 if ($plate = self::text($filters, 'plate')) {
                     $car->where('plate', 'ilike', self::like($plate));
                 }
-                if (self::int($filters, 'brand_id') || self::text($filters, 'car_type')) {
-                    $car->whereHas('model', function (Builder $model) use ($filters) {
-                        if ($brandId = self::int($filters, 'brand_id')) {
-                            $model->where('brand_id', $brandId);
-                        }
-                        if ($type = self::text($filters, 'car_type')) {
-                            $model->where('type', $type);
-                        }
-                    });
+                if ($brandId = self::int($filters, 'brand_id')) {
+                    $car->whereHas('model', fn (Builder $model) => $model->where('brand_id', $brandId));
+                }
+                // The car's own body type, else its model's (UserCar::carType).
+                if ($type = self::text($filters, 'car_type')) {
+                    $car->where(fn (Builder $own) => $own->where('car_type', $type)
+                        ->orWhere(fn (Builder $byModel) => $byModel->whereNull('car_type')
+                            ->whereHas('model', fn (Builder $model) => $model->where('type', $type))));
                 }
             });
         }
