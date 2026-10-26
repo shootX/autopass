@@ -1,0 +1,7 @@
+FiraGO (400, 500, 700), Georgian and Latin
+Digitized data copyright 2012-2018 for FiraGO, bBox Type GmbH and HERE Europe B.V.; for Fira Sans, The Mozilla Foundation and Telefonica S.A.
+Licensed under the SIL Open Font License, Version 1.1. Full text: OFL.txt
+
+Montserrat (400, 500, 700), used for the English version
+Copyright 2011 The Montserrat Project Authors (https://github.com/JulietaUla/Montserrat)
+Licensed under the SIL Open Font License, Version 1.1. Full text: OFL.txt

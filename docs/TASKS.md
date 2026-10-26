@@ -429,3 +429,11 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 - [ ] Owner: real prices, branches, phone, e-mail, privacy/terms links (`config.js`, `content/home.js`).
 - [x] Admin > Website (`/dashboard/site`): every text of both pages in ka/en/ru, lists (FAQ, package points, branches) with add/edit/delete, sections on/off and order, settings (prices, hours, contacts, App Store, legal links, branches from the car washes), business requests. Landing reads `GET /api/site/{page}`; the business form posts to `POST /api/site/lead`.
 - [ ] Server: `php artisan migrate`, then `sh lending/build.sh` and upload `lending/dist/`.
+
+## 2026-10-26 — Admin and company panel in the new brand (`claude/project-thread-fw494k`)
+
+- [x] `backend/public/css/umami-admin.css`: the landing's tokens (navy #133A6B / #0B2545, mint #9CCBB8, sage), FiraGO for Georgian and Montserrat for English (woff2 in `backend/public/fonts/`), navy sidebar with a mint marker on the active item, navy pill buttons, tabs, checks, badges, pagination, login card.
+- [x] New logo (`/brand/logo.svg`, `/brand/logo-white.svg`, cropped to the wordmark) and favicon; `theme-color` #0B2545 in the admin, login and company layouts.
+- [x] Phone: the page no longer slides off to the left under 992px, and the menu opens under the top bar so its button can close it.
+- [x] Company panel: the logout button is readable on the navy sidebar.
+- [ ] Not changed: page markup and functions, e-mail templates, the client web app (gewash) still in the old green.

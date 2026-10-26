@@ -9,7 +9,7 @@
 
     <title>autopass</title>
     <link rel="icon" href="/brand/favicon.svg" type="image/svg+xml">
-    <meta name="theme-color" content="#14482F">
+    <meta name="theme-color" content="#0B2545">
 
     <!-- Scripts -->
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
@@ -20,7 +20,7 @@
         <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm">
             <div class="container">
                 <a class="navbar-brand" href="{{ url('/') }}">
-                    <img src="/brand/logo-horizontal.svg" alt="autopass" style="height:28px;width:auto">
+                    <img src="/brand/logo.svg" alt="autopass" style="height:32px;width:auto">
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
                     <span class="navbar-toggler-icon"></span>

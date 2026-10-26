@@ -1,49 +1,56 @@
 :root {
-  --radius-default: 0.375rem;
-  --gray-50: oklch(0.985 0 0);
-  --gray-100: oklch(0.97 0 0);
-  --gray-200: oklch(0.922 0 0);
-  --gray-300: oklch(0.87 0 0);
-  --gray-400: oklch(0.708 0 0);
-  --gray-500: oklch(0.556 0 0);
-  --gray-600: oklch(0.439 0 0);
-  --gray-700: oklch(0.371 0 0);
-  --gray-800: oklch(0.269 0 0);
-  --gray-900: oklch(0.205 0 0);
-  --primary: #14482F;
-  --primary-foreground: #F7F9F4;
-  --surface-base: #ffffff;
-  --surface-raised: #F7F9F4;
-  --surface-sunken: #EEF6E8;
-  --text-primary: #0E1712;
-  --text-muted: #5E6A62;
-  --border-default: #DCE1DB;
-  --border-muted: #EDF0EC;
-  --ap-lime: #B5DD3A;
-  --ap-ink: #0E1712;
-  --status-success: oklch(0.723 0.219 149.579);
-  --status-success-bg: oklch(0.982 0.018 155.826);
-  --status-success-text: oklch(0.393 0.095 152.535);
-  --status-error: oklch(0.637 0.237 25.331);
-  --status-error-bg: oklch(0.971 0.013 17.38);
-  --status-error-text: oklch(0.396 0.141 25.723);
+  /* brand tokens shared with the landing (lending/styles.css) and the app (GeocarAPP docs/DESIGN.md) */
+  --radius-default: 10px;
+  --radius-card: 16px;
+  --gray-50: #F7F9FB;
+  --gray-100: #F1F4F7;
+  --gray-200: #E6EBF0;
+  --gray-300: #CBD5E0;
+  --gray-400: #9AA6B4;
+  --gray-500: #6B7685;
+  --gray-600: #45505F;
+  --gray-700: #343E4E;
+  --gray-800: #26324A;
+  --gray-900: #0B1626;
+  --navy: #133A6B;
+  --navy-deep: #0B2545;
+  --navy-2: #1C4A82;
+  --mint: #9CCBB8;
+  --sage: #DCEBE4;
+  --on-navy: #FFFFFF;
+  --on-navy-muted: #C3D2E3;
+  --primary: var(--navy);
+  --primary-hover: var(--navy-2);
+  --primary-foreground: #FFFFFF;
+  --surface-base: #FFFFFF;
+  --surface-raised: #F1F4F7;
+  --surface-sunken: #E6EBF0;
+  --text-primary: #0B1626;
+  --text-muted: #45505F;
+  --border-default: #D3DBE4;
+  --border-muted: #E6EBF0;
+  --status-success: #2F7A66;
+  --status-success-bg: #DCEBE4;
+  --status-success-text: #1F5A4A;
+  --status-error: #C2412D;
+  --status-error-bg: #FBECE9;
+  --status-error-text: #8A2A1B;
   --side-width: 256px;
-  --top-height: 52px;
-  --font-family: "Plus Jakarta Sans", "Noto Sans Georgian", ui-sans-serif, system-ui, sans-serif;
+  --top-height: 56px;
+  --ease: cubic-bezier(.2, 0, 0, 1);
+  --font-family: "FiraGO", system-ui, sans-serif;
 }
 
-@font-face {
-  font-family: "Plus Jakarta Sans";
-  src: url("/fonts/PlusJakartaSans.ttf") format("truetype");
-  font-weight: 200 800;
-  font-display: swap;
+html[lang="en"] {
+  --font-family: "Montserrat", "FiraGO", system-ui, sans-serif;
 }
-@font-face {
-  font-family: "Noto Sans Georgian";
-  src: url("/fonts/NotoSansGeorgian.ttf") format("truetype");
-  font-weight: 100 900;
-  font-display: swap;
-}
+
+@font-face { font-family: "FiraGO"; src: url("/fonts/FiraGO-400.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "FiraGO"; src: url("/fonts/FiraGO-500.woff2") format("woff2"); font-weight: 500 600; font-display: swap; }
+@font-face { font-family: "FiraGO"; src: url("/fonts/FiraGO-700.woff2") format("woff2"); font-weight: 700 800; font-display: swap; }
+@font-face { font-family: "Montserrat"; src: url("/fonts/Montserrat-400.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Montserrat"; src: url("/fonts/Montserrat-500.woff2") format("woff2"); font-weight: 500 600; font-display: swap; }
+@font-face { font-family: "Montserrat"; src: url("/fonts/Montserrat-700.woff2") format("woff2"); font-weight: 700 800; font-display: swap; }
 
 body.sb-nav-fixed,
 body.umami-auth {
@@ -58,7 +65,18 @@ body.sb-nav-fixed a {
 }
 
 body.sb-nav-fixed a:hover {
-  color: oklch(52% 0.2 259.815);
+  color: var(--primary-hover);
+}
+
+body.sb-nav-fixed :focus-visible,
+body.umami-auth :focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--primary) 45%, transparent);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: var(--sage);
+  color: var(--text-primary);
 }
 
 .sb-nav-fixed .sb-topnav {
@@ -191,8 +209,20 @@ body.sb-nav-fixed a:hover {
     width: 100%;
   }
 
+  /* The menu slides in under the top bar, so its button stays there to close it. */
+  .sb-nav-fixed #layoutSidenav #layoutSidenav_nav {
+    top: var(--top-height);
+    height: calc(100vh - var(--top-height));
+  }
+
+  .sb-nav-fixed #layoutSidenav #layoutSidenav_nav .sb-sidenav {
+    height: calc(100vh - var(--top-height) - 16px);
+  }
+
+  /* The menu slides over the page here, so the page starts at the left edge. */
   .sb-nav-fixed #layoutSidenav #layoutSidenav_content {
     padding-left: 0;
+    margin-left: 0;
   }
 }
 
@@ -391,8 +421,8 @@ body.sb-nav-fixed .btn-primary {
 
 body.sb-nav-fixed .btn-primary:hover,
 body.sb-nav-fixed .btn-primary:focus {
-  background: oklch(55% 0.2 259.815);
-  border-color: oklch(55% 0.2 259.815);
+  background: var(--primary-hover);
+  border-color: var(--primary-hover);
   color: var(--primary-foreground);
 }
 
@@ -778,10 +808,13 @@ a.umami-metric:hover {
   }
 }
 
+
+/* Brand layer: navy sidebar, mint accents, pill buttons, as on the landing. */
 .sb-nav-fixed #layoutSidenav #layoutSidenav_nav .sb-sidenav {
-  background: #0E1712;
-  border-color: #0E1712;
-  color: #F7F9F4;
+  background: var(--navy-deep);
+  border-color: var(--navy-deep);
+  border-radius: var(--radius-card);
+  color: var(--on-navy);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -791,10 +824,13 @@ a.umami-metric:hover {
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
 }
 
 .sb-sidenav .sb-sidenav-footer {
   flex: none;
+  border-top-color: rgba(255, 255, 255, 0.1);
 }
 
 #fleet_model option[hidden] {
@@ -812,48 +848,310 @@ a.umami-metric:hover {
   }
 }
 
+.umami-side-brand {
+  min-height: 64px;
+  padding: 14px 18px 8px;
+}
+
 body.sb-nav-fixed .umami-side-brand a,
 .sb-sidenav .sb-sidenav-menu .nav .nav-link,
 .sb-sidenav .sb-sidenav-footer,
 .umami-user-name,
 body.sb-nav-fixed .umami-user-meta a {
-  color: #DCE1DB;
+  color: var(--on-navy-muted);
 }
 
-.sb-sidenav .sb-sidenav-menu .nav .sb-sidenav-menu-heading,
+.sb-sidenav .sb-sidenav-menu .nav .sb-sidenav-menu-heading {
+  color: rgba(195, 210, 227, 0.6);
+}
+
 .sb-sidenav .sb-sidenav-menu .nav .nav-link .sb-nav-link-icon {
-  color: #A2ABA4;
+  color: rgba(195, 210, 227, 0.7);
 }
 
-.sb-sidenav .sb-sidenav-menu .nav .nav-link:hover,
+.sb-sidenav .sb-sidenav-menu .nav .nav-link {
+  transition: background-color 160ms var(--ease), color 160ms var(--ease);
+}
+
+.sb-sidenav .sb-sidenav-menu .nav .nav-link:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--on-navy);
+}
+
 .sb-sidenav .sb-sidenav-menu .nav .nav-link.active {
-  background: #14482F;
-  color: #fff;
+  background: var(--navy-2);
+  color: var(--on-navy);
+  box-shadow: inset 3px 0 0 var(--mint);
 }
 
-.sb-sidenav .sb-sidenav-menu .nav .nav-link.active .sb-nav-link-icon {
-  color: #B5DD3A;
+.sb-sidenav .sb-sidenav-menu .nav .nav-link.active .sb-nav-link-icon,
+.sb-sidenav .sb-sidenav-menu .nav .nav-link:hover .sb-nav-link-icon {
+  color: var(--mint);
 }
 
-.sb-sidenav .sb-sidenav-footer {
-  border-top-color: rgba(255, 255, 255, 0.08);
+.umami-user-name {
+  color: var(--on-navy);
+}
+
+.sb-sidenav .umami-user-meta button {
+  color: var(--on-navy-muted);
+  font-size: 12px;
+}
+
+body.sb-nav-fixed .umami-user-meta a:hover,
+.sb-sidenav .umami-user-meta button:hover {
+  color: var(--mint);
 }
 
 .umami-avatar {
-  background: #B5DD3A;
-  color: #14482F;
+  background: var(--mint);
+  color: var(--navy-deep);
+}
+
+.umami-mark {
+  border-radius: 10px;
+}
+
+.umami-lang a.is-active {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+body.sb-nav-fixed h1,
+body.sb-nav-fixed h2,
+body.sb-nav-fixed h3,
+body.sb-nav-fixed h4,
+body.sb-nav-fixed h5 {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+body.sb-nav-fixed .card,
+.umami-metric {
+  border-radius: var(--radius-card);
+  border-color: var(--border-muted);
+}
+
+body.sb-nav-fixed .card-header {
+  font-size: 15px;
+  font-weight: 700;
+  padding: 14px 18px;
+}
+
+body.sb-nav-fixed .table thead th,
+body.sb-nav-fixed .table thead td {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--text-muted);
+  background: var(--gray-50);
+}
+
+body.sb-nav-fixed .table td,
+.umami-metric-value,
+.umami-bar-label {
+  font-variant-numeric: tabular-nums;
+}
+
+.umami-metric-value {
+  color: var(--primary);
+  font-weight: 700;
+}
+
+a.umami-metric {
+  transition: border-color 160ms var(--ease), background-color 160ms var(--ease);
+}
+
+a.umami-metric:hover {
+  background: var(--surface-base);
+  border-color: var(--mint);
+}
+
+.umami-bar.is-muted,
+.umami-dot.is-muted {
+  background: var(--mint);
+}
+
+/* Buttons: navy pills as on the landing; the secondary kinds stay outlined. */
+body.sb-nav-fixed .btn,
+body.umami-auth .btn,
+.umami-login .btn {
+  border-radius: 999px;
+  font-weight: 600;
+  padding-inline: 14px;
+  transition: background-color 160ms var(--ease), border-color 160ms var(--ease), color 160ms var(--ease);
+}
+
+body.sb-nav-fixed .btn-sm {
+  padding-inline: 10px;
+}
+
+body.sb-nav-fixed .btn-group > .btn {
+  border-radius: 999px !important;
 }
 
 body.sb-nav-fixed .btn-primary,
+body.umami-auth .btn-primary,
 .umami-login .btn-primary {
-  background: #B5DD3A;
-  border-color: #8DB523;
-  color: #0E1712;
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--primary-foreground);
 }
 
 body.sb-nav-fixed .btn-primary:hover,
-.umami-login .btn-primary:hover {
-  background: #8DB523;
-  border-color: #8DB523;
-  color: #0E1712;
+body.sb-nav-fixed .btn-primary:focus,
+body.umami-auth .btn-primary:hover,
+body.umami-auth .btn-primary:focus,
+.umami-login .btn-primary:hover,
+.umami-login .btn-primary:focus {
+  background: var(--primary-hover);
+  border-color: var(--primary-hover);
+  color: var(--primary-foreground);
+}
+
+body.sb-nav-fixed .btn-outline-primary {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+body.sb-nav-fixed .btn-outline-primary:hover {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+body.sb-nav-fixed .btn-success {
+  background: var(--sage);
+  border-color: var(--sage);
+  color: var(--status-success-text);
+}
+
+body.sb-nav-fixed .btn-success:hover {
+  background: var(--mint);
+  border-color: var(--mint);
+  color: var(--navy-deep);
+}
+
+body.sb-nav-fixed .btn-danger:hover {
+  background: var(--status-error-bg);
+  color: var(--status-error-text);
+}
+
+/* Form controls, checks and badges in the brand colors. */
+body.sb-nav-fixed .form-control,
+body.sb-nav-fixed .form-select,
+body.umami-auth .form-control,
+body.umami-auth .form-select {
+  min-height: 40px;
+}
+
+body.sb-nav-fixed .form-check-input:checked,
+body.umami-auth .form-check-input:checked {
+  background-color: var(--primary);
+  border-color: var(--primary);
+}
+
+body.sb-nav-fixed .form-check-input:focus,
+body.umami-auth .form-check-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 22%, transparent);
+}
+
+body.sb-nav-fixed .badge.bg-primary,
+body.sb-nav-fixed .text-bg-primary {
+  background-color: var(--primary) !important;
+  color: var(--primary-foreground) !important;
+}
+
+body.sb-nav-fixed .badge.bg-success,
+body.sb-nav-fixed .text-bg-success {
+  background-color: var(--sage) !important;
+  color: var(--status-success-text) !important;
+}
+
+body.sb-nav-fixed .text-primary {
+  color: var(--primary) !important;
+}
+
+body.sb-nav-fixed .text-success {
+  color: var(--status-success) !important;
+}
+
+body.sb-nav-fixed .bg-primary {
+  background-color: var(--primary) !important;
+}
+
+body.sb-nav-fixed .nav-tabs {
+  border-bottom-color: var(--border-muted);
+  gap: 4px;
+}
+
+body.sb-nav-fixed .nav-tabs .nav-link {
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+body.sb-nav-fixed .nav-tabs .nav-link:hover {
+  color: var(--text-primary);
+}
+
+body.sb-nav-fixed .nav-tabs .nav-link.active {
+  background: transparent;
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+}
+
+body.sb-nav-fixed .nav-pills .nav-link.active {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+body.sb-nav-fixed .page-item.active .page-link {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--primary-foreground);
+}
+
+body.sb-nav-fixed .alert-info {
+  background: #E8EFF7;
+  border-color: #C9D8EA;
+  color: var(--navy);
+}
+
+body.sb-nav-fixed .alert-warning {
+  background: #F7F0E3;
+  border-color: #E8D9B9;
+  color: #6B5326;
+}
+
+.select2-container--bootstrap-5 .select2-results__option--highlighted,
+.select2-container--bootstrap-5 .select2-results__option--selected {
+  background-color: var(--primary) !important;
+  color: var(--primary-foreground) !important;
+}
+
+/* Login pages: the navy logo on a light card. */
+body.umami-auth {
+  background:
+    radial-gradient(1200px 600px at 100% 0%, rgba(156, 203, 184, 0.25), transparent 60%),
+    var(--surface-raised);
+}
+
+.umami-login-card {
+  border-radius: 20px;
+  padding: 28px;
+  box-shadow: 0 24px 60px rgba(11, 37, 69, 0.08);
+}
+
+/* Inputs show focus with their own ring; the outline is for everything else. */
+body.sb-nav-fixed .form-control:focus-visible,
+body.sb-nav-fixed .form-select:focus-visible,
+body.sb-nav-fixed .form-check-input:focus-visible,
+body.umami-auth .form-control:focus-visible,
+body.umami-auth .form-select:focus-visible,
+body.umami-auth .form-check-input:focus-visible {
+  outline: 0;
 }

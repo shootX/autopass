@@ -4,7 +4,7 @@
 <div class="umami-login">
     <div class="umami-login-card">
         <div class="umami-login-head">
-            <img src="/brand/logo-horizontal.svg" alt="autopass" style="height:28px;width:auto">
+            <img src="/brand/logo.svg" alt="autopass" style="height:32px;width:auto">
             <div>
                 <div class="umami-login-sub">{{ __('admin.login') }}</div>
             </div>
