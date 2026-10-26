@@ -357,3 +357,7 @@ JWT httpOnly cookie არ არის: `access_token` რჩება მე�
 CarAPI client (`CarCatalog`) speaks the geoapi.ge v1 shape: Bearer `geoapi_sk_`, `data` + `meta.total`, ids as strings (cast to int), up to 1000 rows a page. Free plan is 1000 requests a month and 15 a minute, so every list is cached and photos are kept on the `local` disk under `carapi-photos/`.
 
 Photo `photo_url` and `/models/{id}/photo` need the secret key. The app never gets the upstream link, only `/api/cars/models/{id}/photo?generation=`. The proxy never sends the key to another host. `UserCar::imageUrl()` = saved photo path, else the model/brand/body-type image. `body_type` is stored but does not change package pricing.
+
+## 2026-10-26 — Fuel type
+
+`fuel_type` is a code, not a label: `UserCar::FUEL_TYPES`. Petrol is split by grade (regular RON 92–95, premium RON 95, super RON 98). The iOS app and the web form keep their own labels for the same codes. geoapi.ge has verified photos per model first; generation photos fall back to the model photo.

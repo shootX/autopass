@@ -32,6 +32,7 @@ export default function AddCar({ showHeader }: { showHeader?: boolean }) {
   const shouldShowHeader = showHeader !== false && location.state?.fromRegistration !== true;
   const [models, setModels] = useState<Model[]>([]);
   const [year, setYear] = useState("");
+  const [fuel, setFuel] = useState("");
   const [modelsLoading, setModelsLoading] = useState(false);
   const modelRequest = useRef(0);
   const yearOptions = useCarYears(brand, model);
@@ -86,7 +87,7 @@ export default function AddCar({ showHeader }: { showHeader?: boolean }) {
   const isValidPlate = /^([A-Z]{2}) - ([0-9]{3}) - ([A-Z]{2})$/.test(
     numberPlate
   );
-  const isFormReady = brand && model && year && isValidPlate && !yearOptions.loading;
+  const isFormReady = brand && model && year && fuel && isValidPlate && !yearOptions.loading;
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
@@ -107,10 +108,15 @@ export default function AddCar({ showHeader }: { showHeader?: boolean }) {
       setIsSubmitting(false);
       return;
     }
+    if (!fuel) {
+      setError("chooseFuel");
+      setIsSubmitting(false);
+      return;
+    }
     const token = readAccessToken();
     const payload = {
       source: model.source ?? brand.source ?? "local",
-      brand_id: brand.id, model_id: model.id, year: Number(year), plate: normalizedPlate,
+      brand_id: brand.id, model_id: model.id, year: Number(year), plate: normalizedPlate, fuel_type: fuel,
     };
     try {
       const res = await customFetch(`${import.meta.env.VITE_API_URL}/mycars/add`, {
@@ -150,6 +156,20 @@ export default function AddCar({ showHeader }: { showHeader?: boolean }) {
     setAddedCar(null);
   };
   const t = useTranslation();
+  // Codes match UserCar::FUEL_TYPES on the backend.
+  const petrolFuels = [
+    { code: "regular", label: t("AddCar.fuel.regular") },
+    { code: "premium", label: t("AddCar.fuel.premium") },
+    { code: "super", label: t("AddCar.fuel.super") },
+  ];
+  const otherFuels = [
+    { code: "diesel", label: t("AddCar.fuel.diesel") },
+    { code: "electric", label: t("AddCar.fuel.electric") },
+    { code: "gas_petrol", label: t("AddCar.fuel.gas_petrol") },
+    { code: "cng", label: t("AddCar.fuel.cng") },
+    { code: "lpg", label: t("AddCar.fuel.lpg") },
+    { code: "hydrogen", label: t("AddCar.fuel.hydrogen") },
+  ];
 
   return (
     <div className='add-car-screen'>
@@ -216,6 +236,18 @@ export default function AddCar({ showHeader }: { showHeader?: boolean }) {
               {yearOptions.failed && <div role="alert">{t("AddCar.errors.yearsUnavailable")}
                 <button type="button" onClick={yearOptions.retry}>{t("AddCar.retry")}</button>
               </div>}
+            </div>
+
+            <div className="input-block">
+              <label htmlFor="car-fuel">{t("AddCar.labels.fuel")}</label>
+              <select id="car-fuel" className="input-select" value={fuel}
+                onChange={event => { setFuel(event.target.value); setError(""); }}>
+                <option value="">{t("AddCar.placeholders.chooseFuel")}</option>
+                <optgroup label={t("AddCar.fuelPetrol")}>
+                  {petrolFuels.map(item => <option key={item.code} value={item.code}>{item.label}</option>)}
+                </optgroup>
+                {otherFuels.map(item => <option key={item.code} value={item.code}>{item.label}</option>)}
+              </select>
             </div>
 
             <div className='number-plate-input'>

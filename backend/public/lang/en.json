@@ -61,13 +61,15 @@
             "brand": "Car brand",
             "model": "Car model",
             "plate": "Number plate",
-            "year": "Production year"
+            "year": "Production year",
+            "fuel": "Fuel type"
         },
         "placeholders": {
             "plate": "XX - XXX - XX",
             "chooseBrand": "Choose your car brand",
             "chooseModel": "Choose your car model",
-            "chooseYear": "Choose a year"
+            "chooseYear": "Choose a year",
+            "chooseFuel": "Choose fuel type"
         },
         "errors": {
             "invalidPlate": "Invalid number plate format",
@@ -77,7 +79,8 @@
             "yearsUnavailable": "Could not load years.",
             "chooseYear": "Choose the production year.",
             "saveFailed": "Could not add the vehicle. Please try again.",
-            "sessionExpired": "Your session expired. Please sign in again."
+            "sessionExpired": "Your session expired. Please sign in again.",
+            "chooseFuel": "Choose the fuel type."
         },
         "buttons": {
             "add": "Add",
@@ -93,7 +96,19 @@
             "arrowAlt": "Arrow"
         },
         "retry": "Try again",
-        "yearManual": "Choose the year manually for this model."
+        "yearManual": "Choose the year manually for this model.",
+        "fuelPetrol": "Petrol",
+        "fuel": {
+            "regular": "Regular (RON 92–95)",
+            "premium": "Premium (RON 95)",
+            "super": "Super (Premium RON 98)",
+            "diesel": "Diesel",
+            "electric": "Electricity",
+            "gas_petrol": "Gas/petrol",
+            "cng": "Natural gas CNG",
+            "lpg": "Liquefied gas LPG",
+            "hydrogen": "Hydrogen"
+        }
     },
     "Authentication": {
         "logoAlt": "LOGO",

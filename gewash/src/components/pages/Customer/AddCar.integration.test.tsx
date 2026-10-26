@@ -36,11 +36,12 @@ describe("car creation integration", () => {
     } }), { status: 200 }));
     const store = renderSelectedCar();
     fireEvent.change(screen.getByLabelText("AddCar.labels.year"), { target: { value: "2020" } });
+    fireEvent.change(screen.getByLabelText("AddCar.labels.fuel"), { target: { value: "premium" } });
     fireEvent.click(screen.getByRole("button", { name: "AddCar.buttons.add" }));
     await waitFor(() => expect(mock.fetch).toHaveBeenCalledTimes(1));
     const init = mock.fetch.mock.calls[0][1] as RequestInit;
     const body: unknown = JSON.parse(String(init.body));
-    expect(body).toMatchObject({ source: "carapi", brand_id: 901, model_id: 7, year: 2020, plate: "AA123BB" });
+    expect(body).toMatchObject({ source: "carapi", brand_id: 901, model_id: 7, year: 2020, plate: "AA123BB", fuel_type: "premium" });
     await waitFor(() => expect(store.getState().car.cars[0]?.id).toBe(12));
     expect(store.getState().car.cars[0]?.year).toBe(2020);
   });
@@ -51,10 +52,19 @@ describe("car creation integration", () => {
     expect(mock.fetch).not.toHaveBeenCalled();
   });
 
+  it("requires a fuel type before submitting a new car", () => {
+    renderSelectedCar();
+    fireEvent.change(screen.getByLabelText("AddCar.labels.year"), { target: { value: "2020" } });
+    expect((screen.getByRole("button", { name: "AddCar.buttons.add" }) as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.change(screen.getByLabelText("AddCar.labels.fuel"), { target: { value: "diesel" } });
+    expect((screen.getByRole("button", { name: "AddCar.buttons.add" }) as HTMLButtonElement).disabled).toBe(false);
+  });
+
   it("does not label a catalog validation failure as a duplicate plate", async () => {
     mock.fetch.mockResolvedValue(new Response(JSON.stringify({ success: false, error: "catalog invalid" }), { status: 422 }));
     renderSelectedCar();
     fireEvent.change(screen.getByLabelText("AddCar.labels.year"), { target: { value: "2020" } });
+    fireEvent.change(screen.getByLabelText("AddCar.labels.fuel"), { target: { value: "premium" } });
     fireEvent.click(screen.getByRole("button", { name: "AddCar.buttons.add" }));
     expect(await screen.findByText("AddCar.errors.saveFailed")).toBeTruthy();
     expect(screen.queryByText("AddCar.errors.plateExists")).toBeNull();
@@ -64,6 +74,7 @@ describe("car creation integration", () => {
     mock.fetch.mockResolvedValue(new Response(JSON.stringify({ success: false, error_code: "plate_exists" }), { status: 400 }));
     renderSelectedCar();
     fireEvent.change(screen.getByLabelText("AddCar.labels.year"), { target: { value: "2020" } });
+    fireEvent.change(screen.getByLabelText("AddCar.labels.fuel"), { target: { value: "premium" } });
     fireEvent.click(screen.getByRole("button", { name: "AddCar.buttons.add" }));
     expect(await screen.findByText("AddCar.errors.plateExists")).toBeTruthy();
   });

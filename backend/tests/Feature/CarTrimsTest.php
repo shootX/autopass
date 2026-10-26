@@ -113,4 +113,29 @@ class CarTrimsTest extends TestCase
         $this->get('/api/cars/models/7/photo?generation=70')->assertNotFound();
         Http::assertNothingSent();
     }
+
+    public function test_generation_without_its_own_photo_shows_the_model_photo(): void
+    {
+        $rows = $this->withToken($this->token)->getJson('/api/cars/models/7/generations?brand_id=501&year=2025')
+            ->assertOk()->json('generations');
+        $this->assertSame(80, $rows[0]['id']);
+        $this->assertStringEndsWith('/api/cars/models/7/photo', $rows[0]['photo']);
+        // The list was just loaded, so the model photo may be fetched.
+        $this->get('/api/cars/models/7/photo')->assertOk()->assertHeader('Content-Type', 'image/jpeg');
+    }
+
+    public function test_fuel_type_is_saved_validated_and_returned(): void
+    {
+        $this->withToken($this->token)->postJson('/api/mycars/add', [
+            'source' => 'carapi', 'brand_id' => 501, 'model_id' => 7, 'plate' => 'AA150BB', 'fuel_type' => 'kerosene',
+        ])->assertStatus(422);
+
+        $this->withToken($this->token)->postJson('/api/mycars/add', [
+            'source' => 'carapi', 'brand_id' => 501, 'model_id' => 7, 'plate' => 'AA150BB', 'fuel_type' => 'premium',
+        ])->assertOk()->assertJsonPath('car.fuel_type', 'premium');
+
+        $car = UserCar::query()->where('plate', 'AA150BB')->firstOrFail();
+        $this->withToken($this->token)->postJson('/api/mycars/'.$car->id.'/edit', ['fuel_type' => 'lpg'])->assertOk();
+        $this->withToken($this->token)->getJson('/api/mycars')->assertOk()->assertJsonPath('cars.0.fuel_type', 'lpg');
+    }
 }

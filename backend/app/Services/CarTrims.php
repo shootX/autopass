@@ -28,6 +28,9 @@ class CarTrims
             return null;
         }
 
+        // geoapi.ge has checked photos for models first; a generation without its own shows the model's.
+        $modelPhoto = $this->photoLink($modelId, null, $model['photo_url'] ?? null);
+
         return collect($this->catalog->remoteGenerations($modelId))
             ->filter(fn (array $row) => $year === null || $this->covers($row, $year))
             ->map(fn (array $row) => [
@@ -36,7 +39,7 @@ class CarTrims
                 'year_start' => is_numeric($row['year_start'] ?? null) ? (int) $row['year_start'] : null,
                 'year_end' => is_numeric($row['year_end'] ?? null) ? (int) $row['year_end'] : null,
                 'body_type' => $row['body_type'] ?? null,
-                'photo' => $this->photoLink($modelId, (int) $row['id'], $row['photo_url'] ?? null),
+                'photo' => $this->photoLink($modelId, (int) $row['id'], $row['photo_url'] ?? null) ?? $modelPhoto,
             ])
             ->filter(fn (array $row) => $row['name'] !== '')
             ->values()->all();
@@ -180,14 +183,15 @@ class CarTrims
     /**
      * The generation's photo_url when it is on the CarAPI host, else the model photo endpoint. The route is
      * public (image tags send no token), so only ids we already know may cost an upstream request:
-     * a generation from a list the app just loaded, or a model a user has saved.
+     * a model or generation from a list the app just loaded, or a model a user has saved.
      */
     private function upstreamPhoto(int $modelId, ?int $generationId): ?string
     {
         $base = $this->catalog->base();
         $modelPhoto = $base.'/models/'.$modelId.'/photo';
         if ($generationId === null) {
-            $known = CarModel::query()->where('source', CarCatalog::REMOTE)->where('external_model_id', $modelId)->exists();
+            $known = Cache::has('carapi.generations.'.$modelId)
+                || CarModel::query()->where('source', CarCatalog::REMOTE)->where('external_model_id', $modelId)->exists();
 
             return $known ? $modelPhoto : null;
         }
