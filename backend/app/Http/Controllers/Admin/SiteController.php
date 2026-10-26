@@ -67,7 +67,7 @@ class SiteController extends Controller
                         $item[$lang][$field] = self::clean($row[$lang][$field] ?? '');
                     }
                 }
-                if (implode('', array_merge(...array_values($item))) !== '') {
+                if (implode('', array_map(fn (array $fields) => implode('', $fields), $item)) !== '') {
                     $items[] = $item;
                 }
             }
