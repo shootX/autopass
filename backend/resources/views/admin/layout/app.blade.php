@@ -9,7 +9,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>autopass</title>
     <link rel="icon" href="/brand/favicon.svg" type="image/svg+xml">
-    <meta name="theme-color" content="#14482F">
+    <meta name="theme-color" content="#0B2545">
 
     <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
 

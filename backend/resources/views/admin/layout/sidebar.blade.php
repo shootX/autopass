@@ -1,7 +1,7 @@
 <nav class="sb-sidenav accordion" id="sidenavAccordion">
     <div class="umami-side-brand">
         <a href="{{ route('admin.dashboard') }}">
-            <img src="/brand/logo-horizontal-dark.svg" alt="autopass" style="height:28px;width:auto">
+            <img src="/brand/logo-white.svg" alt="autopass" style="height:30px;width:auto">
         </a>
     </div>
     <div class="sb-sidenav-menu">
