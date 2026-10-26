@@ -68,6 +68,11 @@ class CorporateClient extends Model
         return $this->hasMany(CorporateWash::class);
     }
 
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(CorporateInvoice::class);
+    }
+
     public function washMoves(): HasMany
     {
         return $this->hasMany(CorporateWashMove::class);

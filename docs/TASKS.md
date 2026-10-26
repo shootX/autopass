@@ -390,5 +390,15 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 - [x] `mycars` `company_car.discount` tells the driver the price for the car's body type.
 - [x] Admin company page and panel: discount table, per-car price in the fleet, wash history with this month's totals (`corporate_washes`, walk-ins included).
 - [x] Body type rename and delete keep the price rows in step.
-- [ ] iOS app: show the discount price to the driver and the manager (GeocarAPP PR).
-- [ ] Stage 4: invoices.
+- [x] iOS app: show the discount price to the driver and the manager (GeocarAPP PR #15).
+- [x] Stage 4: invoices (see below).
+
+## 2026-10-26 — Corporate clients stage 4: invoices (`claude/project-thread-8emdwh`)
+
+- [x] `corporate_invoices`: number `AP-000001`, package, washes, amount, VAT rate, buyer and seller details copied at issue, due date, status `issued` / `paid` / `cancelled`.
+- [x] Company panel „ინვოისები“ (`/partner/invoices`): orders one of its active wash packages that has a price, sees its invoices, prints or saves one as PDF, cancels an unpaid one. At most 3 unpaid invoices at a time.
+- [x] Admin: company page block „ინვოისები“ (issue for a package, mark paid, cancel) and the list of all invoices (`/dashboard/corporate/invoices`, unpaid by default). „გადახდილია“ credits the package's washes once; the ledger row links to the invoice.
+- [x] Seller details and VAT come from `INVOICE_*` env values (`config/invoices.php`).
+- [ ] Open: who pays the discount difference (full price minus what the driver pays). Not invoiced until the user decides.
+- [ ] A real PDF file (needs a PDF library, which needs approval). Today the invoice is a print-ready page.
+- [ ] Stage 5: panel redesign and company API (washes, webhook, docs).

@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\ClientProfileController;
 use App\Http\Controllers\Admin\ClientsController;
 use App\Http\Controllers\Admin\CorporateCarsController;
 use App\Http\Controllers\Admin\CorporateController;
+use App\Http\Controllers\Admin\CorporateInvoicesController;
 use App\Http\Controllers\Admin\CorporatePackagesController;
 use App\Http\Controllers\Admin\CorporateWashesController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -191,6 +192,10 @@ Route::prefix('dashboard')
             Route::get('/add', [CorporateController::class, 'addPage'])->name('admin.corporate.add');
             Route::post('/store', [CorporateController::class, 'store'])->name('admin.corporate.store');
             Route::get('/template', [CorporateController::class, 'template'])->name('admin.corporate.template');
+            Route::get('/invoices', [CorporateInvoicesController::class, 'index'])->name('admin.corporate.invoices');
+            Route::get('/invoices/{invoice}', [CorporateInvoicesController::class, 'show'])->name('admin.corporate.invoices.show');
+            Route::post('/invoices/{invoice}/paid', [CorporateInvoicesController::class, 'paid'])->name('admin.corporate.invoices.paid');
+            Route::post('/invoices/{invoice}/cancel', [CorporateInvoicesController::class, 'cancel'])->name('admin.corporate.invoices.cancel');
             Route::get('/{corporate}/edit', [CorporateController::class, 'editPage'])->name('admin.corporate.edit');
             Route::post('/{corporate}/save', [CorporateController::class, 'save'])->name('admin.corporate.save');
             Route::post('/{corporate}/ban', [CorporateController::class, 'ban'])->name('admin.corporate.ban');
@@ -203,6 +208,7 @@ Route::prefix('dashboard')
             Route::post('/{corporate}/cars/{car}/block', [CorporateCarsController::class, 'block'])->name('admin.corporate.cars.block');
             Route::post('/{corporate}/cars/{car}/mode', [CorporateCarsController::class, 'mode'])->name('admin.corporate.cars.mode');
             Route::post('/{corporate}/cars/{car}/washes', [CorporateCarsController::class, 'washes'])->name('admin.corporate.cars.washes');
+            Route::post('/{corporate}/invoices', [CorporateInvoicesController::class, 'store'])->name('admin.corporate.invoices.store');
             Route::post('/{corporate}/washes/credit', [CorporateWashesController::class, 'credit'])->name('admin.corporate.washes.credit');
             Route::post('/{corporate}/washes/correct', [CorporateWashesController::class, 'correct'])->name('admin.corporate.washes.correct');
             Route::post('/{corporate}/import', [CorporateController::class, 'import'])->name('admin.corporate.import');

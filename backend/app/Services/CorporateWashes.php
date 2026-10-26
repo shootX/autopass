@@ -30,7 +30,7 @@ class CorporateWashes
     public static function ledger(CorporateClient $client): LengthAwarePaginator
     {
         return $client->washMoves()
-            ->with(['package:id,title', 'wash:id,car_wash_id', 'wash.washing:id,name'])
+            ->with(['package:id,title', 'invoice:id,number', 'wash:id,car_wash_id', 'wash.washing:id,name'])
             ->orderByDesc('id')
             ->paginate(20, ['*'], 'moves')
             ->withQueryString();
@@ -43,13 +43,13 @@ class CorporateWashes
      * @param  'credit'|'correction'  $type
      * @return 'ok'|'zero'|'below_allocated'
      */
-    public static function credit(CorporateClient $client, string $type, int $amount, ?CorporatePackage $package, ?string $note, int $adminId): string
+    public static function credit(CorporateClient $client, string $type, int $amount, ?CorporatePackage $package, ?string $note, int $adminId, ?int $invoiceId = null): string
     {
         if ($amount === 0 || ($type === CorporateWashMove::TYPE_CREDIT && $amount < 0)) {
             return 'zero';
         }
 
-        return DB::transaction(function () use ($client, $type, $amount, $package, $note, $adminId) {
+        return DB::transaction(function () use ($client, $type, $amount, $package, $note, $adminId, $invoiceId) {
             $locked = self::lockClient($client->id);
             $next = (int) $locked->washes_balance + $amount;
             if ($next < self::allocated($locked->id)) {
@@ -63,6 +63,7 @@ class CorporateWashes
             $client->syncOriginalAttribute('washes_balance');
             self::move($locked, $type, $amount, [
                 'corporate_package_id' => $package?->id,
+                'corporate_invoice_id' => $invoiceId,
                 'actor' => 'admin',
                 'actor_id' => $adminId,
                 'note' => $note,

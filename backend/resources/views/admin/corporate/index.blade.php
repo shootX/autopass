@@ -9,7 +9,10 @@
         <div class="card mt-4 mb-4">
             <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
                 <div>{{ __('admin.corporate_clients') }}</div>
-                <a href="{{ route('admin.corporate.add') }}" class="btn btn-primary"><i class="fa fa-plus"></i> {{ __('admin.add') }}</a>
+                <div class="d-flex gap-2">
+                    <a href="{{ route('admin.corporate.invoices') }}" class="btn btn-outline-primary"><i class="fas fa-file-invoice"></i> {{ __('admin.inv_title') }}@if($openInvoices) <span class="badge bg-warning text-dark ms-1">{{ $openInvoices }}</span>@endif</a>
+                    <a href="{{ route('admin.corporate.add') }}" class="btn btn-primary"><i class="fa fa-plus"></i> {{ __('admin.add') }}</a>
+                </div>
             </div>
             <div class="card-body">
                 <form method="GET" class="row g-2 mb-3">

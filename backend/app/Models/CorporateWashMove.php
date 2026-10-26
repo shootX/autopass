@@ -29,6 +29,7 @@ class CorporateWashMove extends Model
         'car_balance_after',
         'corporate_package_id',
         'corporate_wash_id',
+        'corporate_invoice_id',
         'actor',
         'actor_id',
         'note',
@@ -43,6 +44,11 @@ class CorporateWashMove extends Model
     public function package(): BelongsTo
     {
         return $this->belongsTo(CorporatePackage::class, 'corporate_package_id');
+    }
+
+    public function invoice(): BelongsTo
+    {
+        return $this->belongsTo(CorporateInvoice::class, 'corporate_invoice_id');
     }
 
     public function wash(): BelongsTo
