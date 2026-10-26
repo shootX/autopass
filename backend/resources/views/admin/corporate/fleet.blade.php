@@ -112,6 +112,7 @@ GET {{ url('/api/corporate/balance') }}</pre>
 @php
     $statusBadge = ['invited' => 'bg-warning text-dark', 'active' => 'bg-success', 'blocked' => 'bg-danger'];
     $freeWashes = \App\Services\CorporateWashes::balance($corporate)['free'];
+    $discountsByType = $corporate->discountPackage?->prices->keyBy('car_type') ?? collect();
 @endphp
 <div class="card mt-4 mb-4">
     <div class="card-header">{{ __('admin.fleet') }} · {{ $cars->total() }} <span class="text-muted ms-2">{{ __('admin.cw_free') }}: {{ $freeWashes }}</span></div>
@@ -145,16 +146,7 @@ GET {{ url('/api/corporate/balance') }}</pre>
                             <small class="d-block text-muted">{{ __('admin.fleet_invite_no_phone') }}</small>
                         @endif
                     </td>
-                    <td>
-                        <form method="POST" action="{{ $carBase.'/'.$car->id.'/mode' }}" class="d-inline" onsubmit="return confirm(@json(__('admin.cw_mode_confirm')))">
-                            @csrf
-                            <input type="hidden" name="mode" value="{{ $car->mode === 'washes' ? 'discount' : 'washes' }}">
-                            <button type="submit" class="btn btn-sm {{ $car->mode === 'washes' ? 'btn-outline-primary' : 'btn-outline-warning' }}" title="{{ __('admin.cw_mode_switch') }}">{{ __('admin.cw_mode_'.$car->mode) }} <i class="fas fa-right-left ms-1"></i></button>
-                        </form>
-                        @if($car->mode === 'discount')
-                            <small class="d-block text-muted">{{ __('admin.cw_discount_not_ready') }}</small>
-                        @endif
-                    </td>
+                    <td>@include('admin.corporate.fleet-mode')</td>
                     <td>
                         @if($car->mode === 'washes')
                             <a class="btn btn-sm btn-outline-secondary fleet-washes" data-id="{{ $car->id }}" data-washes="{{ (int) $car->washes_left }}" title="{{ __('admin.cw_allocate') }}">{{ (int) $car->washes_left }} <i class="fas fa-pen ms-1"></i></a>

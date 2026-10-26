@@ -1,4 +1,4 @@
-{{-- A company's washes: the pool, its own packages and the ledger. $manage adds the admin forms. --}}
+{{-- A company's washes: the pool, its packages and discounts, the ledger and the wash history. $manage adds the admin forms. --}}
 <div id="washes"></div>
 @error('washes')
     <div class="alert alert-danger mt-4 mb-0">{{ $message }}</div>
@@ -27,7 +27,7 @@
                         @csrf
                         <select class="form-control" name="corporate_package_id" id="cw_package">
                             <option value="">{{ __('admin.cw_credit_manual') }}</option>
-                            @foreach($packages->where('is_active', true) as $package)
+                            @foreach($packages->where('is_active', true)->where('type', 'washes') as $package)
                                 <option value="{{ $package->id }}">{{ $package->title }} · {{ $package->washes }}</option>
                             @endforeach
                         </select>
@@ -57,14 +57,23 @@
 </div>
 
 <div class="card mt-4">
-    <div class="card-header">{{ __('admin.cw_packages') }}</div>
+    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>{{ __('admin.cw_packages') }}</div>
+        @if($manage)
+            <div class="d-flex gap-2">
+                <a class="btn btn-sm btn-outline-primary" href="{{ route('admin.packages.corporate.add', ['company' => $corporate->id]) }}"><i class="fa fa-plus"></i> {{ __('admin.cp_type_washes') }}</a>
+                <a class="btn btn-sm btn-outline-primary" href="{{ route('admin.packages.corporate.add', ['company' => $corporate->id, 'type' => 'discount']) }}"><i class="fa fa-plus"></i> {{ __('admin.cp_type_discount') }}</a>
+            </div>
+        @endif
+    </div>
     <div class="card-body table-responsive">
         <small class="d-block mb-2">{{ __($manage ? 'admin.cw_packages_hint' : 'admin.cw_packages_hint_company') }}</small>
         <table class="table table-hover align-middle">
             <thead>
             <tr>
                 <th>{{ __('admin.cw_package_title') }}</th>
-                <th>{{ __('admin.cw_package_washes') }}</th>
+                <th>{{ __('admin.cp_type') }}</th>
+                <th>{{ __('admin.cp_terms') }}</th>
                 <th>{{ __('admin.cw_package_price') }}</th>
                 <th>{{ __('admin.status') }}</th>
                 @if($manage)<th>{{ __('admin.actions') }}</th>@endif
@@ -72,43 +81,27 @@
             </thead>
             <tbody>
             @forelse($packages as $package)
-                @if($manage)
-                    <tr>
-                        <td><input class="form-control form-control-sm" form="cw-pkg-{{ $package->id }}" name="title" required maxlength="120" value="{{ $package->title }}"></td>
-                        <td><input class="form-control form-control-sm" form="cw-pkg-{{ $package->id }}" type="number" name="washes" required min="1" max="100000" value="{{ $package->washes }}"></td>
-                        <td><input class="form-control form-control-sm" form="cw-pkg-{{ $package->id }}" type="number" name="price" min="0" step="0.01" value="{{ $package->price }}"></td>
-                        <td><label><input form="cw-pkg-{{ $package->id }}" type="checkbox" name="is_active" value="1" @checked($package->is_active)> {{ __('admin.cw_package_active') }}</label></td>
-                        <td>
-                            <form id="cw-pkg-{{ $package->id }}" method="post" action="{{ route('admin.corporate.packages.save', [$corporate, $package]) }}" class="d-inline">@csrf<button class="btn btn-sm btn-primary" type="submit"><i class="fas fa-save"></i></button></form>
-                            <form method="post" action="{{ route('admin.corporate.packages.delete', [$corporate, $package]) }}" class="d-inline" onsubmit="return confirm(@json(__('admin.cw_package_delete_confirm')))">@csrf @method('DELETE')<button class="btn btn-sm btn-danger" type="submit"><i class="fas fa-trash"></i></button></form>
-                        </td>
-                    </tr>
-                @else
-                    <tr>
-                        <td>{{ $package->title }}</td>
-                        <td>{{ $package->washes }}</td>
-                        <td>{{ $package->price !== null ? number_format((float) $package->price, 2).' ₾' : '—' }}</td>
-                        <td><span class="badge {{ $package->is_active ? 'bg-success' : 'bg-secondary' }}">{{ $package->is_active ? __('admin.active') : __('admin.cw_package_inactive') }}</span></td>
-                    </tr>
-                @endif
+                <tr>
+                    <td>{{ $package->title }}</td>
+                    <td>{{ __('admin.cp_type_'.$package->type) }}</td>
+                    <td>@include('admin.packages.corporate.terms')</td>
+                    <td>{{ $package->price !== null ? number_format((float) $package->price, 2).' ₾' : '—' }}</td>
+                    <td><span class="badge {{ $package->is_active ? 'bg-success' : 'bg-secondary' }}">{{ $package->is_active ? __('admin.active') : __('admin.cw_package_inactive') }}</span></td>
+                    @if($manage)
+                        <td><a class="btn btn-sm btn-primary" href="{{ route('admin.packages.corporate.edit', $package) }}" title="{{ __('admin.edit') }}"><i class="fas fa-edit"></i></a></td>
+                    @endif
+                </tr>
             @empty
-                <tr><td colspan="{{ $manage ? 5 : 4 }}" class="umami-empty">{{ __('admin.cw_packages_empty') }}</td></tr>
+                <tr><td colspan="{{ $manage ? 6 : 5 }}" class="umami-empty">{{ __('admin.cw_packages_empty') }}</td></tr>
             @endforelse
             </tbody>
         </table>
-        @if($manage)
-            <form class="row g-2 align-items-end" method="post" action="{{ route('admin.corporate.packages.store', $corporate) }}">
-                @csrf
-                <div class="col-md-5"><input class="form-control" name="title" required maxlength="120" placeholder="{{ __('admin.cw_package_title') }}"></div>
-                <div class="col-md-2"><input class="form-control" type="number" name="washes" required min="1" max="100000" placeholder="{{ __('admin.cw_package_washes') }}"></div>
-                <div class="col-md-2"><input class="form-control" type="number" name="price" min="0" step="0.01" placeholder="{{ __('admin.cw_package_price') }}"></div>
-                <div class="col-md-3"><button class="btn btn-outline-primary w-100" type="submit">{{ __('admin.cw_package_add') }}</button></div>
-            </form>
-        @endif
     </div>
 </div>
 
-<div class="card mt-4 mb-4">
+@include('admin.corporate.discounts')
+
+<div class="card mt-4">
     <div class="card-header">{{ __('admin.cw_ledger') }}</div>
     <div class="card-body table-responsive">
         <table class="table table-hover">
@@ -144,6 +137,8 @@
         {{ $moves->fragment('washes')->links('pagination::bootstrap-5') }}
     </div>
 </div>
+
+@include('admin.corporate.history')
 
 @if($manage)
     @push('js')

@@ -14,7 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
-/** A company car at the wash: the driver's QR and the manager's approval that takes one wash. */
+/** A company car at the wash: the driver's QR and the manager's approval that records the wash. */
 class CorporateWashController extends Controller
 {
     /** GET /mycars/{carid}/company-qr: a rotating SVG code; X-QR-Expires says when to fetch a new one. */
@@ -89,7 +89,7 @@ class CorporateWashController extends Controller
 
         // The booking is linked to its first wash only; later washes count as walk-ins.
         $bookingUnused = $here && ! CorporateWash::query()->where('appointment_id', $here->id)->exists();
-        $done = CorporateWashes::debit($car, [
+        $done = CorporateWashes::wash($car, [
             'car_wash_id' => (int) $washId,
             'manager_id' => (int) $user->id,
             'appointment_id' => $bookingUnused ? (int) $here->id : null,
@@ -117,8 +117,11 @@ class CorporateWashController extends Controller
             'success' => true,
             'corporate' => [
                 'id' => (int) $car->id,
+                'mode' => $done['mode'],
                 'washes_left' => $done['washes_left'],
                 'company_washes' => $done['company_washes'],
+                // Discount mode: what was charged; the driver pays to_pay on site.
+                'discount' => $done['discount'],
             ],
         ]);
     }

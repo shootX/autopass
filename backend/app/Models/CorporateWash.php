@@ -18,9 +18,24 @@ class CorporateWash extends Model
         'manager_id',
         'appointment_id',
         'walk_in',
+        'car_type',
+        'corporate_package_id',
+        'full_price',
+        'discount_percent',
+        'to_pay',
     ];
 
-    protected $casts = ['walk_in' => 'boolean'];
+    protected $casts = [
+        'walk_in' => 'boolean',
+        'full_price' => 'decimal:2',
+        'discount_percent' => 'integer',
+        'to_pay' => 'decimal:2',
+    ];
+
+    public function package(): BelongsTo
+    {
+        return $this->belongsTo(CorporatePackage::class, 'corporate_package_id');
+    }
 
     public function washing(): BelongsTo
     {

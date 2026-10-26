@@ -79,6 +79,7 @@ describe("company car scan", () => {
 
   it("tells a company car code from a package code", () => {
     expect(isCorporateCheck(scan())).toBe(true);
+    expect(isCorporateCheck(scan({ mode: "discount", discount: { car_type: "sedan", full_price: 30, percent: 50, to_pay: 15 } }))).toBe(true);
     expect(isCorporateCheck({ success: true, approve_token: "tok", package: { id: 1 } })).toBe(false);
     expect(isCorporateCheck({ success: false, kind: "corporate" })).toBe(false);
     expect(isCorporateCheck(null)).toBe(false);

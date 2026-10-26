@@ -40,7 +40,7 @@
                 <div class="sb-nav-link-icon"><i class="fas fa-warehouse"></i></div>
                 {{ __('admin.washings') }}
             </a>
-            <a class="nav-link @if(Route::is('admin.packages.index')) active @endif" href="{{route('admin.packages.index')}}">
+            <a class="nav-link @if(Route::is('admin.packages.*')) active @endif" href="{{route('admin.packages.index')}}">
                 <div class="sb-nav-link-icon"><i class="fas fa-box"></i></div>
                 {{ __('admin.packages') }}
             </a>

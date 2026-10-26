@@ -10,6 +10,7 @@
 
 @section('content')
     <div class="container-fluid px-4">
+        @include('admin.packages.tabs')
 
         @if(session()->has('message'))
             <div class="alert alert-success mt-4">

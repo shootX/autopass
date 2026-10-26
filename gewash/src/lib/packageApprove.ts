@@ -59,6 +59,14 @@ export function packageQrReady(result: CheckedPackage | null | undefined): boole
   );
 }
 
+/** A discount car's price for its body type; the driver pays `to_pay` on site. */
+export type CorporateDiscount = {
+  car_type: string;
+  full_price: number;
+  percent: number;
+  to_pay: number;
+};
+
 /** checkqr answer for a company car (`kind: "corporate"`). Only an approvable car carries an approve_token. */
 export type CorporateCheck = {
   success?: boolean;
@@ -76,6 +84,8 @@ export type CorporateCheck = {
     can_approve: boolean;
     reason?: string | null;
     reason_text?: string | null;
+    /** Discount mode only; null when the company has no discount for this body type. */
+    discount?: CorporateDiscount | null;
   };
 };
 

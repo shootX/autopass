@@ -12,6 +12,7 @@ use App\Services\CorporateWashes;
 use App\Services\FleetCars;
 use App\Services\Security\TemporaryPassword;
 use App\Support\AdminAudit;
+use App\Support\CorporateWashPanel;
 use App\Support\SessionRevoker;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -132,12 +133,9 @@ class CorporateController extends Controller
 
     public function show(CorporateClient $corporate)
     {
-        $cars = $corporate->cars()->orderByDesc('id')->paginate(20);
-        $balance = CorporateWashes::balance($corporate);
-        $packages = $corporate->packages()->orderByDesc('is_active')->orderBy('washes')->get();
-        $moves = CorporateWashes::ledger($corporate);
+        $cars = $corporate->cars()->with('userCar.model')->orderByDesc('id')->paginate(20);
 
-        return view('admin.corporate.show', compact('corporate', 'cars', 'balance', 'packages', 'moves'));
+        return view('admin.corporate.show', compact('corporate', 'cars') + CorporateWashPanel::data($corporate, true));
     }
 
     public function storeCar(Request $request, CorporateClient $corporate)

@@ -4,11 +4,22 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
-/** A wash package made for one company only; the admin credits its washes once the invoice is paid. */
+/**
+ * A package made by the admin for one company only. A wash package's washes are credited once the
+ * invoice is paid; a discount package gives a price per body type, and the driver pays the rest on site.
+ */
 class CorporatePackage extends Model
 {
-    protected $fillable = ['corporate_client_id', 'title', 'washes', 'price', 'is_active'];
+    public const TYPE_WASHES = 'washes';
+
+    public const TYPE_DISCOUNT = 'discount';
+
+    public const TYPES = [self::TYPE_WASHES, self::TYPE_DISCOUNT];
+
+    protected $fillable = ['title', 'washes', 'price', 'is_active'];
+    // corporate_client_id and type are set once, when the package is created.
 
     protected $casts = [
         'washes' => 'integer',
@@ -19,5 +30,15 @@ class CorporatePackage extends Model
     public function client(): BelongsTo
     {
         return $this->belongsTo(CorporateClient::class, 'corporate_client_id');
+    }
+
+    public function prices(): HasMany
+    {
+        return $this->hasMany(CorporatePackagePrice::class)->orderBy('car_type');
+    }
+
+    public function isDiscount(): bool
+    {
+        return $this->type === self::TYPE_DISCOUNT;
     }
 }

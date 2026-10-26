@@ -3,6 +3,7 @@ import { customFetch } from "@/utils/customFetch";
 import { closeIconUrl, whashesUrl } from "@/assets/staticUrls";
 import { useTranslation } from "@/hooks/useTranslation";
 import { readAccessToken } from "@/lib/accessToken";
+import { formatGel } from "@/lib/v4";
 import {
   approvePackageBody,
   approveShouldRescan,
@@ -10,6 +11,7 @@ import {
   corporateCanApprove,
   spendApproveToken,
   type CorporateCheck,
+  type CorporateDiscount,
 } from "@/lib/packageApprove";
 
 type Props = {
@@ -19,13 +21,14 @@ type Props = {
   onRescan: (showError: boolean) => void;
 };
 
-/** A company car after the scan: which company, wash package or discount, and what is left. */
+/** A company car after the scan: which company, wash package or discount, and what is left or what the driver pays. */
 export default function CorporateResultCard({ result, onClose, onRescan }: Props): React.JSX.Element {
   const t = useTranslation();
   const car = result.corporate;
   const [grant, setGrant] = useState<string | null>(result.approve_token ?? null);
   const [busy, setBusy] = useState(false);
   const [left, setLeft] = useState({ car: car.washes_left, company: car.company_washes });
+  const [discount, setDiscount] = useState<CorporateDiscount | null>(car.discount ?? null);
   const [approved, setApproved] = useState(false);
   const [error, setError] = useState(corporateCanApprove(result) ? "" : car.reason_text || t("Scanner.cannotWash"));
   const driver = [car.user?.name, car.user?.surname].filter(Boolean).join(" ");
@@ -54,7 +57,12 @@ export default function CorporateResultCard({ result, onClose, onRescan }: Props
         setError(typeof data?.error === "string" ? data.error : t("Scanner.cannotWash"));
         return;
       }
-      setLeft({ car: data?.corporate?.washes_left ?? left.car - 1, company: data?.corporate?.company_washes ?? left.company - 1 });
+      if (car.mode === "discount") {
+        // The wash keeps the price at approval time, which is what the driver pays.
+        setDiscount(data?.corporate?.discount ?? discount);
+      } else {
+        setLeft({ car: data?.corporate?.washes_left ?? left.car - 1, company: data?.corporate?.company_washes ?? left.company - 1 });
+      }
       setApproved(true);
       setError("");
     } catch {
@@ -91,6 +99,24 @@ export default function CorporateResultCard({ result, onClose, onRescan }: Props
             <span className='qr-package-month-count'>{left.company}</span>
           </div>
         </div>
+      )}
+      {car.mode === "discount" && discount && (
+        <>
+          <div className='qr-flexible-info'>
+            <div className='qr-total-washes-block'>
+              <p className='qr-total-washes'>{t("Scanner.fullPrice")}</p>
+              <span className='qr-whashes-count'>{formatGel(discount.full_price)}</span>
+            </div>
+            <div className='qr-package-period-block'>
+              <p className='qr-package-period'>{t("Scanner.discountPercent")}</p>
+              <span className='qr-package-month-count'>{discount.percent}%</span>
+            </div>
+          </div>
+          <div className='qr-active-package-block'>
+            <p className='qr-active-package'>{t("Scanner.driverPays")}</p>
+            <span className='package-end'>{formatGel(discount.to_pay)}</span>
+          </div>
+        </>
       )}
       {error && <p className='warning'>{error}</p>}
       {approved ? (

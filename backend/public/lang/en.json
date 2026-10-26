@@ -1131,6 +1131,9 @@
         "modeDiscount": "Washes at a discount",
         "carWashes": "Left on the car",
         "companyWashes": "Left for the company",
+        "fullPrice": "Full price",
+        "discountPercent": "Discount",
+        "driverPays": "Driver pays on site",
         "approve": "Approve",
         "approved": "Wash approved",
         "cannotWash": "The wash can't be approved."

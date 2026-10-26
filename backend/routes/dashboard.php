@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\ClientProfileController;
 use App\Http\Controllers\Admin\ClientsController;
 use App\Http\Controllers\Admin\CorporateCarsController;
 use App\Http\Controllers\Admin\CorporateController;
+use App\Http\Controllers\Admin\CorporatePackagesController;
 use App\Http\Controllers\Admin\CorporateWashesController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ManagerController;
@@ -107,6 +108,15 @@ Route::prefix('dashboard')
             Route::post('/{washing}/reviews/store', [WashingController::class, 'storeReview'])->name('admin.washings.store_review');
         });
 
+        Route::prefix('/packages/corporate')->group(function () {
+            Route::get('/', [CorporatePackagesController::class, 'index'])->name('admin.packages.corporate');
+            Route::get('/add', [CorporatePackagesController::class, 'create'])->name('admin.packages.corporate.add');
+            Route::post('/store', [CorporatePackagesController::class, 'store'])->name('admin.packages.corporate.store');
+            Route::get('/{corporatePackage}/edit', [CorporatePackagesController::class, 'edit'])->name('admin.packages.corporate.edit');
+            Route::post('/{corporatePackage}/save', [CorporatePackagesController::class, 'save'])->name('admin.packages.corporate.save');
+            Route::delete('/{corporatePackage}/delete', [CorporatePackagesController::class, 'delete'])->name('admin.packages.corporate.delete');
+        });
+
         Route::prefix('/packages')->group(function () {
 
             Route::get('/', [PackagesController::class, 'index'])->name('admin.packages.index');
@@ -193,9 +203,6 @@ Route::prefix('dashboard')
             Route::post('/{corporate}/cars/{car}/block', [CorporateCarsController::class, 'block'])->name('admin.corporate.cars.block');
             Route::post('/{corporate}/cars/{car}/mode', [CorporateCarsController::class, 'mode'])->name('admin.corporate.cars.mode');
             Route::post('/{corporate}/cars/{car}/washes', [CorporateCarsController::class, 'washes'])->name('admin.corporate.cars.washes');
-            Route::post('/{corporate}/packages', [CorporateWashesController::class, 'storePackage'])->name('admin.corporate.packages.store');
-            Route::post('/{corporate}/packages/{package}/save', [CorporateWashesController::class, 'savePackage'])->name('admin.corporate.packages.save');
-            Route::delete('/{corporate}/packages/{package}/delete', [CorporateWashesController::class, 'deletePackage'])->name('admin.corporate.packages.delete');
             Route::post('/{corporate}/washes/credit', [CorporateWashesController::class, 'credit'])->name('admin.corporate.washes.credit');
             Route::post('/{corporate}/washes/correct', [CorporateWashesController::class, 'correct'])->name('admin.corporate.washes.correct');
             Route::post('/{corporate}/import', [CorporateController::class, 'import'])->name('admin.corporate.import');

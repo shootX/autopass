@@ -10,38 +10,15 @@ use App\Services\CorporateWashes;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
-/** Admin side of a company's washes: its own packages, credits after a paid invoice, corrections. */
+/** Admin side of a company's wash pool: credits after a paid invoice and corrections. Packages live in the Packages menu. */
 class CorporateWashesController extends Controller
 {
-    public function storePackage(Request $request, CorporateClient $corporate)
-    {
-        $corporate->packages()->create($this->packageFields($request) + ['is_active' => true]);
-
-        return $this->back($corporate, __('admin.cw_package_saved'));
-    }
-
-    public function savePackage(Request $request, CorporateClient $corporate, CorporatePackage $package)
-    {
-        $this->own($corporate, $package);
-        $package->update($this->packageFields($request) + ['is_active' => $request->boolean('is_active')]);
-
-        return $this->back($corporate, __('admin.cw_package_saved'));
-    }
-
-    public function deletePackage(CorporateClient $corporate, CorporatePackage $package)
-    {
-        $this->own($corporate, $package);
-        // Ledger rows keep the washes; they only lose the link to the package.
-        $package->delete();
-
-        return $this->back($corporate, __('admin.cw_package_deleted'));
-    }
-
     /** Credits a package's washes (the invoice is paid) or a manual amount. */
     public function credit(Request $request, CorporateClient $corporate)
     {
         $data = $request->validate([
-            'corporate_package_id' => ['nullable', 'integer', Rule::exists('corporate_packages', 'id')->where('corporate_client_id', $corporate->id)],
+            'corporate_package_id' => ['nullable', 'integer', Rule::exists('corporate_packages', 'id')
+                ->where('corporate_client_id', $corporate->id)->where('type', CorporatePackage::TYPE_WASHES)],
             'amount' => ['required_without:corporate_package_id', 'nullable', 'integer', 'min:1', 'max:100000'],
             'note' => ['nullable', 'string', 'max:255'],
         ]);
@@ -66,15 +43,6 @@ class CorporateWashesController extends Controller
         return $this->result($corporate, $result, __('admin.cw_corrected'));
     }
 
-    private function packageFields(Request $request): array
-    {
-        return $request->validate([
-            'title' => ['required', 'string', 'max:120'],
-            'washes' => ['required', 'integer', 'min:1', 'max:100000'],
-            'price' => ['nullable', 'numeric', 'min:0', 'max:99999999'],
-        ]);
-    }
-
     private function result(CorporateClient $corporate, string $result, string $message)
     {
         if ($result !== 'ok') {
@@ -88,10 +56,5 @@ class CorporateWashesController extends Controller
     private function back(CorporateClient $corporate, string $message)
     {
         return redirect()->to(route('admin.corporate.show', $corporate).'#washes')->with('message', $message);
-    }
-
-    private function own(CorporateClient $corporate, CorporatePackage $package): void
-    {
-        abort_unless((int) $package->corporate_client_id === (int) $corporate->id, 404);
     }
 }

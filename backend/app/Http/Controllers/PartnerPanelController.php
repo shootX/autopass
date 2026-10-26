@@ -162,7 +162,7 @@ class PartnerPanelController extends Controller
     public function home(Request $request)
     {
         $corporate = $this->client($request);
-        $cars = $corporate->cars()->orderByDesc('id')->paginate(20);
+        $cars = $corporate->cars()->with('userCar.model')->orderByDesc('id')->paginate(20);
 
         return view('partner.home', compact('corporate', 'cars'));
     }
