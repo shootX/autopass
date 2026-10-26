@@ -20,7 +20,7 @@
                 </tr>
                 @foreach($discount->prices as $row)
                     <tr>
-                        <td>{{ $row->car_type }}</td>
+                        <td>{{ \App\Models\BodyType::labelFor($row->car_type) }}</td>
                         <td>{{ $row->full_price }} ₾</td>
                         <td>{{ $row->percent }}%</td>
                         <td class="fw-bold">{{ $row->toPay() }} ₾</td>

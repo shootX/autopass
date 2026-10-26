@@ -32,20 +32,16 @@
                 <table class="table table-hover">
                     <thead>
                         <th scope="col">ID</th>
-                        <th scope="col">{{ __('admin.photo') }}</th>
                         <th scope="col">{{ __('admin.body_type_name') }}</th>
+                        <th scope="col">{{ __('admin.body_type_key') }}</th>
                         <th scope="col">{{ __('admin.actions') }}</th>
                     </thead>
                     <tbody>
                     @forelse($types as $type)
                         <tr>
                             <td>{{ $type->id }}</td>
-                            <td>
-                                @if($type->image)
-                                    <img src="{{ $type->image }}" alt="" style="height: 36px;">
-                                @endif
-                            </td>
-                            <td>{{ $type->name }}</td>
+                            <td>{{ $type->label() }}</td>
+                            <td class="text-muted">{{ $type->name }}</td>
                             <td>
                                 <div class="btn-group">
                                     <a class="btn btn-sm btn-primary" href="{{ route('admin.body_types.edit', $type->id) }}"><i class="fas fa-edit"></i></a>

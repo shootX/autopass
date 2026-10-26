@@ -6,17 +6,17 @@
             <div class="card-header">{{ __('admin.add_body_type') }}</div>
             <div class="card-body table-responsive">
 
-                <form action="{{ route('admin.body_types.store') }}" method="post" enctype="multipart/form-data">
+                <form action="{{ route('admin.body_types.store') }}" method="post">
                     @csrf
 
                     <div class="form-group mt-3">
-                        <label for="name">{{ __('admin.body_type_name') }}</label>
-                        <input class="form-control" id="name" type="text" required name="name" maxlength="64" value="{{ old('name') }}" placeholder="{{ __('admin.enter_body_type') }}">
+                        <label for="name_ka">{{ __('admin.body_type_name_ka') }}</label>
+                        <input class="form-control" id="name_ka" type="text" required name="name_ka" maxlength="64" value="{{ old('name_ka') }}">
                     </div>
 
                     <div class="form-group mt-3">
-                        <label for="image">{{ __('admin.photo') }}</label>
-                        <input class="form-control" id="image" type="file" name="image" accept="image/jpeg,image/png,image/jpg,image/gif,image/svg+xml,image/webp">
+                        <label for="name_en">{{ __('admin.body_type_name_en') }}</label>
+                        <input class="form-control" id="name_en" type="text" required name="name_en" maxlength="64" value="{{ old('name_en') }}">
                     </div>
 
                     <button type="submit" class="btn btn-primary mt-4">{{ __('admin.save') }}</button>

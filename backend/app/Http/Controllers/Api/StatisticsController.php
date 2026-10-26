@@ -76,7 +76,7 @@ class StatisticsController extends Controller
                 'name' => $wash->name,
             ],
             'total' => $total,
-            'body_types' => BodyType::query()->orderBy('name')->pluck('name')->values(),
+            'body_types' => BodyType::query()->ordered()->pluck('name')->values(),
             'rows' => $appointments->map(function (Appointment $appointment) {
                 $car = $appointment->car;
                 $model = $car?->model;

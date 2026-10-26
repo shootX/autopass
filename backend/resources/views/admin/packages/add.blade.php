@@ -23,7 +23,7 @@
                         <select id="carType" name="car_type" class="form-select">
                             @if(count($carTypes) > 0)
                                 @foreach($carTypes as $type)
-                                    <option>{{$type}}</option>
+                                    <option value="{{$type}}">{{ \App\Models\BodyType::labelFor($type) }}</option>
                                 @endforeach
                             @else
                                 <option disabled selected>{{ __('admin.no_body_types') }}</option>

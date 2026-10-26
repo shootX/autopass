@@ -166,14 +166,15 @@ it('shows the company its discount, each car price and the wash history read-onl
         ->assertSee(__('admin.cd_car_price', ['type' => 'sedan', 'percent' => 50, 'pay' => '15.00']));
 });
 
-it('renames the price rows with their body type and keeps a used type from deletion', function () {
+it('renames a body type without touching its price rows and keeps a used type from deletion', function () {
     $fleet = cdFleet();
     $admin = cwAdmin();
     $suv = BodyType::query()->where('name', 'suv')->firstOrFail();
     $fleet['package']->prices()->create(['car_type' => 'suv', 'full_price' => 40, 'percent' => 20]);
 
-    $this->actingAs($admin)->post('/dashboard/body-types/'.$suv->id.'/save', ['name' => 'crossover'])->assertSessionHasNoErrors();
-    expect(CorporatePackagePrice::query()->where('car_type', 'crossover')->exists())->toBeTrue();
+    $this->actingAs($admin)->post('/dashboard/body-types/'.$suv->id.'/save', ['name' => 'crossover', 'name_ka' => 'კროსოვერი', 'name_en' => 'Crossover'])->assertSessionHasNoErrors();
+    expect($suv->fresh()->only('name', 'name_ka', 'name_en'))->toBe(['name' => 'suv', 'name_ka' => 'კროსოვერი', 'name_en' => 'Crossover'])
+        ->and(CorporatePackagePrice::query()->where('car_type', 'suv')->exists())->toBeTrue();
 
     $this->actingAs($admin)->delete('/dashboard/body-types/'.$suv->id.'/delete')->assertSessionHas('error');
     expect(BodyType::query()->whereKey($suv->id)->exists())->toBeTrue();

@@ -35,7 +35,7 @@
                             <td>{{$model->id}}</td>
                             <td>{{$model->name}}</td>
                             <td>
-                                {{$model->type}}
+                                {{ \App\Models\BodyType::labelFor($model->type) }}
                             </td>
                             <td>
                                 <div class="btn-group">

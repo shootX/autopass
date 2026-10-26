@@ -17,8 +17,8 @@
                     <div class="form-group mt-3">
                         <label for="type">{{ __('admin.body_type') }}</label>
                         <select class="form-select" name="type">
-                            @foreach(\App\Models\BodyType::query()->orderBy('name')->pluck('name') as $type)
-                                <option value="{{$type}}">{{$type}}</option>
+                            @foreach(\App\Models\BodyType::query()->ordered()->pluck('name') as $type)
+                                <option value="{{$type}}">{{ \App\Models\BodyType::labelFor($type) }}</option>
                             @endforeach
                         </select>
                     </div>

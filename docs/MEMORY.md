@@ -402,3 +402,7 @@ A discount car's package (`fleet_cars.corporate_package_id`) is set only by `Cor
 `corporate_invoices.kind` is `washes` (prepaid package, credits washes when paid) or `discount` (postpaid). `CorporateInvoices::issueMonth($month)` bills, per company, every discount wash made before the next month that has no `corporate_invoice_id`, so a late or re-freed wash lands in the next run; the invoice's `period` is the month and `lines` snapshot the grouping (package title, body type, full price, percent, driver's share, count, company share, sum; sums counted in tetri). Cancelling a discount invoice clears the washes' link. `displayTitle()` renders a discount invoice's title in the reader's language.
 
 `corporate_packages.monthly_limit` caps a car's discount washes since the 1st, counted at any package (`CorporateDiscounts::usedThisMonth`), against the car's current package's limit. The check runs inside `CorporateWashes::wash()` under the car lock, so two scans can't both pass the last wash.
+
+## 2026-10-26 — Body types
+
+`body_types.name` is the key stored in `car_models.type`, `packages.car_type` and `corporate_package_prices.car_type`; it is fixed once created (made from the English name). `name_ka` / `name_en` are what people see: `BodyType::labelFor($key)` in views, `BodyType::options()` for selects, `ordered()` scope sorts by `sort`. Body types have no photo; a car model's picture falls back to `CarModel::IMAGES` by key.
