@@ -1,0 +1,90 @@
+<?php
+
+use App\Models\UserCar;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
+
+/** A Toyota Avensis (geoapi brand 501, model 7) built as a sedan and a wagon in 2014-2018, as an SUV from 2019. */
+function fakeYearCatalog(array $generations = [
+    ['id' => '71', 'name' => 'T27 Sedan', 'year_start' => 2012, 'year_end' => 2018, 'body_type' => 'Sedan'],
+    ['id' => '72', 'name' => 'T27 Wagon', 'year_start' => 2014, 'year_end' => 2018, 'body_type' => 'Station wagon'],
+    ['id' => '73', 'name' => 'T28', 'year_start' => 2019, 'year_end' => null, 'body_type' => 'Crossover'],
+]): void {
+    Cache::flush();
+    config(['services.carapi.url' => 'https://geoapi.test/api/v1', 'services.carapi.secret' => 'geoapi_sk_test']);
+    Http::fake([
+        'geoapi.test/api/v1/models/7/generations*' => Http::response(['data' => $generations, 'meta' => ['total' => count($generations)]]),
+        'geoapi.test/api/v1/brands/toyota/models*' => Http::response(['data' => [['id' => '7', 'name' => 'Avensis']], 'meta' => ['total' => 1]]),
+        'geoapi.test/api/v1/brands*' => Http::response(['data' => [['id' => '501', 'name' => 'Toyota', 'slug' => 'toyota']], 'meta' => ['total' => 1]]),
+    ]);
+}
+
+function avensis(array $fields): array
+{
+    return ['source' => 'carapi', 'brand_id' => 501, 'model_id' => 7] + $fields;
+}
+
+it('offers the body types of the model in the year, and asks only when there are several', function () {
+    fakeYearCatalog();
+    $token = auth('api')->login(makeUser('555 70 70 01'));
+    $query = fn (int $year) => '/api/cars/body-types?'.http_build_query(avensis(['year' => $year]));
+
+    $this->withToken($token)->getJson($query(2016))->assertOk()
+        ->assertJsonPath('choose', true)->assertJsonPath('car_type', null)
+        ->assertJsonPath('body_types.0.key', 'sedan')->assertJsonPath('body_types.1.key', 'wagon')->assertJsonCount(2, 'body_types');
+    $this->withToken($token)->getJson($query(2013))->assertOk()
+        ->assertJsonPath('choose', false)->assertJsonPath('car_type', 'sedan');
+    $this->withToken($token)->getJson($query(2021))->assertOk()
+        ->assertJsonPath('choose', false)->assertJsonPath('car_type', 'suv');
+});
+
+it('sets the body type from the brand, model and year, and makes the user pick when the year has several', function () {
+    fakeYearCatalog();
+    $token = auth('api')->login(makeUser('555 70 70 02'));
+
+    // One type in 2021: set on its own, with the generation's name and photo.
+    $this->withToken($token)->postJson('/api/mycars/add', avensis(['year' => 2021, 'plate' => 'AA301AA']))->assertOk()
+        ->assertJsonPath('car.car_type', 'suv')->assertJsonPath('car.generation.id', 73)->assertJsonPath('car.body_type', 'Crossover');
+
+    // A sedan and a wagon in 2016: nothing is saved until one is picked.
+    $this->withToken($token)->postJson('/api/mycars/add', avensis(['year' => 2016, 'plate' => 'AA302AA']))->assertStatus(422)
+        ->assertJsonPath('error_code', 'body_type_required')->assertJsonCount(2, 'body_types');
+    $this->withToken($token)->postJson('/api/mycars/add', avensis(['year' => 2016, 'plate' => 'AA302AA', 'car_type' => 'suv']))->assertStatus(422)
+        ->assertJsonPath('error_code', 'body_type_invalid');
+    expect(UserCar::query()->where('plate', 'AA302AA')->exists())->toBeFalse();
+
+    $this->withToken($token)->postJson('/api/mycars/add', avensis(['year' => 2016, 'plate' => 'AA302AA', 'car_type' => 'wagon']))->assertOk()
+        ->assertJsonPath('car.car_type', 'wagon')->assertJsonPath('car.generation.id', 72);
+});
+
+it('reads the body type again when the year changes', function () {
+    fakeYearCatalog();
+    $token = auth('api')->login(makeUser('555 70 70 03'));
+    $id = $this->withToken($token)->postJson('/api/mycars/add', avensis(['year' => 2016, 'plate' => 'AA401AA', 'car_type' => 'wagon']))
+        ->assertOk()->json('car.id');
+
+    // 2017 still has a wagon: the pick stays.
+    $this->withToken($token)->postJson("/api/mycars/{$id}/edit", ['year' => 2017])->assertOk();
+    expect(UserCar::query()->find($id)->only(['year', 'car_type']))->toBe(['year' => 2017, 'car_type' => 'wagon']);
+
+    // 2021 has only an SUV.
+    $this->withToken($token)->postJson("/api/mycars/{$id}/edit", ['year' => 2021])->assertOk();
+    expect(UserCar::query()->find($id)->only(['year', 'car_type', 'generation_id']))->toBe(['year' => 2021, 'car_type' => 'suv', 'generation_id' => 73]);
+
+    // Back to 2016 with a sedan picked.
+    $this->withToken($token)->postJson("/api/mycars/{$id}/edit", ['year' => 2016, 'car_type' => 'sedan'])->assertOk();
+    expect(UserCar::query()->find($id)->car_type)->toBe('sedan');
+});
+
+it('takes the picked type when the catalog names no body type it knows', function () {
+    fakeYearCatalog([['id' => '71', 'name' => 'T27', 'year_start' => 2012, 'year_end' => null, 'body_type' => 'caravan']]);
+    $token = auth('api')->login(makeUser('555 70 70 04'));
+
+    $this->withToken($token)->getJson('/api/cars/body-types?'.http_build_query(avensis(['year' => 2016])))->assertOk()
+        ->assertJsonPath('choose', true)->assertJsonPath('body_types.0.key', 'sedan');
+    $this->withToken($token)->postJson('/api/mycars/add', avensis(['year' => 2016, 'plate' => 'AA501AA', 'car_type' => 'van']))->assertOk()
+        ->assertJsonPath('car.car_type', 'van');
+    // Nothing picked: the car goes by its model's type.
+    $this->withToken($token)->postJson('/api/mycars/add', avensis(['year' => 2016, 'plate' => 'AA502AA']))->assertOk();
+    expect(UserCar::query()->where('plate', 'AA502AA')->value('car_type'))->toBeNull();
+});

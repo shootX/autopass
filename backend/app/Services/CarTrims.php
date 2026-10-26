@@ -33,7 +33,7 @@ class CarTrims
         $modelPhoto = $this->photoLink($modelId, null, $model['photo_url'] ?? null);
 
         return collect($this->catalog->remoteGenerations($modelId))
-            ->filter(fn (array $row) => $year === null || $this->covers($row, $year))
+            ->filter(fn (array $row) => $year === null || self::covers($row, $year))
             ->map(fn (array $row) => [
                 'id' => (int) $row['id'],
                 'name' => (string) ($row['display_label'] ?? $row['name'] ?? ''),
@@ -56,7 +56,7 @@ class CarTrims
             fn () => $this->catalog->pages('/generations/'.$generationId.'/modifications', ['include' => 'specs']));
 
         return collect($rows)
-            ->filter(fn (array $row) => $year === null || $this->covers($row, $year))
+            ->filter(fn (array $row) => $year === null || self::covers($row, $year))
             ->map(fn (array $row) => [
                 'id' => (int) $row['id'],
                 'name' => (string) ($row['name'] ?? ''),
@@ -210,7 +210,8 @@ class CarTrims
         return $sameHost ? $url : $modelPhoto;
     }
 
-    private function covers(array $row, int $year): bool
+    /** Whether a generation or modification row was built in $year; open ends count as built. */
+    public static function covers(array $row, int $year): bool
     {
         $start = $row['year_start'] ?? null;
         $end = $row['year_end'] ?? null;
