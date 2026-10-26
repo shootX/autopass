@@ -1,44 +1,37 @@
 # autopass — მარკეტინგის გვერდი
 
-სტატიკური საიტი. დამტკიცებული მაკეტის განლაგებაა: დესკტოპი 760px-ზე ზემოთ, მობილური 760px-ზე და ქვემოთ.
+სტატიკური საიტი, მაკეტი `autopass-v1.3` (2026-10-26): მთავარი გვერდი `index.html` და ბიზნესის გვერდი `business.html`. ენები: ქართული, English, Русский (არჩევანი ინახება ბრაუზერში). განლაგება: დესკტოპი, ტაბლეტი 1199px-მდე, ტელეფონი 700px-მდე (`responsive.css`).
 
 ## ატვირთვა (FTP)
 
-ბილდი კომპილაციას არ შვება. პროდაქშენის ფაილები უკვე ამ საქაღალდეშია.
+ბილდი კომპილაციას არ შვება.
 
 ```sh
 sh build.sh
 ```
 
-ატვირთე `lending/dist/`-ის **შიგთავსი** საიტის root-ად (`index.html` დომენის ფესვზე უნდა გაიხსნას).
+ატვირთე `lending/dist/`-ის **შიგთავსი** საიტის root-ად. `dist/`-ში შედის: `index.html`, `business.html`, `styles.css`, `responsive.css`, `config.js`, `logged-in-redirect.js`, `site.js`, `home.js`, `business.js`, `site.webmanifest`, `content/`, `fonts/`, `img/`, `icons/`.
 
-`dist/`-ში შედის: `index.html`, `styles.css`, `config.js`, `site.js`, `site.webmanifest`, `fonts/`, `img/`, `icons/`.
+## პარამეტრები — `config.js`
 
-არ ატვირთო `src-photos/` და `scripts/`.
+| ცვლადი | რას აკეთებს | ცარიელი რომ არის |
+|---|---|---|
+| `AUTOPASS_APP_BASE` | ვებ-აპის მისამართი | — |
+| `AUTOPASS_IOS_URL` | App Store-ის ბმული | ღილაკები ხსნის ვებ-აპს (`/register`), წარწერა „გახსენით Autopass“ |
+| `AUTOPASS_IOS_QR` | ნამდვილი QR კოდის სურათი App Store-ის ბმულისთვის | QR ბარათი დამალულია |
+| `AUTOPASS_PRICES` | სედანის პაკეტის ფასი თვეში (4, 8, 12 რეცხვა); ბიზნესის კალკულატორიც ამას იყენებს | — |
+| `AUTOPASS_HOURS` | ფილიალების სამუშაო საათი | — |
+| `AUTOPASS_PHONE`, `AUTOPASS_EMAIL` | ფუტერის კონტაქტი | ხაზი დამალულია |
+| `AUTOPASS_PRIVACY_URL`, `AUTOPASS_TERMS_URL` | ფუტერის ბმულები | ბმული დამალულია |
+| `AUTOPASS_SMS_URL` | POST `{phone}`, აპის ბმული SMS-ით | ფორმა დამალულია, ჩანს სათაური და ღილაკი |
+| `AUTOPASS_LEAD_URL` | POST `{company, phone, lang}`, ბიზნესის მოთხოვნა | ფორმა ხსნის ელფოსტას `AUTOPASS_EMAIL`-ზე |
 
-`sh build.sh`-ის გარეშეც იმავე ფაილების ატვირთვა პირდაპირ `lending/`-იდან მუშაობს. `dist/` იმისთვისაა, რომ ზედმეტი ფაილი არ ავიდეს.
+## ტექსტი
 
-## აპის მისამართი
+ქართული ტექსტი წერია HTML-ში. ინგლისური, რუსული და სიები (ფილიალები, FAQ, პაკეტის პუნქტები) არის `content/home.js` და `content/business.js`-ში. მომავალში ამას ადმინის „საიტის მართვა“ ჩაანაცვლებს.
 
-შეცვალე მხოლოდ `config.js`:
+## წესები
 
-```js
-window.AUTOPASS_APP_BASE = "https://wash.socialsave.cc";
-```
+Inline `<script>` და `onclick`/`onsubmit` არ გამოიყენება (`docs/CSP.md`, `script-src 'self'`). შესული მომხმარებელი `/`-დან `/home`-ზე გადადის (`logged-in-redirect.js`).
 
-აქედან ივსება შესვლა (`/auth`), რეგისტრაცია (`/register`), „აირჩიე პაკეტი“ და App Store / Google Play ბეჯები (აპი ჯერ არ არის, ამიტომ ბეჯებიც `/register`-ზე მიდის). `index.html`-ის `href` იგივე ნაგულისხმევია, რომ JavaScript-ის გარეშეც გაიხსნას; გვერდის ჩატვირთვისას `site.js` ბმულებს `config.js`-იდან ანახლებს.
-
-## სურათები და ფონტები
-
-ფოტოები AVIF და WebP-ია, PNG fallback-ით. ეკრანის ქვემოთ მყოფი სურათები `loading="lazy"`-ით იტვირთება. ფონტები (Plus Jakarta Sans, Noto Sans Georgian, OFL) `fonts/`-შია, woff2.
-
-თუ cut-out ფოტოს შეცვლი (`src-photos/`), თავიდან დააგენერირე:
-
-```sh
-python3 scripts/optimize-images.py
-sh build.sh
-```
-
-სჭირდება Pillow (WebP და AVIF), fontTools, brotli, numpy.
-
-ზემოდან გადაღებული მანქანა placeholder-ია: Porsche-ს ფოტო, ფერი ფაილშია ჩაწერილი (ადრე CSS `filter` იყო). საქარე მინის ზოლი და უკანა სპოილერის ფედი კვლავ CSS-ით იფარება. ლიცენზიები და რეფერენსები: `references.md`.
+ფონტები: FiraGO და Montserrat (OFL), `fonts/`. ლიცენზია: `fonts/COPYRIGHT.txt`, `fonts/OFL.txt`.

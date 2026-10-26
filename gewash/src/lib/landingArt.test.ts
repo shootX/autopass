@@ -6,17 +6,22 @@ const root = path.resolve(process.cwd(), "..");
 
 describe("landing art", () => {
   const html = readFileSync(path.join(root, "lending/index.html"), "utf8");
+  const business = readFileSync(path.join(root, "lending/business.html"), "utf8");
   const css = readFileSync(path.join(root, "lending/styles.css"), "utf8");
 
-  it("uses the top-down car and the app screenshot", () => {
-    expect(html).toContain("img/top-car-840.png");
-    expect(html).toContain("img/app-home-780.png");
+  it("uses the mockup's car, logo and fonts as files", () => {
+    expect(html).toContain("img/hero-car.webp");
+    expect(html).toContain("img/logo.svg");
+    expect(business).toContain("img/logo.svg");
+    expect(css).toContain("url(fonts/FiraGO-400.woff2)");
+    expect(html + business + css).not.toContain("base64,");
   });
 
-  it("paints the phone screenshot inside the mockup", () => {
-    expect(css).not.toContain("picture{display:contents}");
-    expect(css).toContain(".phone-screen picture{display:block;width:100%;height:100%}");
-    expect(css).toContain(".phone-screen img{width:100%;height:100%;object-fit:cover;object-position:top");
+  it("has no inline scripts, so script-src 'self' holds", () => {
+    for (const page of [html, business]) {
+      expect(page).not.toMatch(/<script>/);
+      expect(page).not.toMatch(/\son[a-z]+="/);
+    }
   });
 });
 

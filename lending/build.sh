@@ -4,6 +4,6 @@ set -eu
 cd "$(dirname "$0")"
 rm -rf dist
 mkdir -p dist
-cp index.html styles.css config.js logged-in-redirect.js site.js site.webmanifest dist/
-cp -R fonts img icons dist/
+cp index.html business.html styles.css responsive.css config.js logged-in-redirect.js site.js home.js business.js site.webmanifest dist/
+cp -R content fonts img icons dist/
 echo "Upload the contents of lending/dist/ to the site root."

@@ -419,3 +419,12 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 - [x] Old types move onto the new keys (crossover/jeep → suv, cabriolet/roadster → convertible, estate/universal → wagon, and so on) in models, packages and discount prices. An unknown type is deleted if unused and kept (with a log warning) if used.
 - [x] Dashboard: add/edit take the Georgian and English names; the key is made from the English name and never changes. Lists and selects show the name in the panel's language.
 - [ ] Server: `php artisan migrate`.
+
+## 2026-10-26 — Landing from mockup v1.3 (`claude/project-thread-fw494k`)
+
+- [x] `lending/index.html` and new `lending/business.html` rebuilt from the owner's mockup `autopass-v1.3` (ka/en/ru, desktop, tablet ≤1199px, phone ≤700px).
+- [x] Assets out of the mockup's base64: FiraGO and Montserrat woff2, logo SVGs, car WebP. Old photos, `src-photos/`, `scripts/` and old fonts removed. New icons and `og.jpg`.
+- [x] No inline scripts (CSP `script-src 'self'`); settings in `config.js`, en/ru text and lists in `content/*.js`.
+- [x] Mockup forms are not faked: SMS form hidden until `AUTOPASS_SMS_URL`, business form posts to `AUTOPASS_LEAD_URL` or opens an e-mail. App Store buttons open the web app until `AUTOPASS_IOS_URL`.
+- [ ] Owner: real prices, branches, phone, e-mail, privacy/terms links (`config.js`, `content/home.js`).
+- [ ] Next: admin "site management" page to add, edit and delete the landing's content (owner's requirement), and a lead endpoint.

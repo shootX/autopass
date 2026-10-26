@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="ka">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Autopass ბიზნესისთვის</title>
+<meta name="description" content="Autopass ბიზნესისთვის: კომპანიის მანქანების რეცხვა ერთი ანგარიშიდან. რეცხვები კომპანიის ხარჯზე ან ფასდაკლება მძღოლებისთვის.">
+<meta name="theme-color" content="#133A6B">
+<meta name="format-detection" content="telephone=no">
+<meta property="og:title" content="Autopass ბიზნესისთვის">
+<meta property="og:description" content="Autopass ბიზნესისთვის: კომპანიის მანქანების რეცხვა ერთი ანგარიშიდან. რეცხვები კომპანიის ხარჯზე ან ფასდაკლება მძღოლებისთვის.">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="ka_GE">
+<meta property="og:image" content="img/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="img/og.jpg">
+<link rel="icon" href="icons/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="icons/favicon.ico" sizes="32x32">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<link rel="preload" href="fonts/FiraGO-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/FiraGO-700.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="styles.css?v=20261026">
+<link rel="stylesheet" href="responsive.css?v=20261026">
+</head>
+<body>
+
+<header class="nav wrap">
+  <a href="index.html" class="logo" aria-label="Autopass"><img src="img/logo.svg" alt="autopass" width="501" height="197"></a>
+  <nav class="links" aria-label="main">
+    <a href="index.html#how" data-i18n="nav.how">როგორ მუშაობს</a>
+    <a href="index.html#price" data-i18n="nav.price">ფასები</a>
+    <a href="business.html" aria-current="page" data-i18n="nav.biz">ბიზნესისთვის</a>
+    <a href="index.html#branches" data-i18n="nav.br">ფილიალები</a>
+    <a href="index.html#faq" data-i18n="nav.faq">კითხვები</a>
+  </nav>
+  <div class="lang" role="group" aria-label="Language">
+    <button type="button" data-lang="ka" aria-pressed="true">ქარ</button>
+    <button type="button" data-lang="en" aria-pressed="false">EN</button>
+    <button type="button" data-lang="ru" aria-pressed="false">RU</button>
+  </div>
+  <a class="btn" href="index.html#app" data-i18n="nav.get">აპის ჩამოტვირთვა</a>
+  <button class="menu-btn" type="button" aria-expanded="false" aria-controls="sheet" aria-label="Menu"><svg width="20" height="20" viewBox="0 0 20 20"><path d="M2 6h16M2 14h16" stroke="#0B1626" stroke-width="2.2" stroke-linecap="round"/></svg></button>
+</header>
+<div class="sheet" id="sheet">
+  <a href="index.html#how" data-i18n="nav.how">როგორ მუშაობს</a>
+  <a href="index.html#price" data-i18n="nav.price">ფასები</a>
+  <a href="business.html" aria-current="page" data-i18n="nav.biz">ბიზნესისთვის</a>
+  <a href="index.html#branches" data-i18n="nav.br">ფილიალები</a>
+  <a href="index.html#faq" data-i18n="nav.faq">კითხვები</a>
+  <a class="btn" href="index.html#app" data-i18n="nav.get">აპის ჩამოტვირთვა</a>
+</div>
+
+<main id="top">
+<!-- CORPORATE: the band from the home page, now the whole page -->
+<section class="biz page" id="calc">
+  <svg class="ring-band" viewBox="0 0 100 100" aria-hidden="true">
+    <circle cx="50" cy="50" r="34" fill="none" stroke="#1C4A82" stroke-width="27"/>
+    <path d="M74.04 25.96A34 34 0 1 1 25.96 74.04" fill="none" stroke="#0B2545" stroke-width="27" stroke-linecap="round"/>
+  </svg>
+  <div class="biz-head wrap">
+    <h1 data-rise><span class="w1" data-i18n="biz.h1">Autopass</span><span data-i18n="biz.h2">ბიზნესისთვის</span></h1>
+    <p class="stmt" data-rise style="--i:1" data-i18n="biz.p">კომპანიის ყველა მანქანა ერთ ანგარიშზე. მძღოლი ფილიალში კომპანიის QR კოდს აჩვენებს, მენეჯერი ასკანერებს და მანქანა ირეცხება.</p>
+  </div>
+  <div class="biz-grid wrap">
+    <div class="calc" data-ui data-rise>
+      <h3 data-i18n="calc.h">დაითვალეთ ავტოპარკისთვის</h3>
+      <p class="sub" data-i18n="calc.sub">როცა რეცხვებს კომპანია იხდის</p>
+      <label for="cars" data-i18n="calc.cars">მანქანების რაოდენობა</label>
+      <div class="cars-out tab"><span id="carsOut">12</span><small data-i18n="calc.unit">მანქანა</small></div>
+      <input type="range" id="cars" min="2" max="100" value="12" aria-describedby="carsOut">
+      <label data-i18n="calc.per">რეცხვა თითო მანქანაზე, თვეში</label>
+      <div class="seg-ctl" role="radiogroup" aria-label="washes per car" id="bizCtl" style="margin-top:12px">
+        <button type="button" role="radio" aria-checked="false" data-w="4">4</button>
+        <button type="button" role="radio" aria-checked="true" data-w="8">8</button>
+        <button type="button" role="radio" aria-checked="false" data-w="12">12</button>
+      </div>
+      <div class="total">
+        <div class="sum tab"><span id="bizSum">₾1 122</span> <small data-i18n="price.per">/ თვე</small></div>
+        <div><span class="disc" data-i18n="calc.disc">კორპორატიული −15%</span> <span class="was tab"><s id="bizWas">₾1 320</s></span></div>
+      </div>
+    </div>
+    <div class="perks" id="lead">
+      <ul class="rl" data-rise style="--i:1">
+        <li data-i18n="biz.l1">ყოველ მანქანას კომპანიის QR კოდი აქვს, რომელიც თავისით ახლდება</li>
+        <li data-i18n="biz.l2">ფილიალში მენეჯერი ხედავს, რამდენი რეცხვა დარჩა მანქანას და კომპანიას</li>
+        <li data-i18n="biz.l3">ნებისმიერ მანქანას დაბლოკავთ და მისი QR კოდი მაშინვე წყვეტს მუშაობას</li>
+        <li data-i18n="biz.l4">ფასს ავტოპარკის ზომის მიხედვით ვათანხმებთ</li>
+      </ul>
+      <form class="form" id="leadForm" data-rise style="--i:2">
+        <h3 data-i18n="form.h">მოთხოვნა ბიზნესისთვის</h3>
+        <label class="field"><span data-i18n="form.co">კომპანია</span><input name="company" autocomplete="organization" required></label>
+        <label class="field"><span data-i18n="form.ph">ტელეფონი</span><input name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="5__ __ __ __" required></label>
+        <button class="btn" type="submit" data-i18n="form.send">მოთხოვნის გაგზავნა</button>
+        <p class="note" data-i18n="form.note">მენეჯერი დაგიკავშირდებათ და ფასს ავტოპარკის ზომის მიხედვით შეგითანხმებთ.</p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- MODELS: who pays for the wash -->
+<section class="models wrap" id="models">
+  <div class="how-head"><h2 data-rise data-i18n="mod.h">ორი მოდელი</h2><p data-rise style="--i:1" data-i18n="mod.p">თქვენ წყვეტთ, ვინ იხდის რეცხვის საფასურს: კომპანია თუ მძღოლი.</p></div>
+  <div class="mgrid">
+    <article class="mdl m1" data-rise>
+      <span class="tagp" data-i18n="m1.tag">მოდელი 1</span>
+      <h3 data-i18n="m1.h">რეცხვები კომპანიის ხარჯზე</h3>
+      <p data-i18n="m1.p">კომპანია ყიდულობს რეცხვებს და ანაწილებს მანქანებზე. მძღოლი ფილიალში არაფერს იხდის.</p>
+      <ul class="rl">
+        <li data-i18n="m1.l1">მძღოლი აპში ხედავს, რამდენი რეცხვა დარჩა მანქანას</li>
+        <li data-i18n="m1.l2">მენეჯერი ხედავს მანქანისა და კომპანიის ნაშთს</li>
+        <li data-i18n="m1.l3">როცა რეცხვები ამოიწურება, QR კოდი აღარ მუშაობს</li>
+      </ul>
+      <div class="ui"><div class="wcard" data-ui>
+        <svg class="mini" viewBox="0 0 100 100" aria-hidden="true">
+          <g fill="none" stroke-width="10" stroke-linecap="butt">
+            <circle cx="50" cy="50" r="40" stroke="rgba(255,255,255,.18)" stroke-dasharray="58.8 4" transform="rotate(-90 50 50)"/>
+            <circle cx="50" cy="50" r="40" stroke="#fff" stroke-dasharray="58.8 4 58.8 4 58.8 4 0 100" transform="rotate(-90 50 50)"/>
+          </g>
+          <text x="50" y="59" text-anchor="middle" font-size="28" font-weight="700" fill="#fff" font-family="inherit">3</text>
+        </svg>
+        <span class="t" data-i18n="m1.ut">დარჩენილია 3 რეცხვა</span>
+        <span class="s" data-i18n="m1.us">კომპანიას დარჩა 41 რეცხვა</span>
+        <span class="tag" data-i18n="m1.utag">კომპანიის მანქანა</span>
+      </div></div>
+    </article>
+    <article class="mdl m2" data-rise style="--i:1">
+      <span class="tagp" data-i18n="m2.tag">მოდელი 2</span>
+      <h3 data-i18n="m2.h">ფასდაკლება მძღოლებისთვის</h3>
+      <p data-i18n="m2.p">კომპანია წინასწარ არაფერს იხდის. მძღოლი რეცხვის საფასურს ფილიალში იხდის, უკვე ფასდაკლებით.</p>
+      <ul class="rl">
+        <li data-i18n="m2.l1">ფასდაკლების პროცენტი ძარის ტიპის მიხედვით თანხმდება</li>
+        <li data-i18n="m2.l2">მძღოლი აპში წინასწარ ხედავს, რამდენს გადაიხდის</li>
+        <li data-i18n="m2.l3">ფასდაკლება მხოლოდ კომპანიის მანქანებზე მოქმედებს</li>
+      </ul>
+      <div class="ui"><div class="pcard" data-ui>
+        <span class="l" data-i18n="m2.ul">სედანი</span>
+        <span class="n tab">₾17<s>₾20</s></span>
+        <span class="s" data-i18n="m2.us">სრული ფასი ₾20 · ფასდაკლება 15%</span>
+      </div></div>
+    </article>
+  </div>
+</section>
+
+<!-- START: the stage bar, three equal steps -->
+<section class="how wrap" id="start">
+  <div class="how-head"><h2 data-rise data-i18n="st.h">როგორ ვიწყებთ</h2><p data-rise style="--i:1" data-i18n="st.p">მოთხოვნიდან პირველ რეცხვამდე სამი ნაბიჯია.</p></div>
+  <div class="bar even" data-ui>
+    <div class="seg" style="--i:0"><div><b data-i18n="st.d1">შეთანხმება</b><span class="clause" hidden data-i18n="st.c1">ვირჩევთ მოდელს და ფასს ავტოპარკის ზომის მიხედვით ვათანხმებთ.</span></div></div>
+    <div class="seg" style="--i:1"><div><b data-i18n="st.d2">მანქანების დამატება</b><span class="clause" hidden data-i18n="st.c2">კომპანიის მანქანებს სისტემაში ვამატებთ და თითოეული თავის QR კოდს იღებს.</span></div></div>
+    <div class="seg" style="--i:2"><div><b data-i18n="st.d3">რეცხვა ფილიალში</b><span class="clause" hidden data-i18n="st.c3">მძღოლი აჩვენებს კოდს, მენეჯერი ასკანერებს და რეცხვას ადასტურებს.</span></div></div>
+  </div>
+  <div class="bar-cap even">
+    <p data-rise data-i18n="st.c1">ვირჩევთ მოდელს და ფასს ავტოპარკის ზომის მიხედვით ვათანხმებთ.</p>
+    <p data-rise style="--i:1" data-i18n="st.c2">კომპანიის მანქანებს სისტემაში ვამატებთ და თითოეული თავის QR კოდს იღებს.</p>
+    <p data-rise style="--i:2" data-i18n="st.c3">მძღოლი აჩვენებს კოდს, მენეჯერი ასკანერებს და რეცხვას ადასტურებს.</p>
+  </div>
+</section>
+
+<!-- FAQ: tabbed index cards -->
+<section class="faq wrap" id="faq">
+  <h2 data-rise data-i18n="faq.h">კითხვები ბიზნესისთვის</h2>
+  <div class="cards" id="cards"></div>
+</section>
+
+<!-- GO: one last door to the form -->
+<section class="go wrap">
+  <div class="how-head"><h2 data-rise data-i18n="go.h">დაიწყეთ ერთი მოთხოვნით</h2><div data-rise style="--i:1"><p data-i18n="go.p">დატოვეთ ნომერი და მენეჯერი დაგიკავშირდებათ.</p><a class="btn" href="#lead" data-i18n="form.send">მოთხოვნის გაგზავნა</a></div></div>
+</section>
+</main>
+
+<!-- FOOTER: the mark, built large -->
+<footer>
+  <div class="wrap">
+    <div class="mark" aria-hidden="true">
+      <div class="blk word"><img src="img/logo-white.svg" alt="" width="501" height="197"></div>
+      <div class="blk h85"></div>
+      <div class="blk sym"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="30" fill="none" stroke="#3E6B8F" stroke-width="22"/><path d="M71.2 28.8A30 30 0 1 1 28.8 71.2" fill="none" stroke="#9CCBB8" stroke-width="22" stroke-linecap="round"/></svg></div>
+      <div class="blk h70"></div>
+    </div>
+    <div class="foot">
+      <div class="col"><b data-i18n="ft.p">მომხმარებლებს</b><a href="index.html#how" data-i18n="nav.how">როგორ მუშაობს</a><a href="index.html#price" data-i18n="nav.price">ფასები</a><a href="index.html#branches" data-i18n="nav.br">ფილიალები</a></div>
+      <div class="col"><b data-i18n="ft.b">ბიზნესს</b><a href="business.html" data-i18n="ft.offer">კორპორატიული შეთავაზება</a><a href="#lead" data-i18n="ft.req">მოთხოვნის გაგზავნა</a></div>
+      <div class="col"><b data-i18n="ft.c">კომპანია</b><a href="index.html#faq" data-i18n="nav.faq">კითხვები</a><a href="#top" data-link="privacy" data-i18n="ft.priv">კონფიდენციალურობა</a><a href="#top" data-link="terms" data-i18n="ft.terms">წესები და პირობები</a></div>
+      <div class="col"><b data-i18n="ft.a">აპი</b><a href="index.html#app" data-store data-i18n="ft.store">App Store</a></div>
+      <div class="contact"><span data-i18n="ft.call">დაგვირეკეთ ან მოგვწერეთ</span><a href="tel:+995322000000" class="tab" data-contact="phone">+995 32 2 00 00 00</a><a href="mailto:hello@autopass.ge" data-contact="email">hello@autopass.ge</a></div>
+    </div>
+    <div class="foot-last"><span>© <span data-year>2026</span> Autopass · GeoCar.Ge</span><a class="btn" href="#top" data-i18n="ft.up">ზემოთ ↑</a></div>
+  </div>
+</footer>
+
+<script src="config.js?v=20261026"></script>
+<script src="content/business.js?v=20261026"></script>
+<script src="site.js?v=20261026"></script>
+<script src="business.js?v=20261026"></script>
+</body>
+</html>
