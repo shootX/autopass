@@ -62,14 +62,16 @@
             "model": "Car model",
             "plate": "Number plate",
             "year": "Production year",
-            "fuel": "Fuel type"
+            "fuel": "Fuel type",
+            "bodyType": "Body type"
         },
         "placeholders": {
             "plate": "XX - XXX - XX",
             "chooseBrand": "Choose your car brand",
             "chooseModel": "Choose your car model",
             "chooseYear": "Choose a year",
-            "chooseFuel": "Choose fuel type"
+            "chooseFuel": "Choose fuel type",
+            "chooseBodyType": "Choose the body type"
         },
         "errors": {
             "invalidPlate": "Invalid number plate format",
@@ -80,7 +82,9 @@
             "chooseYear": "Choose the production year.",
             "saveFailed": "Could not add the vehicle. Please try again.",
             "sessionExpired": "Your session expired. Please sign in again.",
-            "chooseFuel": "Choose the fuel type."
+            "chooseFuel": "Choose the fuel type.",
+            "chooseBodyType": "This model has several body types in this year. Choose the body type.",
+            "bodyTypesUnavailable": "Could not load body types."
         },
         "buttons": {
             "add": "Add",

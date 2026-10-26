@@ -9,6 +9,7 @@ import { invalidateCarsCache } from "@/hooks/useFetchCars";
 import { useCarBrands } from "@/hooks/useCarBrands";
 import type { Brand, Model, Car } from "@/store/carSlice";
 import { useCarYears } from "@/hooks/useCarYears";
+import { useCarBodyTypes } from "@/hooks/useCarBodyTypes";
 import { readCar, record } from "@/lib/carResult";
 import { useTranslation } from "@/hooks/useTranslation";
 import { leftArrowUrl, closeIconUrl } from "@/assets/staticUrls";
@@ -37,6 +38,10 @@ export default function AddCar({ showHeader }: { showHeader?: boolean }) {
   const modelRequest = useRef(0);
   const yearOptions = useCarYears(brand, model);
   useEffect(() => { setYear(""); }, [brand?.id, model?.id]);
+  // The body type comes from the brand, model and year; the field shows only when that year has several.
+  const [carType, setCarType] = useState("");
+  const bodyTypes = useCarBodyTypes(brand, model, year);
+  useEffect(() => { setCarType(""); }, [brand?.id, model?.id, year]);
   const { brands, loading, error: brandsError } = useCarBrands();
   const normalizedPlate = numberPlate.replace(/[\s-]/g, "");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -87,7 +92,8 @@ export default function AddCar({ showHeader }: { showHeader?: boolean }) {
   const isValidPlate = /^([A-Z]{2}) - ([0-9]{3}) - ([A-Z]{2})$/.test(
     numberPlate
   );
-  const isFormReady = brand && model && year && fuel && isValidPlate && !yearOptions.loading;
+  const isFormReady = brand && model && year && fuel && isValidPlate && !yearOptions.loading
+    && !bodyTypes.loading && (!bodyTypes.choose || carType);
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
@@ -108,6 +114,11 @@ export default function AddCar({ showHeader }: { showHeader?: boolean }) {
       setIsSubmitting(false);
       return;
     }
+    if (bodyTypes.choose && !carType) {
+      setError("chooseBodyType");
+      setIsSubmitting(false);
+      return;
+    }
     if (!fuel) {
       setError("chooseFuel");
       setIsSubmitting(false);
@@ -117,6 +128,7 @@ export default function AddCar({ showHeader }: { showHeader?: boolean }) {
     const payload = {
       source: model.source ?? brand.source ?? "local",
       brand_id: brand.id, model_id: model.id, year: Number(year), plate: normalizedPlate, fuel_type: fuel,
+      ...(bodyTypes.choose && carType ? { car_type: carType } : {}),
     };
     try {
       const res = await customFetch(`${import.meta.env.VITE_API_URL}/mycars/add`, {
@@ -127,7 +139,11 @@ export default function AddCar({ showHeader }: { showHeader?: boolean }) {
       const body: unknown = await res.json().catch(() => null);
       const data = record(body);
       if (!res.ok || data?.success !== true) {
-        setError(data?.error_code === "plate_exists" ? "plateExists" : res.status === 401 ? "sessionExpired" : "saveFailed");
+        const code = data?.error_code;
+        setError(code === "plate_exists" ? "plateExists" : code === "body_type_required" || code === "body_type_invalid"
+          ? "chooseBodyType" : res.status === 401 ? "sessionExpired" : "saveFailed");
+        // The catalog changed since the form loaded: ask again with the types the server sent.
+        if (code === "body_type_required" || code === "body_type_invalid") bodyTypes.retry();
         return;
       }
       const createdCar = readCar(body);
@@ -151,6 +167,7 @@ export default function AddCar({ showHeader }: { showHeader?: boolean }) {
     dispatch(setModel(null));
     setNumberPlate("");
     setYear("");
+    setCarType("");
     setSubmitted(false);
     setError("");
     setAddedCar(null);
@@ -237,6 +254,20 @@ export default function AddCar({ showHeader }: { showHeader?: boolean }) {
                 <button type="button" onClick={yearOptions.retry}>{t("AddCar.retry")}</button>
               </div>}
             </div>
+
+            {bodyTypes.choose && (
+              <div className="input-block">
+                <label htmlFor="car-body">{t("AddCar.labels.bodyType")}</label>
+                <select id="car-body" className="input-select" value={carType}
+                  onChange={event => { setCarType(event.target.value); setError(""); }}>
+                  <option value="">{t("AddCar.placeholders.chooseBodyType")}</option>
+                  {bodyTypes.types.map(item => <option key={item.key} value={item.key}>{item.name}</option>)}
+                </select>
+              </div>
+            )}
+            {bodyTypes.failed && <div role="alert">{t("AddCar.errors.bodyTypesUnavailable")}
+              <button type="button" onClick={bodyTypes.retry}>{t("AddCar.retry")}</button>
+            </div>}
 
             <div className="input-block">
               <label htmlFor="car-fuel">{t("AddCar.labels.fuel")}</label>
