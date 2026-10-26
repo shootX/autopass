@@ -18,7 +18,7 @@ class CorporateDiscounts
     /** The body type of the driver's own car; unknown until the driver signs in and the car is linked. */
     public static function carType(FleetCar $car): ?string
     {
-        return $car->userCar?->model?->type;
+        return $car->userCar?->carType();
     }
 
     /** The car's discount package while it is active, else null (switched off, deleted or never picked). */

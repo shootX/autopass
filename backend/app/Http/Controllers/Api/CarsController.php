@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\BodyType;
 use App\Models\CarBrand;
 use App\Models\CarModel;
 use App\Models\FleetCar;
@@ -178,9 +177,7 @@ class CarsController extends Controller
             $brand = CarBrand::query()->firstOrCreate(['name' => $brandName]);
             $model = CarModel::query()->firstOrCreate(
                 ['brand_id' => $brand->id, 'name' => $modelName],
-                ['type' => BodyType::query()->where('name', 'sedan')->value('name')
-                    ?? BodyType::query()->orderBy('id')->value('name')
-                    ?? 'sedan']
+                ['type' => CarCatalog::defaultType()]
             );
 
             return (int) $model->id;
@@ -197,7 +194,7 @@ class CarsController extends Controller
         );
     }
 
-    private const TRIM_COLUMNS = ['generation_id', 'generation_name', 'modification_id', 'modification_name', 'body_type', 'photo'];
+    private const TRIM_COLUMNS = ['generation_id', 'generation_name', 'modification_id', 'modification_name', 'body_type', 'car_type', 'photo'];
 
     /** Generation/modification columns for a remote pick, [] for none, or the error text. */
     private function trimAttributes(Request $request): array|string

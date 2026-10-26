@@ -17,6 +17,7 @@ class UserCar extends Model
         'modification_id',
         'modification_name',
         'body_type',
+        'car_type',
         'photo',
         'fuel_type',
     ];
@@ -32,12 +33,20 @@ class UserCar extends Model
         return $this->photo ? url($this->photo) : $this->model?->image;
     }
 
+    /** The body type key prices go by: the car's own from the catalog, else its model's. */
+    public function carType(): ?string
+    {
+        return $this->car_type ?: $this->model?->type;
+    }
+
     public function trimPayload(): array
     {
         return [
             'generation' => $this->generation_id ? ['id' => $this->generation_id, 'name' => $this->generation_name] : null,
             'modification' => $this->modification_id ? ['id' => $this->modification_id, 'name' => $this->modification_name] : null,
             'body_type' => $this->body_type,
+            // Our body type key (sedan, suv, …) that packages and company discounts use.
+            'car_type' => $this->carType(),
             'fuel_type' => $this->fuel_type,
         ];
     }

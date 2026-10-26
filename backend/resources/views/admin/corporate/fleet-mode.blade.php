@@ -7,7 +7,7 @@
 @if($car->mode === 'discount')
     @php
         $carPackage = $discountPackages->get($car->corporate_package_id);
-        $carType = $car->userCar?->model?->type;
+        $carType = $car->userCar?->carType();
         $carDiscount = $carPackage && $carType ? $carPackage->prices->firstWhere('car_type', $carType) : null;
     @endphp
     @if($discountPackages->isEmpty())

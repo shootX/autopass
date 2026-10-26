@@ -23,6 +23,24 @@
             </div>
         @endif
 
+        @if($unpriced->isNotEmpty())
+            <div class="alert alert-warning mt-4">
+                {{ __('admin.body_type_unpriced') }}
+                @foreach($unpriced as $type => $count)
+                    <strong>{{ \App\Models\BodyType::labelFor($type) }}</strong> ({{ $count }})@if(! $loop->last), @endif
+                @endforeach
+            </div>
+        @endif
+
+        @if($unknown->isNotEmpty())
+            <div class="alert alert-info mt-4">
+                {{ __('admin.body_type_unknown') }}
+                @foreach($unknown as $name => $count)
+                    <strong>{{ $name }}</strong> ({{ $count }})@if(! $loop->last), @endif
+                @endforeach
+            </div>
+        @endif
+
         <div class="card mt-4 mb-4">
             <div class="card-header" style="display: flex;justify-content: space-between;align-items: baseline;">
                 <div>{{ __('admin.body_types') }}</div>
@@ -34,6 +52,7 @@
                         <th scope="col">ID</th>
                         <th scope="col">{{ __('admin.body_type_name') }}</th>
                         <th scope="col">{{ __('admin.body_type_key') }}</th>
+                        <th scope="col">{{ __('admin.body_type_cars') }}</th>
                         <th scope="col">{{ __('admin.actions') }}</th>
                     </thead>
                     <tbody>
@@ -42,6 +61,7 @@
                             <td>{{ $type->id }}</td>
                             <td>{{ $type->label() }}</td>
                             <td class="text-muted">{{ $type->name }}</td>
+                            <td>{{ $cars[$type->name] ?? 0 }}</td>
                             <td>
                                 <div class="btn-group">
                                     <a class="btn btn-sm btn-primary" href="{{ route('admin.body_types.edit', $type->id) }}"><i class="fas fa-edit"></i></a>
@@ -50,7 +70,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="4">{{ __('admin.dash_empty') }}</td></tr>
+                        <tr><td colspan="5">{{ __('admin.dash_empty') }}</td></tr>
                     @endforelse
                     </tbody>
                 </table>

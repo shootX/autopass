@@ -90,7 +90,7 @@ class StatisticsController extends Controller
                     'phone' => Phone::format($appointment->user?->phone),
                     'plate' => $car?->plate,
                     'car' => trim(($model?->brand?->name ?? '').' '.($model?->name ?? '')),
-                    'body_type' => $model?->type,
+                    'body_type' => $car?->carType(),
                     'services' => $appointment->servicesList,
                 ];
             })->values(),

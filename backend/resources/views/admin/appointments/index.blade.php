@@ -50,7 +50,7 @@
                         <tr>
                             <td scope="row">{{$appointment->id}}</td>
                             <td>{{$appointment->user->name}} {{$appointment->user->surname}}</td>
-                            <td>{{$appointment->car->model->brand->name}} {{$appointment->car->model->name}} ({{$appointment->car->plate}}) - {{$appointment->car->model->type}}</td>
+                            <td>{{$appointment->car->model->brand->name}} {{$appointment->car->model->name}} ({{$appointment->car->plate}}) - {{ \App\Models\BodyType::labelFor($appointment->car->carType()) }}</td>
                             <td>{{$appointment->washing->name}} ({{$appointment->washing->address}})</td>
                             <td>{{$appointment->servicesList}}</td>
                             <td>{{$appointment->washing->manager->name}} {{$appointment->washing->manager->surname}}</td>

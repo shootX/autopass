@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\BodyType;
 use App\Models\CarModel;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
@@ -88,8 +89,8 @@ class CarTrims
     }
 
     /**
-     * user_cars columns for a picked generation/modification of a remote model. Names, body type and photo
-     * are read from the catalog, never taken from the client.
+     * user_cars columns for a picked generation/modification of a remote model. Names, body type (with our key
+     * for it) and photo are read from the catalog, never taken from the client.
      *
      * @throws ValidationException
      */
@@ -113,6 +114,7 @@ class CarTrims
             'modification_id' => $modification ? $modificationId : null,
             'modification_name' => $modification ? mb_substr((string) ($modification['name'] ?? ''), 0, 128) : null,
             'body_type' => $generation ? (mb_substr((string) ($generation['body_type'] ?? ''), 0, 32) ?: null) : null,
+            'car_type' => $generation ? BodyType::fromCatalog($generation['body_type'] ?? null) : null,
             // Stored as a path, so a domain change does not break saved cars.
             'photo' => $photo ? (string) parse_url($photo, PHP_URL_PATH).(($q = parse_url($photo, PHP_URL_QUERY)) ? '?'.$q : '') : null,
         ];

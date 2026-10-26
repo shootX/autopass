@@ -43,7 +43,7 @@ class PackagesController extends Controller
                 return response()->json(['success' => false, 'error' => 'ავტომობილი ვერ მოიძებნა']);
             }
 
-            $carType = $userCar->model->type;
+            $carType = $userCar->carType();
 
             $packages = Package::where('car_type', $carType)->get();
             if ($packages->isEmpty()) {
