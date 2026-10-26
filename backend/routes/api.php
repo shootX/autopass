@@ -125,6 +125,7 @@ Route::middleware(['auth:api', CorsMiddleware::class, EnsureApiSession::class])-
         Route::get('/categories', [VouchersController::class, 'getCategories']);
         Route::post('/buy', [VouchersController::class, 'buyVoucher'])->middleware('throttle:voucher');
         Route::get('/my', [VouchersController::class, 'myVouchers']);
+        Route::get('/history', [VouchersController::class, 'history']);
     });
 
     Route::prefix('/myreviews')->group(function () {
