@@ -406,3 +406,7 @@ A discount car's package (`fleet_cars.corporate_package_id`) is set only by `Cor
 ## 2026-10-26 — Body types
 
 `body_types.name` is the key stored in `car_models.type`, `packages.car_type` and `corporate_package_prices.car_type`; it is fixed once created (made from the English name). `name_ka` / `name_en` are what people see: `BodyType::labelFor($key)` in views, `BodyType::options()` for selects, `ordered()` scope sorts by `sort`. Body types have no photo; a car model's picture falls back to `CarModel::IMAGES` by key.
+
+## 2026-10-26 — Landing v1.3
+
+`lending/` is the owner's mockup `autopass-v1.3` split into files: `index.html` + `business.html`, `styles.css` (base) + `responsive.css` (tablet ≤1199px, phone ≤700px), `site.js` (shared: language, config links, menu, FAQ, entrances, logged-in redirect), `home.js`, `business.js`, text in `content/home.js` and `content/business.js` (`window.AP_TEXT`, Georgian falls back to the HTML). Every switch (store link, QR, SMS, lead endpoint, contacts, legal links, prices) is in `config.js`; an empty value hides the part instead of faking it. Prices, branches, phone and e-mail are still the mockup's placeholders. The owner wants an admin page next that adds, edits and deletes everything on the site, so the content stays data-driven.

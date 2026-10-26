@@ -19,8 +19,9 @@ describe("mobile shell", () => {
     expect(authScss).toMatch(/\.auth-accept-policy\s*\{[^}]*flex-wrap:\s*wrap/);
   });
 
-  it("keeps the lending email field at 16px", () => {
-    expect(lendingCss).toMatch(/\.nl input\{[^}]*font-size:16px/);
+  it("keeps the lending form fields at 16px or more", () => {
+    expect(lendingCss).toMatch(/--f-s:clamp\(16px,/);
+    expect(lendingCss).toMatch(/\.field input\{[^}]*font-size:var\(--f-s\)/);
   });
 
   it("pads the bottom nav for the home indicator", () => {
