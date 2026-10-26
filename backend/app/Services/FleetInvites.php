@@ -138,8 +138,13 @@ class FleetInvites
 
     private static function link(FleetCar $car, User $user): bool
     {
+        // The catalog may be asked here (a model seen for the first time), so before the transaction: a failed
+        // insert of a parallel request must not end it on Postgres.
+        $new = UserCar::query()->where('plate', $car->plate)->exists() ? null
+            : ['model_id' => self::modelId($car), 'trim' => self::trim($car)];
+
         try {
-            return DB::transaction(function () use ($car, $user) {
+            return DB::transaction(function () use ($car, $user, $new) {
                 $userCar = UserCar::query()->where('plate', $car->plate)->lockForUpdate()->first();
                 if ($userCar && (int) $userCar->user_id !== (int) $user->id) {
                     // Someone else has this plate in the app: an admin has to sort it out.
@@ -149,7 +154,7 @@ class FleetInvites
                 }
 
                 if (! $userCar) {
-                    $modelId = self::modelId($car);
+                    $modelId = $new['model_id'] ?? self::modelId($car);
                     if ($modelId === null) {
                         $car->forceFill(['activation_error' => 'model_missing'])->save();
 
@@ -159,7 +164,12 @@ class FleetInvites
                         'user_id' => $user->id,
                         'model_id' => $modelId,
                         'plate' => $car->plate,
-                    ]);
+                        'year' => $car->year,
+                        'car_type' => $car->car_type,
+                    ] + ($new['trim'] ?? []));
+                } elseif ($car->car_type && ! $userCar->car_type) {
+                    // The driver's own car had no body type of its own yet: take the one the company gave.
+                    $userCar->forceFill(['car_type' => $car->car_type, 'year' => $userCar->year ?? $car->year])->save();
                 }
 
                 $car->forceFill([
@@ -182,6 +192,13 @@ class FleetInvites
 
     private static function modelId(FleetCar $car): ?int
     {
+        if ($car->catalog_source && $car->catalog_model_id) {
+            $id = app(CarCatalog::class)->resolveModelId($car->catalog_source, (int) $car->catalog_model_id, (int) $car->catalog_brand_id ?: null);
+            if ($id !== null) {
+                return $id;
+            }
+        }
+        // A car added before the catalog ids were kept, or the catalog is down: the model by its name.
         $id = CarModel::query()
             ->join('car_brands', 'car_brands.id', '=', 'car_models.brand_id')
             ->whereRaw('lower(car_brands.name) = ?', [mb_strtolower($car->brand)])
@@ -189,5 +206,22 @@ class FleetInvites
             ->value('car_models.id');
 
         return $id === null ? null : (int) $id;
+    }
+
+    /** The generation name and photo of the company's catalog car, best effort: the car is linked without them. */
+    private static function trim(FleetCar $car): array
+    {
+        if ($car->catalog_source !== CarCatalog::REMOTE || ! $car->generation_id) {
+            return [];
+        }
+        try {
+            $trim = app(CarTrims::class)->attributes((int) $car->catalog_brand_id, (int) $car->catalog_model_id, (int) $car->generation_id, null);
+
+            return array_filter(array_diff_key($trim, ['car_type' => true]), fn ($value) => $value !== null);
+        } catch (\Throwable $e) {
+            Log::warning('fleet_car_trim_unavailable', ['car' => $car->id, 'exception' => $e::class]);
+
+            return [];
+        }
     }
 }

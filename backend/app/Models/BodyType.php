@@ -57,6 +57,23 @@ class BodyType extends Model
         return null;
     }
 
+    /**
+     * Our key for a body type someone typed: the key itself, its Georgian or English name, or a catalog body
+     * name (station wagon, хэтчбек). null when it is none of these.
+     */
+    public static function keyFor(?string $text): ?string
+    {
+        $text = trim((string) $text);
+        if ($text === '') {
+            return null;
+        }
+        $lower = mb_strtolower($text);
+        $type = static::query()->get()->first(fn (self $type) => in_array($lower, array_map(
+            fn ($name) => mb_strtolower((string) $name), [$type->name, $type->name_ka, $type->name_en]), true));
+
+        return $type?->name ?? self::fromCatalog($text);
+    }
+
     /** The type's name in the current language; `name` is the key other tables store. */
     public function label(): string
     {

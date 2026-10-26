@@ -10,6 +10,7 @@
             'importUrl' => route('partner.import'),
             'templateUrl' => route('partner.template'),
             'tokenUrl' => route('partner.token'),
+            'catalogUrl' => url('/partner/catalog'),
             'carBase' => url('/partner/cars'),
         ])
     </div>

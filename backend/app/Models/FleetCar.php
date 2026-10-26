@@ -27,6 +27,12 @@ class FleetCar extends Model
         'brand',
         'model',
         'source',
+        'year',
+        'car_type',
+        'catalog_source',
+        'catalog_brand_id',
+        'catalog_model_id',
+        'generation_id',
     ];
     // status, driver_phone, user_id, user_car_id and the invite timestamps are set by FleetInvites only;
     // mode, corporate_package_id, washes_left and the QR code by CorporateWashes and CorporateQr.
@@ -37,7 +43,14 @@ class FleetCar extends Model
         'blocked_at' => 'datetime',
         'qr_expires_at' => 'datetime',
         'washes_left' => 'integer',
+        'year' => 'integer',
     ];
+
+    /** The body type the company gave; a car added before that goes by the driver's app car. */
+    public function carType(): ?string
+    {
+        return $this->car_type ?: $this->userCar?->carType();
+    }
 
     public function client(): BelongsTo
     {

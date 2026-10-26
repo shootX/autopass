@@ -67,7 +67,7 @@ class CorporateQr
                 'company' => (string) $car->client?->name,
                 'mode' => $car->mode,
                 'plate' => $car->plate,
-                'car_type' => $car->userCar?->carType(),
+                'car_type' => $car->carType(),
                 'user' => [
                     'name' => $car->user?->name,
                     'surname' => $car->user?->surname,
