@@ -44,6 +44,7 @@ function clientProfileBooking(array $f, int $status, string $date): Appointment
 
 it('opens the client profile from the client list for admins only', function () {
     $f = clientProfileFixture();
+    clientProfileBooking($f, AppointmentStatus::Completed->value, now()->subDays(5)->toDateString());
 
     $this->actingAs($f['admin'])->get('/dashboard/clients')
         ->assertOk()->assertSee(route('admin.clients.show', $f['client']), false);
