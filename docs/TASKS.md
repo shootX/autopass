@@ -9,7 +9,7 @@
 | | რაოდენობა |
 |---|---|
 | to do | 10 |
-| in progress | 0 |
+| in progress | 1 |
 | done | 4 |
 
 ## სია
@@ -30,6 +30,7 @@
 | T-12 | PR [#4](https://github.com/shootX/autopass/pull/4) შერწყმულია: მარკეტინგის გვერდი `lending/` (`ece763f`, 2026-10-09). ღია ნაშთი არის T-10. | done | shootX |
 | T-13 | PR #2 შერწყმულია: forest/lime rebrand (`eaac4d2`, 2026-10-07). | done | shootX |
 | T-14 | `dfe84dc` (2026-10-10, ავტორი `root`): ქართული ტექსტი, ჯავშანი არჩეულ დღეს, კორპორატიული ავტოპარკი და TBC checkout. | done | root |
+| T-15 | 2026-10-26: კლიენტის სრული პროფილი ადმინში (`/dashboard/clients/{id}`): KPI, სეგმენტი, ისტორიის ტაბები. ბაზა არ შეცვლილა. შემდეგი ეტაპი: სეგმენტის ფილტრი სიაში და ექსპორტში, აკლია ბოლო შესვლა, პლატფორმა, გაუქმების მიზეზი, ჯავშნის ფასი, წყარო, ადმინის შენიშვნა. | in progress | shootX |
 # Autopass — Tasks
 
 ## 2026-10-12 — P0 backend security (branch `fix/p0-backend-security`)

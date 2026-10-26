@@ -19,4 +19,9 @@ class UserVoucher extends Model
     {
         return $this->belongsTo(Voucher::class, 'voucher_id');
     }
+
+    public function partner() : BelongsTo
+    {
+        return $this->belongsTo(Partner::class, 'used_by_partner_id');
+    }
 }

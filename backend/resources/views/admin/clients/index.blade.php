@@ -48,9 +48,12 @@
                     @forelse($clients as $client)
                         <tr @if($client->ban) class="table-danger" @endif >
                             <td>{{$client->id}}</td>
-                            <td>{{$client->name}} {{$client->surname}}</td>
+                            <td><a href="{{ route('admin.clients.show', $client) }}">{{$client->name}} {{$client->surname}}</a></td>
                             <td><a href="mailto:{{$client->email}}">{{$client->email}}</a></td>
-                            <td><a href="tel:{{ \App\Support\Phone::digits($client->phone) }}">{{ \App\Support\Phone::format($client->phone) }}</a></td>
+                            <td class="text-nowrap">
+                                <a href="{{ route('admin.clients.show', $client) }}">{{ \App\Support\Phone::format($client->phone) }}</a>
+                                <a class="text-muted ms-1" href="tel:{{ \App\Support\Phone::digits($client->phone) }}"><i class="fas fa-phone"></i></a>
+                            </td>
                             <td>{{ $client->sex === 'male' ? __('admin.male') : ($client->sex === 'female' ? __('admin.female') : '—') }}</td>
                             <td>{{$client->date_of_birth}}</td>
                             <td>{{$client->created_at}}</td>

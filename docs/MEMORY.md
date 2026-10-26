@@ -361,3 +361,8 @@ Photo `photo_url` and `/models/{id}/photo` need the secret key. The app never ge
 ## 2026-10-26 — Fuel type
 
 `fuel_type` is a code, not a label: `UserCar::FUEL_TYPES`. Petrol is split by grade (regular RON 92–95, premium RON 95, super RON 98). The iOS app and the web form keep their own labels for the same codes. geoapi.ge has verified photos per model first; generation photos fall back to the model photo.
+
+## 2026-10-26 — Client profile page
+
+`/dashboard/clients/{id}` (`admin.clients.show`, admin only like all of `/dashboard`). Numbers come from `App\Services\ClientProfile`. A visit is one `package_washes` row or one completed booking (status 3) that no package wash points at, so a package wash made from a booking is not counted twice. Money paid (LTV) is `tbc_payments` with status `succeeded` and `test_mode` false; `transactions` are only points moves and are not money. Segment thresholds are constants on the class (new < 30 days since signup, active ≤ 30 days since visit, lapsed > 60, at risk in between or a non-renewing package ending within 7 days, VIP = top 10% by money paid). Tabs show the latest 200 rows; the KPIs count everything.
+
