@@ -34,7 +34,7 @@
     $("pCur").textContent = "₾";
     $("pNum").textContent = p;
     $("pPer").textContent = AP.I("price.per");
-    $("pEach").textContent = d.each + "₾" + (p / n).toFixed(2).replace(/\.00$/, "");
+    $("pEach").textContent = d.each.trim() + " ₾" + (p / n).toFixed(2).replace(/\.00$/, "");
     $("pList").innerHTML = list(d.l.map(function (x) { return x.replace("{n}", n); }));
     ring.innerHTML = ringSegs(n) + '<text x="50" y="60" text-anchor="middle" font-size="28" font-weight="700" fill="#133A6B">' + n + "</text>";
   }

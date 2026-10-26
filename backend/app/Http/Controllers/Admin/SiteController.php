@@ -49,7 +49,7 @@ class SiteController extends Controller
         foreach ($defaults['texts'] as $key => $default) {
             foreach (SitePages::LANGS as $lang) {
                 $value = self::clean($texts[$key][$lang] ?? $default[$lang]);
-                if ($value !== $default[$lang]) {
+                if ($value !== trim($default[$lang])) {
                     $data['texts'][$key][$lang] = $value;
                 }
             }
