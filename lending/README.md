@@ -23,12 +23,19 @@ sh build.sh
 | `AUTOPASS_HOURS` | ფილიალების სამუშაო საათი | — |
 | `AUTOPASS_PHONE`, `AUTOPASS_EMAIL` | ფუტერის კონტაქტი | ხაზი დამალულია |
 | `AUTOPASS_PRIVACY_URL`, `AUTOPASS_TERMS_URL` | ფუტერის ბმულები | ბმული დამალულია |
+| `AUTOPASS_API` | API, საიდანაც გვერდი ადმინის ტექსტს და პარამეტრებს კითხულობს | `AUTOPASS_APP_BASE` + `/api` |
 | `AUTOPASS_SMS_URL` | POST `{phone}`, აპის ბმული SMS-ით | ფორმა დამალულია, ჩანს სათაური და ღილაკი |
-| `AUTOPASS_LEAD_URL` | POST `{company, phone, lang}`, ბიზნესის მოთხოვნა | ფორმა ხსნის ელფოსტას `AUTOPASS_EMAIL`-ზე |
+| `AUTOPASS_LEAD_URL` | ბიზნესის მოთხოვნის მისამართი; ნაგულისხმევად `AUTOPASS_API` + `/site/lead` | `""`: ფორმა ხსნის ელფოსტას `AUTOPASS_EMAIL`-ზე |
 
-## ტექსტი
+## ტექსტი და ადმინი
 
-ქართული ტექსტი წერია HTML-ში. ინგლისური, რუსული და სიები (ფილიალები, FAQ, პაკეტის პუნქტები) არის `content/home.js` და `content/business.js`-ში. მომავალში ამას ადმინის „საიტის მართვა“ ჩაანაცვლებს.
+საიტს მართავს ადმინი: **Dashboard → საიტი** (`/dashboard/site`). იქ არის ორივე გვერდის ყველა ტექსტი სამ ენაზე, სიები (FAQ, პაკეტის პუნქტები, ფილიალები) დამატებით, შეცვლით და წაშლით, სექციების ჩართვა/გამორთვა და რიგი, პარამეტრები (ფასები, საათები, კონტაქტი, ბმულები, ფილიალები ბაზიდან) და ბიზნესის მოთხოვნები.
+
+გვერდი ჩატვირთვისას კითხულობს `GET /api/site/home` ან `/api/site/business`-ს და ტექსტს ანაცვლებს. API თუ არ პასუხობს, რჩება ჩაშენებული ტექსტი: ქართული HTML-ში, ინგლისური, რუსული და სიები `content/home.js` და `content/business.js`-ში.
+
+ადმინის ნაგულისხმევი ტექსტი არის `backend/resources/site/*.json`. ჩაშენებული ტექსტის შეცვლის შემდეგ ის თავიდან აეწყობა: `node lending/tools/site-defaults.js lending gewash backend/resources/site` (სჭირდება `gewash/node_modules`).
+
+სერვერზე ერთხელ: `php artisan migrate` (`site_contents`, `site_leads`).
 
 ## წესები
 

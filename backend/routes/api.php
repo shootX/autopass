@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\PointsController;
 use App\Http\Controllers\Api\ReferralsController;
 use App\Http\Controllers\Api\ReviewsController;
 use App\Http\Controllers\Api\ShopController;
+use App\Http\Controllers\Api\SiteController;
 use App\Http\Controllers\Api\StatisticsController;
 use App\Http\Controllers\Api\TicketsController;
 use App\Http\Controllers\Api\UserController;
@@ -49,6 +50,9 @@ Route::get('/lang/{lang}', function ($lang) {
         ->header('ETag', $etag);
 
 });
+
+Route::get('/site/{page}', [SiteController::class, 'page'])->middleware('throttle:60,1');
+Route::post('/site/lead', [SiteController::class, 'lead'])->middleware('throttle:5,1');
 
 Route::get('/ref/ip', [ReferralsController::class, 'getIp']);
 Route::post('/ref/save-hash', [ReferralsController::class, 'saveHash'])->middleware('throttle:referral');

@@ -323,5 +323,5 @@ footer{margin-top:var(--gap-s);background:var(--navy);color:#fff;padding-block:c
 .go .how-head p{font-size:var(--f-m);line-height:1.35;color:var(--ink2);margin-bottom:28px}
 
 /* parts that config.js switches on (site.js, home.js) */
-#smsForm[hidden],#ctaQr[hidden],.cta-alt[hidden],[data-contact][hidden],[data-link][hidden]{display:none}
+[data-section][hidden],#smsForm[hidden],#ctaQr[hidden],.cta-alt[hidden],[data-contact][hidden],[data-link][hidden]{display:none}
 .cta .cta-alt{display:block;font-size:var(--f-l);font-weight:700;letter-spacing:-.03em;line-height:1;max-width:14ch}

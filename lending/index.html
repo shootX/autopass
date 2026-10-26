@@ -25,7 +25,7 @@
 <link rel="stylesheet" href="styles.css?v=20261026">
 <link rel="stylesheet" href="responsive.css?v=20261026">
 </head>
-<body>
+<body data-page="home">
 
 <header class="nav wrap">
   <a href="#top" class="logo" aria-label="Autopass"><img src="img/logo.svg" alt="autopass" width="501" height="197"></a>
@@ -55,7 +55,7 @@
 
 <main id="top">
 <!-- HERO: the logo's ring, at enormous scale -->
-<section class="hero wrap">
+<section class="hero wrap" data-section="hero">
   <div class="hero-copy">
     <h1 data-rise data-i18n="hero.h1">რეცხვა გამოწერით</h1>
     <p class="lead" data-rise style="--i:1" data-i18n="hero.p">შეიძინეთ 4, 8 ან 12 რეცხვის პაკეტი ან ულიმიტო აპში და ნებისმიერ ფილიალში უბრალოდ აჩვენეთ QR კოდი. რგოლზე ყოველთვის ჩანს, რამდენი რეცხვა დაგრჩათ.</p>
@@ -86,7 +86,7 @@
 </section>
 
 <!-- HOW IT WORKS: stages as one bar -->
-<section class="how wrap" id="how">
+<section class="how wrap" id="how" data-section="how">
   <div class="how-head"><h2 data-rise data-i18n="how.h2">სამი ნაბიჯი, ოცი წუთი</h2><p data-rise style="--i:1" data-i18n="how.p">პაკეტის საფასურს აპში იხდით, ფილიალში კი მხოლოდ QR კოდს აჩვენებთ. წინასწარ ჩაწერა საჭირო არ არის.</p></div>
   <div class="bar" data-ui>
     <div class="seg" style="--i:0"><div><b data-i18n="how.d1">2 წუთი</b><span class="clause" hidden data-i18n="how.c1">ჯერ აპში ირჩევთ პაკეტს და იხდით ბარათით.</span></div></div>
@@ -101,7 +101,7 @@
 </section>
 
 <!-- PRICING: the price, very large (live: choose washes) -->
-<section class="price wrap" id="price">
+<section class="price wrap" id="price" data-section="price">
   <div class="side">
     <h2 data-rise data-i18n="price.h2">ერთი ფასი თვეში</h2>
     <p data-rise style="--i:1" data-i18n="price.p">აირჩიეთ, თვეში რამდენჯერ გსურთ მანქანის რეცხვა. ფასები სედანისთვისაა, სხვა ძარის ფასს აპი გაჩვენებთ.</p>
@@ -122,7 +122,7 @@
 </section>
 
 <!-- CORPORATE: the one full-width band, now a door to business.html -->
-<section class="biz" id="biz">
+<section class="biz" id="biz" data-section="biz">
   <svg class="ring-band" viewBox="0 0 100 100" aria-hidden="true">
     <circle cx="50" cy="50" r="34" fill="none" stroke="#1C4A82" stroke-width="27"/>
     <path d="M74.04 25.96A34 34 0 1 1 25.96 74.04" fill="none" stroke="#0B2545" stroke-width="27" stroke-linecap="round"/>
@@ -135,7 +135,7 @@
 </section>
 
 <!-- FEATURES: close-ups on a board -->
-<section class="feat wrap" aria-labelledby="featH">
+<section class="feat wrap" data-section="feat" aria-labelledby="featH">
   <div class="tile t-head"><h2 id="featH" data-rise data-i18n="feat.h">ყველაფერი აპშია</h2></div>
   <div class="tile t-qr" data-rise>
     <div class="el qr" data-ui>
@@ -174,7 +174,7 @@
 </section>
 
 <!-- BRANCHES: sticky picture, active list (signature: index with preview) -->
-<section class="br wrap" id="branches">
+<section class="br wrap" id="branches" data-section="branches">
   <div class="br-pic">
     <div class="map" data-ui>
       <svg viewBox="0 0 400 500" aria-hidden="true">
@@ -196,7 +196,7 @@
 </section>
 
 <!-- CTA: a sentence with a blank -->
-<section class="cta wrap" id="app">
+<section class="cta wrap" id="app" data-section="app">
   <div class="cta-l">
   <h2 class="cta-alt" data-rise data-i18n="cta.alt" hidden>დაიწყეთ რეცხვა Autopass-ით</h2>
   <form action="#app" id="smsForm" hidden>
@@ -213,7 +213,7 @@
 </section>
 
 <!-- FAQ: tabbed index cards -->
-<section class="faq wrap" id="faq">
+<section class="faq wrap" id="faq" data-section="faq">
   <h2 data-rise data-i18n="faq.h">ხშირი კითხვები</h2>
   <div class="cards" id="cards"></div>
 </section>

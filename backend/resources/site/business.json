@@ -1,0 +1,540 @@
+{
+ "sections": [
+  "calc",
+  "models",
+  "start",
+  "faq",
+  "go"
+ ],
+ "groups": [
+  "nav",
+  "calc",
+  "models",
+  "start",
+  "faq",
+  "go",
+  "footer",
+  "general"
+ ],
+ "texts": {
+  "nav.how": {
+   "group": "nav",
+   "ka": "როგორ მუშაობს",
+   "en": "How it works",
+   "ru": "Как это работает"
+  },
+  "nav.price": {
+   "group": "nav",
+   "ka": "ფასები",
+   "en": "Prices",
+   "ru": "Цены"
+  },
+  "nav.biz": {
+   "group": "nav",
+   "ka": "ბიზნესისთვის",
+   "en": "For business",
+   "ru": "Для бизнеса"
+  },
+  "nav.br": {
+   "group": "nav",
+   "ka": "ფილიალები",
+   "en": "Branches",
+   "ru": "Филиалы"
+  },
+  "nav.faq": {
+   "group": "nav",
+   "ka": "კითხვები",
+   "en": "FAQ",
+   "ru": "Вопросы"
+  },
+  "nav.get": {
+   "group": "nav",
+   "ka": "აპის ჩამოტვირთვა",
+   "en": "Get the app",
+   "ru": "Скачать приложение"
+  },
+  "biz.h1": {
+   "group": "calc",
+   "ka": "Autopass",
+   "en": "Autopass",
+   "ru": "Autopass"
+  },
+  "biz.h2": {
+   "group": "calc",
+   "ka": "ბიზნესისთვის",
+   "en": "for business",
+   "ru": "для бизнеса"
+  },
+  "biz.p": {
+   "group": "calc",
+   "ka": "კომპანიის ყველა მანქანა ერთ ანგარიშზე. მძღოლი ფილიალში კომპანიის QR კოდს აჩვენებს, მენეჯერი ასკანერებს და მანქანა ირეცხება.",
+   "en": "Every company car on one account. The driver shows the company QR code at the branch, the manager scans it and the car is washed.",
+   "ru": "Все машины компании на одном счёте. Водитель показывает в филиале QR-код компании, менеджер сканирует его, и машину моют."
+  },
+  "calc.h": {
+   "group": "calc",
+   "ka": "დაითვალეთ ავტოპარკისთვის",
+   "en": "Work it out for your fleet",
+   "ru": "Расчёт для автопарка"
+  },
+  "calc.sub": {
+   "group": "calc",
+   "ka": "როცა რეცხვებს კომპანია იხდის",
+   "en": "When the company pays for the washes",
+   "ru": "Когда мойки оплачивает компания"
+  },
+  "calc.cars": {
+   "group": "calc",
+   "ka": "მანქანების რაოდენობა",
+   "en": "Number of cars",
+   "ru": "Количество машин"
+  },
+  "calc.unit": {
+   "group": "calc",
+   "ka": "მანქანა",
+   "en": "cars",
+   "ru": "машин"
+  },
+  "calc.per": {
+   "group": "calc",
+   "ka": "რეცხვა თითო მანქანაზე, თვეში",
+   "en": "Washes per car, per month",
+   "ru": "Моек на машину в месяц"
+  },
+  "price.per": {
+   "group": "calc",
+   "ka": "/ თვე",
+   "en": "/ month",
+   "ru": "/ мес"
+  },
+  "calc.disc": {
+   "group": "calc",
+   "ka": "კორპორატიული −15%",
+   "en": "Corporate −15%",
+   "ru": "Корпоративная −15%"
+  },
+  "biz.l1": {
+   "group": "calc",
+   "ka": "ყოველ მანქანას კომპანიის QR კოდი აქვს, რომელიც თავისით ახლდება",
+   "en": "Each car gets a company QR code that refreshes by itself",
+   "ru": "У каждой машины QR-код компании, который обновляется сам"
+  },
+  "biz.l2": {
+   "group": "calc",
+   "ka": "ფილიალში მენეჯერი ხედავს, რამდენი რეცხვა დარჩა მანქანას და კომპანიას",
+   "en": "At the branch the manager sees how many washes the car and the company have left",
+   "ru": "В филиале менеджер видит, сколько моек осталось у машины и у компании"
+  },
+  "biz.l3": {
+   "group": "calc",
+   "ka": "ნებისმიერ მანქანას დაბლოკავთ და მისი QR კოდი მაშინვე წყვეტს მუშაობას",
+   "en": "Block any car and its QR code stops working at once",
+   "ru": "Любую машину можно заблокировать, и её QR-код сразу перестанет работать"
+  },
+  "biz.l4": {
+   "group": "calc",
+   "ka": "ფასს ავტოპარკის ზომის მიხედვით ვათანხმებთ",
+   "en": "We agree the price based on the size of your fleet",
+   "ru": "Цену согласуем по размеру автопарка"
+  },
+  "form.h": {
+   "group": "calc",
+   "ka": "მოთხოვნა ბიზნესისთვის",
+   "en": "Business request",
+   "ru": "Заявка для бизнеса"
+  },
+  "form.co": {
+   "group": "calc",
+   "ka": "კომპანია",
+   "en": "Company",
+   "ru": "Компания"
+  },
+  "form.ph": {
+   "group": "calc",
+   "ka": "ტელეფონი",
+   "en": "Phone",
+   "ru": "Телефон"
+  },
+  "form.send": {
+   "group": "calc",
+   "ka": "მოთხოვნის გაგზავნა",
+   "en": "Send request",
+   "ru": "Отправить заявку"
+  },
+  "form.note": {
+   "group": "calc",
+   "ka": "მენეჯერი დაგიკავშირდებათ და ფასს ავტოპარკის ზომის მიხედვით შეგითანხმებთ.",
+   "en": "A manager will contact you and agree a price for the size of your fleet.",
+   "ru": "Менеджер свяжется с вами и согласует цену под размер автопарка."
+  },
+  "mod.h": {
+   "group": "models",
+   "ka": "ორი მოდელი",
+   "en": "Two models",
+   "ru": "Две модели"
+  },
+  "mod.p": {
+   "group": "models",
+   "ka": "თქვენ წყვეტთ, ვინ იხდის რეცხვის საფასურს: კომპანია თუ მძღოლი.",
+   "en": "You decide who pays for the wash: the company or the driver.",
+   "ru": "Вы решаете, кто платит за мойку: компания или водитель."
+  },
+  "m1.tag": {
+   "group": "models",
+   "ka": "მოდელი 1",
+   "en": "Model 1",
+   "ru": "Модель 1"
+  },
+  "m1.h": {
+   "group": "models",
+   "ka": "რეცხვები კომპანიის ხარჯზე",
+   "en": "Washes paid by the company",
+   "ru": "Мойки за счёт компании"
+  },
+  "m1.p": {
+   "group": "models",
+   "ka": "კომპანია ყიდულობს რეცხვებს და ანაწილებს მანქანებზე. მძღოლი ფილიალში არაფერს იხდის.",
+   "en": "The company buys washes and shares them out between its cars. The driver pays nothing at the branch.",
+   "ru": "Компания покупает мойки и распределяет их по машинам. Водитель в филиале ничего не платит."
+  },
+  "m1.l1": {
+   "group": "models",
+   "ka": "მძღოლი აპში ხედავს, რამდენი რეცხვა დარჩა მანქანას",
+   "en": "The driver sees in the app how many washes the car has left",
+   "ru": "Водитель видит в приложении, сколько моек осталось у машины"
+  },
+  "m1.l2": {
+   "group": "models",
+   "ka": "მენეჯერი ხედავს მანქანისა და კომპანიის ნაშთს",
+   "en": "The manager sees what is left for the car and for the company",
+   "ru": "Менеджер видит остаток у машины и у компании"
+  },
+  "m1.l3": {
+   "group": "models",
+   "ka": "როცა რეცხვები ამოიწურება, QR კოდი აღარ მუშაობს",
+   "en": "When the washes run out, the QR code stops working",
+   "ru": "Когда мойки заканчиваются, QR-код перестаёт работать"
+  },
+  "m1.ut": {
+   "group": "models",
+   "ka": "დარჩენილია 3 რეცხვა",
+   "en": "3 washes left",
+   "ru": "Осталось 3 мойки"
+  },
+  "m1.us": {
+   "group": "models",
+   "ka": "კომპანიას დარჩა 41 რეცხვა",
+   "en": "The company has 41 washes left",
+   "ru": "У компании осталась 41 мойка"
+  },
+  "m1.utag": {
+   "group": "models",
+   "ka": "კომპანიის მანქანა",
+   "en": "Company car",
+   "ru": "Машина компании"
+  },
+  "m2.tag": {
+   "group": "models",
+   "ka": "მოდელი 2",
+   "en": "Model 2",
+   "ru": "Модель 2"
+  },
+  "m2.h": {
+   "group": "models",
+   "ka": "ფასდაკლება მძღოლებისთვის",
+   "en": "Discount for drivers",
+   "ru": "Скидка водителям"
+  },
+  "m2.p": {
+   "group": "models",
+   "ka": "კომპანია წინასწარ არაფერს იხდის. მძღოლი რეცხვის საფასურს ფილიალში იხდის, უკვე ფასდაკლებით.",
+   "en": "The company pays nothing up front. The driver pays for the wash at the branch, already discounted.",
+   "ru": "Компания ничего не платит заранее. Водитель оплачивает мойку в филиале, уже со скидкой."
+  },
+  "m2.l1": {
+   "group": "models",
+   "ka": "ფასდაკლების პროცენტი ძარის ტიპის მიხედვით თანხმდება",
+   "en": "The discount is agreed per body type",
+   "ru": "Скидка согласуется по типу кузова"
+  },
+  "m2.l2": {
+   "group": "models",
+   "ka": "მძღოლი აპში წინასწარ ხედავს, რამდენს გადაიხდის",
+   "en": "The driver sees in the app what they will pay",
+   "ru": "Водитель заранее видит в приложении, сколько заплатит"
+  },
+  "m2.l3": {
+   "group": "models",
+   "ka": "ფასდაკლება მხოლოდ კომპანიის მანქანებზე მოქმედებს",
+   "en": "The discount applies only to company cars",
+   "ru": "Скидка действует только для машин компании"
+  },
+  "m2.ul": {
+   "group": "models",
+   "ka": "სედანი",
+   "en": "Sedan",
+   "ru": "Седан"
+  },
+  "m2.us": {
+   "group": "models",
+   "ka": "სრული ფასი ₾20 · ფასდაკლება 15%",
+   "en": "Full price ₾20 · 15% off",
+   "ru": "Полная цена ₾20 · скидка 15%"
+  },
+  "st.h": {
+   "group": "start",
+   "ka": "როგორ ვიწყებთ",
+   "en": "How we start",
+   "ru": "Как мы начинаем"
+  },
+  "st.p": {
+   "group": "start",
+   "ka": "მოთხოვნიდან პირველ რეცხვამდე სამი ნაბიჯია.",
+   "en": "Three steps from request to first wash.",
+   "ru": "От заявки до первой мойки три шага."
+  },
+  "st.d1": {
+   "group": "start",
+   "ka": "შეთანხმება",
+   "en": "Agreement",
+   "ru": "Договорённость"
+  },
+  "st.c1": {
+   "group": "start",
+   "ka": "ვირჩევთ მოდელს და ფასს ავტოპარკის ზომის მიხედვით ვათანხმებთ.",
+   "en": "We choose the model and agree a price for the size of your fleet.",
+   "ru": "Выбираем модель и согласуем цену по размеру автопарка."
+  },
+  "st.d2": {
+   "group": "start",
+   "ka": "მანქანების დამატება",
+   "en": "Adding cars",
+   "ru": "Добавление машин"
+  },
+  "st.c2": {
+   "group": "start",
+   "ka": "კომპანიის მანქანებს სისტემაში ვამატებთ და თითოეული თავის QR კოდს იღებს.",
+   "en": "We add the company cars to the system, and each one gets its own QR code.",
+   "ru": "Добавляем машины компании в систему, и каждая получает свой QR-код."
+  },
+  "st.d3": {
+   "group": "start",
+   "ka": "რეცხვა ფილიალში",
+   "en": "Washing at a branch",
+   "ru": "Мойка в филиале"
+  },
+  "st.c3": {
+   "group": "start",
+   "ka": "მძღოლი აჩვენებს კოდს, მენეჯერი ასკანერებს და რეცხვას ადასტურებს.",
+   "en": "The driver shows the code, the manager scans it and approves the wash.",
+   "ru": "Водитель показывает код, менеджер сканирует его и подтверждает мойку."
+  },
+  "faq.h": {
+   "group": "faq",
+   "ka": "კითხვები ბიზნესისთვის",
+   "en": "Business questions",
+   "ru": "Вопросы бизнеса"
+  },
+  "go.h": {
+   "group": "go",
+   "ka": "დაიწყეთ ერთი მოთხოვნით",
+   "en": "Start with one request",
+   "ru": "Начните с одной заявки"
+  },
+  "go.p": {
+   "group": "go",
+   "ka": "დატოვეთ ნომერი და მენეჯერი დაგიკავშირდებათ.",
+   "en": "Leave your number and a manager will contact you.",
+   "ru": "Оставьте номер, и менеджер свяжется с вами."
+  },
+  "ft.p": {
+   "group": "footer",
+   "ka": "მომხმარებლებს",
+   "en": "Drivers",
+   "ru": "Водителям"
+  },
+  "ft.b": {
+   "group": "footer",
+   "ka": "ბიზნესს",
+   "en": "Business",
+   "ru": "Бизнесу"
+  },
+  "ft.offer": {
+   "group": "footer",
+   "ka": "კორპორატიული შეთავაზება",
+   "en": "Corporate offer",
+   "ru": "Корпоративное предложение"
+  },
+  "ft.req": {
+   "group": "footer",
+   "ka": "მოთხოვნის გაგზავნა",
+   "en": "Send a request",
+   "ru": "Отправить заявку"
+  },
+  "ft.c": {
+   "group": "footer",
+   "ka": "კომპანია",
+   "en": "Company",
+   "ru": "Компания"
+  },
+  "ft.priv": {
+   "group": "footer",
+   "ka": "კონფიდენციალურობა",
+   "en": "Privacy",
+   "ru": "Конфиденциальность"
+  },
+  "ft.terms": {
+   "group": "footer",
+   "ka": "წესები და პირობები",
+   "en": "Terms",
+   "ru": "Условия"
+  },
+  "ft.a": {
+   "group": "footer",
+   "ka": "აპი",
+   "en": "App",
+   "ru": "Приложение"
+  },
+  "ft.store": {
+   "group": "footer",
+   "ka": "App Store",
+   "en": "App Store",
+   "ru": "App Store"
+  },
+  "ft.call": {
+   "group": "footer",
+   "ka": "დაგვირეკეთ ან მოგვწერეთ",
+   "en": "Call or write to us",
+   "ru": "Позвоните или напишите нам"
+  },
+  "ft.up": {
+   "group": "footer",
+   "ka": "ზემოთ ↑",
+   "en": "Back to top ↑",
+   "ru": "Наверх ↑"
+  },
+  "form.bad": {
+   "group": "calc",
+   "ka": "შეამოწმეთ კომპანიის სახელი და ტელეფონის ნომერი.",
+   "en": "Check the company name and the phone number.",
+   "ru": "Проверьте название компании и номер телефона."
+  },
+  "form.ok": {
+   "group": "calc",
+   "ka": "გმადლობთ. მენეჯერი მალე დაგიკავშირდებათ.",
+   "en": "Thank you. A manager will be in touch soon.",
+   "ru": "Спасибо. Менеджер скоро свяжется с вами."
+  },
+  "doc": {
+   "group": "nav",
+   "ka": "Autopass ბიზნესისთვის",
+   "en": "Autopass for business",
+   "ru": "Autopass для бизнеса"
+  },
+  "hero.web": {
+   "group": "footer",
+   "ka": "გახსენით Autopass",
+   "en": "Open Autopass",
+   "ru": "Открыть Autopass"
+  },
+  "ft.web": {
+   "group": "footer",
+   "ka": "ვებ-აპი",
+   "en": "Web app",
+   "ru": "Веб-приложение"
+  },
+  "form.err": {
+   "group": "calc",
+   "ka": "მოთხოვნა ვერ გაიგზავნა. დაგვირეკეთ ან სცადეთ ცოტა ხანში.",
+   "en": "The request couldn't be sent. Call us or try again shortly.",
+   "ru": "Не удалось отправить заявку. Позвоните нам или попробуйте чуть позже."
+  },
+  "form.mail": {
+   "group": "calc",
+   "ka": "გაიხსნა ელფოსტა მზა მოთხოვნით. გააგზავნეთ და მენეჯერი დაგიკავშირდებათ.",
+   "en": "Your e-mail app has opened with the request. Send it and a manager will be in touch.",
+   "ru": "Открылась почта с готовой заявкой. Отправьте её, и менеджер свяжется с вами."
+  }
+ },
+ "lists": {
+  "faq": {
+   "group": "faq",
+   "fields": [
+    "q",
+    "a"
+   ],
+   "items": [
+    {
+     "ka": [
+      "რომელი მოდელი ავირჩიოთ?",
+      "თუ რეცხვის საფასურს კომპანია ფარავს, აირჩიეთ რეცხვების პაკეტი. თუ გსურთ, რომ მძღოლებმა თავად გადაიხადონ, ოღონდ ნაკლები, აირჩიეთ ფასდაკლება."
+     ],
+     "en": [
+      "Which model should we choose?",
+      "If the company covers the cost of washing, choose the wash package. If you would like drivers to pay themselves, but less, choose the discount."
+     ],
+     "ru": [
+      "Какую модель выбрать?",
+      "Если мойку оплачивает компания, выберите пакет моек. Если хотите, чтобы водители платили сами, но меньше, выберите скидку."
+     ]
+    },
+    {
+     "ka": [
+      "მძღოლს აპი სჭირდება?",
+      "დიახ. მძღოლი აპში ხედავს კომპანიის მანქანას და მის QR კოდს, ფილიალში კი სწორედ ამ კოდს აჩვენებს."
+     ],
+     "en": [
+      "Does the driver need the app?",
+      "Yes. The driver sees the company car and its QR code in the app and shows that code at the branch."
+     ],
+     "ru": [
+      "Нужно ли водителю приложение?",
+      "Да. Водитель видит в приложении машину компании и её QR-код и показывает этот код в филиале."
+     ]
+    },
+    {
+     "ka": [
+      "რა ხდება, როცა მანქანას ვბლოკავთ?",
+      "დაბლოკილი მანქანის QR კოდი აღარ მუშაობს და ფილიალში რეცხვა ვერ დადასტურდება. იგივე ხდება, თუ მთელი კომპანიის ანგარიშია დაბლოკილი."
+     ],
+     "en": [
+      "What happens when we block a car?",
+      "A blocked car's QR code stops working and the wash can't be approved at the branch. The same happens if the whole company account is blocked."
+     ],
+     "ru": [
+      "Что происходит при блокировке машины?",
+      "QR-код заблокированной машины перестаёт работать, и мойку в филиале подтвердить нельзя. То же самое, если заблокирован весь аккаунт компании."
+     ]
+    },
+    {
+     "ka": [
+      "რა ხდება, როცა რეცხვები ამოიწურება?",
+      "მანქანის QR კოდი აღარ იმუშავებს. დაგვიკავშირდით და რეცხვებს დაგიმატებთ."
+     ],
+     "en": [
+      "What happens when the washes run out?",
+      "The car's QR code stops working. Get in touch and we will add more washes."
+     ],
+     "ru": [
+      "Что будет, когда мойки закончатся?",
+      "QR-код машины перестанет работать. Свяжитесь с нами, и мы добавим мойки."
+     ]
+    },
+    {
+     "ka": [
+      "ფასდაკლება ყველა მანქანაზე ერთნაირია?",
+      "არა. პროცენტი ძარის ტიპის მიხედვით თანხმდება. თუ რომელიმე ძარაზე ფასდაკლება შეთანხმებული არ არის, ასეთი მანქანის QR კოდი არ იმუშავებს."
+     ],
+     "en": [
+      "Is the discount the same for every car?",
+      "No. The percentage is agreed per body type. If no discount is agreed for a body type, the QR code of such a car won't work."
+     ],
+     "ru": [
+      "Скидка одинакова для всех машин?",
+      "Нет. Процент согласуется по типу кузова. Если для типа кузова скидка не согласована, QR-код такой машины работать не будет."
+     ]
+    }
+   ]
+  }
+ }
+}

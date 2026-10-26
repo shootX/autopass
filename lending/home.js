@@ -2,7 +2,6 @@
 (function () {
   var AP = window.AP;
   if (!AP) return;
-  var HOURS = window.AUTOPASS_HOURS || "08:00–22:00";
   var PINS = [[205, 250], [140, 190], [180, 120], [285, 330], [250, 60], [90, 90]];
   var plan = "8";
   var active = 0;
@@ -40,12 +39,16 @@
     ring.innerHTML = ringSegs(n) + '<text x="50" y="60" text-anchor="middle" font-size="28" font-weight="700" fill="#133A6B">' + n + "</text>";
   }
 
+  /* The admin's car washes when the API sends them, else the list in the page text. */
+  function branchList() {
+    return AP.branches || AP.D().branches.map(function (b) { return [b[0], b[1], ""]; });
+  }
   function renderBranches() {
-    var branches = AP.D().branches;
+    var branches = branchList();
     if (active >= branches.length) active = 0;
     $("rows").innerHTML = branches.map(function (b, i) {
       return '<button type="button" class="row" data-i="' + i + '" aria-expanded="false">' +
-        '<span class="top"><span class="nm">' + AP.esc(b[0]) + '</span><span class="hr tab">' + AP.esc(HOURS) + "</span></span>" +
+        '<span class="top"><span class="nm">' + AP.esc(b[0]) + '</span><span class="hr tab">' + AP.esc(b[2] || AP.cfg.hours) + "</span></span>" +
         '<span class="more"><div><p>' + AP.esc(b[1]) + '</p><p><a class="link" href="' + mapUrl(b) + '" target="_blank" rel="noopener">' +
         AP.esc(AP.I("br.dir")) + "</a></p></div></span></button>";
     }).join("");
@@ -68,8 +71,9 @@
       r.setAttribute("aria-expanded", String(on));
     });
     document.querySelectorAll(".pin").forEach(function (p) { p.classList.toggle("on", +p.dataset.i === i); });
-    $("mapName").textContent = AP.D().branches[i][0];
-    $("mapHr").textContent = HOURS;
+    var b = branchList()[i];
+    $("mapName").textContent = b[0];
+    $("mapHr").textContent = b[2] || AP.cfg.hours;
   }
 
   /* Decorative QR pattern: not a scannable code. */
@@ -90,14 +94,14 @@
   })();
 
   /* The QR card shows the real App Store code once config.js has one. */
-  var qr = window.AUTOPASS_IOS_QR || "";
-  if (qr && window.AUTOPASS_IOS_URL) {
+  var qr = AP.cfg.ios_qr;
+  if (qr && AP.cfg.ios_url) {
     document.querySelector("#ctaQr .qrbox").innerHTML = '<img src="' + AP.esc(qr) + '" alt="" width="200" height="200">';
     $("ctaQr").hidden = false;
   }
 
   /* SMS with the app link: only when the server endpoint is configured. */
-  var smsUrl = window.AUTOPASS_SMS_URL || "";
+  var smsUrl = AP.cfg.sms_url;
   var form = $("smsForm");
   if (smsUrl) {
     form.hidden = false;
