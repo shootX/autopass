@@ -9,6 +9,7 @@ use App\Models\UserVoucher;
 use App\Models\Voucher;
 use App\Models\VoucherCategory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
@@ -120,6 +121,49 @@ class VouchersController extends Controller
             'success' => true,
             'message' => 'Voucher purchased successfully',
             'points' => $points,
+        ]);
+    }
+
+    /**
+     * Every voucher the user bought, newest first, with its status:
+     * active (can be shown to the partner), used, or unavailable (withdrawn from the shop before use).
+     */
+    public function history(Request $request)
+    {
+        $rows = UserVoucher::query()
+            ->where('user_id', auth()->id())
+            ->with(['voucher.category:id,name', 'voucher.partner:id,name', 'partner:id,name'])
+            ->latest('id')
+            ->limit(200)
+            ->get()
+            ->map(function (UserVoucher $row) {
+                $voucher = $row->voucher;
+                $status = match (true) {
+                    $row->used_at !== null => 'used',
+                    ! $voucher || $voucher->deleted => 'unavailable',
+                    default => 'active',
+                };
+
+                return [
+                    'id' => $row->id,
+                    'voucher_id' => $row->voucher_id,
+                    'name' => $voucher?->name,
+                    'photo' => $voucher?->photo,
+                    'percent' => $voucher?->percent,
+                    'price' => $voucher?->price,
+                    'category' => $voucher?->category?->name,
+                    'partner' => $row->partner?->name ?? $voucher?->partner?->name,
+                    'code' => $row->code,
+                    'status' => $status,
+                    'purchased_at' => $row->created_at?->toIso8601String(),
+                    'used_at' => $row->used_at ? Carbon::parse($row->used_at)->toIso8601String() : null,
+                ];
+            })
+            ->values();
+
+        return response()->json([
+            'success' => true,
+            'vouchers' => $rows,
         ]);
     }
 
