@@ -12,7 +12,13 @@
         <div class="card mt-4 mb-4">
             <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <div>{{ __('admin.inv_title') }}</div>
-                <a class="btn btn-sm btn-outline-secondary" href="{{ route('admin.corporate') }}">{{ __('admin.corporate_clients') }}</a>
+                <div class="d-flex gap-2 flex-wrap">
+                    <form method="post" action="{{ route('admin.corporate.invoices.discounts') }}" onsubmit="return confirm(@json(__('admin.inv_discount_run_confirm')))">
+                        @csrf
+                        <button class="btn btn-sm btn-outline-primary" type="submit">{{ __('admin.inv_discount_run') }}</button>
+                    </form>
+                    <a class="btn btn-sm btn-outline-secondary" href="{{ route('admin.corporate') }}">{{ __('admin.corporate_clients') }}</a>
+                </div>
             </div>
             <div class="card-body table-responsive">
                 <ul class="nav nav-pills mb-3">
@@ -45,9 +51,9 @@
                                 @else
                                     {{ $invoice->buyer['name'] ?? '—' }}
                                 @endif
-                                <small class="d-block text-muted">{{ __($invoice->ordered_by === 'company' ? 'admin.inv_by_company' : 'admin.inv_by_admin') }}</small>
+                                <small class="d-block text-muted">{{ __('admin.inv_by_'.$invoice->ordered_by) }}</small>
                             </td>
-                            <td>{{ __('admin.inv_doc_washes', ['title' => $invoice->title, 'count' => $invoice->washes]) }}</td>
+                            <td>{{ __('admin.inv_doc_washes', ['title' => $invoice->displayTitle(), 'count' => $invoice->washes]) }}</td>
                             <td>{{ number_format((float) $invoice->amount, 2) }} ₾</td>
                             <td>{{ $invoice->due_date?->format('d.m.Y') ?? '—' }}</td>
                             <td>@include('admin.corporate.invoice-status')</td>

@@ -95,6 +95,7 @@ class CorporatePackagesController extends Controller
             'title' => ['required', 'string', 'max:120'],
             'washes' => $discount ? ['nullable'] : ['required', 'integer', 'min:1', 'max:100000'],
             'price' => ['nullable', 'numeric', 'min:0', 'max:99999999'],
+            'monthly_limit' => ['nullable', 'integer', 'min:1', 'max:1000'],
             'prices' => [$discount ? 'required' : 'nullable', 'array'],
             'prices.*.full_price' => ['nullable', 'numeric', 'min:0.01', 'max:99999', 'required_with:prices.*.percent'],
             'prices.*.percent' => ['nullable', 'integer', 'between:1,100', 'required_with:prices.*.full_price'],
@@ -106,6 +107,7 @@ class CorporatePackagesController extends Controller
                 'title' => $data['title'],
                 'washes' => $discount ? 0 : (int) $data['washes'],
                 'price' => $data['price'] ?? null,
+                'monthly_limit' => $discount ? ($data['monthly_limit'] ?? null) : null,
                 'is_active' => $request->boolean('is_active'),
             ])->save();
 

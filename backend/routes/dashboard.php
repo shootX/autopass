@@ -193,6 +193,7 @@ Route::prefix('dashboard')
             Route::post('/store', [CorporateController::class, 'store'])->name('admin.corporate.store');
             Route::get('/template', [CorporateController::class, 'template'])->name('admin.corporate.template');
             Route::get('/invoices', [CorporateInvoicesController::class, 'index'])->name('admin.corporate.invoices');
+            Route::post('/invoices/discounts', [CorporateInvoicesController::class, 'discounts'])->name('admin.corporate.invoices.discounts');
             Route::get('/invoices/{invoice}', [CorporateInvoicesController::class, 'show'])->name('admin.corporate.invoices.show');
             Route::post('/invoices/{invoice}/paid', [CorporateInvoicesController::class, 'paid'])->name('admin.corporate.invoices.paid');
             Route::post('/invoices/{invoice}/cancel', [CorporateInvoicesController::class, 'cancel'])->name('admin.corporate.invoices.cancel');

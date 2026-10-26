@@ -9,7 +9,7 @@ use App\Services\CorporateInvoices;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
-/** Company panel: order a wash package, see and print the invoices, cancel an unpaid one. */
+/** Company panel: order a wash package, see and print the invoices, cancel an unpaid wash-package one. */
 class PartnerInvoicesController extends Controller
 {
     public function index(Request $request)
@@ -49,7 +49,8 @@ class PartnerInvoicesController extends Controller
     public function cancel(Request $request, CorporateInvoice $invoice)
     {
         $this->own($request, $invoice);
-        if (CorporateInvoices::cancel($invoice) !== 'ok') {
+        // A discount invoice bills washes already made; only the admin can cancel it.
+        if ($invoice->isDiscount() || CorporateInvoices::cancel($invoice) !== 'ok') {
             return redirect()->route('partner.invoices')->withErrors(['invoice' => __('admin.inv_error_not_open')]);
         }
 

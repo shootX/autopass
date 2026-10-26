@@ -7,6 +7,7 @@ use App\Models\CorporatePackagePrice;
 use App\Models\CorporateWash;
 use App\Models\CorporateWashMove;
 use App\Services\CorporateWashes;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
 
 /** A sedan company car in discount mode at the company's only discount package: sedan at 30 ₾ and 50%. */
@@ -250,4 +251,48 @@ it('lets the company API list discount packages and set one on a car', function 
     // Back to discount mode without a package keeps the car's own one.
     $this->patchJson('/api/corporate/vehicles/AA123BB', ['mode' => 'discount'], $headers)->assertOk()
         ->assertJsonPath('discount_package_id', $gold->id);
+});
+
+it('caps the discount washes of each car per month when the package has a limit', function () {
+    $this->travelTo(Carbon::parse('2026-10-30 12:00'));
+    $fleet = cdFleet();
+    $admin = cwAdmin();
+    $manager = cwManager();
+    $this->actingAs($admin)->post('/dashboard/packages/corporate/'.$fleet['package']->id.'/save', [
+        'title' => 'ფასდაკლება', 'is_active' => 1, 'monthly_limit' => 2,
+        'prices' => ['sedan' => ['full_price' => 30, 'percent' => 50]],
+    ])->assertSessionHasNoErrors();
+    expect($fleet['package']->fresh()->monthly_limit)->toBe(2);
+
+    $approve = function () use ($fleet, $manager) {
+        $qr = cwDriverQr($this, $fleet);
+        $scan = $this->withToken(cwAs($manager))->getJson('/api/checkqr/'.$qr)->assertOk();
+        if ($scan->json('approve_token')) {
+            $this->withToken(cwAs($manager))->postJson('/api/corporate-wash/'.$fleet['car']->id.'/approve', ['approve_token' => $scan->json('approve_token')])->assertOk();
+        }
+
+        return $scan;
+    };
+    $approve()->assertJsonPath('corporate.discount.monthly_limit', 2)->assertJsonPath('corporate.discount.left', 2);
+    $approve()->assertJsonPath('corporate.discount.left', 1);
+    $approve()->assertJsonPath('corporate.can_approve', false)->assertJsonPath('corporate.reason', 'discount_limit')
+        ->assertJsonPath('corporate.discount.left', 0);
+    expect(CorporateWash::query()->count())->toBe(2);
+
+    $session = ['corporate_client_id' => $fleet['corp']->id, 'corporate_session_version' => 1];
+    $this->withSession($session)->get('/partner/fleet')->assertOk()->assertSee(__('admin.cd_car_month', ['used' => 2, 'limit' => 2]));
+    $this->withSession($session)->get('/partner/washes')->assertOk()->assertSee(__('admin.cp_limit_value', ['count' => 2]));
+    $this->withToken(cwAs($fleet['driver']))->getJson('/api/mycars')->assertJsonPath('cars.0.company_car.discount.left', 0);
+
+    // The count restarts on the 1st.
+    $this->travelTo(Carbon::parse('2026-11-01 09:00'));
+    $approve()->assertJsonPath('corporate.can_approve', true)->assertJsonPath('corporate.discount.left', 2);
+
+    // Unlimited: no cap in the payload, and a wash package never keeps a limit.
+    $fleet['package']->update(['monthly_limit' => null]);
+    $approve()->assertJsonPath('corporate.discount.monthly_limit', null)->assertJsonPath('corporate.discount.left', null);
+    $this->actingAs($admin)->post('/dashboard/packages/corporate/store', [
+        'corporate_client_id' => $fleet['corp']->id, 'type' => 'washes', 'title' => '10', 'washes' => 10, 'monthly_limit' => 3, 'is_active' => 1,
+    ])->assertSessionHasNoErrors();
+    expect(CorporatePackage::query()->where('type', 'washes')->sole()->monthly_limit)->toBeNull();
 });

@@ -75,7 +75,7 @@ class CorporateQr
                 'washes_left' => (int) $car->washes_left,
                 'company_washes' => (int) $car->client?->washes_balance,
                 // Discount mode: the full price, the percent and what the driver pays on site.
-                'discount' => $car->mode === FleetCar::MODE_DISCOUNT ? CorporateDiscounts::payload(CorporateDiscounts::forCar($car)) : null,
+                'discount' => $car->mode === FleetCar::MODE_DISCOUNT ? CorporateDiscounts::payload(CorporateDiscounts::forCar($car), $car) : null,
                 'can_approve' => $blocker === null,
                 'reason' => $blocker,
                 'reason_text' => $blocker === null ? null : __('corporate.reason_'.$blocker),

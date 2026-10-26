@@ -5,7 +5,9 @@ namespace App\Services;
 use App\Models\CorporateClient;
 use App\Models\CorporatePackage;
 use App\Models\CorporatePackagePrice;
+use App\Models\CorporateWash;
 use App\Models\FleetCar;
+use Illuminate\Support\Collection;
 
 /**
  * A company car in discount mode washes at the discount package the company picked for it: the row
@@ -39,6 +41,37 @@ class CorporateDiscounts
         return $package->prices->firstWhere('car_type', $type);
     }
 
+    /** The car's discount washes since the 1st of this month, at any package. */
+    public static function usedThisMonth(FleetCar $car): int
+    {
+        return CorporateWash::query()
+            ->where('fleet_car_id', $car->id)
+            ->where('mode', FleetCar::MODE_DISCOUNT)
+            ->where('created_at', '>=', now()->startOfMonth())
+            ->count();
+    }
+
+    /** @return Collection<int, int> each company car's discount washes since the 1st, by fleet car id */
+    public static function usedThisMonthByCar(CorporateClient $client): Collection
+    {
+        return CorporateWash::query()
+            ->where('corporate_client_id', $client->id)
+            ->where('mode', FleetCar::MODE_DISCOUNT)
+            ->where('created_at', '>=', now()->startOfMonth())
+            ->selectRaw('fleet_car_id, COUNT(*) AS n')
+            ->groupBy('fleet_car_id')
+            ->pluck('n', 'fleet_car_id')
+            ->map(fn ($n) => (int) $n);
+    }
+
+    /** Discount washes the car has left this month under its package's cap; null when there is no cap. */
+    public static function left(FleetCar $car): ?int
+    {
+        $limit = self::packageOf($car)?->monthly_limit;
+
+        return $limit === null ? null : max(0, $limit - self::usedThisMonth($car));
+    }
+
     /** One of the company's active discount packages, the only ones a car can be given. */
     public static function find(CorporateClient $client, int $id): ?CorporatePackage
     {
@@ -56,8 +89,12 @@ class CorporateDiscounts
         return $packages?->count() === 1 ? $packages->first() : null;
     }
 
-    /** @return array{car_type: string, full_price: float, percent: int, to_pay: float}|null */
-    public static function payload(?CorporatePackagePrice $discount): ?array
+    /**
+     * The price row as the apps read it; with the car, also the monthly cap and what is left of it.
+     *
+     * @return array{car_type: string, full_price: float, percent: int, to_pay: float, monthly_limit?: ?int, left?: ?int}|null
+     */
+    public static function payload(?CorporatePackagePrice $discount, ?FleetCar $car = null): ?array
     {
         if (! $discount) {
             return null;
@@ -68,6 +105,6 @@ class CorporateDiscounts
             'full_price' => (float) $discount->full_price,
             'percent' => (int) $discount->percent,
             'to_pay' => (float) $discount->toPay(),
-        ];
+        ] + ($car ? ['monthly_limit' => self::packageOf($car)?->monthly_limit, 'left' => self::left($car)] : []);
     }
 }

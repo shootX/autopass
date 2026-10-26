@@ -46,6 +46,10 @@
                     <small class="d-block text-muted mb-3">{{ __($package->isDiscount() ? 'admin.cp_price_hint_discount' : 'admin.cp_price_hint') }}</small>
 
                     @if($package->isDiscount())
+                        <label class="form-label" for="cp_monthly_limit">{{ __('admin.cp_monthly_limit') }}</label>
+                        <input class="form-control" id="cp_monthly_limit" type="number" name="monthly_limit" min="1" max="1000" placeholder="{{ __('admin.cp_limit_unlimited') }}" value="{{ old('monthly_limit', $package->monthly_limit) }}">
+                        <small class="d-block text-muted mb-3">{{ __('admin.cp_monthly_limit_hint') }}</small>
+
                         <h6 class="mt-2">{{ __('admin.cp_prices') }}</h6>
                         <small class="d-block text-muted mb-2">{{ __('admin.cp_prices_hint') }}</small>
                         <table class="table align-middle">

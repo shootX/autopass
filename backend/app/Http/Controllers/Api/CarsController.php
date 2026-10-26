@@ -89,7 +89,7 @@ class CarsController extends Controller
                         'blocked' => (bool) $fleet->client?->ban,
                         // Discount mode: the price of the car's discount package for this body type, null when there is none.
                         'discount' => $fleet->mode === FleetCar::MODE_DISCOUNT
-                            ? CorporateDiscounts::payload(CorporateDiscounts::forCar($fleet->setRelation('userCar', $car)))
+                            ? CorporateDiscounts::payload(CorporateDiscounts::forCar($fleet->setRelation('userCar', $car)), $fleet)
                             : null,
                     ] : null,
                 ] + $car->trimPayload();

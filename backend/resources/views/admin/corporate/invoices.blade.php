@@ -23,6 +23,7 @@
         @elseif(! $manage)
             <small class="d-block mb-3">{{ __('admin.inv_order_none') }}</small>
         @endif
+        <small class="d-block mb-3 text-muted">{{ __('admin.inv_discount_hint') }}</small>
         <table class="table table-hover align-middle">
             <thead>
             <tr>
@@ -40,7 +41,7 @@
                 <tr>
                     <td>{{ $invoice->number }}</td>
                     <td>{{ $invoice->created_at?->format('d.m.Y') }}</td>
-                    <td>{{ __('admin.inv_doc_washes', ['title' => $invoice->title, 'count' => $invoice->washes]) }}</td>
+                    <td>{{ __('admin.inv_doc_washes', ['title' => $invoice->displayTitle(), 'count' => $invoice->washes]) }}</td>
                     <td>{{ number_format((float) $invoice->amount, 2) }} ₾</td>
                     <td>{{ $invoice->due_date?->format('d.m.Y') ?? '—' }}</td>
                     <td>@include('admin.corporate.invoice-status')</td>

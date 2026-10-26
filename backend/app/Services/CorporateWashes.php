@@ -159,8 +159,12 @@ class CorporateWashes
             return 'car_blocked';
         }
         if ($car->mode === FleetCar::MODE_DISCOUNT) {
-            // A discount car needs an active discount package with a row for its body type.
-            return CorporateDiscounts::forCar($car) ? null : 'discount_not_ready';
+            // A discount car needs an active discount package with a row for its body type, and washes left this month.
+            if (! CorporateDiscounts::forCar($car)) {
+                return 'discount_not_ready';
+            }
+
+            return CorporateDiscounts::left($car) === 0 ? 'discount_limit' : null;
         }
         if ((int) $car->washes_left < 1 || (int) $car->client?->washes_balance < 1) {
             return 'no_washes';
@@ -210,7 +214,7 @@ class CorporateWashes
                     'mode' => $locked->mode,
                     'washes_left' => (int) $locked->washes_left,
                     'company_washes' => (int) $client->washes_balance,
-                    'discount' => CorporateDiscounts::payload($discount),
+                    'discount' => CorporateDiscounts::payload($discount, $locked),
                 ];
             }
 

@@ -16,7 +16,7 @@
             <tbody>
             @forelse($discounts as $discount)
                 <tr class="table-light">
-                    <th colspan="4">{{ $discount->title }} <span class="text-muted fw-normal ms-2">{{ __('admin.cd_cars', ['count' => $discount->cars_count]) }}</span></th>
+                    <th colspan="4">{{ $discount->title }} <span class="text-muted fw-normal ms-2">{{ $discount->monthly_limit ? __('admin.cp_limit_value', ['count' => $discount->monthly_limit]) : __('admin.cp_limit_unlimited') }} · {{ __('admin.cd_cars', ['count' => $discount->cars_count]) }}</span></th>
                 </tr>
                 @foreach($discount->prices as $row)
                     <tr>
