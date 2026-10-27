@@ -15,7 +15,7 @@ class CheckUserPackages extends Command
     public function handle(): int
     {
         UserPackage::query()->whereNull('expiration_notified_at')
-            ->where(fn ($query) => $query->where('end_date', '<=', now())->orWhereColumn('used_washes', '>=', 'number_of_washes'))
+            ->where(fn ($query) => $query->where('end_date', '<=', now())->orWhere(fn ($used) => $used->usedUp()))
             ->chunkById(100, function ($packages) {
                 foreach ($packages as $package) {
                     DB::transaction(function () use ($package) {
@@ -23,7 +23,7 @@ class CheckUserPackages extends Command
                         if (! $locked || $locked->expiration_notified_at !== null) {
                             return;
                         }
-                        if (now()->lt($locked->end_date) && $locked->used_washes < $locked->number_of_washes) {
+                        if (now()->lt($locked->end_date) && $locked->hasWashesLeft()) {
                             return;
                         }
                         $locked->expiration_notified_at = now();

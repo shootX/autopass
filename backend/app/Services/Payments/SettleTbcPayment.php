@@ -130,6 +130,9 @@ class SettleTbcPayment
             return;
         }
 
+        $discount = ($payload['type'] ?? null) === Package::TYPE_DISCOUNT;
+        $washes = (int) ($payload['washes'] ?? $package->count_washes);
+
         UserPackage::create([
             'tbc_payment_id' => $payment->id,
             'user_id' => $payment->user_id,
@@ -137,9 +140,12 @@ class SettleTbcPayment
             'package_id' => $package->id,
             'price_id' => $payload['price_id'] ?? null,
             'start_date' => now(),
-            'end_date' => now()->addMonths((int) ($payload['month'] ?? 1)),
-            'number_of_washes' => (int) ($payload['washes'] ?? $package->count_washes),
+            'end_date' => $discount ? now()->addDays(Package::DISCOUNT_DAYS) : now()->addMonths((int) ($payload['month'] ?? 1)),
+            'number_of_washes' => $washes,
             'used_washes' => 0,
+            'unlimited' => $discount && $washes === 0,
+            'full_price' => $discount ? $payload['full_price'] : null,
+            'discount_percent' => $discount ? (int) $payload['percent'] : null,
             'qr_code' => Str::random(16),
             'rectoken' => $recId !== '' ? $recId : null,
         ]);

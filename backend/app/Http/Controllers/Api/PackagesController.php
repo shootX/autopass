@@ -50,18 +50,29 @@ class PackagesController extends Controller
                     'body_status' => $userCar->body_status], 422);
             }
 
-            $packages = Package::where('car_type', $carType)->get();
+            // Discount packages only for an app that asks for them: an older one would sell them as washes.
+            $packages = Package::where('car_type', $carType)
+                ->when(! $request->boolean('discount'), fn ($q) => $q->where('type', Package::TYPE_WASHES))
+                ->with('prices')->get();
             if ($packages->isEmpty()) {
                 return response()->json(['success' => false, 'error' => 'პაკეტი ვერ მოიძებნა']);
             }
 
-            $packages = $packages->map(function ($package) {
+            $packages = $packages->map(function (Package $package) {
                 return [
                     'id' => $package->id,
+                    'type' => $package->type,
                     'car_type' => $package->car_type,
                     'washes' => $package->count_washes,
                     'prices' => $package->prices,
-                ];
+                ] + ($package->isDiscount() ? ['discount' => [
+                    'full_price' => (float) $package->full_price,
+                    'percent' => (int) $package->percent,
+                    'to_pay' => (float) $package->toPay(),
+                    // Unlimited for the 30 days, else `washes` washes in them.
+                    'unlimited' => (int) $package->count_washes === 0,
+                    'days' => Package::DISCOUNT_DAYS,
+                ]] : []);
             });
 
             return response()->json(['success' => true, 'packages' => $packages]);
@@ -76,9 +87,11 @@ class PackagesController extends Controller
     {
         $data = $request->validate([
             'car_id' => 'required|integer|exists:user_cars,id',
-            'number_of_washes' => 'required|integer|min:1',
+            // package_id names any package; without it, number_of_washes and sub_term name a washes package.
+            'package_id' => 'nullable|integer',
+            'number_of_washes' => 'required_without:package_id|integer|min:1',
             'renewal' => 'required|boolean',
-            'sub_term' => 'required|integer|min:1',
+            'sub_term' => 'required_without:package_id|integer|min:1',
         ]);
         $car = $request->user()->cars()->find($data['car_id']);
         if ($car && ! $car->bodyConfirmed()) {
@@ -105,7 +118,8 @@ class PackagesController extends Controller
     {
         try {
             $user = auth()->user();
-            $packages = $user->packages()->with(['package', 'car'])->get();
+            $packages = $user->packages()->with(['package', 'car'])
+                ->withSum('washes as saved_sum', DB::raw('full_price - to_pay'))->get();
 
             //            if($packages->isEmpty()) {
             //                return response()->json(['success' => false, 'error' => 'პაკეტი ვერ მოიძებნა']);
@@ -121,6 +135,15 @@ class PackagesController extends Controller
                     'number_of_washes' => $package->number_of_washes,
                     'used_washes' => $package->used_washes,
                     'renewal' => $package->rectoken ? true : false,
+                    'type' => $package->isDiscount() ? Package::TYPE_DISCOUNT : Package::TYPE_WASHES,
+                    'unlimited' => (bool) $package->unlimited,
+                    // Discount packages: the terms bought, and what the driver saved at its washes so far.
+                    'discount' => $package->isDiscount() ? [
+                        'full_price' => (float) $package->full_price,
+                        'percent' => (int) $package->discount_percent,
+                        'to_pay' => (float) $package->toPay(),
+                        'saved' => round((float) $package->saved_sum, 2),
+                    ] : null,
                 ];
             });
 
@@ -246,7 +269,7 @@ class PackagesController extends Controller
         if ($userPackage->end_date && now()->greaterThan($userPackage->end_date)) {
             return response()->json(['success' => false, 'error' => 'Package expired'], 422);
         }
-        if ((int) $userPackage->used_washes >= (int) $userPackage->number_of_washes) {
+        if (! $userPackage->hasWashesLeft()) {
             return response()->json(['success' => false, 'error' => 'No washes left'], 422);
         }
         if (! $userPackage->bodyAllowsWash()) {
@@ -255,7 +278,7 @@ class PackagesController extends Controller
 
         $approved = DB::transaction(function () use ($userPackage, $washId, $user, $hereAppointment) {
             $locked = UserPackage::query()->whereKey($userPackage->id)->lockForUpdate()->first();
-            if (! $locked || (int) $locked->used_washes >= (int) $locked->number_of_washes) {
+            if (! $locked || ! $locked->hasWashesLeft()) {
                 return false;
             }
             // The booking is linked to its first wash only; later washes count as walk-ins.
@@ -268,6 +291,10 @@ class PackagesController extends Controller
                 'manager_id' => $user->id,
                 'appointment_id' => $bookingUnused ? $hereAppointment->id : null,
                 'walk_in' => $hereAppointment === null,
+                // A discount wash keeps what the driver paid on site.
+                'full_price' => $locked->isDiscount() ? $locked->full_price : null,
+                'discount_percent' => $locked->discount_percent,
+                'to_pay' => $locked->toPay(),
             ]);
 
             return true;
@@ -287,7 +314,8 @@ class PackagesController extends Controller
             'ka' => 'სარეცხი პროცესი დაიწყო',
         ]);
 
-        return response()->json(['success' => true, 'package' => $userPackage->fresh()]);
+        return response()->json(['success' => true, 'package' => $userPackage->fresh(),
+            'to_pay' => $userPackage->isDiscount() ? (float) $userPackage->toPay() : null]);
     }
 
     /** Consumes the checkqr token (qr_code is ignored). @return 'ok'|'busy'|'no' */

@@ -13,6 +13,10 @@ export interface QrCheckResponse {
     created_at: string;
     used_washes: number;
     number_of_washes: number;
+    /** A discount package: the manager sees only `to_pay`, what the driver pays on site. */
+    kind?: "washes" | "discount";
+    unlimited?: boolean;
+    to_pay?: number | null;
     user: {
       name: string;
       surname: string;

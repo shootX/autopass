@@ -210,28 +210,21 @@ class ClientsController extends Controller
             if ($car && $car->carType() !== null) {
                 $type = $car->carType();
 
-                $package = Package::where('car_type', $type)
-                    ->with('prices')
-                    ->first();
-
-                if ($package) {
-
-                    $html = '';
-
+                // Every package of the body type: washes ones by term, discount ones for their 30 days.
+                $html = '';
+                foreach (Package::where('car_type', $type)->with('prices')->get() as $package) {
                     foreach ($package->prices as $price) {
-                        $option = '<option value="'.$price->id.'">'.e(__('admin.package_price_option', [
-                            'month' => $price->month,
-                            'price' => $price->price,
-                            'washes' => $package->count_washes,
-                        ])).'</option>';
-                        $html .= $option;
+                        $label = $package->isDiscount()
+                            ? __('admin.discount_package_option', ['percent' => $package->percent, 'price' => $price->price,
+                                'washes' => $package->count_washes > 0 ? $package->count_washes : __('admin.discount_unlimited'),
+                                'days' => Package::DISCOUNT_DAYS])
+                            : __('admin.package_price_option', ['month' => $price->month, 'price' => $price->price,
+                                'washes' => $package->count_washes]);
+                        $html .= '<option value="'.$price->id.'">'.e($label).'</option>';
                     }
-
-                    return $html;
-
-                } else {
-                    return '';
                 }
+
+                return $html;
             }
 
             return '';
@@ -269,10 +262,8 @@ class ClientsController extends Controller
             'price_id' => $price->id,
             'user_car_id' => $request->car_id,
             'start_date' => now(),
-            'end_date' => now()->addMonths($price->month),
-            'number_of_washes' => $price->package->count_washes,
             'qr_code' => Str::random(16),
-        ]);
+        ] + $price->package->termsFor($price));
 
         return redirect()->route('admin.clients.packages', ['client' => $client->id])
             ->with('message', __('admin.user_package_added'));

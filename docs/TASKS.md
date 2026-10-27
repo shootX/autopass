@@ -487,3 +487,13 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 - [x] Panel form (company and admin): the body type select always shows the 16 types and is required; a year geoapi.ge names one type for preselects it. Sheet template and API example carry a body type; the "added, body type to confirm" list and messages are gone.
 - [x] Cars added before keep their status (`choose` / `unknown`): the driver's pick, the admin's confirm and `cars:check-bodies` work as before.
 - [ ] Server: nothing to migrate; `php artisan view:clear` after deploy. Tell API clients `body_type` is now required.
+
+## 2026-10-27 — App discount packages (`claude/project-thread-gavv1w`)
+
+- [x] User rule: the app's packages also sell discount packages, for every driver. The admin makes them in Packages → App packages (type „ფასდაკლება“): body type, full wash price, percent, price for 30 days, washes in the 30 days (0 = unlimited). One price at every branch.
+- [x] `GET /api/packages?discount=1` lists them with `type` and `discount` (full price, percent, to pay, unlimited, days); without `discount=1` only washes packages (an older app would sell them as washes). `POST /api/packages/buy` takes `package_id` (any package; a discount one needs no `sub_term`); the old `number_of_washes` + `sub_term` names washes packages only.
+- [x] A bought discount package lasts 30 days and keeps the price and percent of checkout time (`user_packages.full_price`, `discount_percent`, `unlimited`). A car may hold a washes and a discount package at once; each has its own QR, the driver shows the one to use.
+- [x] Manager scan (`checkqr`): `package.kind` `discount` and `to_pay` only (user: the manager sees only what to take). Approve checks the limit (none when unlimited), records `full_price`, `discount_percent`, `to_pay` on the wash and answers `to_pay`. `GET /api/packages/my`: `type`, `unlimited`, `discount` with `saved` so far.
+- [x] gewash manager scanner: discount package card with "Driver pays on site" and unlimited washes.
+- [x] iOS: GeocarAPP PR (packages list, buy, my package, manager scan).
+- [ ] Server: `php artisan migrate` (2026_10_27_000002), `php artisan view:clear`, gewash build. No package changes until the admin makes a discount package.

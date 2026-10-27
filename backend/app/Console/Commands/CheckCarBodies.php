@@ -84,7 +84,7 @@ class CheckCarBodies extends Command
         $notes = [];
         if ($car instanceof UserCar) {
             $packages = UserPackage::query()->with('package')->where('user_car_id', $car->id)->where('end_date', '>', now())
-                ->whereColumn('used_washes', '<', 'number_of_washes')->get();
+                ->withWashesLeft()->get();
             foreach ($packages as $package) {
                 $bought = (string) $package->package?->car_type;
                 if ($type === null) {

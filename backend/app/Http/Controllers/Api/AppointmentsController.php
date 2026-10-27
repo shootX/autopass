@@ -281,6 +281,10 @@ class AppointmentsController extends Controller
                     'created_at' => $userPackage->created_at,
                     'used_washes' => (int) $userPackage->used_washes,
                     'number_of_washes' => (int) $userPackage->number_of_washes,
+                    // Discount packages: the manager sees only what the driver pays on site.
+                    'kind' => $userPackage->isDiscount() ? 'discount' : 'washes',
+                    'unlimited' => (bool) $userPackage->unlimited,
+                    'to_pay' => $userPackage->isDiscount() ? (float) $userPackage->toPay() : null,
                     'user' => [
                         'name' => $userPackage->user?->name,
                         'surname' => $userPackage->user?->surname,
