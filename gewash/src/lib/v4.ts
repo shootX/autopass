@@ -31,6 +31,8 @@ const BODY_KA: Record<string, string> = {
 type LooseCar = {
   plate?: string;
   type?: string;
+  car_type?: string | null;
+  body_status?: string | null;
   brand?: string;
   model?: string | { name?: string; type?: string; brand?: { name?: string } };
   image?: string | null;
@@ -46,7 +48,9 @@ export function carParts(car?: LooseCar | null): { title: string; short: string;
   const modelObj = car.model && typeof car.model === "object" ? car.model : null;
   const brand = (typeof car.brand === "string" ? car.brand : modelObj?.brand?.name) || "";
   const model = (typeof car.model === "string" ? car.model : modelObj?.name) || "";
-  const type = car.type || modelObj?.type || "";
+  // A body type not confirmed yet is not shown: the model's general type says nothing about this car.
+  const unconfirmed = car.body_status != null && car.body_status !== "confirmed";
+  const type = unconfirmed ? "" : car.car_type || car.type || modelObj?.type || "";
   const clean = (value: string) => (value && value !== "Unknown" ? value : "");
   const b = clean(brand);
   const m = clean(model);

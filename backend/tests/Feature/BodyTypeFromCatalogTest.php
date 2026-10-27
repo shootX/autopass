@@ -14,6 +14,7 @@ function fakeCatalog(array $generations): void
     config(['services.carapi.url' => 'https://geoapi.test/api/v1', 'services.carapi.secret' => 'geoapi_sk_test']);
     Http::fake([
         'geoapi.test/api/v1/models/9/generations*' => Http::response(['data' => $generations, 'meta' => ['total' => count($generations)]]),
+        'geoapi.test/api/v1/generations/*' => Http::response(['data' => [], 'meta' => ['total' => 0]]),
         'geoapi.test/api/v1/brands/toyota/models*' => Http::response(['data' => [['id' => '9', 'name' => 'RAV4']], 'meta' => ['total' => 1]]),
         'geoapi.test/api/v1/brands*' => Http::response(['data' => [['id' => '501', 'name' => 'Toyota', 'slug' => 'toyota']], 'meta' => ['total' => 1]]),
     ]);
@@ -104,7 +105,8 @@ it('sets the type of cars and catalog models added before, and reports what it c
         ->assertSuccessful();
     expect($wagon->fresh()->car_type)->toBe('wagon')
         ->and($odd->fresh()->car_type)->toBeNull()
-        ->and($odd->fresh()->carType())->toBe('suv')
+        // Not confirmed by this: cars:check-bodies asks geoapi.ge, and nothing goes by the model's guess.
+        ->and($odd->fresh()->carType())->toBeNull()
         ->and($model->fresh()->type)->toBe('suv');
 
     $this->actingAs(cwAdmin())->get('/dashboard/body-types')->assertOk()

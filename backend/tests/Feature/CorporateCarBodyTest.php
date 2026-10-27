@@ -19,7 +19,7 @@ function bodyCorp(): array
     return [$corp, ['X-Api-Key' => $plain]];
 }
 
-it('takes the year over the API and the body type only when the year has several', function () {
+it('takes the year over the API and keeps a car with several body types waiting for its driver', function () {
     fakeYearCatalog();
     [$corp, $key] = bodyCorp();
 
@@ -31,28 +31,37 @@ it('takes the year over the API and the body type only when the year has several
         ['plate' => 'AA555AA', 'brand' => 'Toyota', 'model' => 'Avensis'],
         ['plate' => 'AA666AA', 'brand' => 'Toyota', 'model' => 'Avensis', 'year' => 2005],
     ]], $key)->assertOk()
-        ->assertJsonPath('added', 2)
-        ->assertJsonPath('skipped.0', ['plate' => 'AA222AA', 'reason' => 'body_type_required', 'body_types' => ['sedan', 'wagon']])
-        ->assertJsonPath('skipped.1.reason', 'body_type_invalid')
-        ->assertJsonPath('skipped.2.reason', 'year_invalid')
-        ->assertJsonPath('skipped.3.reason', 'year_invalid');
+        ->assertJsonPath('added', 3)
+        ->assertJsonPath('pending', [['plate' => 'AA222AA', 'body_status' => 'choose', 'body_types' => ['sedan', 'wagon']]])
+        ->assertJsonPath('skipped.0', ['plate' => 'AA444AA', 'reason' => 'body_type_invalid', 'body_types' => ['sedan', 'wagon']])
+        ->assertJsonPath('skipped.1.reason', 'year_invalid')
+        ->assertJsonPath('skipped.2.reason', 'year_invalid');
 
     $cars = FleetCar::query()->orderBy('plate')->get()->keyBy('plate');
-    expect($cars['AA111AA']->only(['year', 'car_type', 'catalog_source', 'catalog_model_id', 'generation_id']))
-        ->toBe(['year' => 2021, 'car_type' => 'suv', 'catalog_source' => 'carapi', 'catalog_model_id' => 7, 'generation_id' => 73])
-        ->and($cars['AA333AA']->car_type)->toBe('wagon');
+    expect($cars['AA111AA']->only(['year', 'car_type', 'body_status', 'body_source', 'catalog_source', 'catalog_model_id', 'generation_id']))
+        ->toBe(['year' => 2021, 'car_type' => 'suv', 'body_status' => 'confirmed', 'body_source' => 'catalog', 'catalog_source' => 'carapi', 'catalog_model_id' => 7, 'generation_id' => 73])
+        ->and($cars['AA222AA']->only(['car_type', 'body_status', 'body_options']))->toBe(['car_type' => null, 'body_status' => 'choose', 'body_options' => ['sedan', 'wagon']])
+        ->and($cars['AA333AA']->only(['car_type', 'body_source']))->toBe(['car_type' => 'wagon', 'body_source' => 'company']);
+
+    // The list says which car's body type is confirmed and which waits for the driver.
+    $this->getJson('/api/corporate/vehicles', $key)->assertOk()
+        ->assertJsonPath('vehicles.1.plate', 'AA222AA')->assertJsonPath('vehicles.1.body_status', 'choose')
+        ->assertJsonPath('vehicles.1.body_type', null)->assertJsonPath('vehicles.1.body_types', ['sedan', 'wagon'])
+        ->assertJsonPath('vehicles.2.body_status', 'confirmed')->assertJsonPath('vehicles.2.body_type', 'wagon');
 });
 
-it('reads year and body type columns from a sheet', function () {
+it('reads year and body type columns from a sheet and keeps the cars still to confirm', function () {
     fakeYearCatalog();
     [$corp] = bodyCorp();
     $csv = "ნომერი,მარკა,მოდელი,წელი,ძარა,ტელეფონი\nAA111AA,Toyota,Avensis,2016,Station wagon,\nAA222AA,Toyota,Avensis,2016,,\n";
 
     $this->withSession(['corporate_client_id' => $corp->id, 'corporate_session_version' => 1])
         ->post('/partner/import', ['file' => UploadedFile::fake()->createWithContent('fleet.csv', $csv)])
-        ->assertSessionHas('fleet_import_errors', [['row' => 3, 'plate' => 'AA222AA', 'reason' => 'body_type_required', 'body_types' => ['sedan', 'wagon']]]);
-    expect(FleetCar::query()->where('plate', 'AA111AA')->value('car_type'))->toBe('wagon');
-    $this->get('/partner/fleet')->assertOk()->assertSee(__('admin.fleet_reason_body_type_required'));
+        ->assertSessionHas('fleet_import_errors', [])
+        ->assertSessionHas('fleet_import_pending', [['row' => 3, 'plate' => 'AA222AA', 'body_status' => 'choose', 'body_types' => ['sedan', 'wagon']]]);
+    expect(FleetCar::query()->where('plate', 'AA111AA')->value('car_type'))->toBe('wagon')
+        ->and(FleetCar::query()->where('plate', 'AA222AA')->value('body_status'))->toBe('choose');
+    $this->get('/partner/fleet')->assertOk()->assertSee(__('admin.fleet_import_pending'))->assertSee(__('admin.fleet_body_status_choose'));
 });
 
 it('fills the panel form from the catalog and shows the body type only for a year with several', function () {
@@ -68,10 +77,14 @@ it('fills the panel form from the catalog and shows the body type only for a yea
         ->assertJsonPath('choose', true)->assertJsonCount(2, 'body_types');
     $panel->getJson('/partner/catalog/body-types?'.http_build_query($pick + ['year' => 2021]))->assertOk()->assertJsonPath('choose', false);
 
-    $form = ['plate' => 'AA777AA', 'phone' => '555 12 34 56', 'brand_id' => 501, 'model_id' => 7, 'year' => 2016];
-    $panel->post('/partner/cars', $form)->assertSessionHasErrors('body_type');
-    $panel->post('/partner/cars', $form + ['body_type' => 'sedan'])->assertSessionHasNoErrors();
-    expect(FleetCar::query()->where('plate', 'AA777AA')->value('car_type'))->toBe('sedan');
+    // The body type field is optional: left empty, the car waits for the driver's pick.
+    $form = ['phone' => '555 12 34 56', 'brand_id' => 501, 'model_id' => 7, 'year' => 2016];
+    $panel->post('/partner/cars', $form + ['plate' => 'AA776AA'])->assertSessionHasNoErrors()
+        ->assertSessionHas('message', __('admin.fleet_car_added_choose'));
+    $panel->post('/partner/cars', $form + ['plate' => 'AA777AA', 'body_type' => 'suv'])->assertSessionHasErrors('body_type');
+    $panel->post('/partner/cars', $form + ['plate' => 'AA777AA', 'body_type' => 'sedan'])->assertSessionHasNoErrors();
+    expect(FleetCar::query()->where('plate', 'AA777AA')->value('car_type'))->toBe('sedan')
+        ->and(FleetCar::query()->where('plate', 'AA776AA')->value('body_status'))->toBe('choose');
 
     // The catalog endpoints are the company's own: no session, no catalog.
     $this->flushSession();

@@ -44,6 +44,11 @@ class PackagesController extends Controller
             }
 
             $carType = $userCar->carType();
+            if ($carType === null) {
+                // Packages are priced by the body type; none is offered until it is confirmed.
+                return response()->json(['success' => false, 'error' => __('cars.body_unconfirmed'), 'error_code' => 'body_unconfirmed',
+                    'body_status' => $userCar->body_status], 422);
+            }
 
             $packages = Package::where('car_type', $carType)->get();
             if ($packages->isEmpty()) {
@@ -75,6 +80,10 @@ class PackagesController extends Controller
             'renewal' => 'required|boolean',
             'sub_term' => 'required|integer|min:1',
         ]);
+        $car = $request->user()->cars()->find($data['car_id']);
+        if ($car && ! $car->bodyConfirmed()) {
+            return response()->json(['success' => false, 'error' => __('cars.body_unconfirmed'), 'error_code' => 'body_unconfirmed'], 422);
+        }
         try {
             $url = app(PackagePurchase::class)->checkout($request->user(), $data);
         } catch (ValidationException $e) {
@@ -132,6 +141,9 @@ class PackagesController extends Controller
             $package = $user->packages()->where('id', $id)->first();
             if (! $package) {
                 return response()->json(['success' => false, 'error' => 'Not found'], 404);
+            }
+            if (! $package->bodyAllowsWash()) {
+                return response()->json(['success' => false, 'error' => __('cars.body_unconfirmed'), 'error_code' => 'body_unconfirmed'], 422);
             }
 
             $package->update([
@@ -236,6 +248,9 @@ class PackagesController extends Controller
         }
         if ((int) $userPackage->used_washes >= (int) $userPackage->number_of_washes) {
             return response()->json(['success' => false, 'error' => 'No washes left'], 422);
+        }
+        if (! $userPackage->bodyAllowsWash()) {
+            return response()->json(['success' => false, 'error' => __('cars.body_unconfirmed'), 'error_code' => 'body_unconfirmed'], 422);
         }
 
         $approved = DB::transaction(function () use ($userPackage, $washId, $user, $hereAppointment) {

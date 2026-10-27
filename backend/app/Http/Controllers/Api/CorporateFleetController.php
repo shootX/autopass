@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\CorporateClient;
 use App\Models\FleetCar;
+use App\Services\CarBody;
+use App\Services\CarBodyStatus;
 use App\Services\CorporateDiscounts;
 use App\Services\CorporateWashes;
 use App\Services\FleetCars;
@@ -30,7 +32,11 @@ class CorporateFleetController extends Controller
                 'brand' => $car->brand,
                 'model' => $car->model,
                 'year' => $car->year ?? $car->userCar?->year,
+                // null until confirmed; body_status choose: the driver picks one of body_types in the app.
                 'body_type' => $car->carType(),
+                'body_status' => $car->body_status,
+                'body_types' => $car->body_options ?? [],
+                'body_incomplete' => (bool) $car->body_incomplete,
                 'status' => $car->status,
                 'phone' => $car->driver_phone,
                 'mode' => $car->mode,
@@ -88,28 +94,35 @@ class CorporateFleetController extends Controller
 
         $added = 0;
         $skipped = [];
+        $pending = [];
         foreach ($payload as $row) {
             if (! is_array($row)) {
                 $skipped[] = ['plate' => '', 'reason' => 'invalid'];
 
                 continue;
             }
-            $result = FleetCars::add($client, $row, 'api', $bodyTypes);
+            $result = FleetCars::add($client, $row, 'api', $body);
+            $plate = FleetCars::plate(is_scalar($row['plate'] ?? null) ? (string) $row['plate'] : '');
             if ($result === 'added') {
                 $added++;
+                if ($body['status'] !== CarBody::CONFIRMED) {
+                    // Added, but washes wait for the body type: choose = the driver picks one of body_types in the app.
+                    $pending[] = ['plate' => $plate, 'body_status' => $body['status'], 'body_types' => $body['types']];
+                }
             } else {
-                // A body type error lists the types the year has, to send one of them as body_type.
-                $skipped[] = ['plate' => FleetCars::plate(is_scalar($row['plate'] ?? null) ? (string) $row['plate'] : ''), 'reason' => $result]
-                    + (str_starts_with($result, 'body_type') ? ['body_types' => $bodyTypes] : []);
+                // A body type that does not fit lists the types the year has, to send one of them as body_type.
+                $skipped[] = ['plate' => $plate, 'reason' => $result]
+                    + ($result === 'body_type_invalid' ? ['body_types' => $body['types']] : []);
             }
         }
 
-        return response()->json(['ok' => true, 'added' => $added, 'skipped' => $skipped]);
+        return response()->json(['ok' => true, 'added' => $added, 'skipped' => $skipped, 'pending' => $pending]);
     }
 
     /**
      * PATCH /vehicles/{plate}: {"phone": "5xx xx xx xx"} invites a new driver, {"blocked": true|false} toggles
-     * the car, {"mode": "washes"|"discount"} picks how it washes, {"washes": 4} sets its share of the pool.
+     * the car, {"mode": "washes"|"discount"} picks how it washes, {"washes": 4} sets its share of the pool,
+     * {"body_check": true} asks geoapi.ge again about a car whose body type it could not tell.
      */
     public function update(Request $request, string $plate)
     {
@@ -129,6 +142,7 @@ class CorporateFleetController extends Controller
             'mode' => ['sometimes', 'string', Rule::in(FleetCar::MODES)],
             'discount_package_id' => ['sometimes', 'integer'],
             'washes' => ['sometimes', 'integer', 'min:0', 'max:100000'],
+            'body_check' => ['sometimes', 'boolean'],
         ]);
         if ($validator->fails()) {
             return response()->json(['ok' => false, 'message' => $validator->errors()->first()], 422);
@@ -155,7 +169,11 @@ class CorporateFleetController extends Controller
                 'free' => CorporateWashes::balance($client)['types'][$type]['free'] ?? 0], 422);
         }
         if ($allocated === 'no_body_type') {
-            return response()->json(['ok' => false, 'message' => 'The car has no body type'], 422);
+            return response()->json(['ok' => false, 'message' => 'The car\'s body type is not confirmed yet', 'body_status' => $car->body_status], 422);
+        }
+        if ($request->boolean('body_check')) {
+            // Asks geoapi.ge again about a car it could not tell.
+            app(CarBodyStatus::class)->recheck($car, 'api');
         }
 
         $car->setRelation('client', $client);
@@ -177,6 +195,9 @@ class CorporateFleetController extends Controller
             'mode' => $car->mode,
             'discount_package_id' => $car->corporate_package_id,
             'washes' => (int) $car->washes_left,
+            'body_type' => $car->carType(),
+            'body_status' => $car->body_status,
+            'body_types' => $car->body_options ?? [],
         ]);
     }
 

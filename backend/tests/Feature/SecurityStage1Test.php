@@ -706,6 +706,8 @@ class SecurityStage1Test extends TestCase
             'user_id' => $user->id,
             'model_id' => $model->id,
             'plate' => 'AA'.random_int(100, 999).'BB',
+            'car_type' => 'sedan',
+            'body_status' => 'confirmed',
         ]);
     }
 

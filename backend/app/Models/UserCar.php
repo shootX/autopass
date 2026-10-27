@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasBodyStatus;
 use Illuminate\Database\Eloquent\Model;
 
 class UserCar extends Model
 {
-    //
+    use HasBodyStatus;
+
     protected $fillable = [
         'user_id',
         'model_id',
@@ -18,6 +20,11 @@ class UserCar extends Model
         'modification_name',
         'body_type',
         'car_type',
+        'body_status',
+        'body_options',
+        'body_incomplete',
+        'body_source',
+        'body_checked_at',
         'photo',
         'fuel_type',
     ];
@@ -33,10 +40,10 @@ class UserCar extends Model
         return $this->photo ? url($this->photo) : $this->model?->image;
     }
 
-    /** The body type key prices go by: the car's own from the catalog, else its model's. */
+    /** The body type prices and packages go by: only a confirmed one, never the model's guess. */
     public function carType(): ?string
     {
-        return $this->car_type ?: $this->model?->type;
+        return $this->bodyConfirmed() ? $this->car_type : null;
     }
 
     public function trimPayload(): array
@@ -45,10 +52,29 @@ class UserCar extends Model
             'generation' => $this->generation_id ? ['id' => $this->generation_id, 'name' => $this->generation_name] : null,
             'modification' => $this->modification_id ? ['id' => $this->modification_id, 'name' => $this->modification_name] : null,
             'body_type' => $this->body_type,
-            // Our body type key (sedan, suv, …) that packages and company discounts use.
+            // Our body type key (sedan, suv, …) that packages and company discounts use; null until confirmed.
             'car_type' => $this->carType(),
             'fuel_type' => $this->fuel_type,
-        ];
+        ] + $this->bodyPayload();
+    }
+
+    /** The car in the apps' shape: GET /mycars/{id}, add, and the body pick. */
+    public function appPayload(): array
+    {
+        $this->loadMissing('model.brand');
+
+        return ['id' => $this->id, 'plate' => $this->plate, 'year' => $this->year,
+            'model' => $this->model, 'brand' => $this->model?->brand, 'image' => $this->imageUrl()] + $this->trimPayload();
+    }
+
+    /** A package still running, or a package payment of the last 30 minutes, was priced by this car's body type. */
+    public function holdsPackage(): bool
+    {
+        $running = UserPackage::query()->where('user_car_id', $this->id)->where('end_date', '>', now())
+            ->whereColumn('used_washes', '<', 'number_of_washes')->exists();
+
+        return $running || TbcPayment::query()->where('type', 'package')->where('status', 'pending')
+            ->where('payload->car_id', $this->id)->where('created_at', '>', now()->subMinutes(30))->exists();
     }
 
     public function model()

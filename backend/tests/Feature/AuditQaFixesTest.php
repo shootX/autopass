@@ -38,7 +38,7 @@ function qaPackage(string $suffix, array $extra = []): array
     $mgr = makeUser('5556500'.$suffix.'1', User::ROLE_MANAGER);
     $client = makeUser('5556500'.$suffix.'2');
     $wash = washFor($mgr);
-    $car = row('user_cars', ['user_id' => $client->id, 'model_id' => 1, 'plate' => 'QA'.$suffix.'00QA']);
+    $car = row('user_cars', ['car_type' => 'sedan', 'body_status' => 'confirmed', 'user_id' => $client->id, 'model_id' => 1, 'plate' => 'QA'.$suffix.'00QA']);
     $pkg = userPackage($client->id, $car, $extra + ['qr_code' => 'QAQR'.$suffix.'000000000']);
 
     return [$mgr, $client, $wash, $car, $pkg];

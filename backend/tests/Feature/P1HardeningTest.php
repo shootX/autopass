@@ -82,7 +82,7 @@ it('blocks approving against another branch appointment and records the wash on 
     $client = makeUser('+995555100005');
     $wash1 = washFor($mgr1);
     washFor($mgr2);
-    $car = row('user_cars', ['user_id' => $client->id, 'model_id' => 1, 'plate' => 'AA111AA']);
+    $car = row('user_cars', ['car_type' => 'sedan', 'body_status' => 'confirmed', 'user_id' => $client->id, 'model_id' => 1, 'plate' => 'AA111AA']);
     $pkg = userPackage($client->id, $car);
     row('appointments', ['user_id' => $client->id, 'car_wash_id' => $wash1, 'car_id' => $car, 'date' => now()->toDateString(), 'time' => '10:00', 'qr_code' => 'A'.uniqid()]);
 
@@ -100,7 +100,7 @@ it('allows walk-in approval without a booking and records it on the manager bran
     $mgr = makeUser('+995555100020', User::ROLE_MANAGER);
     $client = makeUser('+995555100021');
     $wash = washFor($mgr);
-    $car = row('user_cars', ['user_id' => $client->id, 'model_id' => 1, 'plate' => 'AA555AA']);
+    $car = row('user_cars', ['car_type' => 'sedan', 'body_status' => 'confirmed', 'user_id' => $client->id, 'model_id' => 1, 'plate' => 'AA555AA']);
     $pkg = userPackage($client->id, $car);
     // Walk-in (no booking): the one-time checkqr token must be presented (audit H1, QA D13).
     $this->withToken(JWTAuth::fromUser($mgr))->postJson("/api/package/{$pkg}/approve", ['approve_token' => approveTokenFor($mgr, $pkg)])->assertOk();
@@ -112,7 +112,7 @@ it('refuses approving an exhausted package', function () {
     $mgr = makeUser('+995555100006', User::ROLE_MANAGER);
     $client = makeUser('+995555100007');
     $wash = washFor($mgr);
-    $car = row('user_cars', ['user_id' => $client->id, 'model_id' => 1, 'plate' => 'AA222AA']);
+    $car = row('user_cars', ['car_type' => 'sedan', 'body_status' => 'confirmed', 'user_id' => $client->id, 'model_id' => 1, 'plate' => 'AA222AA']);
     $pkg = userPackage($client->id, $car, ['used_washes' => 5]);
     row('appointments', ['user_id' => $client->id, 'car_wash_id' => $wash, 'car_id' => $car, 'date' => now()->toDateString(), 'time' => '10:00', 'qr_code' => 'A'.uniqid()]);
     $this->withToken(JWTAuth::fromUser($mgr))->postJson("/api/package/{$pkg}/approve", ['approve_token' => approveTokenFor($mgr, $pkg)])->assertStatus(422);
@@ -122,7 +122,7 @@ it('refuses approving an exhausted package', function () {
 it('reports failure when editing or removing a car you do not own', function () {
     $owner = makeUser('+995555100008');
     $other = makeUser('+995555100009');
-    $car = row('user_cars', ['user_id' => $owner->id, 'model_id' => 1, 'plate' => 'AA333AA']);
+    $car = row('user_cars', ['car_type' => 'sedan', 'body_status' => 'confirmed', 'user_id' => $owner->id, 'model_id' => 1, 'plate' => 'AA333AA']);
     $t = JWTAuth::fromUser($other);
     $this->withToken($t)->postJson("/api/mycars/{$car}/edit", ['plate' => 'BB333BB'])->assertNotFound()->assertJson(['success' => false]);
     $this->withToken($t)->deleteJson("/api/mycars/{$car}/remove")->assertNotFound()->assertJson(['success' => false]);
@@ -154,7 +154,7 @@ it('falls back to the local car catalog when CarAPI is not configured', function
 it('does not expose client PII in checkqr', function () {
     $mgr = makeUser('+995555100012', User::ROLE_MANAGER);
     $client = makeUser('+995555100013');
-    $car = row('user_cars', ['user_id' => $client->id, 'model_id' => 1, 'plate' => 'AA444AA']);
+    $car = row('user_cars', ['car_type' => 'sedan', 'body_status' => 'confirmed', 'user_id' => $client->id, 'model_id' => 1, 'plate' => 'AA444AA']);
     userPackage($client->id, $car, ['qr_code' => 'QRPII0001']);
     $user = $this->withToken(JWTAuth::fromUser($mgr))->getJson('/api/checkqr/QRPII0001')->assertOk()->json('package.user');
     expect($user)->not->toHaveKeys(['phone', 'email', 'date_of_birth', 'sex', 'points', 'ref_code']);

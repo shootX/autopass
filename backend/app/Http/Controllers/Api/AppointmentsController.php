@@ -259,6 +259,10 @@ class AppointmentsController extends Controller
 
                 return response()->json(['success' => false, 'error' => 'Not found'], 404);
             }
+            if (! $userPackage->bodyAllowsWash()) {
+                // No approve token: the car's body type is not confirmed, so the wash can't be approved.
+                return response()->json(['success' => false, 'error' => __('cars.body_unconfirmed'), 'error_code' => 'body_unconfirmed'], 422);
+            }
 
             // One-time, manager-bound token for POST /package/{id}/approve (10 minutes).
             $approveToken = bin2hex(random_bytes(20));

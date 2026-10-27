@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { customFetch } from "@/utils/customFetch";
 import { readAccessToken } from "@/lib/accessToken";
+import { carBodyType, readBody, type CarBody } from "@/lib/carBody";
 
 type EnrichedCar = {
   id: number;
@@ -10,6 +11,9 @@ type EnrichedCar = {
   model: string;
   brand: string;
   image: string | null;
+  // confirmed: packages and QR work; otherwise the driver picks the type (choose) or asks geoapi.ge again (unknown).
+  body: CarBody;
+  body_status: CarBody["status"];
 };
 
 let carsCache: EnrichedCar[] | null = null;
@@ -19,6 +23,8 @@ export function invalidateCarsCache() {
   carsCache = null;
   carsInflight = null;
 }
+
+export type { EnrichedCar };
 
 function asRecord(value: unknown): Record<string, unknown> | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
@@ -53,15 +59,18 @@ function loadCars(): Promise<EnrichedCar[]> {
         const model = asRecord(car?.model);
         const brand = asRecord(model?.brand);
         const id = typeof car?.id === "number" ? car.id : Number(car?.id);
+        const body = readBody(car);
         return {
           id: Number.isFinite(id) ? id : 0,
           plate: readString(car?.plate, ""),
           year: typeof car?.year === "number" ? car.year : null,
-          // car_type: the car's own body type from the catalog; the model's type is the fallback.
-          type: readString(car?.car_type, readString(model?.type, "Unknown")),
+          // car_type: the car's own body type, set once it is confirmed; never guessed from the model.
+          type: readString(carBodyType(car, model?.type), "Unknown"),
           model: readString(model?.name, "Unknown"),
           brand: readString(brand?.name, "Unknown"),
           image: typeof car?.image === "string" ? car.image : null,
+          body,
+          body_status: body.status,
         };
       });
       carsCache = enriched;
@@ -78,6 +87,7 @@ export function useFetchCars() {
   const [cars, setCars] = useState<EnrichedCar[]>(carsCache ?? []);
   const [loading, setLoading] = useState(carsCache === null);
   const [error, setError] = useState("");
+  const [version, setVersion] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -96,7 +106,13 @@ export function useFetchCars() {
     return () => {
       cancelled = true;
     };
+  }, [version]);
+
+  // After a change on the server (a body type picked): load the cars again.
+  const reload = useCallback(() => {
+    invalidateCarsCache();
+    setVersion((value) => value + 1);
   }, []);
 
-  return { cars, loading, error };
+  return { cars, loading, error, reload };
 }

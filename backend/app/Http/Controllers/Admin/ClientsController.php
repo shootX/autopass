@@ -11,6 +11,7 @@ use App\Models\PackagePrice;
 use App\Models\User;
 use App\Models\UserCar;
 use App\Models\UserPackage;
+use App\Services\CarBodyStatus;
 use App\Support\AdminAudit;
 use App\Support\Phone;
 use App\Support\SessionRevoker;
@@ -206,7 +207,7 @@ class ClientsController extends Controller
     public function getPackagesForCar(Request $request, UserCar $car)
     {
         try {
-            if ($car) {
+            if ($car && $car->carType() !== null) {
                 $type = $car->carType();
 
                 $package = Package::where('car_type', $type)
@@ -252,7 +253,15 @@ class ClientsController extends Controller
                 ->withInput();
         }
 
-        $price = PackagePrice::find($request->price_id);
+        $price = PackagePrice::with('package')->find($request->price_id);
+        $car = $client->cars()->find($request->car_id);
+        if (! $car) {
+            return redirect()->back()->withInput()->withErrors(['car_id' => __('cars.car_not_found')]);
+        }
+        // A package goes only to a car of a confirmed body type, and only one of that type.
+        if ($car->carType() === null || $price->package?->car_type !== $car->carType()) {
+            return redirect()->back()->withInput()->withErrors(['car_id' => __('cars.body_unconfirmed')]);
+        }
 
         UserPackage::create([
             'user_id' => $client->id,
@@ -346,11 +355,13 @@ class ClientsController extends Controller
                 ->withInput();
         }
 
-        UserCar::create([
+        $car = UserCar::create([
             'user_id' => $client->id,
             'model_id' => $request->model_id,
             'plate' => $request->plate,
         ]);
+        // No year here: geoapi.ge is asked about the model in every year; the list shows what is still to confirm.
+        app(CarBodyStatus::class)->recheck($car, 'admin');
 
         return redirect()->route('admin.clients.cars', ['client' => $client->id])
             ->with('message', __('admin.car_added'));

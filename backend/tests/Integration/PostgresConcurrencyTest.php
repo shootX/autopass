@@ -36,7 +36,7 @@ class PostgresConcurrencyTest extends TestCase
         $wash = CarWash::create(['name' => 'Review branch', 'address' => 'Review', 'location' => 'Review', 'manager_id' => $manager->id, 'work_time_start' => '09:00', 'work_time_end' => '20:00']);
         $brand = CarBrand::create(['name' => 'Review']);
         $model = CarModel::create(['brand_id' => $brand->id, 'name' => 'Review', 'type' => 'sedan']);
-        $car = UserCar::create(['user_id' => $user->id, 'model_id' => $model->id, 'plate' => 'AA123BB']);
+        $car = UserCar::create(['car_type' => 'sedan', 'body_status' => 'confirmed', 'user_id' => $user->id, 'model_id' => $model->id, 'plate' => 'AA123BB']);
         $service = CarWashService::forceCreate(['name' => 'Review']);
         $wash->services()->attach($service->id);
 

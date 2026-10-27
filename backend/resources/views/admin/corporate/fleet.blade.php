@@ -45,9 +45,9 @@
                         </select>
                         @error('year')<small style="color:red;">{{ $message }}</small>@enderror
                     </div>
-                    {{-- Shown only when the model has several body types in the year. --}}
+                    {{-- Shown only when the model has several body types in the year; left empty, the driver picks in the app. --}}
                     <div class="form-group mt-3" id="fleet_body_group" @if(! $errors->has('body_type')) hidden @endif>
-                        <label for="fleet_body">{{ __('admin.body_type') }}<span class="text-danger">*</span></label>
+                        <label for="fleet_body">{{ __('admin.body_type') }}</label>
                         <select class="form-control" id="fleet_body" name="body_type" disabled>
                             <option value="">{{ __('admin.fleet_select_body') }}</option>
                         </select>
@@ -119,6 +119,16 @@ GET {{ url('/api/corporate/balance') }}</pre>
         </ul>
     </div>
 @endif
+@if(session('fleet_import_pending'))
+    <div class="alert alert-info mt-4 mb-0">
+        <div>{{ __('admin.fleet_import_pending') }}</div>
+        <ul class="mb-0">
+            @foreach(session('fleet_import_pending') as $row)
+                <li>{{ __('admin.fleet_import_row', ['row' => $row['row'], 'plate' => $row['plate'] ?: '—']) }}: {{ __('admin.fleet_body_status_'.$row['body_status']) }}@if(! empty($row['body_types'])). {{ __('admin.fleet_body_options', ['types' => collect($row['body_types'])->map(fn ($key) => \App\Models\BodyType::labelFor($key))->implode(', ')]) }}@endif</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
 @error('fleet')
     <div class="alert alert-danger mt-4 mb-0">{{ $message }}</div>
 @enderror
@@ -130,6 +140,7 @@ GET {{ url('/api/corporate/balance') }}</pre>
     $freeByType = collect($washBalance['types'])->map(fn ($row) => $row['free']);
     $discountPackages = $corporate->discountPackages()->with('prices')->get()->keyBy('id');
     $discountUsed = \App\Services\CorporateDiscounts::usedThisMonthByCar($corporate);
+    $bodyOptions = empty($adminBody) ? [] : \App\Models\BodyType::options();
 @endphp
 <div class="card mt-4 mb-4">
     <div class="card-header">{{ __('admin.fleet') }} · {{ $cars->total() }} <span class="text-muted ms-2">{{ __('admin.cw_free') }}: {{ $washBalance['free'] }}</span></div>
@@ -154,7 +165,7 @@ GET {{ url('/api/corporate/balance') }}</pre>
                     <td>{{ \App\Services\FleetCars::formatPlate($car->plate) }}</td>
                     <td>{{ $car->brand }}</td>
                     <td>{{ $car->model }}@if($car->year) <span class="text-muted">{{ $car->year }}</span>@endif
-                        @if($car->carType())<small class="d-block text-muted">{{ \App\Models\BodyType::labelFor($car->carType()) }}</small>@endif</td>
+                        @include('admin.corporate.fleet-body')</td>
                     <td>{{ $car->driver_phone ?: '—' }}</td>
                     <td>
                         <span class="badge {{ $statusBadge[$car->status] ?? 'bg-secondary' }}">{{ __('admin.fleet_status_'.$car->status) }}</span>
@@ -250,7 +261,6 @@ GET {{ url('/api/corporate/balance') }}</pre>
                     if (!data.choose) return;
                     fill(body, data.body_types.map(b => ({ value: b.key, label: b.name })), placeholder.body, old.body);
                     old.body = null;
-                    body.prop('required', true);
                     $('#fleet_body_group').prop('hidden', false);
                 });
             }

@@ -35,8 +35,12 @@ export function useFetchPackagePricing(carId: number | null) {
         Authorization: `Bearer ${token}`,
       },
     })
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch packages");
+      .then(async (res) => {
+        if (!res.ok) {
+          // 422 body_unconfirmed: no package is priced until the car's body type is confirmed; the server says so.
+          const body = await res.json().catch(() => null);
+          throw new Error(typeof body?.error === "string" ? body.error : "Failed to fetch packages");
+        }
         return res.json();
       })
       .then((data) => {

@@ -18,6 +18,9 @@ class PackagePurchase
             // All package reservations for an owner are serialised; no provider request inside this lock.
             $owner = User::query()->lockForUpdate()->findOrFail($user->id);
             $car = $owner->cars()->with('model')->findOrFail($data['car_id']);
+            if ($car->carType() === null) {
+                throw ValidationException::withMessages(['car_id' => __('cars.body_unconfirmed')]);
+            }
             $package = Package::query()->where('car_type', $car->carType())
                 ->where('count_washes', $data['number_of_washes'])->firstOrFail();
             $price = $package->prices()->where('month', $data['sub_term'])->firstOrFail();

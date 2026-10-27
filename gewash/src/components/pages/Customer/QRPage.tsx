@@ -26,6 +26,8 @@ export default function QRPage() {
   const [bright, setBright] = useState(false);
   const [activePackageId, setActivePackageId] = useState<number | null>(null);
   const [qrImageUrl, setQrImageUrl] = useState<string | null>(null);
+  // The server gives no QR while the car's body type is not confirmed (a package bought before still works).
+  const [qrBlocked, setQrBlocked] = useState(false);
 
   const carIdToPackage = Object.fromEntries(carPackages.map((p) => [p.car.id, p]));
 
@@ -34,10 +36,12 @@ export default function QRPage() {
   const remaining = pkg ? pkg.number_of_washes - pkg.used_washes : null;
   const total = pkg?.number_of_washes ?? null;
   const cells = washCells(total, remaining);
+  const bodyWaits = selected != null && selected.body.status !== 'confirmed';
 
   useEffect(() => {
     if (pkg?.id && pkg.id !== activePackageId) {
       setQrImageUrl(null);
+      setQrBlocked(false);
       setActivePackageId(pkg.id);
     }
   }, [pkg?.id, activePackageId]);
@@ -52,11 +56,19 @@ export default function QRPage() {
         Authorization: `Bearer ${token}`,
       },
     })
-      .then((res) => {
+      .then(async (res) => {
+        if (res.status === 422) {
+          const body = await res.json().catch(() => null);
+          if (body?.error_code === 'body_unconfirmed') return null;
+        }
         if (!res.ok) throw new Error('Failed to fetch QR code');
         return res.blob();
       })
       .then((blob) => {
+        if (!blob) {
+          setQrBlocked(true);
+          return;
+        }
         const url = URL.createObjectURL(blob);
         setQrImageUrl(url);
       })
@@ -110,12 +122,20 @@ export default function QRPage() {
         </div>
       )}
       {!selected && <p className="ap-sub">{t('QRPage.noCars')}</p>}
-      {selected && !pkg && (
+      {selected && ((!pkg && bodyWaits) || (pkg && qrBlocked)) && (
+        <>
+          <p className="ap-sub">{t('CarBody.qrBlocked')}</p>
+          <button type="button" className="ap-btn" style={{ marginTop: 16 }} onClick={() => navigate('/customer-my-data#vehicles')}>
+            {t('CarBody.open')}
+          </button>
+        </>
+      )}
+      {selected && !pkg && !bodyWaits && (
         <button type="button" className="ap-btn" style={{ marginTop: 24 }} onClick={() => navigate('/my-packages')}>
           შეარჩიე პაკეტი
         </button>
       )}
-      {pkg && (
+      {pkg && !qrBlocked && (
         <div className="v4-qrwrap">
           <div className="c" style={{ width: 300, height: 300, background: bright ? '#F7FBEA' : '#F5F9EC' }} />
           <div className="c" style={{ width: 250, height: 250, background: '#EAF4D6' }} />

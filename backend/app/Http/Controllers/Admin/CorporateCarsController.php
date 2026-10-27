@@ -37,6 +37,16 @@ class CorporateCarsController extends Controller
         return $this->allocateWashes($request, $this->own($corporate, $car), route('admin.corporate.show', $corporate), 'admin', (int) auth()->id());
     }
 
+    public function bodyCheck(CorporateClient $corporate, FleetCar $car)
+    {
+        return $this->recheckBody($this->own($corporate, $car), route('admin.corporate.show', $corporate), 'admin');
+    }
+
+    public function body(Request $request, CorporateClient $corporate, FleetCar $car)
+    {
+        return $this->confirmBody($request, $this->own($corporate, $car), route('admin.corporate.show', $corporate));
+    }
+
     private function own(CorporateClient $corporate, FleetCar $car): FleetCar
     {
         abort_unless((int) $car->corporate_client_id === (int) $corporate->id, 404);

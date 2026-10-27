@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\BodyType;
 use App\Models\CarBrand;
 use App\Models\CarModel;
 use App\Models\FleetCar;
 use App\Models\UserCar;
 use App\Services\CarBody;
+use App\Services\CarBodyStatus;
 use App\Services\CarCatalog;
 use App\Services\CarTrims;
 use App\Services\CorporateDiscounts;
@@ -89,6 +89,8 @@ class CarsController extends Controller
                         'mode' => $fleet->mode,
                         'washes_left' => (int) $fleet->washes_left,
                         'blocked' => (bool) $fleet->client?->ban,
+                        // false: no QR and no washes until the body type is confirmed (the driver picks it on the car).
+                        'body_confirmed' => $fleet->bodyConfirmed(),
                         // Discount mode: the price of the car's discount package for this body type, null when there is none.
                         'discount' => $fleet->mode === FleetCar::MODE_DISCOUNT
                             ? CorporateDiscounts::payload(CorporateDiscounts::forCar($fleet->setRelation('userCar', $car)), $fleet)
@@ -150,7 +152,7 @@ class CarsController extends Controller
                 'error' => 'Модель не найдена',
             ], 422);
         }
-        $trim = $this->trimAttributes($this->pickFrom($request));
+        $trim = $this->bodyAttributes($this->pickFrom($request), $modelId);
         if ($trim instanceof JsonResponse) {
             return $trim;
         }
@@ -197,47 +199,41 @@ class CarsController extends Controller
         );
     }
 
-    private const TRIM_COLUMNS = ['generation_id', 'generation_name', 'modification_id', 'modification_name', 'body_type', 'car_type', 'photo'];
+    private const TRIM_COLUMNS = ['generation_id', 'generation_name', 'modification_id', 'modification_name', 'body_type', 'car_type', 'photo',
+        'body_status', 'body_options', 'body_incomplete', 'body_source', 'body_checked_at'];
 
     /**
-     * Generation/modification/body columns for a pick, [] for none, or the error response. A catalog model takes
-     * its body type from the picked generation, else from the generations built in its year (CarBody); the user's
-     * car_type only settles a year with several body types, or a model the catalog knows nothing about.
+     * Body and trim columns for a pick, or the error response. A generation an older app picked gives its own
+     * body type; otherwise geoapi.ge's types for the model and year decide (CarBody), and the user's car_type
+     * only settles a year with several. Nothing is guessed: with nothing to go by the car is saved unconfirmed
+     * (choose or unknown) and the app asks for a pick or a retry.
      *
      * @param  array{source: ?string, brand_id: ?int, model_id: ?int, year: ?int, generation_id: ?int, modification_id: ?int, car_type: ?string}  $pick
      */
-    private function trimAttributes(array $pick): array|JsonResponse
+    private function bodyAttributes(array $pick, int $localModelId): array|JsonResponse
     {
-        $chosen = $pick['car_type'] !== null && BodyType::query()->where('name', $pick['car_type'])->exists() ? $pick['car_type'] : null;
-        if ($pick['source'] !== CarCatalog::REMOTE || ! $pick['model_id']) {
-            // A local model has the type an admin gave it; a model typed by hand has the one picked.
-            return $pick['model_id'] ? [] : array_filter(['car_type' => $chosen]);
-        }
-        try {
-            if ($pick['generation_id']) {
+        $remote = $pick['source'] === CarCatalog::REMOTE && $pick['model_id'];
+        if ($remote && $pick['generation_id']) {
+            try {
                 $trim = app(CarTrims::class)->attributes((int) $pick['brand_id'], $pick['model_id'], $pick['generation_id'], $pick['modification_id']);
-                $trim['car_type'] ??= $chosen;
+                $type = $trim['car_type'];
 
-                return array_filter($trim, fn ($value) => $value !== null);
+                return $trim + ['body_status' => $type ? CarBody::CONFIRMED : CarBody::UNKNOWN, 'body_options' => $type ? [$type] : null,
+                    'body_incomplete' => false, 'body_source' => $type ? CarBody::BY_DRIVER : null, 'body_checked_at' => now()];
+            } catch (ValidationException $e) {
+                return response()->json(['success' => false, 'error' => (string) collect($e->errors())->flatten()->first()], 422);
+            } catch (\Throwable $e) {
+                Log::warning('car_trim_unavailable', ['exception' => $e::class]);
             }
-
-            $body = app(CarBody::class)->pick(CarCatalog::REMOTE, (int) $pick['brand_id'], $pick['model_id'], $pick['year'], $pick['car_type']);
-            if ($body['error'] !== null) {
-                return $this->bodyTypeError($body['error'], $body['types']);
-            }
-            $trim = $body['generation_id']
-                ? app(CarTrims::class)->attributes((int) $pick['brand_id'], $pick['model_id'], $body['generation_id'], null)
-                : [];
-
-            return array_filter(['car_type' => $body['car_type']] + $trim, fn ($value) => $value !== null);
-        } catch (ValidationException $e) {
-            return response()->json(['success' => false, 'error' => (string) collect($e->errors())->flatten()->first()], 422);
-        } catch (\Throwable $e) {
-            // Catalog down: keep the car, just without trim details.
-            Log::warning('car_trim_unavailable', ['exception' => $e::class]);
-
-            return array_filter(['car_type' => $chosen]);
         }
+        $body = $remote
+            ? app(CarBody::class)->resolve(CarCatalog::REMOTE, (int) $pick['brand_id'], $pick['model_id'], $pick['year'], $pick['car_type'], CarBody::BY_DRIVER)
+            : app(CarBody::class)->resolve(CarCatalog::LOCAL, 0, $localModelId, $pick['year'], $pick['car_type'], CarBody::BY_DRIVER);
+        if ($body['error'] !== null) {
+            return $this->bodyTypeError($body['error'], $body['types']);
+        }
+
+        return $body['attributes'];
     }
 
     /** The car's pick from the request; ids are only meaningful with their source. */
@@ -263,36 +259,8 @@ class CarsController extends Controller
             'success' => false,
             'error' => __('cars.'.$code),
             'error_code' => $code,
-            'body_types' => $this->bodyTypeRows($types),
+            'body_types' => CarBody::rows($types),
         ], 422);
-    }
-
-    /** @param  list<string>  $types */
-    private function bodyTypeRows(array $types): array
-    {
-        return array_map(fn (string $key) => ['key' => $key, 'name' => BodyType::labelFor($key)], $types);
-    }
-
-    /**
-     * The body types a car of this model and year can have. One type: it is set on its own and the app shows no
-     * field; several (a sedan and a wagon of the same year): the user picks one and sends it as car_type.
-     */
-    public function bodyTypes(Request $request)
-    {
-        $data = $request->validate([
-            'source' => ['required', 'in:'.CarCatalog::LOCAL.','.CarCatalog::REMOTE],
-            'brand_id' => ['nullable', 'integer', 'min:1', 'required_if:source,'.CarCatalog::REMOTE],
-            'model_id' => ['required', 'integer', 'min:1'],
-            'year' => ['nullable', 'integer', 'between:'.CarCatalog::MIN_YEAR.','.((int) now()->year + 1)],
-        ]);
-        $options = app(CarBody::class)->options($data['source'], (int) ($data['brand_id'] ?? 0), (int) $data['model_id'], $data['year'] ?? null);
-
-        return response()->json([
-            'success' => true,
-            'body_types' => $this->bodyTypeRows($options['types']),
-            'choose' => count($options['types']) > 1,
-            'car_type' => count($options['types']) === 1 ? $options['types'][0] : null,
-        ]);
     }
 
     /** model_id is only meaningful with its id space (source); year is optional. */
@@ -346,10 +314,7 @@ class CarsController extends Controller
 
     private function carPayload(UserCar $car): array
     {
-        $car->loadMissing('model.brand');
-
-        return ['id' => $car->id, 'plate' => $car->plate, 'year' => $car->year,
-            'model' => $car->model, 'brand' => $car->model->brand, 'image' => $car->imageUrl()] + $car->trimPayload();
+        return $car->appPayload();
     }
 
     public function editMyCar(Request $request, $carid)
@@ -397,36 +362,40 @@ class CarsController extends Controller
             if ($request->has('fuel_type')) {
                 $data['fuel_type'] = $request->input('fuel_type') ?: null;
             }
-            if ($request->filled('model_id') || ($request->filled('brand_name') && $request->filled('model_name'))) {
+            $newModel = $request->filled('model_id') || ($request->filled('brand_name') && $request->filled('model_name'));
+            $newYear = $request->has('year') && $data['year'] !== $car->year;
+            if (($newModel || $newYear) && $car->holdsPackage()) {
+                // The package was bought for this car's body type; another model or year could change it.
+                return response()->json(['success' => false, 'error' => __('cars.car_has_package'), 'error_code' => 'car_has_package'], 422);
+            }
+            if ($newModel) {
                 $modelId = $this->localModelId($request);
                 if ($modelId === null) {
                     return response()->json(['success' => false, 'error' => 'Модель не найдена'], 422);
                 }
                 $data['model_id'] = $modelId;
-                $trim = $this->trimAttributes($this->pickFrom($request));
+                $trim = $this->bodyAttributes($this->pickFrom($request), $modelId);
                 if ($trim instanceof JsonResponse) {
                     return $trim;
                 }
                 // A new model always replaces the old trim, so a stale generation never sticks.
                 $data += $trim + array_fill_keys(self::TRIM_COLUMNS, null);
-            } elseif (($request->filled('year') || $request->filled('car_type')) && $car->model->source === CarCatalog::REMOTE) {
-                // Same model, another year or body: the body type is read again, and the old pick stays when it still fits.
-                $year = $request->filled('year') ? (int) $request->input('year') : $car->year;
-                $body = app(CarBody::class)->pick(CarCatalog::REMOTE, (int) $car->model->brand->external_brand_id,
-                    (int) $car->model->external_model_id, $year, $request->filled('car_type') ? (string) $request->input('car_type') : $car->car_type);
-                if ($body['error'] !== null) {
-                    return $this->bodyTypeError($request->filled('car_type') ? $body['error'] : 'body_type_required', $body['types']);
+            } elseif ($newYear) {
+                // Same model, another year: geoapi.ge is asked again, and a pick that still fits stays.
+                $car->year = $data['year'];
+                $chosen = $request->filled('car_type') ? (string) $request->input('car_type') : $car->car_type;
+                $body = app(CarBodyStatus::class)->resolveFor($car, $chosen, CarBody::BY_DRIVER);
+                if ($body['error'] !== null && ! $request->filled('car_type')) {
+                    $body = app(CarBodyStatus::class)->resolveFor($car, null, CarBody::BY_DRIVER);
                 }
-                if ($body['car_type'] !== null && ($body['car_type'] !== $car->car_type || $year !== $car->year)) {
-                    $trim = $body['generation_id'] ? $this->trimAttributes([
-                        'source' => CarCatalog::REMOTE, 'brand_id' => (int) $car->model->brand->external_brand_id,
-                        'model_id' => (int) $car->model->external_model_id, 'year' => $year,
-                        'generation_id' => $body['generation_id'], 'modification_id' => null, 'car_type' => null,
-                    ]) : [];
-                    if ($trim instanceof JsonResponse) {
-                        return $trim;
-                    }
-                    $data += ['car_type' => $body['car_type']] + $trim + array_fill_keys(self::TRIM_COLUMNS, null);
+                if ($body['error'] !== null) {
+                    return $this->bodyTypeError($body['error'], $body['types']);
+                }
+                $data += $body['attributes'] + array_fill_keys(self::TRIM_COLUMNS, null);
+            } elseif ($request->filled('car_type')) {
+                $picked = app(CarBodyStatus::class)->choose($car, (string) $request->input('car_type'), CarBody::BY_DRIVER, 'driver');
+                if ($picked !== 'ok') {
+                    return $this->bodyTypeError($picked === 'confirmed' ? 'body_confirmed' : $picked, $car->body_options ?? []);
                 }
             }
             $car->update($data);

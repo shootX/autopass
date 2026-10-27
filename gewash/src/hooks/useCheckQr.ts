@@ -54,8 +54,9 @@ export const useCheckQr = (qrCode: string | null) => {
         });
 
         if (!res.ok) {
-          // An expired company car code (410) says so in the user's language.
-          const body = res.status === 410 ? await res.json().catch(() => null) : null;
+          // An expired company car code (410), or a package of a car whose body type is not confirmed (422),
+          // says so in the user's language.
+          const body = res.status === 410 || res.status === 422 ? await res.json().catch(() => null) : null;
           throw new Error(typeof body?.error === "string" ? body.error : `Request failed: ${res.status}`);
         }
         const data: QrCheckResult = await res.json();

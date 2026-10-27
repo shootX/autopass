@@ -24,7 +24,7 @@ function clientProfileFixture(): array
         'work_time_start' => '09:00', 'work_time_end' => '20:00', 'location' => 'Loc', 'manager_id' => $manager->id]);
     $brand = CarBrand::create(['name' => 'Profile brand']);
     $model = CarModel::create(['name' => 'Profile model', 'brand_id' => $brand->id, 'type' => 'sedan']);
-    $car = UserCar::create(['user_id' => $client->id, 'model_id' => $model->id, 'plate' => 'PR123OF']);
+    $car = UserCar::create(['car_type' => 'sedan', 'body_status' => 'confirmed', 'user_id' => $client->id, 'model_id' => $model->id, 'plate' => 'PR123OF']);
     $package = Package::create(['car_type' => 'sedan', 'count_washes' => 8]);
     $price = PackagePrice::create(['package_id' => $package->id, 'month' => 1, 'price' => 40]);
     $userPackage = UserPackage::create([

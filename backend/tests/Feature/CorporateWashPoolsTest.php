@@ -16,7 +16,7 @@ function poolFleet(): array
     $fleet = cwFleet();
     $suvModel = CarModel::query()->forceCreate(['name' => 'RAV4', 'type' => 'suv', 'brand_id' => $fleet['userCar']->model->brand_id]);
     $suv = cwFleet(0, 0, 'BB123CC', $fleet['corp']);
-    $suv['userCar']->forceFill(['model_id' => $suvModel->id])->save();
+    $suv['userCar']->forceFill(['model_id' => $suvModel->id, 'car_type' => 'suv'])->save();
     $suv['car']->forceFill(['car_type' => 'suv'])->save();
     foreach (['sedan' => 10, 'suv' => 5] as $type => $washes) {
         $package = new CorporatePackage(['title' => $type, 'washes' => $washes, 'price' => 100, 'is_active' => true]);

@@ -27,6 +27,9 @@ class CorporateWashController extends Controller
         if ($car->client?->ban) {
             return response()->json(['success' => false, 'error' => __('corporate.reason_company_blocked'), 'reason' => 'company_blocked'], 403);
         }
+        if (! $car->bodyConfirmed()) {
+            return response()->json(['success' => false, 'error' => __('corporate.reason_body_unconfirmed'), 'reason' => 'body_unconfirmed'], 403);
+        }
 
         $svg = QrCode::format('svg')->size(300)->generate(CorporateQr::issue($car));
 

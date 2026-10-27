@@ -37,6 +37,7 @@ Route::prefix('partner')->group(function () {
         Route::post('/cars/{car}/block', [PartnerFleetController::class, 'block'])->name('partner.cars.block');
         Route::post('/cars/{car}/mode', [PartnerFleetController::class, 'mode'])->name('partner.cars.mode');
         Route::post('/cars/{car}/washes', [PartnerFleetController::class, 'washes'])->name('partner.cars.washes');
+        Route::post('/cars/{car}/body-check', [PartnerFleetController::class, 'bodyCheck'])->middleware('throttle:20,1')->name('partner.cars.body_check');
         Route::get('/washes', [PartnerWashesController::class, 'index'])->name('partner.washes');
         Route::get('/invoices', [PartnerInvoicesController::class, 'index'])->name('partner.invoices');
         Route::post('/invoices', [PartnerInvoicesController::class, 'store'])->middleware('throttle:10,1')->name('partner.invoices.store');

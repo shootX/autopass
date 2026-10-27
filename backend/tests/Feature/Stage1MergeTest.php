@@ -223,7 +223,7 @@ it('serves the manager API without the manager owning a car', function () {
     $client = makeUser('555700061');
     DB::statement('PRAGMA defer_foreign_keys = ON');
     $wash = DB::table('car_washes')->insertGetId(['name' => 'W', 'address' => 'a', 'work_time_start' => '09:00', 'work_time_end' => '20:00', 'location' => 'x', 'manager_id' => $mgr->id, 'created_at' => now(), 'updated_at' => now()]);
-    $car = DB::table('user_cars')->insertGetId(['user_id' => $client->id, 'model_id' => 1, 'plate' => 'MG001MG', 'created_at' => now(), 'updated_at' => now()]);
+    $car = DB::table('user_cars')->insertGetId(['car_type' => 'sedan', 'body_status' => 'confirmed', 'user_id' => $client->id, 'model_id' => 1, 'plate' => 'MG001MG', 'created_at' => now(), 'updated_at' => now()]);
     $pkg = DB::table('user_packages')->insertGetId(['user_id' => $client->id, 'package_id' => 1, 'user_car_id' => $car, 'end_date' => now()->addMonth(), 'number_of_washes' => 3, 'used_washes' => 0, 'qr_code' => 'QRMGR1', 'created_at' => now(), 'updated_at' => now()]);
     expect(DB::table('user_cars')->where('user_id', $mgr->id)->count())->toBe(0);
 
