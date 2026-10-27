@@ -5,6 +5,8 @@ use App\Models\PackagePrice;
 use App\Models\User;
 use App\Models\UserCar;
 use App\Models\UserPackage;
+use App\Services\CarBodyStatus;
+use App\Services\CarCatalog;
 use App\Services\Payments\FlittCheckout;
 use Illuminate\Http\Client\Factory;
 use Illuminate\Support\Facades\Cache;
@@ -26,11 +28,24 @@ function bodyDriver(string $phone): array
 
     $user = makeUser($phone);
     $token = auth('api')->login($user);
-    $add = fn (int $year, string $plate) => test()->withToken($token)->postJson('/api/mycars/add',
-        ['source' => 'carapi', 'brand_id' => 501, 'model_id' => 7, 'year' => $year, 'plate' => $plate])->assertOk()->json('car.id');
+    $pending = waitingCar($user, 2016, 'BD101BD');
+    $suv = test()->withToken($token)->postJson('/api/mycars/add',
+        ['source' => 'carapi', 'brand_id' => 501, 'model_id' => 7, 'year' => 2021, 'generation_id' => 73, 'plate' => 'BD102BD'])->assertOk()->json('car.id');
 
-    return ['user' => $user, 'token' => $token,
-        'pending' => UserCar::query()->find($add(2016, 'BD101BD')), 'suv' => UserCar::query()->find($add(2021, 'BD102BD'))];
+    return ['user' => $user, 'token' => $token, 'pending' => $pending->fresh(), 'suv' => UserCar::query()->find($suv)];
+}
+
+/**
+ * A geoapi.ge Avensis saved before generations were required: no generation, so its year's types decide (an
+ * app can no longer add one like this).
+ */
+function waitingCar(User $user, int $year, string $plate): UserCar
+{
+    $modelId = app(CarCatalog::class)->resolveModelId(CarCatalog::REMOTE, 7, 501);
+    $car = UserCar::query()->create(['user_id' => $user->id, 'model_id' => $modelId, 'plate' => $plate, 'year' => $year]);
+    app(CarBodyStatus::class)->recheck($car, 'test');
+
+    return $car->fresh();
 }
 
 function bodyPackage(UserCar $car, bool $legacy = false): UserPackage
@@ -162,12 +177,14 @@ it('does not take the one named type as proof when another generation of that ye
         ['id' => '71', 'name' => 'T27 Sedan', 'year_start' => 2012, 'year_end' => 2018, 'body_type' => 'Sedan'],
         ['id' => '74', 'name' => 'T27', 'year_start' => 2014, 'year_end' => 2018, 'body_type' => null],
     ]);
-    $token = auth('api')->login(makeUser('555 71 00 05'));
+    $user = makeUser('555 71 00 05');
+    $token = auth('api')->login($user);
     $this->withToken($token)->getJson('/api/cars/body-types?'.http_build_query(['source' => 'carapi', 'brand_id' => 501, 'model_id' => 7, 'year' => 2016]))
         ->assertOk()->assertJsonPath('status', 'choose')->assertJsonPath('incomplete', true)->assertJsonCount(1, 'body_types');
 
-    $id = $this->withToken($token)->postJson('/api/mycars/add', ['source' => 'carapi', 'brand_id' => 501, 'model_id' => 7, 'year' => 2016, 'plate' => 'BD501BD'])
-        ->assertOk()->assertJsonPath('car.body_status', 'choose')->assertJsonPath('car.body_incomplete', true)->json('car.id');
+    $id = waitingCar($user, 2016, 'BD501BD')->id;
+    $this->withToken($token)->getJson("/api/mycars/{$id}")->assertOk()
+        ->assertJsonPath('car.body_status', 'choose')->assertJsonPath('car.body_incomplete', true);
     $this->withToken($token)->postJson("/api/mycars/{$id}/body", ['car_type' => 'sedan'])->assertOk()->assertJsonPath('car.car_type', 'sedan');
 });
 

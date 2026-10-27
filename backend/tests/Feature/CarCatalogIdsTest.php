@@ -78,7 +78,7 @@ class CarCatalogIdsTest extends TestCase
 
         // Same external model again reuses the mapped local row.
         $this->withToken($this->token)->postJson('/api/mycars/add', [
-            'source' => 'carapi', 'brand_id' => 501, 'model_id' => 7, 'plate' => 'AA124BB',
+            'source' => 'carapi', 'brand_id' => 501, 'model_id' => 7, 'plate' => 'AA124BB', 'year' => 2020,
         ])->assertOk();
         $this->assertSame(1, CarModel::query()->where('source', 'carapi')->where('external_model_id', 7)->count());
     }
@@ -144,7 +144,7 @@ class CarCatalogIdsTest extends TestCase
     public function test_offline_fallback_checks_the_external_brand(): void
     {
         $this->withToken($this->token)->postJson('/api/mycars/add', [
-            'source' => 'carapi', 'brand_id' => 501, 'model_id' => 7, 'plate' => 'AA131BB',
+            'source' => 'carapi', 'brand_id' => 501, 'model_id' => 7, 'plate' => 'AA131BB', 'year' => 2020,
         ])->assertOk();
 
         // CarAPI goes down: a known external model may only be reused under its own external brand.
@@ -154,7 +154,7 @@ class CarCatalogIdsTest extends TestCase
             'source' => 'carapi', 'brand_id' => 999, 'model_id' => 7, 'plate' => 'AA132BB',
         ])->assertStatus(422);
         $this->withToken($this->token)->postJson('/api/mycars/add', [
-            'source' => 'carapi', 'brand_id' => 501, 'model_id' => 7, 'plate' => 'AA132BB',
+            'source' => 'carapi', 'brand_id' => 501, 'model_id' => 7, 'plate' => 'AA132BB', 'year' => 2020,
         ])->assertOk();
     }
 
@@ -175,7 +175,7 @@ class CarCatalogIdsTest extends TestCase
         });
 
         $this->withToken($this->token)->postJson('/api/mycars/add', [
-            'source' => 'carapi', 'brand_id' => 501, 'model_id' => 7, 'plate' => 'AA133BB',
+            'source' => 'carapi', 'brand_id' => 501, 'model_id' => 7, 'plate' => 'AA133BB', 'year' => 2020,
         ])->assertOk();
         $this->assertTrue($raced);
         $this->assertSame(1, CarModel::query()->where('source', 'carapi')->where('external_model_id', 7)->count());

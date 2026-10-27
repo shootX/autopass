@@ -468,3 +468,14 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 - [x] Web app: My vehicles shows the status, the pick (only the server's types) or the retry; QR page, Home and My packages send an unconfirmed car to the pick instead of a package; add-car saves without a pick.
 - [ ] Server (only with the owner's go-ahead): `php artisan migrate`, `php artisan route:cache`, rebuild gewash, run `php artisan cars:check-bodies` and send the report; `--apply` only after it is read. Tell API clients about `pending` and `body_status`.
 - [ ] iOS: GeocarAPP PR (same rules); check on a device.
+
+## 2026-10-27 — Add car: generation and modification required (`claude/project-thread-r5ruzb`)
+
+- [x] Cause of Ford Focus 2019 "body type not determined": geoapi.ge's generations had `body_type: null`. geoapi.ge now sends `body_types` (several per generation) and `body_type` + `drive_type` on modifications; `CarBody` reads `body_types` too.
+- [x] User rule: a driver adds a car by brand → model → year → generation → modification; the photo comes from the generation. `POST /api/mycars/add` (and an edit that changes the model) refuses a geoapi.ge car without `year` (`year_required`), `generation_id` (`generation_required`) or `modification_id` (`modification_required`) while the catalog lists any for that year, and one not in the year's list (`generation_invalid`, `modification_invalid`). A step the catalog has nothing for is not asked; a model from our own list (catalog down) and a geoapi.ge outage at save time still save the car unconfirmed.
+- [x] Body type of a picked trim (`CarBody::trimOptions`): the modification's `body_type`, else the generation's `body_type` or `body_types`. One → confirmed by the catalog; several → `choose` (the driver picks on the car card, the generation and modification stay). A saved car with a generation is checked again by its trim, not by its year.
+- [x] Web app add form: generation and modification selects (required when listed), photo after the modification; the body type select is gone.
+- [x] iOS: GeocarAPP PR (same steps).
+- [ ] Company panel, Excel/CSV, company API and admin car forms: not changed (user chose drivers first).
+- [ ] Edit form: brand and model are locked; a year change still reads the body type by year and clears the generation.
+- [ ] Server: `php artisan route:cache` not needed (no new routes); rebuild gewash; clear the geoapi.ge cache (`php artisan cache:clear` or the `carapi.*` keys) so generations and modifications carry the new fields.

@@ -132,6 +132,7 @@ class CarTrimsTest extends TestCase
 
         $this->withToken($this->token)->postJson('/api/mycars/add', [
             'source' => 'carapi', 'brand_id' => 501, 'model_id' => 7, 'plate' => 'AA150BB', 'fuel_type' => 'premium',
+            'year' => 2020, 'generation_id' => 70, 'modification_id' => 701,
         ])->assertOk()->assertJsonPath('car.fuel_type', 'premium');
 
         $car = UserCar::query()->where('plate', 'AA150BB')->firstOrFail();

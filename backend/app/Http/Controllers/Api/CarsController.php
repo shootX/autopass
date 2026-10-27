@@ -152,7 +152,8 @@ class CarsController extends Controller
                 'error' => 'Модель не найдена',
             ], 422);
         }
-        $trim = $this->bodyAttributes($this->pickFrom($request), $modelId);
+        $pick = $this->pickFrom($request);
+        $trim = $this->trimError($pick) ?? $this->bodyAttributes($pick, $modelId);
         if ($trim instanceof JsonResponse) {
             return $trim;
         }
@@ -203,10 +204,55 @@ class CarsController extends Controller
         'body_status', 'body_options', 'body_incomplete', 'body_source', 'body_checked_at'];
 
     /**
-     * Body and trim columns for a pick, or the error response. A generation an older app picked gives its own
-     * body type; otherwise geoapi.ge's types for the model and year decide (CarBody), and the user's car_type
-     * only settles a year with several. Nothing is guessed: with nothing to go by the car is saved unconfirmed
-     * (choose or unknown) and the app asks for a pick or a retry.
+     * A geoapi.ge car needs its year, generation and modification picked, each from the catalog's list for the
+     * year before. A step the catalog has nothing for is not asked. A car from our own list (geoapi.ge was down
+     * when the brands loaded) has no generations. null: the pick is complete, or geoapi.ge can't check it now.
+     *
+     * @param  array{source: ?string, brand_id: ?int, model_id: ?int, year: ?int, generation_id: ?int, modification_id: ?int, car_type: ?string}  $pick
+     */
+    private function trimError(array $pick): ?JsonResponse
+    {
+        if ($pick['source'] !== CarCatalog::REMOTE || ! $pick['model_id']) {
+            return null;
+        }
+        $fail = fn (string $code) => response()->json(['success' => false, 'error' => __('cars.'.$code), 'error_code' => $code], 422);
+        if (! $pick['year']) {
+            return $fail('year_required');
+        }
+        $trims = app(CarTrims::class);
+        try {
+            $generations = array_column($trims->generations((int) $pick['brand_id'], $pick['model_id'], $pick['year']) ?? [], 'id');
+            if ($generations === []) {
+                return null;
+            }
+            if (! $pick['generation_id']) {
+                return $fail('generation_required');
+            }
+            if (! in_array($pick['generation_id'], $generations, true)) {
+                return $fail('generation_invalid');
+            }
+            $modifications = array_column($trims->modifications($pick['model_id'], $pick['generation_id'], $pick['year']) ?? [], 'id');
+        } catch (\Throwable $e) {
+            // geoapi.ge is down: the pick can't be checked, so the car is saved unconfirmed and checked again later.
+            Log::warning('car_catalog_unavailable', ['key' => 'add_car', 'exception' => $e::class]);
+
+            return null;
+        }
+        if ($modifications !== [] && ! $pick['modification_id']) {
+            return $fail('modification_required');
+        }
+        if ($pick['modification_id'] && ! in_array($pick['modification_id'], $modifications, true)) {
+            return $fail('modification_invalid');
+        }
+
+        return null;
+    }
+
+    /**
+     * Body and trim columns for a pick, or the error response. A picked generation and modification name the
+     * body (CarBody::trimOptions); otherwise geoapi.ge's types for the model and year decide (CarBody). The
+     * user's car_type only settles several. Nothing is guessed: with nothing to go by the car is saved
+     * unconfirmed (choose or unknown) and the app asks for a pick or a retry.
      *
      * @param  array{source: ?string, brand_id: ?int, model_id: ?int, year: ?int, generation_id: ?int, modification_id: ?int, car_type: ?string}  $pick
      */
@@ -216,10 +262,13 @@ class CarsController extends Controller
         if ($remote && $pick['generation_id']) {
             try {
                 $trim = app(CarTrims::class)->attributes((int) $pick['brand_id'], $pick['model_id'], $pick['generation_id'], $pick['modification_id']);
-                $type = $trim['car_type'];
+                $options = app(CarBody::class)->trimOptions($pick['model_id'], $pick['generation_id'], $pick['modification_id']);
+                $decision = CarBody::decide($options, $pick['car_type']);
+                if ($decision['error'] !== null) {
+                    return $this->bodyTypeError($decision['error'], $options['types']);
+                }
 
-                return $trim + ['body_status' => $type ? CarBody::CONFIRMED : CarBody::UNKNOWN, 'body_options' => $type ? [$type] : null,
-                    'body_incomplete' => false, 'body_source' => $type ? CarBody::BY_DRIVER : null, 'body_checked_at' => now()];
+                return app(CarBody::class)->attributes($options, $decision, CarBody::BY_DRIVER, $pick['year']) + $trim;
             } catch (ValidationException $e) {
                 return response()->json(['success' => false, 'error' => (string) collect($e->errors())->flatten()->first()], 422);
             } catch (\Throwable $e) {
@@ -374,7 +423,8 @@ class CarsController extends Controller
                     return response()->json(['success' => false, 'error' => 'Модель не найдена'], 422);
                 }
                 $data['model_id'] = $modelId;
-                $trim = $this->bodyAttributes($this->pickFrom($request), $modelId);
+                $pick = $this->pickFrom($request);
+                $trim = $this->trimError($pick) ?? $this->bodyAttributes($pick, $modelId);
                 if ($trim instanceof JsonResponse) {
                     return $trim;
                 }
@@ -383,6 +433,9 @@ class CarsController extends Controller
             } elseif ($newYear) {
                 // Same model, another year: geoapi.ge is asked again, and a pick that still fits stays.
                 $car->year = $data['year'];
+                // The old generation may not be built in the new year; it is cleared below.
+                $car->generation_id = null;
+                $car->modification_id = null;
                 $chosen = $request->filled('car_type') ? (string) $request->input('car_type') : $car->car_type;
                 $body = app(CarBodyStatus::class)->resolveFor($car, $chosen, CarBody::BY_DRIVER);
                 if ($body['error'] !== null && ! $request->filled('car_type')) {

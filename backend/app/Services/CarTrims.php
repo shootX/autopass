@@ -40,6 +40,7 @@ class CarTrims
                 'year_start' => is_numeric($row['year_start'] ?? null) ? (int) $row['year_start'] : null,
                 'year_end' => is_numeric($row['year_end'] ?? null) ? (int) $row['year_end'] : null,
                 'body_type' => $row['body_type'] ?? null,
+                'body_types' => array_values(array_filter(is_array($row['body_types'] ?? null) ? $row['body_types'] : [], 'is_string')),
                 'photo' => $this->photoLink($modelId, (int) $row['id'], $row['photo_url'] ?? null) ?? $modelPhoto,
             ])
             ->filter(fn (array $row) => $row['name'] !== '')
@@ -64,7 +65,8 @@ class CarTrims
                 'transmission' => $row['transmission'] ?? null,
                 'fuel' => $row['specs']['engine']['fuel'] ?? null,
                 'power_hp' => $row['specs']['engine']['power_hp'] ?? null,
-                'drive' => $row['specs']['transmission']['drive'] ?? null,
+                'drive' => $row['specs']['transmission']['drive'] ?? $row['drive_type'] ?? null,
+                'body_type' => $row['body_type'] ?? null,
                 'year_start' => $row['year_start'] ?? null,
                 'year_end' => $row['year_end'] ?? null,
             ])
@@ -113,8 +115,9 @@ class CarTrims
             'generation_name' => $generation ? mb_substr((string) ($generation['display_label'] ?? $generation['name'] ?? ''), 0, 128) : null,
             'modification_id' => $modification ? $modificationId : null,
             'modification_name' => $modification ? mb_substr((string) ($modification['name'] ?? ''), 0, 128) : null,
-            'body_type' => $generation ? (mb_substr((string) ($generation['body_type'] ?? ''), 0, 32) ?: null) : null,
-            'car_type' => $generation ? BodyType::fromCatalog($generation['body_type'] ?? null) : null,
+            // The modification names the body of this very car; the generation's name is the fallback.
+            'body_type' => mb_substr((string) ($modification['body_type'] ?? $generation['body_type'] ?? ''), 0, 32) ?: null,
+            'car_type' => BodyType::fromCatalog($modification['body_type'] ?? null) ?? BodyType::fromCatalog($generation['body_type'] ?? null),
             // Stored as a path, so a domain change does not break saved cars.
             'photo' => $photo ? (string) parse_url($photo, PHP_URL_PATH).(($q = parse_url($photo, PHP_URL_QUERY)) ? '?'.$q : '') : null,
         ];

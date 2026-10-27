@@ -7,13 +7,18 @@ import AddCar from "./AddCar";
 import carReducer, { setBrand, setModel } from "@/store/carSlice";
 import { saveAccessToken } from "@/lib/accessToken";
 
-const mock = vi.hoisted(() => ({ fetch: vi.fn(), bodyTypes: [] as { key: string; name: string }[], unknown: false }));
+type Row = { id: number; name: string; detail: string; photo: string | null };
+const mock = vi.hoisted(() => ({ fetch: vi.fn(), generations: [] as Row[], modifications: [] as Row[], generationsFailed: false }));
 vi.mock("@/utils/customFetch", () => ({ customFetch: mock.fetch }));
 vi.mock("@/hooks/useCarBrands", () => ({ useCarBrands: () => ({ brands: [], loading: false, error: false }) }));
 vi.mock("@/hooks/useCarYears", () => ({ useCarYears: () => ({ years: [2020], source: "catalog", loading: false, failed: false, retry: vi.fn() }) }));
-vi.mock("@/hooks/useCarBodyTypes", () => ({ useCarBodyTypes: () => ({
-  types: mock.bodyTypes, choose: mock.bodyTypes.length > 1, unknown: mock.unknown, incomplete: false, loading: false, failed: false, retry: vi.fn(),
-}) }));
+vi.mock("@/hooks/useCarTrims", () => ({
+  // Like the real hooks: nothing until the year (and for modifications the generation) is picked.
+  useCarGenerations: (_brand: unknown, _model: unknown, year: string) => ({
+    rows: year ? mock.generations : [], loading: false, failed: Boolean(year) && mock.generationsFailed, retry: vi.fn() }),
+  useCarModifications: (_model: unknown, generationId: number | null) => ({
+    rows: generationId ? mock.modifications : [], loading: false, failed: false, retry: vi.fn() }),
+}));
 vi.mock("@/hooks/useTranslation", () => ({ useTranslation: () => (key: string) => key }));
 vi.mock("@/components/Header", () => ({ default: () => null }));
 
@@ -29,8 +34,9 @@ function renderSelectedCar() {
 beforeEach(() => {
   saveAccessToken("review-token");
   mock.fetch.mockReset();
-  mock.bodyTypes = [];
-  mock.unknown = false;
+  mock.generations = [];
+  mock.modifications = [];
+  mock.generationsFailed = false;
 });
 afterEach(() => { cleanup(); localStorage.clear(); });
 
@@ -51,52 +57,48 @@ describe("car creation integration", () => {
     expect(store.getState().car.cars[0]?.year).toBe(2020);
   });
 
-  it("offers the body types only when the year has several, and sends the pick", async () => {
+  it("asks the generation and then the modification, shows the photo, and sends both", async () => {
     mock.fetch.mockResolvedValue(new Response(JSON.stringify({ success: true, car: {
-      id: 13, plate: "AA123BB", year: 2020, car_type: "wagon", body_status: "confirmed", model: { id: 3, name: "Remote model", type: "sedan", brand: { name: "Remote brand" } },
+      id: 13, plate: "AA123BB", year: 2020, car_type: "hatchback", body_status: "confirmed", model: { id: 3, name: "Remote model", type: "", brand: { name: "Remote brand" } },
     } }), { status: 200 }));
-    mock.bodyTypes = [{ key: "sedan", name: "Sedan" }, { key: "wagon", name: "Wagon" }];
+    mock.generations = [{ id: 70, name: "IV", detail: "2018–", photo: "https://api.test/api/cars/models/7/photo?generation=70" }];
+    mock.modifications = [{ id: 900, name: "1.5 EcoBoost", detail: "petrol", photo: null }];
     renderSelectedCar();
     fireEvent.change(screen.getByLabelText("AddCar.labels.year"), { target: { value: "2020" } });
     fireEvent.change(screen.getByLabelText("AddCar.labels.fuel"), { target: { value: "premium" } });
-    const options = [...(screen.getByLabelText("AddCar.labels.bodyType") as HTMLSelectElement).options].map(option => option.value);
-    expect(options).toEqual(["", "sedan", "wagon"]);
-    fireEvent.change(screen.getByLabelText("AddCar.labels.bodyType"), { target: { value: "wagon" } });
-    fireEvent.click(screen.getByRole("button", { name: "AddCar.buttons.add" }));
+    const add = () => screen.getByRole("button", { name: "AddCar.buttons.add" }) as HTMLButtonElement;
+    expect(add().disabled).toBe(true);
+    expect(screen.queryByLabelText("AddCar.labels.modification")).toBeNull();
+    fireEvent.change(screen.getByLabelText("AddCar.labels.generation"), { target: { value: "70" } });
+    expect(add().disabled).toBe(true);
+    expect(screen.queryByAltText("AddCar.photoAlt")).toBeNull();
+    fireEvent.change(screen.getByLabelText("AddCar.labels.modification"), { target: { value: "900" } });
+    expect(add().disabled).toBe(false);
+    expect(screen.getByAltText("AddCar.photoAlt").getAttribute("src")).toBe("https://api.test/api/cars/models/7/photo?generation=70");
+    fireEvent.click(add());
     await waitFor(() => expect(mock.fetch).toHaveBeenCalledTimes(1));
-    expect(JSON.parse(String((mock.fetch.mock.calls[0][1] as RequestInit).body))).toMatchObject({ car_type: "wagon", year: 2020 });
+    const body: unknown = JSON.parse(String((mock.fetch.mock.calls[0][1] as RequestInit).body));
+    expect(body).toMatchObject({ generation_id: 70, modification_id: 900, year: 2020 });
+    expect(body).not.toHaveProperty("car_type");
   });
 
-  it("saves a car with several body types without a pick, and says its type still waits", async () => {
-    mock.fetch.mockResolvedValue(new Response(JSON.stringify({ success: true, car: {
-      id: 14, plate: "AA123BB", year: 2020, car_type: null, body_status: "choose", body_types: [{ key: "sedan", name: "Sedan" }, { key: "wagon", name: "Wagon" }],
-      model: { id: 3, name: "Remote model", type: "sedan", brand: { name: "Remote brand" } },
-    } }), { status: 200 }));
-    mock.bodyTypes = [{ key: "sedan", name: "Sedan" }, { key: "wagon", name: "Wagon" }];
-    const store = renderSelectedCar();
-    fireEvent.change(screen.getByLabelText("AddCar.labels.year"), { target: { value: "2020" } });
-    fireEvent.change(screen.getByLabelText("AddCar.labels.fuel"), { target: { value: "premium" } });
-    fireEvent.click(screen.getByRole("button", { name: "AddCar.buttons.add" }));
-    expect(await screen.findByText("AddCar.success.bodyPending")).toBeTruthy();
-    expect(JSON.parse(String((mock.fetch.mock.calls[0][1] as RequestInit).body))).not.toHaveProperty("car_type");
-    // The model's general type is not the car's type.
-    expect(store.getState().car.cars[0]).toMatchObject({ car_type: null, body_status: "choose", model: { type: "" } });
-  });
-
-  it("says when geoapi.ge can't tell the body type, and still saves the car", () => {
-    mock.unknown = true;
+  it("does not ask a step the catalog has nothing for", () => {
+    mock.generations = [{ id: 70, name: "IV", detail: "", photo: null }];
     renderSelectedCar();
     fireEvent.change(screen.getByLabelText("AddCar.labels.year"), { target: { value: "2020" } });
     fireEvent.change(screen.getByLabelText("AddCar.labels.fuel"), { target: { value: "premium" } });
-    expect(screen.getByText("AddCar.bodyUnknown")).toBeTruthy();
+    fireEvent.change(screen.getByLabelText("AddCar.labels.generation"), { target: { value: "70" } });
+    expect(screen.queryByLabelText("AddCar.labels.modification")).toBeNull();
     expect((screen.getByRole("button", { name: "AddCar.buttons.add" }) as HTMLButtonElement).disabled).toBe(false);
   });
 
-  it("shows no body type field when the year has one type", () => {
-    mock.bodyTypes = [{ key: "suv", name: "SUV" }];
+  it("blocks the save while the generations could not load, and offers a retry", () => {
+    mock.generationsFailed = true;
     renderSelectedCar();
     fireEvent.change(screen.getByLabelText("AddCar.labels.year"), { target: { value: "2020" } });
-    expect(screen.queryByLabelText("AddCar.labels.bodyType")).toBeNull();
+    fireEvent.change(screen.getByLabelText("AddCar.labels.fuel"), { target: { value: "premium" } });
+    expect(screen.getByText("AddCar.errors.generationsUnavailable")).toBeTruthy();
+    expect((screen.getByRole("button", { name: "AddCar.buttons.add" }) as HTMLButtonElement).disabled).toBe(true);
   });
 
   it("requires a year before submitting a new car", () => {
