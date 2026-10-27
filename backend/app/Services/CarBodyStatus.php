@@ -28,6 +28,11 @@ class CarBodyStatus
         if ($car instanceof UserCar) {
             $model = $car->model()->with('brand')->first();
             $remote = $model && $model->source === CarCatalog::REMOTE && $model->external_model_id;
+            if ($remote && $car->generation_id) {
+                // The driver picked the generation and modification: they say more than the year does.
+                return $this->body->trimOptions((int) $model->external_model_id, (int) $car->generation_id,
+                    $car->modification_id ? (int) $car->modification_id : null);
+            }
 
             return $remote
                 ? $this->body->options(CarCatalog::REMOTE, (int) $model->brand?->external_brand_id, (int) $model->external_model_id, $year)

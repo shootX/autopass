@@ -9,7 +9,7 @@ import { invalidateCarsCache } from "@/hooks/useFetchCars";
 import { useCarBrands } from "@/hooks/useCarBrands";
 import type { Brand, Model, Car } from "@/store/carSlice";
 import { useCarYears } from "@/hooks/useCarYears";
-import { useCarBodyTypes } from "@/hooks/useCarBodyTypes";
+import { useCarGenerations, useCarModifications } from "@/hooks/useCarTrims";
 import { readCar, record } from "@/lib/carResult";
 import { useTranslation } from "@/hooks/useTranslation";
 import { leftArrowUrl, closeIconUrl } from "@/assets/staticUrls";
@@ -29,6 +29,7 @@ export default function AddCar({ showHeader }: { showHeader?: boolean }) {
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
   const [addedCar, setAddedCar] = useState<Car | null>(null);
+  const [addedPhoto, setAddedPhoto] = useState<string | null>(null);
   const location = useLocation();
   const shouldShowHeader = showHeader !== false && location.state?.fromRegistration !== true;
   const [models, setModels] = useState<Model[]>([]);
@@ -38,11 +39,19 @@ export default function AddCar({ showHeader }: { showHeader?: boolean }) {
   const modelRequest = useRef(0);
   const yearOptions = useCarYears(brand, model);
   useEffect(() => { setYear(""); }, [brand?.id, model?.id]);
-  // The body type comes from the brand, model and year; the field shows only when that year has several, and a car
-  // saved without a pick waits for it (no package or QR until then).
-  const [carType, setCarType] = useState("");
-  const bodyTypes = useCarBodyTypes(brand, model, year);
-  useEffect(() => { setCarType(""); }, [brand?.id, model?.id, year]);
+  // Brand, model, year, generation and modification are all picked; the photo and the body type come with them.
+  // A step the catalog has nothing for is not asked (a model from our own list has no generations).
+  const [generationId, setGenerationId] = useState<number | null>(null);
+  const [modificationId, setModificationId] = useState<number | null>(null);
+  const generations = useCarGenerations(brand, model, year);
+  const modifications = useCarModifications(model, generationId, year);
+  useEffect(() => { setGenerationId(null); }, [brand?.id, model?.id, year]);
+  useEffect(() => { setModificationId(null); }, [brand?.id, model?.id, year, generationId]);
+  const generation = generations.rows.find(row => row.id === generationId) ?? null;
+  const generationReady = !generations.loading && !generations.failed && (generations.rows.length === 0 || generation !== null);
+  const modificationReady = generationReady && !modifications.loading && !modifications.failed
+    && (!generation || modifications.rows.length === 0 || modifications.rows.some(row => row.id === modificationId));
+  const photo = generation && modificationReady ? generation.photo : null;
   const { brands, loading, error: brandsError } = useCarBrands();
   const normalizedPlate = numberPlate.replace(/[\s-]/g, "");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -94,7 +103,7 @@ export default function AddCar({ showHeader }: { showHeader?: boolean }) {
     numberPlate
   );
   const isFormReady = brand && model && year && fuel && isValidPlate && !yearOptions.loading
-    && !bodyTypes.loading;
+    && generationReady && modificationReady;
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
@@ -115,6 +124,16 @@ export default function AddCar({ showHeader }: { showHeader?: boolean }) {
       setIsSubmitting(false);
       return;
     }
+    if (!generationReady) {
+      setError("chooseGeneration");
+      setIsSubmitting(false);
+      return;
+    }
+    if (!modificationReady) {
+      setError("chooseModification");
+      setIsSubmitting(false);
+      return;
+    }
     if (!fuel) {
       setError("chooseFuel");
       setIsSubmitting(false);
@@ -124,7 +143,8 @@ export default function AddCar({ showHeader }: { showHeader?: boolean }) {
     const payload = {
       source: model.source ?? brand.source ?? "local",
       brand_id: brand.id, model_id: model.id, year: Number(year), plate: normalizedPlate, fuel_type: fuel,
-      ...(bodyTypes.choose && carType ? { car_type: carType } : {}),
+      ...(generationId ? { generation_id: generationId } : {}),
+      ...(modificationId ? { modification_id: modificationId } : {}),
     };
     try {
       const res = await customFetch(`${import.meta.env.VITE_API_URL}/mycars/add`, {
@@ -136,10 +156,13 @@ export default function AddCar({ showHeader }: { showHeader?: boolean }) {
       const data = record(body);
       if (!res.ok || data?.success !== true) {
         const code = data?.error_code;
-        setError(code === "plate_exists" ? "plateExists" : code === "body_type_invalid"
-          ? "chooseBodyType" : res.status === 401 ? "sessionExpired" : "saveFailed");
-        // The catalog changed since the form loaded: ask again with the types the server sent.
-        if (code === "body_type_invalid") bodyTypes.retry();
+        setError(code === "plate_exists" ? "plateExists"
+          : code === "generation_required" || code === "generation_invalid" ? "chooseGeneration"
+          : code === "modification_required" || code === "modification_invalid" ? "chooseModification"
+          : res.status === 401 ? "sessionExpired" : "saveFailed");
+        // The catalog changed since the form loaded: load the lists again.
+        if (code === "generation_invalid") generations.retry();
+        if (code === "modification_invalid") modifications.retry();
         return;
       }
       const createdCar = readCar(body);
@@ -150,6 +173,7 @@ export default function AddCar({ showHeader }: { showHeader?: boolean }) {
       invalidateCarsCache();
       dispatch(addCar(createdCar));
       setAddedCar(createdCar);
+      setAddedPhoto(photo);
       setSubmitted(true);
     } catch {
       setError("saveFailed");
@@ -163,10 +187,12 @@ export default function AddCar({ showHeader }: { showHeader?: boolean }) {
     dispatch(setModel(null));
     setNumberPlate("");
     setYear("");
-    setCarType("");
+    setGenerationId(null);
+    setModificationId(null);
     setSubmitted(false);
     setError("");
     setAddedCar(null);
+    setAddedPhoto(null);
   };
   const t = useTranslation();
   // Codes match UserCar::FUEL_TYPES on the backend.
@@ -251,21 +277,34 @@ export default function AddCar({ showHeader }: { showHeader?: boolean }) {
               </div>}
             </div>
 
-            {bodyTypes.choose && (
+            {generations.rows.length > 0 && (
               <div className="input-block">
-                <label htmlFor="car-body">{t("AddCar.labels.bodyType")}</label>
-                <select id="car-body" className="input-select" value={carType}
-                  onChange={event => { setCarType(event.target.value); setError(""); }}>
-                  <option value="">{t("AddCar.placeholders.chooseBodyType")}</option>
-                  {bodyTypes.types.map(item => <option key={item.key} value={item.key}>{item.name}</option>)}
+                <label htmlFor="car-generation">{t("AddCar.labels.generation")}</label>
+                <select id="car-generation" className="input-select" value={generationId ?? ""}
+                  onChange={event => { setGenerationId(event.target.value ? Number(event.target.value) : null); setError(""); }}>
+                  <option value="">{t("AddCar.placeholders.chooseGeneration")}</option>
+                  {generations.rows.map(row => <option key={row.id} value={row.id}>{[row.name, row.detail].filter(Boolean).join(" · ")}</option>)}
                 </select>
-                <p>{t(bodyTypes.incomplete ? "AddCar.bodyIncomplete" : "AddCar.bodyLater")}</p>
               </div>
             )}
-            {bodyTypes.unknown && <p role="status">{t("AddCar.bodyUnknown")}</p>}
-            {bodyTypes.failed && <div role="alert">{t("AddCar.errors.bodyTypesUnavailable")}
-              <button type="button" onClick={bodyTypes.retry}>{t("AddCar.retry")}</button>
+            {generations.failed && <div role="alert">{t("AddCar.errors.generationsUnavailable")}
+              <button type="button" onClick={generations.retry}>{t("AddCar.retry")}</button>
             </div>}
+
+            {modifications.rows.length > 0 && (
+              <div className="input-block">
+                <label htmlFor="car-modification">{t("AddCar.labels.modification")}</label>
+                <select id="car-modification" className="input-select" value={modificationId ?? ""}
+                  onChange={event => { setModificationId(event.target.value ? Number(event.target.value) : null); setError(""); }}>
+                  <option value="">{t("AddCar.placeholders.chooseModification")}</option>
+                  {modifications.rows.map(row => <option key={row.id} value={row.id}>{[row.name, row.detail].filter(Boolean).join(" · ")}</option>)}
+                </select>
+              </div>
+            )}
+            {modifications.failed && <div role="alert">{t("AddCar.errors.modificationsUnavailable")}
+              <button type="button" onClick={modifications.retry}>{t("AddCar.retry")}</button>
+            </div>}
+            {photo && <img className="add-car-photo" src={photo} alt={t("AddCar.photoAlt")} style={{ width: "100%", maxHeight: 180, objectFit: "contain" }} />}
 
             <div className="input-block">
               <label htmlFor="car-fuel">{t("AddCar.labels.fuel")}</label>
@@ -320,7 +359,7 @@ export default function AddCar({ showHeader }: { showHeader?: boolean }) {
 
             <div className='car-preview'>
               <img
-                src='images/hatchback_image.png'
+                src={addedPhoto ?? 'images/hatchback_image.png'}
                 alt={t("AddCar.success.carAlt")}
               />
               <div>

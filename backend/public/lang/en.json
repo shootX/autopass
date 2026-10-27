@@ -63,7 +63,9 @@
             "plate": "Number plate",
             "year": "Production year",
             "fuel": "Fuel type",
-            "bodyType": "Body type"
+            "bodyType": "Body type",
+            "generation": "Generation",
+            "modification": "Modification"
         },
         "placeholders": {
             "plate": "XX - XXX - XX",
@@ -71,7 +73,9 @@
             "chooseModel": "Choose your car model",
             "chooseYear": "Choose a year",
             "chooseFuel": "Choose fuel type",
-            "chooseBodyType": "Choose the body type"
+            "chooseBodyType": "Choose the body type",
+            "chooseGeneration": "Choose the generation",
+            "chooseModification": "Choose the modification"
         },
         "errors": {
             "invalidPlate": "Invalid number plate format",
@@ -84,7 +88,11 @@
             "sessionExpired": "Your session expired. Please sign in again.",
             "chooseFuel": "Choose the fuel type.",
             "chooseBodyType": "This model has several body types in this year. Choose the body type.",
-            "bodyTypesUnavailable": "Could not load body types."
+            "bodyTypesUnavailable": "Could not load body types.",
+            "chooseGeneration": "Choose the generation.",
+            "chooseModification": "Choose the modification.",
+            "generationsUnavailable": "Could not load the generations.",
+            "modificationsUnavailable": "Could not load the modifications."
         },
         "buttons": {
             "add": "Add",
@@ -116,7 +124,8 @@
         },
         "bodyLater": "You can choose now or later. Until then packages and QR are not available.",
         "bodyIncomplete": "The catalog does not name every variant. If your body type is not listed, leave it empty and contact support.",
-        "bodyUnknown": "The catalog does not name a body type for this model. The car will be saved and support will confirm its body type."
+        "bodyUnknown": "The catalog does not name a body type for this model. The car will be saved and support will confirm its body type.",
+        "photoAlt": "Car photo"
     },
     "Authentication": {
         "logoAlt": "LOGO",

@@ -7,8 +7,9 @@ use App\Models\CarModel;
 use Illuminate\Support\Facades\Log;
 
 /**
- * A car's body type from its brand, model and year, as geoapi.ge names it, and never guessed. The generations
- * built in that year name the body types: one type (every generation naming one we know) is confirmed on its own;
+ * A car's body type as geoapi.ge names it, never guessed: from the driver's generation and modification
+ * (trimOptions), or for a car without them from its brand, model and year. The generations built in that year name
+ * the body types: one type (every generation naming one we know) is confirmed on its own;
  * several, or one next to generations that name none we know, wait for a person to pick one of them; none, or
  * geoapi.ge down, leaves the type unknown until a retry. A generation, modification or generation photo is kept
  * only when exactly one fits; a model's general photo says nothing about the generation or body.
@@ -62,15 +63,74 @@ class CarBody
             if ($year !== null && ! CarTrims::covers($row, $year)) {
                 continue;
             }
-            $type = BodyType::fromCatalog($row['body_type'] ?? null);
-            if ($type === null || ! isset($row['id'])) {
+            $named = self::rowTypes($row);
+            if ($named['types'] === [] || ! isset($row['id'])) {
                 // An empty or unknown body name: one known type next to it does not prove the car is that type.
                 $incomplete = true;
 
                 continue;
             }
-            $generations[$type][] = (int) $row['id'];
+            $incomplete = $incomplete || $named['incomplete'];
+            foreach ($named['types'] as $type) {
+                $generations[$type][] = (int) $row['id'];
+            }
         }
+
+        return $this->answer($generations, $incomplete, $ids);
+    }
+
+    /**
+     * What geoapi.ge says about the body of a picked generation and modification. The modification names the
+     * body of that very car; without it the generation's own type, or its list of types, is all there is.
+     * keep_trim: the car keeps the generation and modification it was saved with.
+     */
+    public function trimOptions(int $modelId, int $generationId, ?int $modificationId): array
+    {
+        try {
+            $generation = $this->trims->generation($modelId, $generationId);
+            $modification = $modificationId ? $this->trims->modificationRow($generationId, $modificationId) : null;
+        } catch (\Throwable $e) {
+            Log::warning('CarAPI unavailable for the body type.', ['exception' => $e::class]);
+
+            return ['status' => self::UNKNOWN, 'types' => [], 'incomplete' => false, 'unavailable' => true, 'catalog' => null,
+                'generations' => [], 'keep_trim' => true];
+        }
+        $type = BodyType::fromCatalog($modification['body_type'] ?? null);
+        $named = $type !== null ? ['types' => [$type], 'incomplete' => false] : self::rowTypes($generation ?? []);
+        $generations = array_fill_keys($named['types'], [$generationId]);
+
+        return ['keep_trim' => true] + $this->answer($generations, $named['incomplete'], null);
+    }
+
+    /**
+     * Our keys for a catalog row's body: its body_type, else its body_types list (geoapi.ge names several for a
+     * generation built as a hatchback, a sedan and a wagon). incomplete: a name in the list we can't tell.
+     *
+     * @return array{types: list<string>, incomplete: bool}
+     */
+    public static function rowTypes(array $row): array
+    {
+        $one = BodyType::fromCatalog(is_string($row['body_type'] ?? null) ? $row['body_type'] : null);
+        if ($one !== null) {
+            return ['types' => [$one], 'incomplete' => false];
+        }
+        $types = [];
+        $incomplete = false;
+        foreach (is_array($row['body_types'] ?? null) ? $row['body_types'] : [] as $name) {
+            $type = BodyType::fromCatalog(is_string($name) ? $name : null);
+            if ($type === null) {
+                $incomplete = true;
+            } elseif (! in_array($type, $types, true)) {
+                $types[] = $type;
+            }
+        }
+
+        return ['types' => $types, 'incomplete' => $incomplete && $types !== []];
+    }
+
+    /** @param  array<string, list<int>>  $generations */
+    private function answer(array $generations, bool $incomplete, ?array $ids): array
+    {
         $types = $this->ordered(array_keys($generations));
 
         return [
@@ -145,6 +205,9 @@ class CarBody
             // Not checked while geoapi.ge is down, so cars:check-bodies tries again.
             'body_checked_at' => $options['unavailable'] ? null : now(),
         ];
+        if (! empty($options['keep_trim'])) {
+            return $body;
+        }
 
         return $details ? $body + $this->trim($options['catalog'], $generation, $year) : $body + ['generation_id' => $generation];
     }
