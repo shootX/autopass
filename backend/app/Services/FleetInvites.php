@@ -144,7 +144,7 @@ class FleetInvites
             : ['model_id' => self::modelId($car), 'trim' => self::trim($car)];
 
         try {
-            return DB::transaction(function () use ($car, $user, $new) {
+            $linked = DB::transaction(function () use ($car, $user, $new) {
                 $userCar = UserCar::query()->where('plate', $car->plate)->lockForUpdate()->first();
                 if ($userCar && (int) $userCar->user_id !== (int) $user->id) {
                     // Someone else has this plate in the app: an admin has to sort it out.
@@ -160,16 +160,16 @@ class FleetInvites
 
                         return false;
                     }
+                    // The company car's body status comes along: confirmed, or the types the driver picks from.
                     $userCar = UserCar::query()->create([
                         'user_id' => $user->id,
                         'model_id' => $modelId,
                         'plate' => $car->plate,
                         'year' => $car->year,
-                        'car_type' => $car->car_type,
-                    ] + ($new['trim'] ?? []));
-                } elseif ($car->car_type && ! $userCar->car_type) {
-                    // The driver's own car had no body type of its own yet: take the one the company gave.
-                    $userCar->forceFill(['car_type' => $car->car_type, 'year' => $userCar->year ?? $car->year])->save();
+                    ] + $car->bodyColumns() + ($new['trim'] ?? []));
+                } elseif ($car->bodyConfirmed() && ! $userCar->bodyConfirmed()) {
+                    // The driver's own car had no confirmed body type yet: take the one confirmed for the company car.
+                    $userCar->forceFill(['year' => $userCar->year ?? $car->year] + $car->bodyColumns())->save();
                 }
 
                 $car->forceFill([
@@ -180,8 +180,15 @@ class FleetInvites
                     'activated_at' => now(),
                 ])->save();
 
-                return true;
+                return $userCar;
             });
+            if ($linked instanceof UserCar && $linked->bodyConfirmed() && ! $car->bodyConfirmed()
+                && ($car->body_options === null || in_array($linked->car_type, $car->body_options, true))) {
+                // The driver had confirmed this car's body type already: the company car takes it.
+                app(CarBodyStatus::class)->save($car, $linked->bodyColumns(), 'system');
+            }
+
+            return $linked instanceof UserCar;
         } catch (QueryException $e) {
             // A parallel add of the same plate won: leave the car invited, the next login retries.
             Log::warning('fleet_activation_failed', ['car' => $car->id, 'exception' => $e::class]);

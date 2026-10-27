@@ -214,6 +214,20 @@ class CarCatalog
         return $brand ? collect($this->remoteModels($brand))->firstWhere('id', $modelId) : null;
     }
 
+    /**
+     * geoapi.ge ids of a brand and model with our names (case aside), null when geoapi.ge has none. Throws when down.
+     *
+     * @return array{brand_id: int, model_id: int}|null
+     */
+    public function remoteIdsByName(string $brandName, string $modelName): ?array
+    {
+        $same = fn (string $name) => fn (array $row) => mb_strtolower(trim((string) $row['name'])) === mb_strtolower(trim($name));
+        $brand = collect($this->remoteBrands())->first($same($brandName));
+        $model = $brand ? collect($this->remoteModels($brand))->first($same($modelName)) : null;
+
+        return $model ? ['brand_id' => (int) $brand['id'], 'model_id' => (int) $model['id']] : null;
+    }
+
     /** Raw generation rows of a remote model, cached; shared by years and the generation picker. */
     public function remoteGenerations(int $modelId): array
     {

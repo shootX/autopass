@@ -181,6 +181,11 @@ export default function Home() {
               </span>
             </div>
           </div>
+        ) : selectedCar && selectedCar.body.status !== "confirmed" ? (
+          // No package for a car whose body type waits: the driver confirms the type first.
+          <button type="button" className="ap-btn" style={{ marginTop: 16 }} onClick={() => navigate("/customer-my-data#vehicles")}>
+            {t("CarBody.open")}
+          </button>
         ) : (
           <button type="button" className="ap-btn" style={{ marginTop: 16 }} onClick={() => navigate("/my-packages")}>
             შეარჩიე პაკეტი

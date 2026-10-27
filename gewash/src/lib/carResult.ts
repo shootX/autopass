@@ -1,4 +1,5 @@
 import type { Car } from "@/store/carSlice";
+import { carBodyType, readBody } from "@/lib/carBody";
 
 export function record(value: unknown): Record<string, unknown> | null {
   return value && typeof value === "object" && !Array.isArray(value)
@@ -13,15 +14,21 @@ export function readCar(value: unknown): Car | null {
   const model = record(car.model);
   const brand = record(model?.brand);
   const year = Number(car.year);
+  const bodyState = readBody(car);
+  const type = carBodyType(car, model?.type ?? car.type);
   return {
     id, plate: car.plate,
     year: car.year != null && Number.isInteger(year) ? year : null,
+    car_type: bodyState.status === "confirmed" && type ? type : null,
+    body_status: bodyState.status,
+    body_types: bodyState.types,
+    body_incomplete: bodyState.incomplete,
     model: {
       id: typeof model?.id === "number" ? model.id : undefined,
       source: model?.source === "carapi" ? "carapi" : "local",
       external_model_id: typeof model?.external_model_id === "number" ? model.external_model_id : null,
       name: typeof model?.name === "string" ? model.name : typeof car.model === "string" ? car.model : "",
-      type: typeof car.car_type === "string" && car.car_type ? car.car_type : typeof model?.type === "string" ? model.type : typeof car.type === "string" ? car.type : "",
+      type,
       brand: {
         id: typeof brand?.id === "number" ? brand.id : undefined,
         source: brand?.source === "carapi" ? "carapi" : "local",

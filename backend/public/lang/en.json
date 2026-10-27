@@ -94,7 +94,8 @@
         "success": {
             "message": "Congratulations! Your vehicle has been successfully added",
             "carType": "SUV",
-            "carAlt": "added car"
+            "carAlt": "added car",
+            "bodyPending": "The body type needs confirming: choose it in My vehicles. Until then packages and QR are not available."
         },
         "icons": {
             "arrowAlt": "Arrow"
@@ -112,7 +113,10 @@
             "cng": "Natural gas CNG",
             "lpg": "Liquefied gas LPG",
             "hydrogen": "Hydrogen"
-        }
+        },
+        "bodyLater": "You can choose now or later. Until then packages and QR are not available.",
+        "bodyIncomplete": "The catalog does not name every variant. If your body type is not listed, leave it empty and contact support.",
+        "bodyUnknown": "The catalog does not name a body type for this model. The car will be saved and support will confirm its body type."
     },
     "Authentication": {
         "logoAlt": "LOGO",
@@ -1220,5 +1224,19 @@
     },
     "Points": {
         "test": "Test"
+    },
+    "CarBody": {
+        "choose": "Body type to be confirmed",
+        "unknown": "Body type not known yet",
+        "blocked": "Until the body type is confirmed, packages and QR are not available for this car. Your other cars work as usual.",
+        "label": "Choose the body type",
+        "placeholder": "Choose",
+        "incomplete": "The catalog does not name every variant of this model. If your body type is not listed, contact support.",
+        "save": "Confirm",
+        "retry": "Check again",
+        "failed": "The request failed. Try again.",
+        "qrBlocked": "This car's body type is not confirmed yet, so QR and packages are not available.",
+        "open": "Confirm the body type",
+        "packagesBlocked": "To buy a package, first confirm the body type: {plates}."
     }
 }

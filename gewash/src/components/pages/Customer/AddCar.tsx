@@ -38,7 +38,8 @@ export default function AddCar({ showHeader }: { showHeader?: boolean }) {
   const modelRequest = useRef(0);
   const yearOptions = useCarYears(brand, model);
   useEffect(() => { setYear(""); }, [brand?.id, model?.id]);
-  // The body type comes from the brand, model and year; the field shows only when that year has several.
+  // The body type comes from the brand, model and year; the field shows only when that year has several, and a car
+  // saved without a pick waits for it (no package or QR until then).
   const [carType, setCarType] = useState("");
   const bodyTypes = useCarBodyTypes(brand, model, year);
   useEffect(() => { setCarType(""); }, [brand?.id, model?.id, year]);
@@ -93,7 +94,7 @@ export default function AddCar({ showHeader }: { showHeader?: boolean }) {
     numberPlate
   );
   const isFormReady = brand && model && year && fuel && isValidPlate && !yearOptions.loading
-    && !bodyTypes.loading && (!bodyTypes.choose || carType);
+    && !bodyTypes.loading;
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
@@ -111,11 +112,6 @@ export default function AddCar({ showHeader }: { showHeader?: boolean }) {
 
     if (!year || !yearOptions.years.includes(Number(year))) {
       setError("chooseYear");
-      setIsSubmitting(false);
-      return;
-    }
-    if (bodyTypes.choose && !carType) {
-      setError("chooseBodyType");
       setIsSubmitting(false);
       return;
     }
@@ -140,10 +136,10 @@ export default function AddCar({ showHeader }: { showHeader?: boolean }) {
       const data = record(body);
       if (!res.ok || data?.success !== true) {
         const code = data?.error_code;
-        setError(code === "plate_exists" ? "plateExists" : code === "body_type_required" || code === "body_type_invalid"
+        setError(code === "plate_exists" ? "plateExists" : code === "body_type_invalid"
           ? "chooseBodyType" : res.status === 401 ? "sessionExpired" : "saveFailed");
         // The catalog changed since the form loaded: ask again with the types the server sent.
-        if (code === "body_type_required" || code === "body_type_invalid") bodyTypes.retry();
+        if (code === "body_type_invalid") bodyTypes.retry();
         return;
       }
       const createdCar = readCar(body);
@@ -263,8 +259,10 @@ export default function AddCar({ showHeader }: { showHeader?: boolean }) {
                   <option value="">{t("AddCar.placeholders.chooseBodyType")}</option>
                   {bodyTypes.types.map(item => <option key={item.key} value={item.key}>{item.name}</option>)}
                 </select>
+                <p>{t(bodyTypes.incomplete ? "AddCar.bodyIncomplete" : "AddCar.bodyLater")}</p>
               </div>
             )}
+            {bodyTypes.unknown && <p role="status">{t("AddCar.bodyUnknown")}</p>}
             {bodyTypes.failed && <div role="alert">{t("AddCar.errors.bodyTypesUnavailable")}
               <button type="button" onClick={bodyTypes.retry}>{t("AddCar.retry")}</button>
             </div>}
@@ -328,6 +326,7 @@ export default function AddCar({ showHeader }: { showHeader?: boolean }) {
               <div>
                 <h4>{addedCar?.plate}</h4>
                 <span className='car-type'>{t("AddCar.success.carType")}</span>
+                {addedCar && addedCar.body_status !== "confirmed" && <p role="status">{t("AddCar.success.bodyPending")}</p>}
               </div>
             </div>
 

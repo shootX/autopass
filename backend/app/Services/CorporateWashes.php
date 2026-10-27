@@ -106,7 +106,7 @@ class CorporateWashes
      * Sets how many of its body type's washes one car may use. Taking washes back returns them to the pool.
      * The car's body type is kept on it from then on, so its washes always come from and go back to one pool.
      *
-     * @param  'admin'|'company'|'api'  $actor
+     * @param  'admin'|'company'|'api'|'driver'|'system'  $actor
      * @return 'ok'|'invalid'|'not_enough'|'no_body_type'
      */
     public static function allocate(FleetCar $car, int $washes, string $actor, ?int $actorId = null): string
@@ -118,7 +118,8 @@ class CorporateWashes
         return DB::transaction(function () use ($car, $washes, $actor, $actorId) {
             $client = self::lockClient((int) $car->corporate_client_id);
             $locked = FleetCar::query()->whereKey($car->id)->lockForUpdate()->firstOrFail();
-            $carType = $locked->carType();
+            // Washes go only to a car of a confirmed body type; given ones may always go back to their own pool.
+            $carType = $locked->carType() ?? ($washes < (int) $locked->washes_left ? $locked->car_type : null);
             if ($carType === null) {
                 return 'no_body_type';
             }
@@ -196,6 +197,9 @@ class CorporateWashes
         }
         if ($car->status !== FleetCar::STATUS_ACTIVE || ! $car->user_car_id) {
             return 'car_blocked';
+        }
+        if (! $car->bodyConfirmed()) {
+            return 'body_unconfirmed';
         }
         if ($car->mode === FleetCar::MODE_DISCOUNT) {
             // A discount car needs an active discount package with a row for its body type, and washes left this month.

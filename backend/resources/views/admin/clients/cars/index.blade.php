@@ -8,6 +8,10 @@
                 {{ session()->get('message') }}
             </div>
         @endif
+        @error('body_type')
+            <div class="alert alert-danger mt-4">{{ $message }}</div>
+        @enderror
+        @php($bodyOptions = \App\Models\BodyType::options())
 
         <div class="card mt-4 mb-4">
             <div class="card-header" style="display: flex;justify-content: space-between;align-items: baseline;">
@@ -33,7 +37,7 @@
                             <td>{{$car->id}}</td>
                             <td>{{$car->model->brand->name}}</td>
                             <td>{{$car->model->name}}</td>
-                            <td>{{ \App\Models\BodyType::labelFor($car->carType()) }}</td>
+                            <td>@include('admin.corporate.fleet-body', ['carBase' => route('admin.clients.cars', $client), 'adminBody' => true])</td>
                             <td>{{$car->plate}}</td>
                             <td>
                                 @if($car->package)

@@ -3,13 +3,20 @@ import type { Brand, Model } from "@/store/carSlice";
 import { customFetch } from "@/utils/customFetch";
 import { record } from "@/lib/carResult";
 import { readAccessToken } from "@/lib/accessToken";
+import { readBodyTypes, type BodyTypeOption } from "@/lib/carBody";
 
-export type BodyTypeOption = { key: string; name: string };
+export type { BodyTypeOption };
 
-/** Body types of the model in the year. `choose` is true only when the year has several, so the form asks. */
+/**
+ * Body types of the model in the year, as geoapi.ge names them. choose: several (or one next to unnamed variants,
+ * incomplete), so the form offers them; the car is saved without a pick too and waits for it. unknown: geoapi.ge
+ * can't tell (unavailable: it did not answer); the car is saved and its type is checked again later.
+ */
 export function useCarBodyTypes(brand: Brand | null, model: Model | null, year: string) {
   const [types, setTypes] = useState<BodyTypeOption[]>([]);
   const [choose, setChoose] = useState(false);
+  const [unknown, setUnknown] = useState(false);
+  const [incomplete, setIncomplete] = useState(false);
   const [loading, setLoading] = useState(false);
   const [failed, setFailed] = useState(false);
   const [retry, setRetry] = useState(0);
@@ -19,6 +26,8 @@ export function useCarBodyTypes(brand: Brand | null, model: Model | null, year: 
   useEffect(() => {
     setTypes([]);
     setChoose(false);
+    setUnknown(false);
+    setIncomplete(false);
     setFailed(false);
     if (!brandId || !modelId || !year) return;
     const controller = new AbortController();
@@ -31,13 +40,14 @@ export function useCarBodyTypes(brand: Brand | null, model: Model | null, year: 
       if (!response.ok) throw new Error("Body types unavailable");
       const body = record(await response.json());
       if (body?.success !== true || !Array.isArray(body.body_types)) throw new Error("Invalid body type response");
-      const options = body.body_types.flatMap(value => {
-        const row = record(value);
-        return typeof row?.key === "string" && typeof row.name === "string" ? [{ key: row.key, name: row.name }] : [];
-      });
+      const options = readBodyTypes(body.body_types);
       if (!controller.signal.aborted) {
         setTypes(options);
-        setChoose(body.choose === true && options.length > 1);
+        setChoose(body.choose === true && options.length > 0);
+        setIncomplete(body.incomplete === true);
+        // geoapi.ge did not answer: the same retry as a failed request.
+        setFailed(body.unavailable === true);
+        setUnknown(body.status === "unknown" && body.unavailable !== true);
       }
     }).catch(() => {
       if (!controller.signal.aborted) setFailed(true);
@@ -47,5 +57,5 @@ export function useCarBodyTypes(brand: Brand | null, model: Model | null, year: 
     return () => controller.abort();
   }, [brandId, modelId, catalogSource, year, retry]);
 
-  return { types, choose, loading, failed, retry: () => setRetry(value => value + 1) };
+  return { types, choose, unknown, incomplete, loading, failed, retry: () => setRetry(value => value + 1) };
 }

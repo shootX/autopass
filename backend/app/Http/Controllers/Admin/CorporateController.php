@@ -148,12 +148,12 @@ class CorporateController extends Controller
             return $data;
         }
 
-        $result = FleetCars::add($corporate, $data, 'manual');
+        $result = FleetCars::add($corporate, $data, 'manual', $body);
         if ($result !== 'added') {
             return redirect()->back()->withInput()->withErrors(FleetCars::addError($result));
         }
 
-        return redirect()->route('admin.corporate.show', $corporate)->with('message', __('admin.fleet_car_added'));
+        return redirect()->route('admin.corporate.show', $corporate)->with('message', __(FleetCars::addedMessage($body['status'])));
     }
 
     public function deleteCar(CorporateClient $corporate, FleetCar $car)
@@ -175,7 +175,8 @@ class CorporateController extends Controller
 
         return redirect()->route('admin.corporate.show', $corporate)
             ->with('message', __('admin.fleet_imported', ['added' => $result['added'], 'skipped' => $result['skipped']]))
-            ->with('fleet_import_errors', array_slice($result['errors'], 0, 50));
+            ->with('fleet_import_errors', array_slice($result['errors'], 0, 50))
+            ->with('fleet_import_pending', array_slice($result['pending'], 0, 50));
     }
 
     public function template()

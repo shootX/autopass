@@ -36,7 +36,7 @@ function stage2ReviewFixture(string $suffix): array
         'work_time_start' => '09:00', 'work_time_end' => '20:00', 'location' => 'Review location', 'manager_id' => $manager->id]);
     $brand = CarBrand::create(['name' => 'Review brand']);
     $model = CarModel::create(['name' => 'Review model', 'brand_id' => $brand->id, 'type' => 'sedan']);
-    $car = UserCar::create(['user_id' => $client->id, 'model_id' => $model->id, 'plate' => 'AA123BB']);
+    $car = UserCar::create(['car_type' => 'sedan', 'body_status' => 'confirmed', 'user_id' => $client->id, 'model_id' => $model->id, 'plate' => 'AA123BB']);
     $service = CarWashService::forceCreate(['name' => 'Review service']);
     $wash->services()->attach($service->id);
 
@@ -59,7 +59,7 @@ it('returns a real car id when adding a local catalog selection', function () {
 it('refuses booking a car owned by another customer', function () {
     $f = stage2ReviewFixture('02');
     $other = makeUser('555820299');
-    $foreign = UserCar::create(['user_id' => $other->id, 'model_id' => $f['model']->id, 'plate' => 'CC123DD']);
+    $foreign = UserCar::create(['car_type' => 'sedan', 'body_status' => 'confirmed', 'user_id' => $other->id, 'model_id' => $f['model']->id, 'plate' => 'CC123DD']);
     $this->withToken(JWTAuth::fromUser($f['client']))->postJson('/api/appointments/add', stage2ReviewBooking($f, ['car_id' => $foreign->id]))->assertNotFound();
     expect(Appointment::where('user_id', $f['client']->id)->where('car_id', $foreign->id)->count())->toBe(0);
 });

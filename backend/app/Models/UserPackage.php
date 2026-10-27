@@ -21,6 +21,17 @@ class UserPackage extends Model
         'qr_code',
     ];
 
+    protected $casts = ['body_legacy' => 'boolean'];
+
+    /**
+     * A wash needs the car's body type confirmed. A package bought before body types were confirmed
+     * (body_legacy) keeps working until it ends, so nothing already paid stops at the wash.
+     */
+    public function bodyAllowsWash(): bool
+    {
+        return (bool) $this->body_legacy || (bool) $this->car?->bodyConfirmed();
+    }
+
     protected $hidden = [
         'rectoken',
     ];

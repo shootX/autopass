@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasBodyStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class FleetCar extends Model
 {
+    use HasBodyStatus;
+
     public const STATUS_INVITED = 'invited';
 
     public const STATUS_ACTIVE = 'active';
@@ -29,6 +32,11 @@ class FleetCar extends Model
         'source',
         'year',
         'car_type',
+        'body_status',
+        'body_options',
+        'body_incomplete',
+        'body_source',
+        'body_checked_at',
         'catalog_source',
         'catalog_brand_id',
         'catalog_model_id',
@@ -46,10 +54,13 @@ class FleetCar extends Model
         'year' => 'integer',
     ];
 
-    /** The body type the company gave; a car added before that goes by the driver's app car. */
+    /**
+     * The confirmed body type, the only one the car washes and is priced by. An unconfirmed car may still hold
+     * car_type: the type of the washes it was given, which go back to that pool if another type is confirmed.
+     */
     public function carType(): ?string
     {
-        return $this->car_type ?: $this->userCar?->carType() ?: null;
+        return $this->bodyConfirmed() ? $this->car_type : null;
     }
 
     public function client(): BelongsTo

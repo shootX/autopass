@@ -8,6 +8,12 @@ return [
     'modification_invalid' => 'The modification does not belong to this generation.',
     'body_type_required' => 'This model has several body types in this year. Pick the body type.',
     'body_type_invalid' => 'This body type does not match the model and year.',
+    'body_unconfirmed' => 'The body type of this car is not confirmed yet. Confirm the body type first.',
+    'body_confirmed' => 'The body type of this car is already confirmed. Contact support to change it.',
+    'body_unavailable' => 'The body type could not be checked: the car catalog is not answering. Try again later.',
+    'body_unknown' => 'The car catalog does not name a body type for this car. Contact support to confirm it.',
+    'car_has_package' => 'The car has an active package. The model and year can\'t change until the package ends.',
+    'car_not_found' => 'Car not found.',
     'fuel' => [
         'regular' => 'Regular (RON 92–95)',
         'premium' => 'Premium (RON 95)',

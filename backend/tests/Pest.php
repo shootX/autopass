@@ -47,6 +47,7 @@ function fakeYearCatalog(array $generations = [
     config(['services.carapi.url' => 'https://geoapi.test/api/v1', 'services.carapi.secret' => 'geoapi_sk_test']);
     Http::fake([
         'geoapi.test/api/v1/models/7/generations*' => Http::response(['data' => $generations, 'meta' => ['total' => count($generations)]]),
+        'geoapi.test/api/v1/generations/*' => Http::response(['data' => [], 'meta' => ['total' => 0]]),
         'geoapi.test/api/v1/brands/toyota/models*' => Http::response(['data' => [['id' => '7', 'name' => 'Avensis']], 'meta' => ['total' => 1]]),
         'geoapi.test/api/v1/brands*' => Http::response(['data' => [['id' => '501', 'name' => 'Toyota', 'slug' => 'toyota']], 'meta' => ['total' => 1]]),
     ]);

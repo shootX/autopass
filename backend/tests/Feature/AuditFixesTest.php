@@ -100,7 +100,7 @@ it('refuses a bare-id or static-QR approve and accepts a checkqr token', functio
     $mgr = makeUser('555600020', User::ROLE_MANAGER);
     $client = makeUser('555600021');
     washFor($mgr);
-    $car = row('user_cars', ['user_id' => $client->id, 'model_id' => 1, 'plate' => 'QR111QR']);
+    $car = row('user_cars', ['car_type' => 'sedan', 'body_status' => 'confirmed', 'user_id' => $client->id, 'model_id' => 1, 'plate' => 'QR111QR']);
     $pkg = userPackage($client->id, $car, ['qr_code' => 'QRCODE0000000001']);
     $t = JWTAuth::fromUser($mgr);
 

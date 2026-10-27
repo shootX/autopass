@@ -14,6 +14,7 @@ import { ArrowLeft, Pencil } from 'lucide-react';
 import Header from '@/components/Header';
 import { shouldShowPackageForm } from '@/lib/packageForm';
 import { readAccessToken } from "@/lib/accessToken";
+import { bodyConfirmed } from "@/lib/carBody";
 
 export default function MyPackages() {
   const navigate = useNavigate();
@@ -67,7 +68,18 @@ export default function MyPackages() {
   });
 
   const transformedPackages = activeRaw.map(toData);
-  const availableCars = cars.filter((car) => !packages.some((pkg) => pkg.car.plate === car.plate && (pkg.end_date ?? '') >= today));
+  const freeCars = cars.filter((car) => !packages.some((pkg) => pkg.car.plate === car.plate && (pkg.end_date ?? '') >= today));
+  // A package is bought only for a car whose body type is confirmed; the others wait for the driver's pick.
+  const availableCars = freeCars.filter(bodyConfirmed);
+  const waitingCars = freeCars.filter((car) => !bodyConfirmed(car));
+  const bodyNotice = waitingCars.length > 0 && (
+    <p className="v4-empty" style={{ marginTop: 16 }}>
+      {t('CarBody.packagesBlocked').replace('{plates}', waitingCars.map((car) => car.plate).join(', '))}{' '}
+      <button type="button" className="ap-link" style={{ background: 'none', border: 0, padding: 0 }} onClick={() => navigate('/customer-my-data#vehicles')}>
+        {t('CarBody.open')}
+      </button>
+    </p>
+  );
   const showForm = shouldShowPackageForm(Boolean(editingPackage), buying);
 
   return (
@@ -110,7 +122,7 @@ export default function MyPackages() {
           <WashingPackageForm
             mode={editingPackage ? 'edit' : 'create'}
             isVisible={true}
-            cars={cars}
+            cars={editingPackage ? cars : cars.filter(bodyConfirmed)}
             activePackages={transformedPackages}
             initialPackage={editingPackage ?? undefined}
             onClose={() => {
@@ -141,6 +153,7 @@ export default function MyPackages() {
                 {t('WashingPackageForm.button.create')}
               </button>
             )}
+            {bodyNotice}
           </>
         ) : (
           <>
@@ -167,6 +180,7 @@ export default function MyPackages() {
                 {t('WashingPackageForm.button.create')}
               </button>
             )}
+            {bodyNotice}
           </>
         )}
       </div>

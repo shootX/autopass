@@ -28,7 +28,8 @@ class SyncBodyTypes extends Command
 
         $cars = 0;
         $unknown = [];
-        UserCar::query()->whereNotNull('body_type')->where('body_type', '!=', '')->orderBy('id')
+        // A confirmed body type is never rewritten here (cars:check-bodies confirms them).
+        UserCar::query()->whereNotNull('body_type')->where('body_type', '!=', '')->where('body_status', '!=', 'confirmed')->orderBy('id')
             ->each(function (UserCar $car) use ($dry, &$cars, &$unknown) {
                 $type = BodyType::fromCatalog($car->body_type);
                 if ($type === null) {
@@ -62,11 +63,12 @@ class SyncBodyTypes extends Command
         }
 
         foreach ($unknown as $name => $count) {
-            $this->warn("Not recognised: \"{$name}\" ({$count} car(s)); they use their model's type.");
+            $this->warn("Not recognised: \"{$name}\" ({$count} car(s)); their body type stays unconfirmed.");
         }
 
         $priced = Package::query()->distinct()->pluck('car_type')->flip();
-        UserCar::query()->with('model')->get()->map(fn (UserCar $car) => $car->carType())->countBy()
+        // Every car's type, confirmed or still a hint for cars:check-bodies.
+        UserCar::query()->with('model')->get()->map(fn (UserCar $car) => $car->car_type ?: $car->model?->type)->filter()->countBy()
             ->reject(fn ($count, $type) => $priced->has($type))
             ->each(fn ($count, $type) => $this->warn("No package for \"{$type}\" ({$count} car(s)): their owners cannot buy one."));
 

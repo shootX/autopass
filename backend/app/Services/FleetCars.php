@@ -31,13 +31,18 @@ class FleetCars
     }
 
     /**
+     * Adds every row it can. A car whose year has several body types and no body type in the sheet is added all
+     * the same, waiting for its driver to pick one in the app; so is a car geoapi.ge can't tell right now. Those
+     * are listed in pending.
+     *
      * @param  array<int, array<int, mixed>>  $rows
-     * @return array{added: int, skipped: int, errors: list<array{row: int, plate: string, reason: string, body_types?: list<string>}>}
+     * @return array{added: int, skipped: int, errors: list<array{row: int, plate: string, reason: string, body_types?: list<string>}>, pending: list<array{row: int, plate: string, body_status: string, body_types: list<string>}>}
      */
     public static function importSheet(CorporateClient $client, array $rows, string $source): array
     {
         $added = 0;
         $errors = [];
+        $pending = [];
         $header = self::headerMap($rows[0] ?? []);
         $start = $header === null ? 0 : 1;
 
@@ -48,16 +53,19 @@ class FleetCars
                 $car[$field] = (string) ($row[$header === null ? $index : ($header[$field] ?? -1)] ?? '');
             }
 
-            $result = self::add($client, $car, $source, $bodyTypes);
+            $result = self::add($client, $car, $source, $body);
             if ($result === 'added') {
                 $added++;
+                if ($body['status'] !== CarBody::CONFIRMED) {
+                    $pending[] = ['row' => $i + 1, 'plate' => self::plate($car['plate']), 'body_status' => $body['status'], 'body_types' => $body['types']];
+                }
             } elseif ($car['plate'] !== '' || $car['brand'] !== '' || $car['model'] !== '') {
                 $errors[] = ['row' => $i + 1, 'plate' => self::plate($car['plate']), 'reason' => $result]
-                    + (str_starts_with($result, 'body_type') ? ['body_types' => $bodyTypes] : []);
+                    + ($result === 'body_type_invalid' ? ['body_types' => $body['types']] : []);
             }
         }
 
-        return ['added' => $added, 'skipped' => count($errors), 'errors' => $errors];
+        return ['added' => $added, 'skipped' => count($errors), 'errors' => $errors, 'pending' => $pending];
     }
 
     /** Sheet columns in the order a sheet without a header row has them. */
@@ -65,16 +73,18 @@ class FleetCars
 
     /**
      * Adds a car and, when a driver phone is given, sends the driver the invite SMS. The brand and model are
-     * found in the car catalog by name (or by the ids of the panel's lists), and the body type comes from the
-     * year: a year with several body types (a sedan and a wagon) needs body_type, and so does a model the
-     * catalog knows no body type of. $bodyTypes gets the types that fit.
+     * found in the car catalog by name (or by the ids of the panel's lists), and the body type comes from
+     * geoapi.ge for that year (CarBody): one type is confirmed; with several, a body_type the company sends
+     * confirms it when it is one of them; without one the car waits for its driver's pick. A body_type that is
+     * not one of geoapi.ge's types is refused. $body gets the body status and the types geoapi.ge named.
      *
      * @param  array<string, mixed>  $row  plate, brand, model (or brand_id, model_id), year, body_type, phone
-     * @return 'added'|'duplicate'|'invalid'|'unknown_model'|'year_invalid'|'body_type_required'|'body_type_invalid'|'phone_invalid'
+     * @param  array{status: string, types: list<string>}|null  $body
+     * @return 'added'|'duplicate'|'invalid'|'unknown_model'|'year_invalid'|'body_type_invalid'|'phone_invalid'
      */
-    public static function add(CorporateClient $client, array $row, string $source, ?array &$bodyTypes = null): string
+    public static function add(CorporateClient $client, array $row, string $source, ?array &$body = null): string
     {
-        $bodyTypes = [];
+        $body = ['status' => CarBody::UNKNOWN, 'types' => []];
         $text = fn (string $key) => isset($row[$key]) && is_scalar($row[$key]) ? trim((string) $row[$key]) : '';
         $plate = self::plate($text('plate'));
         $phone = $text('phone');
@@ -98,11 +108,11 @@ class FleetCars
         }
 
         $typed = $text('body_type');
-        $body = app(CarBody::class)->pick($model['source'], $model['brand_id'], $model['model_id'], (int) $year,
-            $typed === '' ? null : (BodyType::keyFor($typed) ?? $typed));
-        $bodyTypes = $body['types'];
-        if ($body['error'] !== null || $body['car_type'] === null) {
-            return $body['error'] ?? 'body_type_required';
+        $resolved = app(CarBody::class)->resolve($model['source'], $model['brand_id'], $model['model_id'], (int) $year,
+            $typed === '' ? null : (BodyType::keyFor($typed) ?? $typed), CarBody::BY_COMPANY, false);
+        $body = ['status' => $resolved['attributes']['body_status'] ?? $resolved['options']['status'], 'types' => $resolved['types']];
+        if ($resolved['error'] !== null) {
+            return $resolved['error'];
         }
 
         $taken = FleetCar::query()
@@ -120,12 +130,10 @@ class FleetCars
                 'model' => mb_substr($model['model'], 0, 64),
                 'source' => $source,
                 'year' => (int) $year,
-                'car_type' => $body['car_type'],
                 'catalog_source' => $model['source'],
                 'catalog_brand_id' => $model['brand_id'],
                 'catalog_model_id' => $model['model_id'],
-                'generation_id' => $body['generation_id'],
-            ]);
+            ] + $resolved['attributes']);
         } catch (QueryException) {
             return 'duplicate';
         }
@@ -173,8 +181,18 @@ class FleetCars
             'phone_invalid' => ['phone' => __('admin.fleet_phone_invalid')],
             'unknown_model' => ['model_id' => __('admin.fleet_reason_unknown_model')],
             'year_invalid' => ['year' => __('admin.fleet_reason_year_invalid')],
-            'body_type_required', 'body_type_invalid' => ['body_type' => __('admin.fleet_reason_'.$result)],
+            'body_type_invalid' => ['body_type' => __('admin.fleet_reason_'.$result)],
             default => ['plate' => __('admin.fleet_plate_format')],
+        };
+    }
+
+    /** The message after adding a car by hand: a car still waiting for its body type says so. */
+    public static function addedMessage(string $bodyStatus): string
+    {
+        return match ($bodyStatus) {
+            CarBody::CHOOSE => 'admin.fleet_car_added_choose',
+            CarBody::UNKNOWN => 'admin.fleet_car_added_unknown',
+            default => 'admin.fleet_car_added',
         };
     }
 

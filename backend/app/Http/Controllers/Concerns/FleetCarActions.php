@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Concerns;
 
 use App\Models\FleetCar;
+use App\Services\CarBody;
+use App\Services\CarBodyStatus;
 use App\Services\CorporateDiscounts;
 use App\Services\CorporateWashes;
 use App\Services\FleetInvites;
@@ -10,7 +12,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
-/** Driver phone, invite resend, block toggle, wash mode and share, shared by the admin and the company panel. */
+/** Driver phone, invite resend, block toggle, wash mode and share, body type retry, shared by the admin and the company panel. */
 trait FleetCarActions
 {
     protected function changeDriver(Request $request, FleetCar $car, string $back): RedirectResponse
@@ -73,5 +75,25 @@ trait FleetCarActions
         }
 
         return redirect($back)->with('message', __('admin.cw_car_washes_saved', ['plate' => $car->plate, 'count' => (int) $data['washes']]));
+    }
+
+    /** Asks geoapi.ge again about a car whose body type it could not tell. */
+    protected function recheckBody(FleetCar $car, string $back, string $actor): RedirectResponse
+    {
+        $status = app(CarBodyStatus::class)->recheck($car, $actor);
+
+        return redirect($back)->with('message', __('admin.fleet_body_checked_'.$status, ['plate' => $car->plate]));
+    }
+
+    /** Admin only: confirms a body type for a car geoapi.ge can't tell (or names wrongly). */
+    protected function confirmBody(Request $request, FleetCar $car, string $back): RedirectResponse
+    {
+        $data = $request->validate(['body_type' => ['required', 'string', 'max:32']]);
+        $result = app(CarBodyStatus::class)->choose($car, $data['body_type'], CarBody::BY_ADMIN, 'admin');
+        if ($result !== 'ok') {
+            return redirect($back)->withErrors(['fleet' => __('admin.fleet_reason_body_type_invalid')]);
+        }
+
+        return redirect($back)->with('message', __('admin.fleet_body_checked_confirmed', ['plate' => $car->plate]));
     }
 }

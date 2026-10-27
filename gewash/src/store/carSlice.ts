@@ -1,4 +1,5 @@
 import { createSlice,  type PayloadAction } from "@reduxjs/toolkit";
+import type { BodyTypeOption } from "@/lib/carBody";
 
 export type Brand = {
   id: number;
@@ -16,6 +17,11 @@ export type Model = {
   id: number;
   plate: string;
   year?: number | null;
+  // The body type: car_type only once confirmed; packages and QR wait until then (see lib/carBody).
+  car_type?: string | null;
+  body_status?: string | null;
+  body_types?: BodyTypeOption[];
+  body_incomplete?: boolean;
   model: {
     id?: number;
     source?: "local" | "carapi";

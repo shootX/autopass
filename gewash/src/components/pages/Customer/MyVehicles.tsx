@@ -2,11 +2,12 @@ import { Link, useNavigate } from "react-router-dom";
 import { useFetchCars } from "@/hooks/useFetchCars";
 import { useTranslation } from "@/hooks/useTranslation";
 import { defaultCarPlaceholderUrl, editNoteIconUrl } from "@/assets/staticUrls";
+import { CarBodyPrompt } from "@/components/CarBodyPrompt";
 const NO_API_URL = import.meta.env.VITE_NO_API_URL;
 
 export default function MyVehicles() {
   const navigate = useNavigate();
-  const { cars, loading, error } = useFetchCars();
+  const { cars, loading, error, reload } = useFetchCars();
   const t = useTranslation();
 
   return (
@@ -53,6 +54,7 @@ export default function MyVehicles() {
               </button>
             </div>
           </div>
+          <CarBodyPrompt carId={car.id} body={car.body} onSaved={reload} />
           <hr />
         </div>
       ))}

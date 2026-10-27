@@ -37,6 +37,11 @@ class PartnerFleetController extends Controller
         return $this->allocateWashes($request, $this->own($request, $car), route('partner.fleet'), 'company');
     }
 
+    public function bodyCheck(Request $request, FleetCar $car)
+    {
+        return $this->recheckBody($this->own($request, $car), route('partner.fleet'), 'company');
+    }
+
     private function own(Request $request, FleetCar $car): FleetCar
     {
         /** @var CorporateClient $corporate */

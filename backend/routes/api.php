@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\SmsInboxController;
 use App\Http\Controllers\Api\AppointmentsController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\CarBodyController;
 use App\Http\Controllers\Api\CarCatalogController;
 use App\Http\Controllers\Api\CarsController;
 use App\Http\Controllers\Api\ContactsController;
@@ -103,7 +104,7 @@ Route::middleware(['auth:api', CorsMiddleware::class, EnsureApiSession::class])-
 
     Route::get('/cars/brands', [CarsController::class, 'brands']);
     Route::get('/cars/years', [CarsController::class, 'years']);
-    Route::get('/cars/body-types', [CarsController::class, 'bodyTypes']);
+    Route::get('/cars/body-types', [CarBodyController::class, 'types']);
     Route::get('/cars/brands/{brand_id}/models', [CarsController::class, 'models']);
     Route::get('/cars/models/{model_id}/generations', [CarCatalogController::class, 'generations'])->whereNumber('model_id');
     Route::get('/cars/models/{model_id}/generations/{generation_id}/modifications', [CarCatalogController::class, 'modifications'])
@@ -116,6 +117,8 @@ Route::middleware(['auth:api', CorsMiddleware::class, EnsureApiSession::class])-
         Route::get('/{carid}', [CarsController::class, 'showMyCar']);
         Route::post('/{carid}/edit', [CarsController::class, 'editMyCar']);
         Route::delete('/{carid}/remove', [CarsController::class, 'removeMyCar']);
+        Route::post('/{carid}/body', [CarBodyController::class, 'choose'])->whereNumber('carid')->middleware('throttle:30,1');
+        Route::post('/{carid}/body/check', [CarBodyController::class, 'check'])->whereNumber('carid')->middleware('throttle:10,1');
         Route::get('/{carid}/company-qr', [CorporateWashController::class, 'qr'])->whereNumber('carid')->middleware('throttle:30,1');
     });
 

@@ -25,11 +25,11 @@ function cwFleet(int $pool = 0, int $onCar = 0, string $plate = 'AA123BB', ?Corp
     ]);
     $phone = '555 '.implode(' ', str_split(substr(sprintf('%06d', crc32($plate)), -6), 2));
     $driver = makeUser($phone);
-    $userCar = UserCar::query()->create(['user_id' => $driver->id, 'model_id' => $model->id, 'plate' => $plate]);
+    $userCar = UserCar::query()->create(['user_id' => $driver->id, 'model_id' => $model->id, 'plate' => $plate, 'car_type' => 'sedan', 'body_status' => 'confirmed']);
     $car = FleetCar::query()->create(['corporate_client_id' => $corp->id, 'plate' => $plate, 'brand' => 'Toyota', 'model' => 'Camry', 'source' => 'manual']);
     $car->forceFill([
         'status' => FleetCar::STATUS_ACTIVE, 'driver_phone' => $phone, 'user_id' => $driver->id, 'user_car_id' => $userCar->id,
-        'activated_at' => now(), 'washes_left' => $onCar, 'car_type' => 'sedan',
+        'activated_at' => now(), 'washes_left' => $onCar, 'car_type' => 'sedan', 'body_status' => 'confirmed',
     ])->save();
     // The company's washes are sedan washes, the type of this car.
     if ($pool > 0) {

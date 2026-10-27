@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\BodyType;
 use App\Services\CarBody;
 use App\Services\CarCatalog;
 use Illuminate\Http\Request;
@@ -30,17 +29,18 @@ class FleetCatalogController extends Controller
         return response()->json(['years' => $years ?? CarCatalog::years()]);
     }
 
-    /** One type: it is set on its own. Several: the form shows a body type field with them. */
+    /** One type: it is set on its own. Several (or one geoapi.ge is not sure of): the form shows an optional field with them. */
     public function bodyTypes(Request $request)
     {
         $data = $this->pick($request) + $request->validate([
             'year' => ['required', 'integer', 'between:'.CarCatalog::MIN_YEAR.','.((int) now()->year + 1)],
         ]);
-        $types = app(CarBody::class)->options($data['source'], $data['brand_id'], $data['model_id'], (int) $data['year'])['types'];
+        $options = app(CarBody::class)->options($data['source'], $data['brand_id'], $data['model_id'], (int) $data['year']);
 
         return response()->json([
-            'choose' => count($types) > 1,
-            'body_types' => array_map(fn (string $key) => ['key' => $key, 'name' => BodyType::labelFor($key)], $types),
+            'status' => $options['status'],
+            'choose' => $options['status'] === CarBody::CHOOSE,
+            'body_types' => CarBody::rows($options['types']),
         ]);
     }
 
