@@ -479,3 +479,11 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 - [ ] Company panel, Excel/CSV, company API and admin car forms: not changed (user chose drivers first).
 - [ ] Edit form: brand and model are locked; a year change still reads the body type by year and clears the generation.
 - [ ] Server: `php artisan route:cache` not needed (no new routes); rebuild gewash; clear the geoapi.ge cache (`php artisan cache:clear` or the `carapi.*` keys) so generations and modifications carry the new fields.
+
+## 2026-10-27 — Company car: body type required (`claude/project-thread-r5ruzb`)
+
+- [x] User rule: a company usually knows only brand, model and year, so it must name the body type itself in the panel form, the Excel/CSV sheet and `POST /api/corporate/vehicles`. Its pick is safe to take: it only prices the company's own washes.
+- [x] `FleetCars::add`: no body type → `body_type_required`; one that is not one of the 16 (key, Georgian or English name, or a catalog word such as "station wagon") → `body_type_invalid` (the API lists all 16 keys in `body_types`). The type is confirmed as given, `body_source` `company` (`catalog` when geoapi.ge names that one type alone); geoapi.ge only adds the generation. No new company car waits for a driver's pick; the API keeps `pending` as an empty list for old clients.
+- [x] Panel form (company and admin): the body type select always shows the 16 types and is required; a year geoapi.ge names one type for preselects it. Sheet template and API example carry a body type; the "added, body type to confirm" list and messages are gone.
+- [x] Cars added before keep their status (`choose` / `unknown`): the driver's pick, the admin's confirm and `cars:check-bodies` work as before.
+- [ ] Server: nothing to migrate; `php artisan view:clear` after deploy. Tell API clients `body_type` is now required.

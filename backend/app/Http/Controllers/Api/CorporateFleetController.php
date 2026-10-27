@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\CorporateClient;
 use App\Models\FleetCar;
-use App\Services\CarBody;
 use App\Services\CarBodyStatus;
 use App\Services\CorporateDiscounts;
 use App\Services\CorporateWashes;
@@ -94,7 +93,6 @@ class CorporateFleetController extends Controller
 
         $added = 0;
         $skipped = [];
-        $pending = [];
         foreach ($payload as $row) {
             if (! is_array($row)) {
                 $skipped[] = ['plate' => '', 'reason' => 'invalid'];
@@ -105,18 +103,15 @@ class CorporateFleetController extends Controller
             $plate = FleetCars::plate(is_scalar($row['plate'] ?? null) ? (string) $row['plate'] : '');
             if ($result === 'added') {
                 $added++;
-                if ($body['status'] !== CarBody::CONFIRMED) {
-                    // Added, but washes wait for the body type: choose = the driver picks one of body_types in the app.
-                    $pending[] = ['plate' => $plate, 'body_status' => $body['status'], 'body_types' => $body['types']];
-                }
             } else {
-                // A body type that does not fit lists the types the year has, to send one of them as body_type.
+                // A body type we don't know lists the ones we do, to send one of them as body_type.
                 $skipped[] = ['plate' => $plate, 'reason' => $result]
                     + ($result === 'body_type_invalid' ? ['body_types' => $body['types']] : []);
             }
         }
 
-        return response()->json(['ok' => true, 'added' => $added, 'skipped' => $skipped, 'pending' => $pending]);
+        // pending stays for clients that read it: every car added now has its body type confirmed.
+        return response()->json(['ok' => true, 'added' => $added, 'skipped' => $skipped, 'pending' => []]);
     }
 
     /**
