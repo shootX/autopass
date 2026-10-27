@@ -18,48 +18,7 @@
 
                 <form action="{{route('admin.packages.store')}}" method="post">
                     @csrf
-                    <div class="form-group">
-                        <label for="carType">{{ __('admin.body_type') }}</label>
-                        <select id="carType" name="car_type" class="form-select">
-                            @if(count($carTypes) > 0)
-                                @foreach($carTypes as $type)
-                                    <option value="{{$type}}">{{ \App\Models\BodyType::labelFor($type) }}</option>
-                                @endforeach
-                            @else
-                                <option disabled selected>{{ __('admin.no_body_types') }}</option>
-                            @endif
-                        </select>
-                    </div>
-
-                    @if(count($carTypes) > 0)
-
-                        <div class="form-group mt-3">
-                            <label for="count_washes">{{ __('admin.wash_count') }}</label>
-                            <input class="form-control" id="count_washes" type="number" required name="count_washes" value="0">
-                        </div>
-
-                        <div class="form-group mt-3">
-                            <label for="price1">{{ __('admin.price_1_label') }}</label>
-                            <input class="form-control" id="price1" type="number" required name="price1" value="0">
-                        </div>
-
-                        <div class="form-group mt-3">
-                            <label for="price2">{{ __('admin.price_3_label') }}</label>
-                            <input class="form-control" id="price2" type="number" required name="price2" value="0">
-                        </div>
-
-                        <div class="form-group mt-3">
-                            <label for="price3">{{ __('admin.price_6_label') }}</label>
-                            <input class="form-control" id="price3" type="number" required name="price3" value="0">
-                        </div>
-
-                        <div class="form-group mt-3">
-                            <label for="price4">{{ __('admin.price_12_label') }}</label>
-                            <input class="form-control" id="price4" type="number" required name="price4" value="0">
-                        </div>
-
-                    @endif
-
+                    @include('admin.packages.fields')
 
                     <button @if(count($carTypes) <= 0) disabled @endif type="submit" class="btn btn-primary mt-4">{{ __('admin.save') }}</button>
 

@@ -1023,6 +1023,8 @@
         "fullPrice": "Full price",
         "discountPercent": "Discount",
         "driverPays": "Driver pays on site",
+        "discountPackage": "Discount package",
+        "unlimited": "Unlimited",
         "approve": "Approve",
         "approved": "Wash approved",
         "cannotWash": "The wash can't be approved."

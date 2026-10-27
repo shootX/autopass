@@ -1151,6 +1151,8 @@
         "fullPrice": "სრული ფასი",
         "discountPercent": "ფასდაკლება",
         "driverPays": "მძღოლი იხდის ადგილზე",
+        "discountPackage": "ფასდაკლების პაკეტი",
+        "unlimited": "ულიმიტო",
         "approve": "დადასტურება",
         "approved": "რეცხვა დადასტურდა",
         "cannotWash": "რეცხვა ვერ დადასტურდება."

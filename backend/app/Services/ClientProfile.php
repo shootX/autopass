@@ -109,7 +109,7 @@ class ClientProfile
         $first = $visits->first()['at'] ?? null;
         $last = $visits->last()['at'] ?? null;
         $bought = (int) $packages->sum('number_of_washes');
-        $active = $packages->first(fn (UserPackage $p) => Carbon::parse($p->end_date)->isFuture() && $p->used_washes < $p->number_of_washes);
+        $active = $packages->first(fn (UserPackage $p) => Carbon::parse($p->end_date)->isFuture() && $p->hasWashesLeft());
         $booked = $appointments->count();
         $favouriteId = $visits->countBy('car_wash_id')->sortDesc()->keys()->first();
 

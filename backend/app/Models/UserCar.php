@@ -71,7 +71,7 @@ class UserCar extends Model
     public function holdsPackage(): bool
     {
         $running = UserPackage::query()->where('user_car_id', $this->id)->where('end_date', '>', now())
-            ->whereColumn('used_washes', '<', 'number_of_washes')->exists();
+            ->withWashesLeft()->exists();
 
         return $running || TbcPayment::query()->where('type', 'package')->where('status', 'pending')
             ->where('payload->car_id', $this->id)->where('created_at', '>', now()->subMinutes(30))->exists();

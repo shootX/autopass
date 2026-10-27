@@ -6,6 +6,7 @@ import { differenceInMonths, format } from "date-fns";
 import { customFetch } from "@/utils/customFetch";
 import { closeIconUrl, whashesUrl, timeUrl } from "@/assets/staticUrls";
 import { formatPhone } from "@/lib/format";
+import { formatGel } from "@/lib/v4";
 import Header from "@/components/Header";
 import { releaseScanner } from "@/lib/releaseScanner";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -146,6 +147,7 @@ export default function ManagerScanner(): React.JSX.Element {
   const pkg = pkgMeta?.package;
 
   const isValid = packageQrReady(packageResult) && user != null && pkgMeta != null && pkg != null;
+  const discount = pkgMeta?.kind === "discount";
 
   const rescanCorporate = (showError: boolean) => {
     if (showError) setRescanNote(true);
@@ -202,7 +204,7 @@ export default function ManagerScanner(): React.JSX.Element {
             </div>
 
             <div className='qr-active-package-block'>
-              <p className='qr-active-package'>Active package</p>
+              <p className='qr-active-package'>{discount ? t("Scanner.discountPackage") : "Active package"}</p>
               <span className='package-end'>
                 until {format(new Date(pkgMeta.end_date), "dd.MM.yyyy")}
               </span>
@@ -213,14 +215,20 @@ export default function ManagerScanner(): React.JSX.Element {
                   <img src={whashesUrl} alt='' />{" "}
                   Washes
                 </p>
-                <span className='qr-whashes-count'>
-                  {pkgMeta.number_of_washes -
-                    pkgMeta.used_washes -
-                    approvedOffset}
-                </span>
-                <span className='qr-remaining'>remaining</span>
+                {pkgMeta.unlimited ? (
+                  <span className='qr-whashes-count'>{t("Scanner.unlimited")}</span>
+                ) : (
+                  <>
+                    <span className='qr-whashes-count'>
+                      {pkgMeta.number_of_washes -
+                        pkgMeta.used_washes -
+                        approvedOffset}
+                    </span>
+                    <span className='qr-remaining'>remaining</span>
+                  </>
+                )}
               </div>
-              <div className='qr-package-period-block'>
+              {!discount && <div className='qr-package-period-block'>
                 <p className='qr-package-period'>
                   <img src={timeUrl} alt='' /> Period{" "}
                 </p>
@@ -231,8 +239,14 @@ export default function ManagerScanner(): React.JSX.Element {
                   )}{" "}
                 </span>
                 <span className='qr-package-month'>months</span>
-              </div>
+              </div>}
             </div>
+            {discount && typeof pkgMeta.to_pay === "number" && (
+              <div className='qr-active-package-block'>
+                <p className='qr-active-package'>{t("Scanner.driverPays")}</p>
+                <span className='package-end'>{formatGel(pkgMeta.to_pay)}</span>
+              </div>
+            )}
             {!approvalSuccess ? (
               <button
                 className='qr-approve-button'

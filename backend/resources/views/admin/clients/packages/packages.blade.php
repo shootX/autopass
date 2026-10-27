@@ -45,7 +45,7 @@
                                 <td>{{$pack->car->model->brand->name}} {{$pack->car->model->name}} ({{$pack->car->plate}})</td>
                                 <td>{{\Carbon\Carbon::parse($pack->start_date)->format('d.m.Y - H:i')}}</td>
                                 <td>{{\Carbon\Carbon::parse($pack->end_date)->format('d.m.Y - H:i')}}</td>
-                                <td>{{$pack->used_washes}}/{{$pack->number_of_washes}}</td>
+                                <td>{{$pack->used_washes}}/{{ $pack->unlimited ? '∞' : $pack->number_of_washes }}</td>
                                 <td>
                                     <button class="btn btn-sm btn-dark" type="button" data-id="{{$pack->id}}" data-bs-toggle="modal" data-bs-target="#setRenewModal">
                                         <i class="fa fa-refresh"></i>

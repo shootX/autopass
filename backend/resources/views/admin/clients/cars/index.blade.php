@@ -41,7 +41,7 @@
                             <td>{{$car->plate}}</td>
                             <td>
                                 @if($car->package)
-                                    <span class="badge bg-success">{{ __('admin.car_package_active', ['used' => $car->package->used_washes, 'total' => $car->package->package->count_washes, 'date' => \Carbon\Carbon::parse($car->package->end_date)->format('d.m.Y - H:i')]) }}</span>
+                                    <span class="badge bg-success">{{ __('admin.car_package_active', ['used' => $car->package->used_washes, 'total' => $car->package->unlimited ? '∞' : $car->package->number_of_washes, 'date' => \Carbon\Carbon::parse($car->package->end_date)->format('d.m.Y - H:i')]) }}</span>
                                 @else
                                     <span class="badge bg-danger">{{ __('admin.no_package') }}</span>
                                 @endif
