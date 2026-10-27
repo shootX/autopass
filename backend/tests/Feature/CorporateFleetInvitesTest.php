@@ -71,7 +71,7 @@ it('invites the driver by SMS when the admin adds a car with a phone', function 
     $corp = fiCorp();
 
     $this->actingAs(fiAdmin())->post('/dashboard/corporate/'.$corp->id.'/cars', [
-        'plate' => 'AA - 123 - BB', 'phone' => '+995 555 12 34 56', 'brand_id' => $model->brand_id, 'model_id' => $model->id, 'year' => 2020,
+        'plate' => 'AA - 123 - BB', 'phone' => '+995 555 12 34 56', 'brand_id' => $model->brand_id, 'model_id' => $model->id, 'year' => 2020, 'body_type' => 'sedan',
     ])->assertSessionHasNoErrors()->assertRedirect();
 
     $car = FleetCar::query()->where('plate', 'AA123BB')->firstOrFail();
@@ -93,7 +93,7 @@ it('requires a valid driver phone in the manual form', function () {
     $model = fiCatalog();
     $corp = fiCorp();
     $admin = fiAdmin();
-    $fields = ['plate' => 'AA123BB', 'brand_id' => $model->brand_id, 'model_id' => $model->id, 'year' => 2020];
+    $fields = ['plate' => 'AA123BB', 'brand_id' => $model->brand_id, 'model_id' => $model->id, 'year' => 2020, 'body_type' => 'sedan'];
 
     $this->actingAs($admin)->post('/dashboard/corporate/'.$corp->id.'/cars', $fields)->assertSessionHasErrors('phone');
     $this->actingAs($admin)->post('/dashboard/corporate/'.$corp->id.'/cars', $fields + ['phone' => '12345'])->assertSessionHasErrors('phone');
@@ -104,7 +104,7 @@ it('activates the car when the invited phone signs in and links a new app car', 
     $model = fiCatalog();
     $corp = fiCorp();
     $this->withSession(fiPanel($corp))->post('/partner/cars', [
-        'plate' => 'AA123BB', 'phone' => '555123456', 'brand_id' => $model->brand_id, 'model_id' => $model->id, 'year' => 2020,
+        'plate' => 'AA123BB', 'phone' => '555123456', 'brand_id' => $model->brand_id, 'model_id' => $model->id, 'year' => 2020, 'body_type' => 'sedan',
     ])->assertSessionHasNoErrors();
 
     $driver = fiDriver('555 12 34 56');
@@ -130,8 +130,8 @@ it('links the driver own app car and refuses a plate held by someone else', func
     $stranger = fiDriver('555 99 99 99');
     UserCar::query()->create(['user_id' => $stranger->id, 'model_id' => $model->id, 'plate' => 'CC456DD']);
 
-    $this->withSession(fiPanel($corp))->post('/partner/cars', ['plate' => 'AA123BB', 'phone' => '555 12 34 56', 'brand_id' => $model->brand_id, 'model_id' => $model->id, 'year' => 2020]);
-    $this->withSession(fiPanel($corp))->post('/partner/cars', ['plate' => 'CC456DD', 'phone' => '555 12 34 56', 'brand_id' => $model->brand_id, 'model_id' => $model->id, 'year' => 2020]);
+    $this->withSession(fiPanel($corp))->post('/partner/cars', ['plate' => 'AA123BB', 'phone' => '555 12 34 56', 'brand_id' => $model->brand_id, 'model_id' => $model->id, 'year' => 2020, 'body_type' => 'sedan']);
+    $this->withSession(fiPanel($corp))->post('/partner/cars', ['plate' => 'CC456DD', 'phone' => '555 12 34 56', 'brand_id' => $model->brand_id, 'model_id' => $model->id, 'year' => 2020, 'body_type' => 'sedan']);
 
     $this->withToken(JWTAuth::fromUser($driver))->getJson('/api/me')->assertOk();
 
@@ -150,13 +150,13 @@ it('shows the company only washes booked after activation, never a typed strange
     fiBooking($stranger, $strangerCar, now()->toDateTimeString());
 
     // The old leak: typing someone's plate into the fleet showed their washes.
-    $this->withSession(fiPanel($corp))->post('/partner/cars', ['plate' => 'CC456DD', 'phone' => '555 11 11 11', 'brand_id' => $model->brand_id, 'model_id' => $model->id, 'year' => 2020]);
+    $this->withSession(fiPanel($corp))->post('/partner/cars', ['plate' => 'CC456DD', 'phone' => '555 11 11 11', 'brand_id' => $model->brand_id, 'model_id' => $model->id, 'year' => 2020, 'body_type' => 'sedan']);
     expect(WashReportQuery::forFleet([], (int) $corp->id)->count())->toBe(0);
 
     $driver = fiDriver('555 12 34 56');
     $driverCar = UserCar::query()->create(['user_id' => $driver->id, 'model_id' => $model->id, 'plate' => 'AA123BB']);
     $before = fiBooking($driver, $driverCar, now()->subDay()->toDateTimeString());
-    $this->withSession(fiPanel($corp))->post('/partner/cars', ['plate' => 'AA123BB', 'phone' => '555 12 34 56', 'brand_id' => $model->brand_id, 'model_id' => $model->id, 'year' => 2020]);
+    $this->withSession(fiPanel($corp))->post('/partner/cars', ['plate' => 'AA123BB', 'phone' => '555 12 34 56', 'brand_id' => $model->brand_id, 'model_id' => $model->id, 'year' => 2020, 'body_type' => 'sedan']);
     $this->travel(1)->minutes();
     $this->withToken(JWTAuth::fromUser($driver))->getJson('/api/me')->assertOk();
     $this->travel(1)->minutes();
@@ -182,7 +182,7 @@ it('blocks, unblocks, resends and changes the driver from the panel', function (
     $corp = fiCorp();
     $other = fiCorp('othercorp');
     $panel = fiPanel($corp);
-    $this->withSession($panel)->post('/partner/cars', ['plate' => 'AA123BB', 'phone' => '555 12 34 56', 'brand_id' => $model->brand_id, 'model_id' => $model->id, 'year' => 2020]);
+    $this->withSession($panel)->post('/partner/cars', ['plate' => 'AA123BB', 'phone' => '555 12 34 56', 'brand_id' => $model->brand_id, 'model_id' => $model->id, 'year' => 2020, 'body_type' => 'sedan']);
     $car = FleetCar::query()->firstOrFail();
 
     $this->withSession($panel)->post('/partner/cars/'.$car->id.'/invite')->assertSessionHasErrors('fleet');
@@ -210,7 +210,7 @@ it('blocks, unblocks, resends and changes the driver from the panel', function (
 it('keeps the company car in the driver app', function () {
     $model = fiCatalog();
     $corp = fiCorp();
-    $this->withSession(fiPanel($corp))->post('/partner/cars', ['plate' => 'AA123BB', 'phone' => '555 12 34 56', 'brand_id' => $model->brand_id, 'model_id' => $model->id, 'year' => 2020]);
+    $this->withSession(fiPanel($corp))->post('/partner/cars', ['plate' => 'AA123BB', 'phone' => '555 12 34 56', 'brand_id' => $model->brand_id, 'model_id' => $model->id, 'year' => 2020, 'body_type' => 'sedan']);
     $driver = fiDriver('555 12 34 56');
     $token = JWTAuth::fromUser($driver);
     $this->withToken($token)->getJson('/api/me')->assertOk();
@@ -229,8 +229,8 @@ it('takes the driver phone over the API and edits it with PATCH', function () {
     $key = ['X-Api-Key' => $plain];
 
     $this->postJson('/api/corporate/vehicles', ['vehicles' => [
-        ['plate' => 'AA123BB', 'brand' => 'toyota', 'model' => 'CAMRY', 'year' => 2020, 'phone' => '555 12 34 56'],
-        ['plate' => 'BB123CC', 'brand' => 'Toyota', 'model' => 'Camry', 'year' => 2020, 'phone' => '12'],
+        ['plate' => 'AA123BB', 'brand' => 'toyota', 'model' => 'CAMRY', 'year' => 2020, 'body_type' => 'sedan', 'phone' => '555 12 34 56'],
+        ['plate' => 'BB123CC', 'brand' => 'Toyota', 'model' => 'Camry', 'year' => 2020, 'body_type' => 'sedan', 'phone' => '12'],
         ['plate' => 'CC123DD', 'brand' => 'Lada', 'model' => 'Niva', 'year' => 2020],
     ]], $key)->assertOk()->assertJsonPath('added', 1)
         ->assertJsonPath('skipped.0.reason', 'phone_invalid')
@@ -249,7 +249,7 @@ it('takes the driver phone over the API and edits it with PATCH', function () {
 it('lists import rows it skipped with the reason', function () {
     fiCatalog();
     $corp = fiCorp();
-    $csv = "ნომერი,მარკა,მოდელი,წელი,ტელეფონი\nAA123BB,Toyota,Camry,2020,555 12 34 56\nBAD,Toyota,Camry,2020,555 12 34 57\nCC123DD,Lada,Niva,2020,\n";
+    $csv = "ნომერი,მარკა,მოდელი,წელი,ძარა,ტელეფონი\nAA123BB,Toyota,Camry,2020,სედანი,555 12 34 56\nBAD,Toyota,Camry,2020,sedan,555 12 34 57\nCC123DD,Lada,Niva,2020,sedan,\n";
     $file = UploadedFile::fake()->createWithContent('fleet.csv', $csv);
 
     $this->withSession(fiPanel($corp))->post('/partner/import', ['file' => $file])

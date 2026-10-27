@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Queue;
 
-it('keeps a company car with several body types waiting for the driver, with no QR and no washes until the pick', function () {
+it('keeps a company car added before body types were required waiting for the driver, with no QR and no washes until the pick', function () {
     Queue::fake();
     fakeYearCatalog();
     $corp = CorporateClient::forceCreate(['name' => 'Body Co', 'api_token' => CorporateClient::makeToken(), 'username' => 'bodyco2',
@@ -23,8 +23,12 @@ it('keeps a company car with several body types waiting for the driver, with no 
     CorporateWashPool::query()->forceCreate(['corporate_client_id' => $corp->id, 'car_type' => 'wagon', 'balance' => 10]);
     $corp->forceFill(['washes_balance' => 10])->save();
 
-    $this->postJson('/api/corporate/vehicles', ['plate' => 'CB101CB', 'brand' => 'Toyota', 'model' => 'Avensis', 'year' => 2016,
-        'phone' => '555 72 00 01'], $key)->assertOk()->assertJsonPath('added', 1)->assertJsonPath('pending.0.body_status', 'choose');
+    // Saved as a company car was before the company had to name the body type.
+    $fleet = FleetCar::query()->forceCreate(['corporate_client_id' => $corp->id, 'plate' => 'CB101CB', 'brand' => 'Toyota', 'model' => 'Avensis',
+        'source' => 'api', 'year' => 2016, 'catalog_source' => 'carapi', 'catalog_brand_id' => 501, 'catalog_model_id' => 7,
+        'body_status' => 'choose', 'body_options' => ['sedan', 'wagon'], 'body_checked_at' => now()]);
+    $fleet->setRelation('client', $corp);
+    FleetInvites::setDriver($fleet, '555 72 00 01');
     $driver = makeUser('555 72 00 01');
     FleetInvites::activateFor($driver);
     $fleet = FleetCar::query()->where('plate', 'CB101CB')->firstOrFail();

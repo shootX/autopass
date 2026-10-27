@@ -45,11 +45,14 @@
                         </select>
                         @error('year')<small style="color:red;">{{ $message }}</small>@enderror
                     </div>
-                    {{-- Shown only when the model has several body types in the year; left empty, the driver picks in the app. --}}
-                    <div class="form-group mt-3" id="fleet_body_group" @if(! $errors->has('body_type')) hidden @endif>
-                        <label for="fleet_body">{{ __('admin.body_type') }}</label>
-                        <select class="form-control" id="fleet_body" name="body_type" disabled>
+                    {{-- Always the company's pick from every type; one geoapi.ge type for the year is preselected. --}}
+                    <div class="form-group mt-3">
+                        <label for="fleet_body">{{ __('admin.body_type') }}<span class="text-danger">*</span></label>
+                        <select class="form-control" id="fleet_body" name="body_type" required>
                             <option value="">{{ __('admin.fleet_select_body') }}</option>
+                            @foreach(\App\Models\BodyType::options() as $key => $label)
+                                <option value="{{ $key }}" @selected(old('body_type') === $key)>{{ $label }}</option>
+                            @endforeach
                         </select>
                         <small class="d-block">{{ __('admin.fleet_body_hint') }}</small>
                         @error('body_type')<small style="color:red;">{{ $message }}</small>@enderror
@@ -97,7 +100,7 @@
                 </form>
                 <pre class="mt-3 mb-0" style="white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;">POST {{ url('/api/corporate/vehicles') }}
 X-Api-Key: <span id="fleet-token-inline">{{ $masked }}</span>
-{"plate":"AB123CD","brand":"Toyota","model":"Camry","year":2019,"phone":"555 12 34 56"}
+{"plate":"AB123CD","brand":"Toyota","model":"Camry","year":2019,"body_type":"sedan","phone":"555 12 34 56"}
 {"plate":"AB124CD","brand":"Toyota","model":"Avensis","year":2016,"body_type":"wagon","phone":"555 12 34 57"}
 
 PATCH {{ url('/api/corporate/vehicles/AB123CD') }}
@@ -114,17 +117,7 @@ GET {{ url('/api/corporate/balance') }}</pre>
         <div>{{ __('admin.fleet_import_errors') }}</div>
         <ul class="mb-0">
             @foreach(session('fleet_import_errors') as $row)
-                <li>{{ __('admin.fleet_import_row', ['row' => $row['row'], 'plate' => $row['plate'] ?: '—']) }}: {{ __('admin.fleet_reason_'.$row['reason']) }}@if(! empty($row['body_types'])). {{ __('admin.fleet_reason_body_types', ['types' => collect($row['body_types'])->map(fn ($key) => \App\Models\BodyType::labelFor($key))->implode(', ')]) }}@endif</li>
-            @endforeach
-        </ul>
-    </div>
-@endif
-@if(session('fleet_import_pending'))
-    <div class="alert alert-info mt-4 mb-0">
-        <div>{{ __('admin.fleet_import_pending') }}</div>
-        <ul class="mb-0">
-            @foreach(session('fleet_import_pending') as $row)
-                <li>{{ __('admin.fleet_import_row', ['row' => $row['row'], 'plate' => $row['plate'] ?: '—']) }}: {{ __('admin.fleet_body_status_'.$row['body_status']) }}@if(! empty($row['body_types'])). {{ __('admin.fleet_body_options', ['types' => collect($row['body_types'])->map(fn ($key) => \App\Models\BodyType::labelFor($key))->implode(', ')]) }}@endif</li>
+                <li>{{ __('admin.fleet_import_row', ['row' => $row['row'], 'plate' => $row['plate'] ?: '—']) }}: {{ __('admin.fleet_reason_'.$row['reason']) }}</li>
             @endforeach
         </ul>
     </div>
@@ -208,12 +201,13 @@ GET {{ url('/api/corporate/balance') }}</pre>
     <script>
         (function () {
             const base = @json($catalogUrl);
-            const old = { model: @json(old('model_id')), year: @json(old('year')), body: @json(old('body_type')) };
+            const old = { model: @json(old('model_id')), year: @json(old('year')) };
             const brand = $('#fleet_brand'), model = $('#fleet_model'), year = $('#fleet_year'), body = $('#fleet_body');
             const placeholder = {
-                model: @json(__('admin.select_model')), year: @json(__('admin.fleet_select_year')), body: @json(__('admin.fleet_select_body')),
+                model: @json(__('admin.select_model')), year: @json(__('admin.fleet_select_year')),
             };
             let request = 0;
+            let preselected = false; // the body type came from geoapi.ge, not from the company's own pick
 
             function fill(select, rows, empty, selected) {
                 select.empty().append($('<option value="">').text(empty));
@@ -225,10 +219,9 @@ GET {{ url('/api/corporate/balance') }}</pre>
             function pick() {
                 return { source: model.find(':selected').attr('data-source') || 'local', brand_id: brand.val(), model_id: model.val() };
             }
-            function hideBody() {
-                $('#fleet_body_group').prop('hidden', true);
-                body.prop('required', false);
-                fill(body, [], placeholder.body);
+            function clearPreselected() {
+                if (preselected) body.val('');
+                preselected = false;
             }
             // Each pick clears the ones after it; a late answer for an older pick is dropped.
             function load(url, query, done) {
@@ -237,7 +230,7 @@ GET {{ url('/api/corporate/balance') }}</pre>
                 $.getJSON(url, query).done(data => { if (ticket === request) done(data); }).fail(() => { if (ticket === request) failed(); });
             }
             function loadModels() {
-                fill(model, [], placeholder.model); fill(year, [], placeholder.year); hideBody();
+                fill(model, [], placeholder.model); fill(year, [], placeholder.year); clearPreselected();
                 if (!brand.val()) return;
                 load(base + '/brands/' + brand.val() + '/models', {}, data => {
                     fill(model, data.models.map(m => ({ value: m.id, label: m.name, source: m.source })), placeholder.model, old.model);
@@ -246,7 +239,7 @@ GET {{ url('/api/corporate/balance') }}</pre>
                 });
             }
             function loadYears() {
-                fill(year, [], placeholder.year); hideBody();
+                fill(year, [], placeholder.year); clearPreselected();
                 if (!model.val()) return;
                 load(base + '/years', pick(), data => {
                     fill(year, data.years.map(y => ({ value: y, label: y })), placeholder.year, old.year);
@@ -254,19 +247,20 @@ GET {{ url('/api/corporate/balance') }}</pre>
                     if (year.val()) loadBody();
                 });
             }
+            // A year geoapi.ge names one body type for preselects it; the company's own pick is never changed.
             function loadBody() {
-                hideBody();
-                if (!year.val()) return;
+                clearPreselected();
+                if (!year.val() || body.val()) return;
                 load(base + '/body-types', Object.assign(pick(), { year: year.val() }), data => {
-                    if (!data.choose) return;
-                    fill(body, data.body_types.map(b => ({ value: b.key, label: b.name })), placeholder.body, old.body);
-                    old.body = null;
-                    $('#fleet_body_group').prop('hidden', false);
+                    if (data.status !== 'confirmed' || body.val()) return;
+                    body.val(data.body_types[0].key);
+                    preselected = true;
                 });
             }
             brand.on('change', loadModels);
             model.on('change', loadYears);
             year.on('change', loadBody);
+            body.on('change', () => { preselected = false; });
             loadModels();
         })();
 

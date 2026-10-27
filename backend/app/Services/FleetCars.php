@@ -31,18 +31,15 @@ class FleetCars
     }
 
     /**
-     * Adds every row it can. A car whose year has several body types and no body type in the sheet is added all
-     * the same, waiting for its driver to pick one in the app; so is a car geoapi.ge can't tell right now. Those
-     * are listed in pending.
+     * Adds every row it can and lists the rows it skipped with the reason.
      *
      * @param  array<int, array<int, mixed>>  $rows
-     * @return array{added: int, skipped: int, errors: list<array{row: int, plate: string, reason: string, body_types?: list<string>}>, pending: list<array{row: int, plate: string, body_status: string, body_types: list<string>}>}
+     * @return array{added: int, skipped: int, errors: list<array{row: int, plate: string, reason: string}>}
      */
     public static function importSheet(CorporateClient $client, array $rows, string $source): array
     {
         $added = 0;
         $errors = [];
-        $pending = [];
         $header = self::headerMap($rows[0] ?? []);
         $start = $header === null ? 0 : 1;
 
@@ -53,19 +50,15 @@ class FleetCars
                 $car[$field] = (string) ($row[$header === null ? $index : ($header[$field] ?? -1)] ?? '');
             }
 
-            $result = self::add($client, $car, $source, $body);
+            $result = self::add($client, $car, $source);
             if ($result === 'added') {
                 $added++;
-                if ($body['status'] !== CarBody::CONFIRMED) {
-                    $pending[] = ['row' => $i + 1, 'plate' => self::plate($car['plate']), 'body_status' => $body['status'], 'body_types' => $body['types']];
-                }
             } elseif ($car['plate'] !== '' || $car['brand'] !== '' || $car['model'] !== '') {
-                $errors[] = ['row' => $i + 1, 'plate' => self::plate($car['plate']), 'reason' => $result]
-                    + ($result === 'body_type_invalid' ? ['body_types' => $body['types']] : []);
+                $errors[] = ['row' => $i + 1, 'plate' => self::plate($car['plate']), 'reason' => $result];
             }
         }
 
-        return ['added' => $added, 'skipped' => count($errors), 'errors' => $errors, 'pending' => $pending];
+        return ['added' => $added, 'skipped' => count($errors), 'errors' => $errors];
     }
 
     /** Sheet columns in the order a sheet without a header row has them. */
@@ -73,14 +66,15 @@ class FleetCars
 
     /**
      * Adds a car and, when a driver phone is given, sends the driver the invite SMS. The brand and model are
-     * found in the car catalog by name (or by the ids of the panel's lists), and the body type comes from
-     * geoapi.ge for that year (CarBody): one type is confirmed; with several, a body_type the company sends
-     * confirms it when it is one of them; without one the car waits for its driver's pick. A body_type that is
-     * not one of geoapi.ge's types is refused. $body gets the body status and the types geoapi.ge named.
+     * found in the car catalog by name (or by the ids of the panel's lists). The company must name the body type
+     * (a key, its Georgian or English name, or a catalog name such as station wagon) and it is confirmed as given:
+     * a company usually knows only brand, model and year, and a wrong pick only prices its own washes. geoapi.ge
+     * is asked only for the generation of that type. $body gets the status and the types geoapi.ge named (on
+     * body_type_invalid, every type there is).
      *
      * @param  array<string, mixed>  $row  plate, brand, model (or brand_id, model_id), year, body_type, phone
      * @param  array{status: string, types: list<string>}|null  $body
-     * @return 'added'|'duplicate'|'invalid'|'unknown_model'|'year_invalid'|'body_type_invalid'|'phone_invalid'
+     * @return 'added'|'duplicate'|'invalid'|'unknown_model'|'year_invalid'|'body_type_required'|'body_type_invalid'|'phone_invalid'
      */
     public static function add(CorporateClient $client, array $row, string $source, ?array &$body = null): string
     {
@@ -107,13 +101,20 @@ class FleetCars
             return 'year_invalid';
         }
 
-        $typed = $text('body_type');
-        $resolved = app(CarBody::class)->resolve($model['source'], $model['brand_id'], $model['model_id'], (int) $year,
-            $typed === '' ? null : (BodyType::keyFor($typed) ?? $typed), CarBody::BY_COMPANY, false);
-        $body = ['status' => $resolved['attributes']['body_status'] ?? $resolved['options']['status'], 'types' => $resolved['types']];
-        if ($resolved['error'] !== null) {
-            return $resolved['error'];
+        // The company always names the body type; it is taken as it is, geoapi.ge only adds the generation.
+        if ($text('body_type') === '') {
+            return 'body_type_required';
         }
+        $type = BodyType::keyFor($text('body_type'));
+        $known = array_keys(BodyType::options());
+        if ($type === null || ! in_array($type, $known, true)) {
+            $body['types'] = $known;
+
+            return 'body_type_invalid';
+        }
+        $options = app(CarBody::class)->options($model['source'], $model['brand_id'], $model['model_id'], (int) $year);
+        $generations = $options['generations'][$type] ?? [];
+        $body = ['status' => CarBody::CONFIRMED, 'types' => $options['types']];
 
         $taken = FleetCar::query()
             ->whereRaw("upper(replace(replace(plate, ' ', ''), '-', '')) = ?", [$plate])
@@ -133,7 +134,14 @@ class FleetCars
                 'catalog_source' => $model['source'],
                 'catalog_brand_id' => $model['brand_id'],
                 'catalog_model_id' => $model['model_id'],
-            ] + $resolved['attributes']);
+                'car_type' => $type,
+                'body_status' => CarBody::CONFIRMED,
+                'body_options' => $options['types'] === [] ? null : $options['types'],
+                'body_incomplete' => $options['incomplete'],
+                'body_source' => $options['status'] === CarBody::CONFIRMED && $options['types'] === [$type] ? CarBody::BY_CATALOG : CarBody::BY_COMPANY,
+                'body_checked_at' => now(),
+                'generation_id' => count($generations) === 1 ? $generations[0] : null,
+            ]);
         } catch (QueryException) {
             return 'duplicate';
         }
@@ -181,24 +189,14 @@ class FleetCars
             'phone_invalid' => ['phone' => __('admin.fleet_phone_invalid')],
             'unknown_model' => ['model_id' => __('admin.fleet_reason_unknown_model')],
             'year_invalid' => ['year' => __('admin.fleet_reason_year_invalid')],
-            'body_type_invalid' => ['body_type' => __('admin.fleet_reason_'.$result)],
+            'body_type_required', 'body_type_invalid' => ['body_type' => __('admin.fleet_reason_'.$result)],
             default => ['plate' => __('admin.fleet_plate_format')],
-        };
-    }
-
-    /** The message after adding a car by hand: a car still waiting for its body type says so. */
-    public static function addedMessage(string $bodyStatus): string
-    {
-        return match ($bodyStatus) {
-            CarBody::CHOOSE => 'admin.fleet_car_added_choose',
-            CarBody::UNKNOWN => 'admin.fleet_car_added_unknown',
-            default => 'admin.fleet_car_added',
         };
     }
 
     public static function templateCsv(): string
     {
-        return "\xEF\xBB\xBFნომერი,მარკა,მოდელი,წელი,ძარა,ტელეფონი\nAB123CD,Toyota,Corolla,2018,,555 12 34 56\n";
+        return "\xEF\xBB\xBFნომერი,მარკა,მოდელი,წელი,ძარა,ტელეფონი\nAB123CD,Toyota,Corolla,2018,sedan,555 12 34 56\n";
     }
 
     /**

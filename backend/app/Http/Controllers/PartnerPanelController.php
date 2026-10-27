@@ -236,12 +236,12 @@ class PartnerPanelController extends Controller
             return $data;
         }
 
-        $result = FleetCars::add($corporate, $data, 'manual', $body);
+        $result = FleetCars::add($corporate, $data, 'manual');
         if ($result !== 'added') {
             return redirect()->back()->withInput()->withErrors(FleetCars::addError($result));
         }
 
-        return redirect()->route('partner.fleet')->with('message', __(FleetCars::addedMessage($body['status'])));
+        return redirect()->route('partner.fleet')->with('message', __('admin.fleet_car_added'));
     }
 
     public function deleteCar(Request $request, FleetCar $car)
@@ -265,8 +265,7 @@ class PartnerPanelController extends Controller
 
         return redirect()->route('partner.fleet')
             ->with('message', __('admin.fleet_imported', ['added' => $result['added'], 'skipped' => $result['skipped']]))
-            ->with('fleet_import_errors', array_slice($result['errors'], 0, 50))
-            ->with('fleet_import_pending', array_slice($result['pending'], 0, 50));
+            ->with('fleet_import_errors', array_slice($result['errors'], 0, 50));
     }
 
     public function template()
@@ -289,7 +288,7 @@ class PartnerPanelController extends Controller
             ->with('corporate_api_token', $corporate->api_token);
     }
 
-    /** The form's car: catalog brand and model ids, year and, when the year has several, the body type. */
+    /** The form's car: catalog brand and model ids, year and body type. */
     private function carFields(Request $request): array|RedirectResponse
     {
         $data = $request->validate([
@@ -298,7 +297,7 @@ class PartnerPanelController extends Controller
             'brand_id' => ['required', 'integer', 'min:1'],
             'model_id' => ['required', 'integer', 'min:1'],
             'year' => ['required', 'integer'],
-            'body_type' => ['nullable', 'string', 'max:32'],
+            'body_type' => ['required', 'string', 'max:32'],
         ]);
 
         if (! FleetCars::validPlate($data['plate'])) {
