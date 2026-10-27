@@ -38,7 +38,7 @@ function focus(array $fields): array
 it('requires the year, the generation and the modification of a catalog car, each from the list for the year', function () {
     fakeFocusCatalog();
     $token = auth('api')->login(makeUser('555 71 71 01'));
-    $add = fn (array $fields) => $this->withToken($token)->postJson('/api/mycars/add', focus(['plate' => 'IO663OI'] + $fields));
+    $add = fn (array $fields) => $this->withToken($token)->postJson('/api/mycars/add', array_merge(focus(['plate' => 'IO663OI']), $fields));
 
     $add(['year' => null])->assertStatus(422)->assertJsonPath('error_code', 'year_required');
     $add([])->assertStatus(422)->assertJsonPath('error_code', 'generation_required');
