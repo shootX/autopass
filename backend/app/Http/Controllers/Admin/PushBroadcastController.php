@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Jobs\SendPush;
 use App\Models\User;
 use App\Models\UserPushToken;
+use App\Services\Push\ApnsClient;
 use App\Support\AdminAudit;
 use Illuminate\Http\Request;
 
@@ -16,7 +17,31 @@ class PushBroadcastController extends Controller
 
     public function index()
     {
-        return view('admin.push.index', ['audience' => $this->audience()->count()]);
+        $apns = ApnsClient::settings();
+
+        return view('admin.push.index', [
+            'audience' => $this->audience()->count(),
+            'apns' => ['key_id' => $apns['key_id'], 'team_id' => $apns['team_id'], 'bundle_id' => $apns['bundle_id'], 'has_key' => $apns['key'] !== ''],
+            'configured' => ApnsClient::configured(),
+        ]);
+    }
+
+    /** Apple push key (.p8), Key ID, Team ID and bundle id; the key is stored encrypted and never shown. */
+    public function settings(Request $request)
+    {
+        $data = $request->validate([
+            'key_id' => ['required', 'string', 'regex:/^[A-Z0-9]{10}$/'],
+            'team_id' => ['required', 'string', 'regex:/^[A-Z0-9]{10}$/'],
+            'bundle_id' => ['required', 'string', 'max:155', 'regex:/^[A-Za-z0-9.\-]+$/'],
+            'key' => ['nullable', 'string', 'max:4000'],
+        ]);
+        if (filled($data['key'] ?? null) && openssl_pkey_get_private(trim($data['key'])) === false) {
+            return back()->withInput()->withErrors(['key' => __('admin.apns_bad_key')]);
+        }
+        ApnsClient::store($data);
+        AdminAudit::record('push', 0, 'apns_settings', 'key_id', null, $data['key_id'], (int) $request->user()->id);
+
+        return redirect()->route('admin.push')->with('message', __('admin.apns_saved'));
     }
 
     public function send(Request $request)
@@ -53,6 +78,7 @@ class PushBroadcastController extends Controller
     private function audience()
     {
         return UserPushToken::query()
+            ->where('user_push_tokens.kind', UserPushToken::KIND_APNS)
             ->join('users', 'users.id', '=', 'user_push_tokens.user_id')
             ->where('users.role', User::ROLE_USER)
             ->where('users.enable_push_special_promotions', true)

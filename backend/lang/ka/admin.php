@@ -894,4 +894,13 @@ return [
     'inv_seller_bank_account' => 'ანგარიშის ნომერი',
     'inv_seller_email' => 'ელფოსტა',
     'inv_seller_phone' => 'ტელეფონი',
+    'apns_title' => 'Apple push პარამეტრები',
+    'apns_ready' => 'მზადაა',
+    'apns_missing' => 'არ არის შევსებული',
+    'apns_hint' => 'შეტყობინებები პირდაპირ Apple-ს ეგზავნება. Apple Developer > Keys-ში შექმენი გასაღები (Apple Push Notifications service), ჩამოტვირთე .p8 ფაილი და აქ ჩასვი მისი ტექსტი, Key ID და Team ID.',
+    'apns_key' => '.p8 გასაღები (ფაილის ტექსტი)',
+    'apns_key_hint' => 'ჩასვი -----BEGIN PRIVATE KEY----- ... -----END PRIVATE KEY-----',
+    'apns_key_kept' => 'გასაღები შენახულია და არ ჩანს. ცარიელი დატოვე, თუ არ ცვლი.',
+    'apns_bad_key' => 'ეს არ არის სწორი .p8 გასაღები.',
+    'apns_saved' => 'Apple push პარამეტრები შენახულია.',
 ];

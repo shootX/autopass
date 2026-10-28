@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Middleware\EnsureApiSession;
 use App\Jobs\SendSms;
 use App\Models\User;
-use App\Models\UserPushToken;
 use App\Services\FleetInvites;
 use App\Services\Security\ActionGrantService;
 use App\Services\Security\AuthChallengeException;
@@ -525,12 +524,8 @@ class AuthController extends Controller
             return response()->json(['success' => false, 'error' => 'Invalid push id'], 422);
         }
 
-        $user = $request->user();
-
-        UserPushToken::query()->where('push_id', $pushID)->delete();
-        $user->pushTokens()->delete();
-        $user->pushTokens()->create(['push_id' => $pushID]);
-
+        // Older builds send a OneSignal id here. Pushes go straight to Apple now (POST device/apns),
+        // so it is not kept, and the device token the new app registered is not replaced.
         return response()->json(['success' => true]);
     }
 

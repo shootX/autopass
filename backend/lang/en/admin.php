@@ -894,4 +894,13 @@ return [
     'inv_seller_bank_account' => 'Account number',
     'inv_seller_email' => 'Email',
     'inv_seller_phone' => 'Phone',
+    'apns_title' => 'Apple push settings',
+    'apns_ready' => 'Ready',
+    'apns_missing' => 'Not set',
+    'apns_hint' => 'Notifications go straight to Apple. In Apple Developer > Keys create a key with Apple Push Notifications service, download the .p8 file and paste its text here with the Key ID and Team ID.',
+    'apns_key' => '.p8 key (file text)',
+    'apns_key_hint' => 'Paste -----BEGIN PRIVATE KEY----- ... -----END PRIVATE KEY-----',
+    'apns_key_kept' => 'A key is saved and hidden. Leave empty to keep it.',
+    'apns_bad_key' => 'This is not a valid .p8 key.',
+    'apns_saved' => 'Apple push settings saved.',
 ];

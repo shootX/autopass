@@ -65,7 +65,7 @@ autopass არის მანქანის რეცხვის სერ�
 - Flitt webhook: `ANY /callback/flitt/payment`.
 - TBC: `ANY /callback/tbc/payment`, დაბრუნება `ANY /payment/return`, sandbox `GET|POST /payment/sandbox`.
 - cron (`backend/routes/console.php`): ყოველ წუთში SMS კოდების წაშლა, პაკეტის ვადა, მენეჯერის შეხსენება 15 წუთით ადრე. 14:00 — პაკეტი 3 დღეში მთავრდება. 15:00 — 1 დღით ადრე.
-- Push: OneSignal (`config/OneSignal.php`, `PushService`).
+- Push: straight to Apple (APNs token auth, `App\Services\Push\ApnsClient`, `PushService`); key set in Admin > Push.
 
 **სხვა ზედაპირი**
 

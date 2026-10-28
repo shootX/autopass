@@ -508,4 +508,10 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 - [x] Bookings: move date and time from the list (same rules as the manager, push to the driver). Brands: rename; models: rename and change body type. Body types: run `cars:check-bodies` 10 cars at a time (report or save). Corporate invoices: requisites page.
 - [x] API for iOS: `POST /api/packages/{id}/renewal {renewal}`, `renewal_available` in `/api/packages/my`, `POST /api/device/apns {token, sandbox?}`. Vendor app: `GET /api/partner/vouchers/history` and a "Redeemed vouchers" list in voucher-checker.
 - [ ] Auto-renewal still charges nothing; the real recurring charge waits for the owner's decision.
-- [ ] Server: `php artisan migrate` (2026_10_28_000001), `php artisan route:cache`, `php artisan view:clear`, voucher-checker build. Push to iPhones needs the APNs key in OneSignal and the Push capability on the App ID.
+- [ ] Server: `php artisan migrate` (2026_10_28_000001), `php artisan route:cache`, `php artisan view:clear`, voucher-checker build. Push to iPhones needs the Push capability on the App ID (key: see the APNs entry below).
+
+## 2026-10-28 — OneSignal removed, pushes go straight to Apple
+- [x] `ApnsClient`: APNs HTTP/2 with a .p8 token key (ES256 JWT reused 50 min), production or sandbox host per device, dead tokens (410, BadDeviceToken, Unregistered) deleted.
+- [x] `user_push_tokens`: `kind` (`apns`; old OneSignal rows stay `onesignal` and are never sent to), `sandbox`, `lang` (push text in the app's language), `push_id` up to 255.
+- [x] Admin > Push: Apple push settings (Key ID, Team ID, bundle id, .p8 text stored encrypted and never shown); `APNS_*` in .env as fallback. `config/OneSignal.php` removed; `/api/device/push` answers OK and keeps nothing.
+- [ ] Server: `php artisan migrate` (2026_10_28_000002), `php artisan route:cache`, `php artisan config:cache`, `php artisan view:clear`; then fill Admin > Push with the Apple key. Android has no push until FCM is added.

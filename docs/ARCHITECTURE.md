@@ -47,7 +47,7 @@ API პრეფიქსი Laravel-ის ნაგულისხმევი
 | Backend | PHP `^8.2`, Laravel `^13`, Sanctum `^4`, `tymon/jwt-auth` `^2.2`, Laravel UI `^4.6` |
 | ბაზა | კონფიგი: PostgreSQL 16-ის პორტი `5432`, ბაზა და მომხმარებელი `autopass` (`backend/.env.example`). სესია, რიგი და ქეში: `database`. PHPUnit ტესტი: SQLite `:memory:` |
 | გადახდა | `flittpayments/php-sdk`, TBC HTTP (`TBC_BASE_URL` ნაგულისხმევად `https://test-api.tbcbank.ge`) |
-| სხვა PHP | Hashids, Maatwebsite Excel, SimpleSoftwareIO QR, OneSignal HTTP |
+| სხვა PHP | Hashids, Maatwebsite Excel, SimpleSoftwareIO QR, APNs HTTP/2 (direct, no OneSignal) |
 | კლიენტის აპი | React `^19.2`, Vite `^7`, TypeScript `~5.8`, Redux Toolkit, React Router `^7` |
 | UI | Tailwind `^3.4` (`tailwind.config.js`) და `@tailwindcss/vite` `^4`, SCSS, Radix Dialog/Slot/Switch, CVA, lucide-react, framer-motion |
 | რუკა | Leaflet, react-leaflet, MapLibre, PMTiles, react-map-gl. ცოცხალი რუკა მხოლოდ `VITE_LIVE_MAP=true` |
