@@ -35,10 +35,16 @@ class UserPackage extends Model
         'auto_renew' => 'boolean',
     ];
 
-    /** Renews on its own only while a card token is kept and nobody switched it off. */
+    /** Whether auto-renewal is offered at all (`AUTO_RENEW_ENABLED`); hidden everywhere while off. */
+    public static function renewalEnabled(): bool
+    {
+        return (bool) config('services.auto_renew');
+    }
+
+    /** Renews on its own only while the feature is on, a card token is kept and nobody switched it off. */
     public function renews(): bool
     {
-        return filled($this->rectoken) && $this->auto_renew !== false;
+        return self::renewalEnabled() && filled($this->rectoken) && $this->auto_renew !== false;
     }
 
     /** A discount package: the driver pays toPay() on site at every wash. */

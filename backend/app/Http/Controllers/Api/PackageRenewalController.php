@@ -12,6 +12,7 @@ class PackageRenewalController extends Controller
     /** POST /api/packages/{userPackage}/renewal {renewal: bool}: the driver's own switch. */
     public function update(Request $request, UserPackage $userPackage): JsonResponse
     {
+        abort_unless(UserPackage::renewalEnabled(), 404);
         if ((int) $userPackage->user_id !== (int) $request->user()->id) {
             return response()->json(['success' => false, 'error' => 'Forbidden'], 403);
         }

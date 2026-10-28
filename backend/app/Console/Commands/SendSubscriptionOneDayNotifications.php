@@ -17,6 +17,9 @@ class SendSubscriptionOneDayNotifications extends Command
      */
     public function handle()
     {
+        if (! UserPackage::renewalEnabled()) {
+            return self::SUCCESS;
+        }
         $targetDate = Carbon::now()->addDays(1)->toDateString();
 
         $packages = UserPackage::whereDate('end_date', $targetDate)

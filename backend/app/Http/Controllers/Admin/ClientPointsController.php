@@ -50,7 +50,7 @@ class ClientPointsController extends Controller
     /** The admin's switch for a package's auto-renewal (only where a card is kept). */
     public function renewal(User $client, UserPackage $pack)
     {
-        abort_unless((int) $pack->user_id === (int) $client->id && filled($pack->rectoken), 404);
+        abort_unless(UserPackage::renewalEnabled() && (int) $pack->user_id === (int) $client->id && filled($pack->rectoken), 404);
         $pack->forceFill(['auto_renew' => ! $pack->renews()])->save();
 
         return redirect()->route('admin.clients.packages', $client->id)->with('message', __('admin.auto_renew_saved'));

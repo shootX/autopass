@@ -1,6 +1,7 @@
 @extends('admin.layout.app')
 
 @section('content')
+    @php($renewalOn = \App\Models\UserPackage::renewalEnabled())
     <div class="container-fluid px-4">
 
         @if(session()->has('message'))
@@ -34,7 +35,7 @@
                         <th scope="col">{{ __('admin.start_date') }}</th>
                         <th scope="col">{{ __('admin.end_date') }}</th>
                         <th scope="col">{{ __('admin.washes_used') }}</th>
-                        <th scope="col">{{ __('admin.auto_renew') }}</th>
+                        <th scope="col">{{ $renewalOn ? __('admin.auto_renew') : __('admin.end_date') }}</th>
                         <th scope="col">{{ __('admin.actions') }}</th>
                     </thead>
                     <tbody>
@@ -50,12 +51,12 @@
                                     <button class="btn btn-sm btn-dark" type="button" data-id="{{$pack->id}}" data-bs-toggle="modal" data-bs-target="#setRenewModal">
                                         <i class="fa fa-refresh"></i>
                                     </button>
-                                    @if($pack->renews())
+                                    @if($renewalOn && $pack->renews())
                                         <span class="badge bg-success">{{ __('admin.active') }}</span>
-                                    @else
+                                    @elseif($renewalOn)
                                         <span class="badge bg-danger">{{ __('admin.inactive') }}</span>
                                     @endif
-                                    @if($pack->rectoken)
+                                    @if($renewalOn && $pack->rectoken)
                                         <form action="{{ route('admin.clients.packages.renewal', [$client->id, $pack->id]) }}" method="post" class="d-inline">@csrf
                                             <button class="btn btn-sm btn-link p-0">{{ $pack->renews() ? __('admin.auto_renew_off') : __('admin.auto_renew_on') }}</button>
                                         </form>

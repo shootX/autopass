@@ -115,7 +115,7 @@ return [
     'auto_renew' => 'Auto-renewal',
     'active' => 'Active',
     'inactive' => 'Inactive',
-    'renew_title' => 'Auto-renewal',
+    'renew_title' => 'Extend package',
     'renew_until' => 'Extend until',
     'enter_date' => 'Enter a date',
     'delete_user_package_title' => 'Delete package',
