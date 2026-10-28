@@ -2,8 +2,10 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\Http;
+use App\Models\UserPushToken;
+use App\Services\Push\ApnsClient;
 
+/** One push to one or many devices, each in the language its app runs in. */
 class PushService
 {
     private $device;
@@ -24,37 +26,26 @@ class PushService
 
     public function send(): void
     {
-        $georgianTitle = $this->localized($this->title, 'ka');
-        $georgianText = $this->localized($this->text, 'ka');
-
-        $fields = [
-            'app_id' => config('OneSignal.app_id'),
-            'contents' => [
-                'en' => $this->localized($this->text, 'en'),
-                'ru' => $this->localized($this->text, 'ru'),
-                'ka' => $georgianText,
-                'ge' => $georgianText,
-            ],
-            'target_channel' => 'push',
-            // One subscription id, or a batch of them for a broadcast.
-            'include_subscription_ids' => array_values((array) $this->device),
-            'headings' => [
-                'en' => $this->localized($this->title, 'en'),
-                'ru' => $this->localized($this->title, 'ru'),
-                'ka' => $georgianTitle,
-                'ge' => $georgianTitle,
-            ],
-            'data' => $this->data,
-        ];
-
-        $req = Http::withHeaders([
-            'Authorization' => 'Key '.config('OneSignal.rest_api_key'),
-            'Content-Type' => 'application/json',
-        ])->post('https://api.onesignal.com/notifications?c=push', $fields);
-
-        $response = $req->getBody();
-
-        file_put_contents('push.log', $response, FILE_APPEND);
+        $ids = array_values(array_filter((array) $this->device, 'is_string'));
+        if ($ids === []) {
+            return;
+        }
+        $apns = app(ApnsClient::class);
+        UserPushToken::query()->where('kind', UserPushToken::KIND_APNS)->whereIn('push_id', $ids)
+            ->get()
+            ->each(function (UserPushToken $token) use ($apns) {
+                $lang = in_array($token->lang, ['ka', 'en', 'ru'], true) ? $token->lang : 'ka';
+                $result = $apns->send(
+                    $token->push_id,
+                    $this->localized($this->title, $lang),
+                    $this->localized($this->text, $lang),
+                    (array) $this->data,
+                    (bool) $token->sandbox
+                );
+                if ($result === ApnsClient::GONE) {
+                    $token->delete();
+                }
+            });
     }
 
     private function localized(array $source, string $code): string

@@ -18,6 +18,8 @@ use App\Models\UserPushToken;
 use App\Models\UserVoucher;
 use App\Models\Voucher;
 use App\Models\VoucherCategory;
+use App\Services\Push\ApnsClient;
+use App\Services\PushService;
 use App\Support\AppSettings;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
@@ -124,22 +126,73 @@ it('sends a promo push only to users who allow promotions', function () {
     $yes->forceFill(['enable_push_special_promotions' => true])->save();
     $no = makeUser('555950011');
     $no->forceFill(['enable_push_special_promotions' => false])->save();
-    UserPushToken::query()->create(['user_id' => $yes->id, 'push_id' => 'sub-yes']);
-    UserPushToken::query()->create(['user_id' => $no->id, 'push_id' => 'sub-no']);
+    UserPushToken::query()->create(['user_id' => $yes->id, 'push_id' => 'sub-yes', 'kind' => UserPushToken::KIND_APNS]);
+    UserPushToken::query()->create(['user_id' => $no->id, 'push_id' => 'sub-no', 'kind' => UserPushToken::KIND_APNS]);
 
     $this->actingAs($admin)->post('/dashboard/push', ['title_ka' => 'აქცია', 'text_ka' => '-20%'])->assertRedirect();
 
     Queue::assertPushed(SendPush::class, 1);
 });
 
-it('registers an ios apns token through onesignal', function () {
-    config(['OneSignal.app_id' => 'app', 'OneSignal.rest_api_key' => 'key']);
-    Http::fake(['api.onesignal.com/*' => Http::response(['subscriptions' => [['id' => 'sub-123', 'type' => 'iOSPush', 'token' => 'abcdef0123456789abcdef0123456789']]], 201)]);
+function apnsTestKey(): string
+{
+    $key = openssl_pkey_new(['private_key_type' => OPENSSL_KEYTYPE_EC, 'curve_name' => 'prime256v1']);
+    openssl_pkey_export($key, $pem);
+
+    return $pem;
+}
+
+it('keeps the raw apns token with its language and sandbox flag', function () {
     $user = makeUser('555950012');
+    $token = auth('api')->login($user);
 
-    $this->withToken(auth('api')->login($user))->postJson('/api/device/apns', ['token' => 'ABCDEF0123456789ABCDEF0123456789'])->assertOk();
+    $this->withToken($token)->postJson('/api/device/apns', ['token' => 'ABCDEF0123456789ABCDEF0123456789', 'sandbox' => true, 'lang' => 'en'])->assertOk();
+    // An older build still posting a OneSignal id must not replace the device token.
+    $this->withToken($token)->postJson('/api/device/push', ['push_id' => 'onesignal-sub'])->assertOk();
 
-    expect($user->pushTokens()->value('push_id'))->toBe('sub-123');
+    $row = $user->pushTokens()->sole();
+    expect($row->push_id)->toBe('abcdef0123456789abcdef0123456789')
+        ->and($row->kind)->toBe(UserPushToken::KIND_APNS)
+        ->and($row->sandbox)->toBeTrue()
+        ->and($row->lang)->toBe('en');
+});
+
+it('sends a push straight to apple in the device language and forgets a dead token', function () {
+    $admin = makeUser('555950015', User::ROLE_ADMIN);
+    $this->actingAs($admin)->post('/dashboard/push/settings', [
+        'key_id' => 'ABC123DEFG', 'team_id' => 'TEAM123456', 'bundle_id' => 'ge.geocar.app', 'key' => apnsTestKey(),
+    ])->assertRedirect()->assertSessionHasNoErrors();
+    expect(ApnsClient::configured())->toBeTrue();
+
+    $live = makeUser('555950016');
+    $live->pushTokens()->create(['push_id' => 'aa11', 'kind' => UserPushToken::KIND_APNS, 'lang' => 'en']);
+    $dead = makeUser('555950017');
+    $dead->pushTokens()->create(['push_id' => 'bb22', 'kind' => UserPushToken::KIND_APNS, 'sandbox' => true]);
+    $legacy = makeUser('555950018');
+    $legacy->pushTokens()->create(['push_id' => 'onesignal-sub']);
+
+    Http::fake([
+        'api.push.apple.com/3/device/aa11' => Http::response('', 200),
+        'api.sandbox.push.apple.com/3/device/bb22' => Http::response(['reason' => 'Unregistered'], 410),
+    ]);
+    (new PushService(['aa11', 'bb22', 'onesignal-sub'], ['ka' => 'სათაური', 'en' => 'Title'], ['ka' => 'ტექსტი', 'en' => 'Text']))->send();
+
+    Http::assertSentCount(2);
+    Http::assertSent(fn ($request) => str_contains($request->url(), '/aa11')
+        && $request['aps']['alert']['title'] === 'Title'
+        && $request->header('apns-topic')[0] === 'ge.geocar.app'
+        && str_starts_with($request->header('authorization')[0], 'bearer ey'));
+    expect($dead->pushTokens()->count())->toBe(0)
+        ->and($live->pushTokens()->count())->toBe(1);
+});
+
+it('refuses an apple key that is not a private key', function () {
+    $admin = makeUser('555950019', User::ROLE_ADMIN);
+
+    $this->actingAs($admin)->post('/dashboard/push/settings', [
+        'key_id' => 'ABC123DEFG', 'team_id' => 'TEAM123456', 'bundle_id' => 'ge.geocar.app', 'key' => 'not a key',
+    ])->assertSessionHasErrors('key');
+    expect(ApnsClient::configured())->toBeFalse();
 });
 
 it('lists a partner its own redeemed vouchers', function () {

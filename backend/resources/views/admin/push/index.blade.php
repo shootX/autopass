@@ -23,5 +23,23 @@
                 </form>
             </div>
         </div>
+        <div class="card mb-4">
+            <div class="card-header">{{ __('admin.apns_title') }}
+                <span class="badge {{ $configured ? 'bg-success' : 'bg-danger' }} ms-2">{{ $configured ? __('admin.apns_ready') : __('admin.apns_missing') }}</span>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">{{ __('admin.apns_hint') }}</p>
+                <form action="{{ route('admin.push.settings') }}" method="post">
+                    @csrf
+                    <div class="row">
+                        <div class="col-md-4"><x-form-input required type="text" name="key_id" title="Key ID" :value="old('key_id', $apns['key_id'])"/></div>
+                        <div class="col-md-4"><x-form-input required type="text" name="team_id" title="Team ID" :value="old('team_id', $apns['team_id'])"/></div>
+                        <div class="col-md-4"><x-form-input required type="text" name="bundle_id" title="Bundle ID" :value="old('bundle_id', $apns['bundle_id'])"/></div>
+                    </div>
+                    <x-form-input type="textarea" rows="5" name="key" title="{{ __('admin.apns_key') }}" small="{{ $apns['has_key'] ? __('admin.apns_key_kept') : __('admin.apns_key_hint') }}"/>
+                    <button class="btn btn-primary mt-3"><i class="fas fa-save"></i> {{ __('admin.save') }}</button>
+                </form>
+            </div>
+        </div>
     </div>
 @endsection

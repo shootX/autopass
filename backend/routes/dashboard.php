@@ -292,6 +292,7 @@ Route::prefix('dashboard')
 
         Route::get('/push', [PushBroadcastController::class, 'index'])->name('admin.push');
         Route::post('/push', [PushBroadcastController::class, 'send'])->middleware('throttle:5,1')->name('admin.push.send');
+        Route::post('/push/settings', [PushBroadcastController::class, 'settings'])->name('admin.push.settings');
 
         Route::prefix('/promo')->group(function () {
             Route::get('/', [PromoController::class, 'index'])->name('admin.promo');

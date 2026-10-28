@@ -55,6 +55,14 @@ return [
     // Package auto-renewal is hidden until a recurring charge exists (owner, 2026-10-28).
     'auto_renew' => (bool) env('AUTO_RENEW_ENABLED', false),
 
+    // Apple push (token auth). Admin > Push overrides these when filled. APNS_KEY is the .p8 file's text.
+    'apns' => [
+        'key_id' => env('APNS_KEY_ID'),
+        'team_id' => env('APNS_TEAM_ID'),
+        'bundle_id' => env('APNS_BUNDLE_ID'),
+        'key' => env('APNS_KEY'),
+    ],
+
     'app_stores' => [
         'ios' => env('APP_STORE_URL_IOS'),
         'android' => env('APP_STORE_URL_ANDROID'),
