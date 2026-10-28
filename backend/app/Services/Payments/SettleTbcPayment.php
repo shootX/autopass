@@ -3,10 +3,13 @@
 namespace App\Services\Payments;
 
 use App\Models\Package;
+use App\Models\PromoCode;
+use App\Models\PromoCodeUse;
 use App\Models\TbcPayment;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Models\UserPackage;
+use App\Services\Points\ReferralReward;
 use App\Support\TestPayments;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -149,6 +152,10 @@ class SettleTbcPayment
             'qr_code' => Str::random(16),
             'rectoken' => $recId !== '' ? $recId : null,
         ]);
+
+        if (! $payment->test_mode) {
+            ReferralReward::forPayment($payment);
+        }
     }
 
     private function grantPoints(TbcPayment $payment): void
@@ -174,5 +181,27 @@ class SettleTbcPayment
             'status' => true,
             'comment' => 'Points',
         ]);
+
+        $promoId = (int) ($payment->payload['promo_code_id'] ?? 0);
+        if ($promoId > 0) {
+            $this->recordPromo($payment, $promoId);
+        }
+    }
+
+    /** The discount code counts as used once its payment went through (a second paid use still counts). */
+    private function recordPromo(TbcPayment $payment, int $promoId): void
+    {
+        $promo = PromoCode::query()->lockForUpdate()->find($promoId);
+        if (! $promo) {
+            return;
+        }
+        $quote = (array) ($payment->payload['quote'] ?? []);
+        $created = PromoCodeUse::query()->firstOrCreate(
+            ['promo_code_id' => $promo->id, 'user_id' => $payment->user_id],
+            ['tbc_payment_id' => $payment->id, 'points' => 0, 'discount' => (float) ($quote['promo_discount'] ?? 0)],
+        );
+        if ($created->wasRecentlyCreated) {
+            $promo->increment('used_count');
+        }
     }
 }

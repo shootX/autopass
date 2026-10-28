@@ -11,11 +11,7 @@
 @section('content')
     <div class="container-fluid px-4">
 
-        @if(session()->has('message'))
-            <div class="alert alert-success mt-4">
-                {{ session()->get('message') }}
-            </div>
-        @endif
+        @include('admin.partials.alerts')
 
         <div class="card mt-4 mb-4">
             <div class="card-header" style="display: flex;justify-content: space-between;align-items: baseline;">
@@ -33,13 +29,19 @@
                     @forelse($models as $model)
                         <tr>
                             <td>{{$model->id}}</td>
-                            <td>{{$model->name}}</td>
-                            <td>
-                                {{ \App\Models\BodyType::labelFor($model->type) }}
+                            <td colspan="2">
+                                <form action="{{ route('admin.car_brand_models_save', [$brand->id, $model->id]) }}" method="post" class="d-flex gap-2">@csrf
+                                    <input name="name" value="{{ $model->name }}" class="form-control form-control-sm" maxlength="255" required>
+                                    <select name="type" class="form-select form-select-sm">
+                                        @foreach(\App\Models\BodyType::options() as $key => $label)
+                                            <option value="{{ $key }}" @selected($model->type === $key)>{{ $label }}</option>
+                                        @endforeach
+                                    </select>
+                                    <button class="btn btn-sm btn-primary">{{ __('admin.save') }}</button>
+                                </form>
                             </td>
                             <td>
                                 <div class="btn-group">
-                                    {{--                                    <a class="btn btn-sm btn-primary" href="{{route('admin.packages.edit', $brand->id)}}"><i class="fas fa-edit"></i></a>--}}
                                     <a class="btn btn-sm btn-danger removeBtn" data-id="{{$model->id}}" href="#"><i class="fas fa-trash"></i></a>
                                 </div>
                             </td>

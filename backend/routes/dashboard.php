@@ -1,9 +1,13 @@
 <?php
 
+use App\Http\Controllers\Admin\AppContentController;
+use App\Http\Controllers\Admin\AppointmentMoveController;
 use App\Http\Controllers\Admin\AppointmentsController;
+use App\Http\Controllers\Admin\BodyCheckController;
 use App\Http\Controllers\Admin\BodyTypesController;
 use App\Http\Controllers\Admin\CarBrandsController;
 use App\Http\Controllers\Admin\ClientCarBodyController;
+use App\Http\Controllers\Admin\ClientPointsController;
 use App\Http\Controllers\Admin\ClientProfileController;
 use App\Http\Controllers\Admin\ClientsController;
 use App\Http\Controllers\Admin\CorporateCarsController;
@@ -12,10 +16,15 @@ use App\Http\Controllers\Admin\CorporateInvoicesController;
 use App\Http\Controllers\Admin\CorporatePackagesController;
 use App\Http\Controllers\Admin\CorporateWashesController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\InvoiceSettingsController;
 use App\Http\Controllers\Admin\ManagerController;
 use App\Http\Controllers\Admin\PackagesController;
 use App\Http\Controllers\Admin\PartnersController;
+use App\Http\Controllers\Admin\PaymentsController;
+use App\Http\Controllers\Admin\PointsSettingsController;
+use App\Http\Controllers\Admin\PromoCodesController;
 use App\Http\Controllers\Admin\PromoController;
+use App\Http\Controllers\Admin\PushBroadcastController;
 use App\Http\Controllers\Admin\ReportsController;
 use App\Http\Controllers\Admin\SiteController;
 use App\Http\Controllers\Admin\SmsInboxController;
@@ -63,6 +72,7 @@ Route::prefix('dashboard')
             Route::prefix('/{client}')->group(function () {
                 Route::get('/', [ClientProfileController::class, 'show'])->name('admin.clients.show');
                 Route::post('/ban', [ClientsController::class, 'ban'])->name('admin.clients.ban');
+                Route::post('/points', [ClientPointsController::class, 'adjust'])->name('admin.clients.points');
                 Route::get('/edit', [ClientsController::class, 'edit'])->name('admin.clients.edit');
                 Route::post('/edit_save', [ClientsController::class, 'edit_save'])->name('admin.clients.edit_save');
                 Route::delete('/delete', [ClientsController::class, 'delete'])->name('admin.clients.delete');
@@ -74,6 +84,7 @@ Route::prefix('dashboard')
                 Route::post('/store', [ClientsController::class, 'storeUserPackage'])->name('admin.clients.store_package');
                 Route::delete('/{pack}/delete', [ClientsController::class, 'packageDelete'])->name('admin.clients.packages.delete');
                 Route::post('/renew', [ClientsController::class, 'renewPackage'])->name('admin.clients.renew_package');
+                Route::post('/{pack}/renewal', [ClientPointsController::class, 'renewal'])->name('admin.clients.packages.renewal');
             });
 
             Route::prefix('/{client}/cars')->group(function () {
@@ -97,6 +108,7 @@ Route::prefix('dashboard')
             Route::post('/store', [AppointmentsController::class, 'store'])->name('admin.appointments.store');
             Route::delete('/{appointment}/delete', [AppointmentsController::class, 'remove'])->name('admin.appointments.delete');
             Route::post('/{appointment}/change_status', [AppointmentsController::class, 'change_status'])->name('admin.appointments.change_status');
+            Route::post('/{appointment}/move', [AppointmentMoveController::class, 'move'])->name('admin.appointments.move');
         });
 
         Route::prefix('/washings')->group(function () {
@@ -152,6 +164,7 @@ Route::prefix('dashboard')
             Route::get('/{bodyType}/edit', [BodyTypesController::class, 'edit'])->name('admin.body_types.edit');
             Route::post('/{bodyType}/save', [BodyTypesController::class, 'save'])->name('admin.body_types.save');
             Route::delete('/{bodyType}/delete', [BodyTypesController::class, 'delete'])->name('admin.body_types.delete');
+            Route::post('/check', [BodyCheckController::class, 'run'])->name('admin.body_types.check');
         });
 
         Route::prefix('/brands')->group(function () {
@@ -159,6 +172,7 @@ Route::prefix('dashboard')
             Route::get('/add', [CarBrandsController::class, 'addPage'])->name('admin.add_car_brand');
             Route::post('/store', [CarBrandsController::class, 'storeCarBrand'])->name('admin.store_car_brand');
             Route::delete('/{brand}/delete', [CarBrandsController::class, 'deleteCarBrand'])->name('admin.delete_car_brand');
+            Route::post('/{brand}/rename', [CarBrandsController::class, 'renameBrand'])->name('admin.car_brand_rename');
 
             Route::prefix('/{brand}/models')->group(function () {
                 Route::get('/list', [CarBrandsController::class, 'modelsList'])->name('admin.car_brand_models_list');
@@ -166,6 +180,7 @@ Route::prefix('dashboard')
                 Route::get('/add', [CarBrandsController::class, 'modelsAddPage'])->name('admin.car_brand_models_add');
                 Route::post('/store', [CarBrandsController::class, 'modelStore'])->name('admin.car_brand_models_store');
                 Route::delete('/{model}/delete', [CarBrandsController::class, 'modelDelete'])->name('admin.car_brand_models_delete');
+                Route::post('/{model}/save', [CarBrandsController::class, 'modelSave'])->name('admin.car_brand_models_save');
             });
 
         });
@@ -182,6 +197,7 @@ Route::prefix('dashboard')
             });
 
             Route::get('/', [VouchersController::class, 'index'])->name('admin.vouchers');
+            Route::get('/uses', [PaymentsController::class, 'vouchers'])->name('admin.vouchers.uses');
             Route::get('/add', [VouchersController::class, 'addPage'])->name('admin.add_vouchers');
             Route::post('/store', [VouchersController::class, 'store'])->name('admin.store_vouchers');
             Route::delete('/{voucher}/delete', [VouchersController::class, 'delete'])->name('admin.delete_vouchers');
@@ -212,6 +228,8 @@ Route::prefix('dashboard')
             Route::get('/catalog/years', [FleetCatalogController::class, 'years']);
             Route::get('/catalog/body-types', [FleetCatalogController::class, 'bodyTypes']);
             Route::get('/invoices', [CorporateInvoicesController::class, 'index'])->name('admin.corporate.invoices');
+            Route::get('/invoices/settings', [InvoiceSettingsController::class, 'edit'])->name('admin.corporate.invoices.settings');
+            Route::post('/invoices/settings', [InvoiceSettingsController::class, 'save'])->name('admin.corporate.invoices.settings.save');
             Route::post('/invoices/discounts', [CorporateInvoicesController::class, 'discounts'])->name('admin.corporate.invoices.discounts');
             Route::get('/invoices/{invoice}', [CorporateInvoicesController::class, 'show'])->name('admin.corporate.invoices.show');
             Route::post('/invoices/{invoice}/paid', [CorporateInvoicesController::class, 'paid'])->name('admin.corporate.invoices.paid');
@@ -250,6 +268,30 @@ Route::prefix('dashboard')
             Route::post('/{client}/temporary-password', [PartnersController::class, 'temporaryPassword'])->name('admin.partners.temporary_password');
 
         });
+
+        Route::get('/payments', [PaymentsController::class, 'index'])->name('admin.payments');
+
+        Route::prefix('/points')->group(function () {
+            Route::get('/', [PointsSettingsController::class, 'index'])->name('admin.points');
+            Route::post('/', [PointsSettingsController::class, 'save'])->name('admin.points.save');
+            Route::post('/codes', [PromoCodesController::class, 'store'])->name('admin.promo_codes.store');
+            Route::post('/codes/{promoCode}/toggle', [PromoCodesController::class, 'toggle'])->name('admin.promo_codes.toggle');
+            Route::delete('/codes/{promoCode}', [PromoCodesController::class, 'delete'])->name('admin.promo_codes.delete');
+        });
+
+        Route::prefix('/content')->group(function () {
+            Route::get('/', [AppContentController::class, 'index'])->name('admin.content');
+            Route::post('/faq', [AppContentController::class, 'storeFaq'])->name('admin.content.faq.store');
+            Route::post('/faq/{faq}', [AppContentController::class, 'saveFaq'])->name('admin.content.faq.save');
+            Route::delete('/faq/{faq}', [AppContentController::class, 'deleteFaq'])->name('admin.content.faq.delete');
+            Route::post('/contacts', [AppContentController::class, 'saveContacts'])->name('admin.content.contacts.save');
+            Route::post('/services', [AppContentController::class, 'storeService'])->name('admin.content.services.store');
+            Route::post('/services/{service}', [AppContentController::class, 'saveService'])->name('admin.content.services.save');
+            Route::delete('/services/{service}', [AppContentController::class, 'deleteService'])->name('admin.content.services.delete');
+        });
+
+        Route::get('/push', [PushBroadcastController::class, 'index'])->name('admin.push');
+        Route::post('/push', [PushBroadcastController::class, 'send'])->middleware('throttle:5,1')->name('admin.push.send');
 
         Route::prefix('/promo')->group(function () {
             Route::get('/', [PromoController::class, 'index'])->name('admin.promo');

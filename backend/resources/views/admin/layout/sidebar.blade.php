@@ -69,6 +69,26 @@
                 {{ __('admin.voucher_categories') }}
             </a>
 
+            <a class="nav-link @if(Route::is('admin.vouchers.uses')) active @endif" href="{{ route('admin.vouchers.uses') }}">
+                <div class="sb-nav-link-icon"><i class="fas fa-clock-rotate-left"></i></div>
+                {{ __('admin.voucher_uses') }}
+            </a>
+            <a class="nav-link @if(Route::is('admin.payments')) active @endif" href="{{ route('admin.payments') }}">
+                <div class="sb-nav-link-icon"><i class="fas fa-credit-card"></i></div>
+                {{ __('admin.payments') }}
+            </a>
+            <a class="nav-link @if(Route::is('admin.points*')) active @endif" href="{{ route('admin.points') }}">
+                <div class="sb-nav-link-icon"><i class="fas fa-coins"></i></div>
+                {{ __('admin.points_menu') }}
+            </a>
+            <a class="nav-link @if(Route::is('admin.push*')) active @endif" href="{{ route('admin.push') }}">
+                <div class="sb-nav-link-icon"><i class="fas fa-bell"></i></div>
+                {{ __('admin.push_title') }}
+            </a>
+            <a class="nav-link @if(Route::is('admin.content*')) active @endif" href="{{ route('admin.content') }}">
+                <div class="sb-nav-link-icon"><i class="fas fa-circle-question"></i></div>
+                {{ __('admin.content_menu') }}
+            </a>
             <a class="nav-link @if(Route::is('admin.promo')) active @endif" href="{{route('admin.promo')}}">
                 <div class="sb-nav-link-icon"><i class="fa-solid fa-percent"></i></div>
                 {{ __('admin.promo_banner') }}

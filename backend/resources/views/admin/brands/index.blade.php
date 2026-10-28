@@ -11,11 +11,7 @@
 @section('content')
     <div class="container-fluid px-4">
 
-        @if(session()->has('message'))
-            <div class="alert alert-success mt-4">
-                {{ session()->get('message') }}
-            </div>
-        @endif
+        @include('admin.partials.alerts')
 
         <div class="card mt-4 mb-4">
             <div class="card-header" style="display: flex;justify-content: space-between;align-items: baseline;">
@@ -39,7 +35,7 @@
                                     {{$brand->models()->count()}}</a></td>
                             <td>
                                 <div class="btn-group">
-{{--                                    <a class="btn btn-sm btn-primary" href="{{route('admin.packages.edit', $brand->id)}}"><i class="fas fa-edit"></i></a>--}}
+                                    <a class="btn btn-sm btn-primary" href="#" onclick="event.preventDefault(); event.stopPropagation(); window.renameBrand('{{ route('admin.car_brand_rename', $brand->id) }}', @js($brand->name));"><i class="fas fa-edit"></i></a>
                                     <a class="btn btn-sm btn-danger removeBtn" data-id="{{$brand->id}}" href="#"><i class="fas fa-trash"></i></a>
                                 </div>
                             </td>
@@ -75,6 +71,22 @@
 @endsection
 
 @push('js')
+    <script>
+        window.renameBrand = function (url, current) {
+            var name = window.prompt(I18N.brand_rename_prompt, current);
+            if (!name || name === current) return;
+            var form = document.createElement('form');
+            form.method = 'POST';
+            form.action = url;
+            [['_token', @json(csrf_token())], ['name', name]].forEach(function (pair) {
+                var input = document.createElement('input');
+                input.type = 'hidden'; input.name = pair[0]; input.value = pair[1];
+                form.appendChild(input);
+            });
+            document.body.appendChild(form);
+            form.submit();
+        };
+    </script>
     <script>
         function loadModels(brandId, brandName) {
             $('.brand-row').removeClass('table-active');

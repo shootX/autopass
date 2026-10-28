@@ -13,6 +13,7 @@ class TbcPayment extends Model
         'amount' => 'float',
         'payload' => 'array',
         'paid_at' => 'datetime',
+        'referral_paid' => 'boolean',
         'test_mode' => 'boolean',
         'access_expires_at' => 'datetime',
     ];

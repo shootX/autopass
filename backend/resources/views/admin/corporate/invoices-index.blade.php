@@ -13,6 +13,7 @@
             <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <div>{{ __('admin.inv_title') }}</div>
                 <div class="d-flex gap-2 flex-wrap">
+                    <a href="{{ route('admin.corporate.invoices.settings') }}" class="btn btn-sm btn-outline-secondary"><i class="fas fa-gear"></i> {{ __('admin.inv_settings') }}</a>
                     <form method="post" action="{{ route('admin.corporate.invoices.discounts') }}" onsubmit="return confirm(@json(__('admin.inv_discount_run_confirm')))">
                         @csrf
                         <button class="btn btn-sm btn-outline-primary" type="submit">{{ __('admin.inv_discount_run') }}</button>

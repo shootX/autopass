@@ -52,4 +52,9 @@ return [
         'client_secret' => env('TBC_CLIENT_SECRET'),
     ],
 
+    'app_stores' => [
+        'ios' => env('APP_STORE_URL_IOS'),
+        'android' => env('APP_STORE_URL_ANDROID'),
+    ],
+
 ];

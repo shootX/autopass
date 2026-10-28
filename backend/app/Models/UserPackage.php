@@ -24,6 +24,7 @@ class UserPackage extends Model
         'unlimited',
         'full_price',
         'discount_percent',
+        'auto_renew',
     ];
 
     protected $casts = [
@@ -31,7 +32,14 @@ class UserPackage extends Model
         'unlimited' => 'boolean',
         'full_price' => 'decimal:2',
         'discount_percent' => 'integer',
+        'auto_renew' => 'boolean',
     ];
+
+    /** Renews on its own only while a card token is kept and nobody switched it off. */
+    public function renews(): bool
+    {
+        return filled($this->rectoken) && $this->auto_renew !== false;
+    }
 
     /** A discount package: the driver pays toPay() on site at every wash. */
     public function isDiscount(): bool
