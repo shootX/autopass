@@ -85,7 +85,21 @@ it('adjusts client points with a transaction and never below zero', function () 
         ->and(Transaction::query()->where('user_id', $client->id)->where('system', 'Admin')->count())->toBe(2);
 });
 
+it('hides auto-renewal while the feature is off', function () {
+    $admin = makeUser('555950012', User::ROLE_ADMIN);
+    $user = makeUser('555950013');
+    $pack = controlsPackage($user);
+    $token = auth('api')->login($user);
+
+    $this->withToken($token)->getJson('/api/packages/my')->assertJsonPath('packages.0.renewal', false)
+        ->assertJsonPath('packages.0.renewal_available', false);
+    $this->withToken($token)->postJson("/api/packages/{$pack->id}/renewal", ['renewal' => true])->assertNotFound();
+    $this->actingAs($admin)->post("/dashboard/clients/{$user->id}/packages/{$pack->id}/renewal")->assertNotFound();
+    $this->actingAs($admin)->get("/dashboard/clients/{$user->id}/packages")->assertOk()->assertDontSee(__('admin.auto_renew_off'));
+});
+
 it('lets the driver and the admin switch auto-renewal', function () {
+    config(['services.auto_renew' => true]);
     $admin = makeUser('555950006', User::ROLE_ADMIN);
     $user = makeUser('555950007');
     $other = makeUser('555950008');

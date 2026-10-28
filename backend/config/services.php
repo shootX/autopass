@@ -52,6 +52,9 @@ return [
         'client_secret' => env('TBC_CLIENT_SECRET'),
     ],
 
+    // Package auto-renewal is hidden until a recurring charge exists (owner, 2026-10-28).
+    'auto_renew' => (bool) env('AUTO_RENEW_ENABLED', false),
+
     'app_stores' => [
         'ios' => env('APP_STORE_URL_IOS'),
         'android' => env('APP_STORE_URL_ANDROID'),

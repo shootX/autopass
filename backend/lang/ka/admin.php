@@ -115,7 +115,7 @@ return [
     'auto_renew' => 'ავტოგანახლება',
     'active' => 'აქტიური',
     'inactive' => 'არააქტიური',
-    'renew_title' => 'ავტოგანახლების მართვა',
+    'renew_title' => 'პაკეტის გახანგრძლივება',
     'renew_until' => 'გახანგრძლივების თარიღი',
     'enter_date' => 'შეიყვანეთ თარიღი',
     'delete_user_package_title' => 'პაკეტის წაშლა',
