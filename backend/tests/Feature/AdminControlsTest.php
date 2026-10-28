@@ -4,6 +4,7 @@ use App\Jobs\SendPush;
 use App\Models\BodyType;
 use App\Models\CarBrand;
 use App\Models\CarModel;
+use App\Models\CarWash;
 use App\Models\CarWashService;
 use App\Models\Faq;
 use App\Models\Package;
@@ -163,4 +164,24 @@ it('renames a brand and saves a model', function () {
     $this->actingAs($admin)->post("/dashboard/brands/{$brand->id}/models/{$model->id}/save", ['name' => 'Prius', 'type' => 'hatchback'])->assertRedirect();
 
     expect($brand->fresh()->name)->toBe('Toyota')->and($model->fresh()->name)->toBe('Prius')->and($model->fresh()->type)->toBe('hatchback');
+});
+
+it('takes a review without a comment once per branch and answers 422 in the driver language', function () {
+    $manager = makeUser('555940090', User::ROLE_MANAGER);
+    $wash = CarWash::create(['name' => 'Review branch', 'address' => 'Addr', 'location' => '41.7,44.8', 'manager_id' => $manager->id, 'work_time_start' => '09:00', 'work_time_end' => '20:00']);
+    $token = auth('api')->login(makeUser('555940091'));
+
+    $this->withToken($token)->postJson('/api/myreviews/add', ['car_wash_id' => $wash->id, 'stars' => 5])
+        ->assertOk()->assertJsonPath('success', true);
+    $this->withToken($token)->withHeader('Accept-Language', 'en')
+        ->postJson('/api/myreviews/add', ['car_wash_id' => $wash->id, 'stars' => 4, 'text' => 'again'])
+        ->assertStatus(422);
+    $this->withToken($token)->postJson('/api/myreviews/add', ['car_wash_id' => $wash->id, 'stars' => 9])
+        ->assertStatus(422);
+});
+
+it('sends the referral link to the configured store', function () {
+    config(['services.app_stores.ios' => 'https://apps.apple.com/app/id123']);
+    $this->withHeader('User-Agent', 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)')
+        ->get('/ref/ABCDE')->assertOk()->assertSee('https://apps.apple.com/app/id123', false);
 });

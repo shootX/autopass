@@ -32,19 +32,19 @@ class ReferralsController extends Controller
 
     public function handleRef(Request $request, $code)
     {
-        // 1. Определяем ОС устройства
+        $userAgent = (string) $request->userAgent();
+        $site = config('app.url') ?: 'https://geocar.ge';
 
-        $userAgent = $request->userAgent();
-
+        // Store links come from APP_STORE_URL_IOS / APP_STORE_URL_ANDROID; without them the site opens.
         if (preg_match('/android/i', $userAgent)) {
             $os = 'android';
-            $storeUrl = 'https://play.google.com/store/apps/details?id=org.telegram.messenger';
+            $storeUrl = config('services.app_stores.android') ?: $site;
         } elseif (preg_match('/iphone|ipad|ipod/i', $userAgent)) {
             $os = 'ios';
-            $storeUrl = 'https://apps.apple.com/app/id686449807';
+            $storeUrl = config('services.app_stores.ios') ?: $site;
         } else {
             $os = 'desktop';
-            $storeUrl = 'https://geocar.ge';
+            $storeUrl = $site;
         }
 
         $appSchemeUrl = "geocar://ref?code={$code}";
