@@ -134,7 +134,9 @@ class PackagesController extends Controller
                     'end_date' => $package->end_date,
                     'number_of_washes' => $package->number_of_washes,
                     'used_washes' => $package->used_washes,
-                    'renewal' => $package->rectoken ? true : false,
+                    'renewal' => $package->renews(),
+                    // A card is kept for this package, so the driver may switch renewal on or off.
+                    'renewal_available' => filled($package->rectoken),
                     'type' => $package->isDiscount() ? Package::TYPE_DISCOUNT : Package::TYPE_WASHES,
                     'unlimited' => (bool) $package->unlimited,
                     // Discount packages: the terms bought, and what the driver saved at its washes so far.

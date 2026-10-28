@@ -9,6 +9,7 @@ use App\Models\CorporatePackage;
 use App\Models\CorporateWash;
 use App\Models\CorporateWashMove;
 use App\Models\FleetCar;
+use App\Support\AppSettings;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -181,16 +182,17 @@ class CorporateInvoices
     /** One invoice row for the given fields, with the VAT rate, both parties, the due date and the number. */
     private static function create(CorporateClient $client, array $fields): CorporateInvoice
     {
+        $config = AppSettings::invoices();
         $invoice = new CorporateInvoice;
         $invoice->forceFill($fields + [
             'corporate_client_id' => $client->id,
-            'vat_rate' => max(0, min(100, (int) config('invoices.vat_rate'))),
+            'vat_rate' => max(0, min(100, (int) $config['vat_rate'])),
             'status' => CorporateInvoice::STATUS_ISSUED,
             'buyer' => self::buyer($client),
-            'seller' => (array) config('invoices.seller'),
-            'due_date' => now()->addDays(max(0, (int) config('invoices.due_days')))->toDateString(),
+            'seller' => (array) $config['seller'],
+            'due_date' => now()->addDays(max(0, (int) $config['due_days']))->toDateString(),
         ])->save();
-        $invoice->forceFill(['number' => config('invoices.prefix').'-'.str_pad((string) $invoice->id, 6, '0', STR_PAD_LEFT)])->save();
+        $invoice->forceFill(['number' => $config['prefix'].'-'.str_pad((string) $invoice->id, 6, '0', STR_PAD_LEFT)])->save();
 
         return $invoice;
     }

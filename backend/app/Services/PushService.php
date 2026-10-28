@@ -7,8 +7,11 @@ use Illuminate\Support\Facades\Http;
 class PushService
 {
     private $device;
+
     private $title = [];
+
     private $text = [];
+
     private $data = [];
 
     public function __construct($device, $title = [], $text = [], $data = [])
@@ -19,7 +22,7 @@ class PushService
         $this->data = $data;
     }
 
-    public function send() : void
+    public function send(): void
     {
         $georgianTitle = $this->localized($this->title, 'ka');
         $georgianText = $this->localized($this->text, 'ka');
@@ -33,21 +36,20 @@ class PushService
                 'ge' => $georgianText,
             ],
             'target_channel' => 'push',
-            'include_subscription_ids' => [
-                $this->device
-            ],
+            // One subscription id, or a batch of them for a broadcast.
+            'include_subscription_ids' => array_values((array) $this->device),
             'headings' => [
                 'en' => $this->localized($this->title, 'en'),
                 'ru' => $this->localized($this->title, 'ru'),
                 'ka' => $georgianTitle,
                 'ge' => $georgianTitle,
             ],
-            'data' => $this->data
+            'data' => $this->data,
         ];
 
         $req = Http::withHeaders([
-            'Authorization' => 'Key ' . config('OneSignal.rest_api_key'),
-            'Content-Type'  => 'application/json',
+            'Authorization' => 'Key '.config('OneSignal.rest_api_key'),
+            'Content-Type' => 'application/json',
         ])->post('https://api.onesignal.com/notifications?c=push', $fields);
 
         $response = $req->getBody();

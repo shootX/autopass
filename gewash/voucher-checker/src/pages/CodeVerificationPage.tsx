@@ -4,6 +4,7 @@ import { PartnerFlowError } from "../lib/partnerGate";
 import { parseSmsDelivery, publicSmsDetail, type SmsDelivery } from "../../../src/lib/smsDelivery";
 import SmsStatusNotice from "../components/SmsStatusNotice";
 import Spinner from "../components/Spinner";
+import VoucherHistory from "../components/VoucherHistory";
 import logOutIconUrl from "../assets/log_out_icon.svg";
 
 const DISCOUNT_CODE_MAX_LEN = 8;
@@ -60,6 +61,7 @@ export default function CodeVerificationPage({ onLogout, onMustChange }: Props) 
   const [result, setResult] = useState<VoucherCheckResult>({ status: "idle" });
   const [resendBusy, setResendBusy] = useState(false);
   const [successBurst, setSuccessBurst] = useState(false);
+  const [redeemed, setRedeemed] = useState(0);
   const busy = result.status === "loading";
 
   function consumeFlow(err: unknown): boolean {
@@ -147,6 +149,7 @@ export default function CodeVerificationPage({ onLogout, onMustChange }: Props) 
     try {
       const { ok, payload } = await confirmVoucherUse(tempCode, smsCode);
       if (ok) {
+        setRedeemed((n) => n + 1);
         setSuccessBurst(true);
         await delay(3000);
         setSuccessBurst(false);
@@ -430,6 +433,7 @@ export default function CodeVerificationPage({ onLogout, onMustChange }: Props) 
             </form>
           ) : null}
         </div>
+        <VoucherHistory refreshKey={redeemed} onFlowError={consumeFlow} />
       </main>
     </div>
   );

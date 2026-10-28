@@ -41,6 +41,22 @@
             </div>
         @endif
 
+        <div class="card mt-4">
+            <div class="card-header">{{ __('admin.body_check') }}</div>
+            <div class="card-body">
+                <p class="text-muted">{{ __('admin.body_check_hint') }}</p>
+                <form action="{{ route('admin.body_types.check') }}" method="post" class="d-flex flex-wrap gap-2 align-items-center">@csrf
+                    <label class="form-check-label"><input type="checkbox" name="unknown" value="1" class="form-check-input"> {{ __('admin.body_check_unknown') }}</label>
+                    <button class="btn btn-outline-primary btn-sm">{{ __('admin.body_check_dry') }}</button>
+                    <button class="btn btn-warning btn-sm" name="apply" value="1" onclick="return confirm(I18N.body_check_apply_confirm)">{{ __('admin.body_check_apply') }}</button>
+                </form>
+                @if(session('body_check'))
+                    <div class="mt-3"><strong>{{ session('body_check')['apply'] ? __('admin.body_check_applied') : __('admin.body_check_report') }}</strong></div>
+                    <pre class="bg-light p-2 small mt-2" style="white-space:pre-wrap;max-height:400px;overflow:auto">{{ session('body_check')['output'] }}</pre>
+                @endif
+            </div>
+        </div>
+
         <div class="card mt-4 mb-4">
             <div class="card-header" style="display: flex;justify-content: space-between;align-items: baseline;">
                 <div>{{ __('admin.body_types') }}</div>

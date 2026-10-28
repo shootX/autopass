@@ -20,6 +20,7 @@
 
 @section('content')
     <div class="container-fluid px-4">
+        @include('admin.partials.alerts')
 
         <div class="mt-4 mb-2">
             <a href="{{ route('admin.clients') }}"><i class="fas fa-arrow-left"></i> {{ __('admin.clients') }}</a>

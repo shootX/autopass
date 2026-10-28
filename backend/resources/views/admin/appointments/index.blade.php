@@ -13,11 +13,7 @@
 
 @section('content')
     <div class="container-fluid px-4">
-        @if(session()->has('message'))
-            <div class="alert alert-success mt-4">
-                {{ session()->get('message') }}
-            </div>
-        @endif
+        @include('admin.partials.alerts')
         <div class="card mt-4 mb-4">
             <div class="card-header" style="display: flex;justify-content: space-between;align-items: baseline;">
                 <div>{{ __('admin.appointments') }}</div>
@@ -73,6 +69,11 @@
 {{--                                    <a class="btn btn-secondary"><i class="fas fa-pencil"></i></a>--}}
                                     <a data-id="{{$appointment->id}}" class="btn btn-sm btn-danger removeBtn"><i class="fas fa-trash"></i></a>
                                 </div>
+                                <form action="{{ route('admin.appointments.move', $appointment) }}" method="post" class="d-flex gap-1 mt-1">@csrf
+                                    <input type="date" name="date" value="{{ $appointment->date }}" class="form-control form-control-sm" required>
+                                    <input type="time" name="time" value="{{ substr($appointment->time, 0, 5) }}" class="form-control form-control-sm" required>
+                                    <button class="btn btn-sm btn-outline-primary" title="{{ __('admin.appointment_move') }}"><i class="fas fa-clock"></i></button>
+                                </form>
                             </td>
                         </tr>
                     @empty

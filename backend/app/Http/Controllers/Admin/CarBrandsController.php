@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\BodyType;
 use App\Models\CarBrand;
 use App\Models\CarModel;
 use Illuminate\Http\Request;
@@ -15,6 +14,7 @@ class CarBrandsController extends Controller
     public function index(Request $request)
     {
         $brands = CarBrand::paginate(10);
+
         return view('admin.brands.index', compact('brands'));
     }
 
@@ -29,7 +29,7 @@ class CarBrandsController extends Controller
             'name' => 'required|string|max:255|unique:car_brands,name',
         ]);
 
-        if( $validator->fails()) {
+        if ($validator->fails()) {
             return redirect()->back()
                 ->withErrors($validator)
                 ->withInput();
@@ -45,12 +45,14 @@ class CarBrandsController extends Controller
     public function deleteCarBrand(Request $request, CarBrand $brand)
     {
         $brand->delete();
+
         return redirect()->route('admin.car_brands')->with('message', __('admin.brand_deleted'));
     }
 
     public function modelsIndex(Request $request, CarBrand $brand)
     {
         $models = $brand->models()->paginate(10);
+
         return view('admin.brands.models.index', compact('brand', 'models'));
     }
 
@@ -84,7 +86,7 @@ class CarBrandsController extends Controller
             'type' => 'required|string|exists:body_types,name',
         ]);
 
-        if( $validator->fails()) {
+        if ($validator->fails()) {
             return redirect()->back()
                 ->withErrors($validator)
                 ->withInput();
@@ -97,6 +99,7 @@ class CarBrandsController extends Controller
 
         return redirect()->route('admin.car_brand_models', $brand->id)->with('message', __('admin.model_added'));
     }
+
     public function modelDelete(Request $request, CarBrand $brand, CarModel $model)
     {
         if ((int) $model->brand_id !== (int) $brand->id) {
@@ -104,6 +107,28 @@ class CarBrandsController extends Controller
         }
 
         $model->delete();
+
         return redirect()->route('admin.car_brand_models', $brand->id)->with('message', __('admin.model_deleted'));
+    }
+
+    public function renameBrand(Request $request, CarBrand $brand)
+    {
+        $data = $request->validate(['name' => 'required|string|max:255|unique:car_brands,name,'.$brand->id]);
+        $brand->update(['name' => $data['name']]);
+
+        return redirect()->route('admin.car_brands')->with('message', __('admin.brand_renamed'));
+    }
+
+    public function modelSave(Request $request, CarBrand $brand, CarModel $model)
+    {
+        abort_unless((int) $model->brand_id === (int) $brand->id, 404);
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255',
+                Rule::unique('car_models', 'name')->where(fn ($query) => $query->where('brand_id', $brand->id))->ignore($model->id)],
+            'type' => 'required|string|exists:body_types,name',
+        ]);
+        $model->update($data);
+
+        return redirect()->route('admin.car_brand_models', $brand->id)->with('message', __('admin.model_saved'));
     }
 }

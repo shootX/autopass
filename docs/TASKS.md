@@ -497,3 +497,15 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 - [x] gewash manager scanner: discount package card with "Driver pays on site" and unlimited washes.
 - [x] iOS: GeocarAPP PR (packages list, buy, my package, manager scan).
 - [ ] Server: `php artisan migrate` (2026_10_27_000002), `php artisan view:clear`, gewash build. No package changes until the admin makes a discount package.
+
+## 2026-10-28 — Missing controls: panel, API for iOS, points price and promo codes (`claude/project-thread-y2uoit`)
+
+- [x] Admin > Points and promo codes: price of 1 point in GEL, a percent off it, min/max per purchase, referral bonus percent; promo codes (discount on buying points, or free points), limit, dates, switch, delete. API: `GET /api/points/price`, `POST /api/points/quote`, `POST /api/points/buy {amount, promo_code?}` (charges the quote total), `POST /api/promo-codes/activate {code}`.
+- [x] Referral bonus: the inviter gets `referral_percent` of a friend's paid (not sandbox) package as points, once per payment (the app already promised this; nothing paid it before).
+- [x] Admin > FAQ, contacts, services: edits what `/api/faq`, `/api/contacts`, `/api/services-list` return (caches cleared on save); a service in use cannot be deleted.
+- [x] Client profile: add or take points with a reason (transaction `Admin`, audit, never below zero). Client packages: auto-renewal on/off where a card is kept.
+- [x] Admin > Promo pushes (only to users with "special promotions" on, batches of 1000), Payments (all card payments, filters, succeeded total), Voucher redemptions (used / not used).
+- [x] Bookings: move date and time from the list (same rules as the manager, push to the driver). Brands: rename; models: rename and change body type. Body types: run `cars:check-bodies` 10 cars at a time (report or save). Corporate invoices: requisites page.
+- [x] API for iOS: `POST /api/packages/{id}/renewal {renewal}`, `renewal_available` in `/api/packages/my`, `POST /api/device/apns {token, sandbox?}`. Vendor app: `GET /api/partner/vouchers/history` and a "Redeemed vouchers" list in voucher-checker.
+- [ ] Auto-renewal still charges nothing; the real recurring charge waits for the owner's decision.
+- [ ] Server: `php artisan migrate` (2026_10_28_000001), `php artisan route:cache`, `php artisan view:clear`, voucher-checker build. Push to iPhones needs the APNs key in OneSignal and the Push capability on the App ID.

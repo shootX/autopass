@@ -38,6 +38,11 @@
                 <div class="text-muted">{{ __('admin.p_points') }}</div>
                 {{ (int) $client->points }}
                 @if((int) $client->test_points > 0)<span class="text-muted">({{ __('admin.p_points_split', ['real' => $client->realPoints(), 'test' => (int) $client->test_points]) }})</span>@endif
+                <form action="{{ route('admin.clients.points', $client) }}" method="post" class="d-flex gap-1 mt-1" onsubmit="return confirm(I18N.points_adjust_confirm)">@csrf
+                    <input type="number" name="delta" class="form-control form-control-sm" style="max-width:90px" placeholder="±" required>
+                    <input type="text" name="comment" class="form-control form-control-sm" maxlength="120" placeholder="{{ __('admin.points_adjust_reason') }}" required>
+                    <button class="btn btn-sm btn-outline-primary">{{ __('admin.points_adjust') }}</button>
+                </form>
             </div>
             <div class="col-md-3">
                 <div class="text-muted">{{ __('admin.p_referral') }}</div>

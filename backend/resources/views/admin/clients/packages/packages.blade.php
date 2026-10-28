@@ -50,10 +50,15 @@
                                     <button class="btn btn-sm btn-dark" type="button" data-id="{{$pack->id}}" data-bs-toggle="modal" data-bs-target="#setRenewModal">
                                         <i class="fa fa-refresh"></i>
                                     </button>
-                                    @if($pack->rectoken)
+                                    @if($pack->renews())
                                         <span class="badge bg-success">{{ __('admin.active') }}</span>
                                     @else
                                         <span class="badge bg-danger">{{ __('admin.inactive') }}</span>
+                                    @endif
+                                    @if($pack->rectoken)
+                                        <form action="{{ route('admin.clients.packages.renewal', [$client->id, $pack->id]) }}" method="post" class="d-inline">@csrf
+                                            <button class="btn btn-sm btn-link p-0">{{ $pack->renews() ? __('admin.auto_renew_off') : __('admin.auto_renew_on') }}</button>
+                                        </form>
                                     @endif
                                 </td>
                                 <td>

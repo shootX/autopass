@@ -10,9 +10,13 @@ use App\Http\Controllers\Api\ContactsController;
 use App\Http\Controllers\Api\CorporateFleetController;
 use App\Http\Controllers\Api\CorporateWashController;
 use App\Http\Controllers\Api\FaqController;
+use App\Http\Controllers\Api\PackageRenewalController;
 use App\Http\Controllers\Api\PackagesController;
+use App\Http\Controllers\Api\Partners\VoucherHistoryController;
 use App\Http\Controllers\Api\PaymentsController;
 use App\Http\Controllers\Api\PointsController;
+use App\Http\Controllers\Api\PromoCodesController;
+use App\Http\Controllers\Api\PushDeviceController;
 use App\Http\Controllers\Api\ReferralsController;
 use App\Http\Controllers\Api\ReviewsController;
 use App\Http\Controllers\Api\ShopController;
@@ -81,6 +85,7 @@ Route::get('/cars/models/{model_id}/photo', [CarCatalogController::class, 'photo
 Route::middleware(['auth:api', CorsMiddleware::class, EnsureApiSession::class])->group(function () {
 
     Route::post('/device/push', [AuthController::class, 'setDevicePushId']);
+    Route::post('/device/apns', [PushDeviceController::class, 'apns'])->middleware('throttle:10,1');
 
     Route::post('/account/delete', [AuthController::class, 'deleteAccount']);
 
@@ -159,6 +164,7 @@ Route::middleware(['auth:api', CorsMiddleware::class, EnsureApiSession::class])-
         Route::get('/my', [PackagesController::class, 'myPackages']);
         Route::get('/{id}/qr', [PackagesController::class, 'qrCode']);
         Route::delete('/{userPackage}/remove', [PackagesController::class, 'removePackage']);
+        Route::post('/{userPackage}/renewal', [PackageRenewalController::class, 'update'])->whereNumber('userPackage');
     });
 
     Route::prefix('appointments')->group(function () {
@@ -174,8 +180,12 @@ Route::middleware(['auth:api', CorsMiddleware::class, EnsureApiSession::class])-
     });
 
     Route::prefix('points')->group(function () {
+        Route::get('/price', [PointsController::class, 'price']);
+        Route::post('/quote', [PointsController::class, 'quote'])->middleware('throttle:30,1');
         Route::post('/buy', [PointsController::class, 'buy']);
     });
+
+    Route::post('/promo-codes/activate', [PromoCodesController::class, 'activate'])->middleware('throttle:10,1');
 
     Route::post('/package/{id}/approve', [PackagesController::class, 'managerApprove'])->middleware('throttle:30,1');
     Route::post('/corporate-wash/{id}/approve', [CorporateWashController::class, 'approve'])->whereNumber('id')->middleware('throttle:30,1');
@@ -217,6 +227,8 @@ Route::prefix('/partner')->middleware([CorsMiddleware::class])->group(function (
     Route::middleware(['auth:partners', EnsurePartnerReady::class])->group(function () {
         Route::post('/logout', [App\Http\Controllers\Api\Partners\AuthController::class, 'logout'])->name('partner.api.logout');
         Route::post('/password', [App\Http\Controllers\Api\Partners\AuthController::class, 'password'])->name('partner.api.password');
+        Route::get('/vouchers/history', [VoucherHistoryController::class, 'index'])
+            ->middleware('throttle:30,1')->name('partner.api.vouchers.history');
         Route::middleware('throttle:voucher')->group(function () {
             Route::post('/voucher/check', [App\Http\Controllers\Api\Partners\VouchersController::class, 'checkVoucher'])->name('partner.api.voucher.check');
             Route::post('/voucher/use', [App\Http\Controllers\Api\Partners\VouchersController::class, 'useVoucher'])->name('partner.api.voucher.use');
