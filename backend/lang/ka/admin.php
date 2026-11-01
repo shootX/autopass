@@ -425,6 +425,8 @@ return [
     'p_days_with_us' => ':count დღე ჩვენთან',
     'p_details' => 'დეტალები',
     'p_field' => 'ველი',
+    'p_vin' => 'VIN',
+    'p_color' => 'ფერი',
     'p_fuel' => 'საწვავი',
     'p_income' => 'შემოსვლა',
     'p_outcome' => 'გასვლა',

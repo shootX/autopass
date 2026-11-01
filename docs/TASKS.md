@@ -519,3 +519,9 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 ## 2026-11-01 — Contabo auto-deploy
 
 - [x] `.github/workflows/deploy-contabo.yml`: push to `main` and `workflow_dispatch` SSH into Contabo and run `/opt/projects/autopass/deploy/contabo-auto-deploy.sh`. Concurrency `deploy-contabo-autopass`, `cancel-in-progress: false`. Secrets stay in GitHub (`AUTOPASS_SSH_HOST`, `AUTOPASS_SSH_USER`, `AUTOPASS_SSH_KEY`, `AUTOPASS_SSH_KNOWN_HOSTS`). Note in `docs/DEPLOY_RUNBOOK.md` §11. App code unchanged.
+
+## 2026-11-01 — VIN and colour for the tech passport scan (`claude/project-thread-lbiyh6`)
+
+- [x] `user_cars.vin` (17) and `user_cars.color` (40), nullable. `POST /api/mycars/add` and `POST /api/mycars/{id}/edit` take `vin` (upper-cased, spaces dropped, 17 letters and digits without I, O, Q; else 422 `vin_invalid`) and `color` (up to 40; else 422 `color_invalid`); empty clears. Car payload returns both. Admin client profile → Cars shows them.
+- [x] iOS: GeocarAPP PR scans the tech passport on the phone (Apple Vision) and fills the add form; the photo is never sent.
+- [ ] Server: `php artisan migrate` (2026_11_01_000001), `php artisan view:clear`.

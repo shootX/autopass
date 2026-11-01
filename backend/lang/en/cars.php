@@ -17,6 +17,8 @@ return [
     'body_unknown' => 'The car catalog does not name a body type for this car. Contact support to confirm it.',
     'car_has_package' => 'The car has an active package. The model and year can\'t change until the package ends.',
     'car_not_found' => 'Car not found.',
+    'vin_invalid' => 'The VIN must be 17 Latin letters and digits (no I, O or Q).',
+    'color_invalid' => 'The colour is too long (40 characters at most).',
     'fuel' => [
         'regular' => 'Regular (RON 92–95)',
         'premium' => 'Premium (RON 95)',

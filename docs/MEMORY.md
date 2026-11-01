@@ -427,3 +427,7 @@ The owner does not want a separate push service. `App\Services\Push\ApnsClient` 
 ## 2026-11-01 — Contabo auto-deploy
 
 `main`-ზე push (და `workflow_dispatch`) იწყებს `.github/workflows/deploy-contabo.yml`-ს. Job SSH-ით უშვებს სერვერზე უკვე არსებულ `/opt/projects/autopass/deploy/contabo-auto-deploy.sh`-ს. სკრიპტი, docker-compose და Caddyfile რეპოში არაა. საიდუმლოები (`AUTOPASS_SSH_*`) GitHub-ის repo secrets-შია და აქ არ ინახება. Concurrency ჯგუფი `deploy-contabo-autopass` მიმდინარე დეპლოის არ აუქმებს.
+
+## 2026-11-01 — Tech passport scan
+
+The app reads the Georgian tech passport on the phone and sends only fields; the server never gets the photo, the owner's name or personal number (owner's rule). VIN and colour are free extra fields on `user_cars` (`CarPassport::fields`), not used for prices or body type; VIN is not unique.

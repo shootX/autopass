@@ -425,6 +425,8 @@ return [
     'p_days_with_us' => ':count days with us',
     'p_details' => 'Details',
     'p_field' => 'Field',
+    'p_vin' => 'VIN',
+    'p_color' => 'Colour',
     'p_fuel' => 'Fuel',
     'p_income' => 'In',
     'p_outcome' => 'Out',
