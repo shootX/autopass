@@ -10,14 +10,14 @@
 sh build.sh
 ```
 
-ატვირთე `lending/dist/`-ის **შიგთავსი** საიტის root-ად. `dist/`-ში შედის: `index.html`, `business.html`, `styles.css`, `responsive.css`, `config.js`, `logged-in-redirect.js`, `site.js`, `home.js`, `business.js`, `site.webmanifest`, `content/`, `fonts/`, `img/`, `icons/`.
+ატვირთე `lending/dist/`-ის **შიგთავსი** საიტის root-ად. `dist/`-ში შედის: `index.html`, `business.html`, `styles.css`, `responsive.css`, `config.js`, `site.js`, `home.js`, `business.js`, `site.webmanifest`, `content/`, `fonts/`, `img/`, `icons/`.
 
 ## პარამეტრები — `config.js`
 
 | ცვლადი | რას აკეთებს | ცარიელი რომ არის |
 |---|---|---|
-| `AUTOPASS_APP_BASE` | ვებ-აპის მისამართი | — |
-| `AUTOPASS_IOS_URL` | App Store-ის ბმული | ღილაკები ხსნის ვებ-აპს (`/register`), წარწერა „გახსენით Autopass“ |
+| `AUTOPASS_APP_BASE` | საიტის მისამართი (API-ს ნაგულისხმევი ბაზა) | — |
+| `AUTOPASS_IOS_URL` | App Store-ის ბმული | ღილაკები გვერდის `#app` სექციაზე რჩება. ვებ-აპი 2026-11-01-დან აღარ არის |
 | `AUTOPASS_IOS_QR` | ნამდვილი QR კოდის სურათი App Store-ის ბმულისთვის | QR ბარათი დამალულია |
 | `AUTOPASS_PRICES` | სედანის პაკეტის ფასი თვეში (4, 8, 12 რეცხვა); ბიზნესის კალკულატორიც ამას იყენებს | — |
 | `AUTOPASS_HOURS` | ფილიალების სამუშაო საათი | — |
@@ -39,6 +39,6 @@ sh build.sh
 
 ## წესები
 
-Inline `<script>` და `onclick`/`onsubmit` არ გამოიყენება (`docs/CSP.md`, `script-src 'self'`). შესული მომხმარებელი `/`-დან `/home`-ზე გადადის (`logged-in-redirect.js`).
+Inline `<script>` და `onclick`/`onsubmit` არ გამოიყენება (`docs/CSP.md`, `script-src 'self'`).
 
 ფონტები: FiraGO და Montserrat (OFL), `fonts/`. ლიცენზია: `fonts/COPYRIGHT.txt`, `fonts/OFL.txt`.

@@ -525,3 +525,11 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 - [x] `user_cars.vin` (17) and `user_cars.color` (40), nullable. `POST /api/mycars/add` and `POST /api/mycars/{id}/edit` take `vin` (upper-cased, spaces dropped, 17 letters and digits without I, O, Q; else 422 `vin_invalid`) and `color` (up to 40; else 422 `color_invalid`); empty clears. Car payload returns both. Admin client profile → Cars shows them.
 - [x] iOS: GeocarAPP PR scans the tech passport on the phone (Apple Vision) and fills the add form; the photo is never sent.
 - [ ] Server: `php artisan migrate` (2026_11_01_000001), `php artisan view:clear`.
+
+## 2026-11-01 — Customer and manager web panel removed (`claude/project-thread-tdmil4`)
+
+- [x] `gewash`: every customer and manager screen, store, hook and test deleted. The build is now a small shell: `/privacy` (the iOS app links to it) shows the privacy policy in ka/en/ru from `gewash/{ka,en,ru}.json`; every other old address (`/home`, `/auth`, `/register`, `/customer-qr-page`, `/manager-qr-page`, `/payment-success`, …) sends the browser to `/` (landing). `public/sw.js` now clears the old caches and unregisters itself. Offline map (`public/maps`) and the PWA manifest removed; `public/v4/car-sedan.webp` stays (the app uses it). Dependencies trimmed to React plus build/lint/test tools.
+- [x] Kept: `/dashboard` (admin), `lending/` (landing), `/partner` (corporate panel), `gewash/voucher-checker` (voucher partners, shares `gewash/src/lib/smsDelivery.ts`), every `/api` route, payment callbacks and `/payment/return`, `/ref/{code}`.
+- [x] `lending`: `logged-in-redirect.js` deleted; App Store buttons go to the App Store link from Admin > Website > Settings, or stay on `#app` when it is empty (no more `/register`).
+- [x] Fleet driver invite SMS links to `APP_STORE_URL_IOS`, or the site root, instead of `/auth`.
+- [ ] Server: nothing new; the auto-deploy rebuilds `gewash` as before. Set `APP_STORE_URL_IOS` and the App Store link in Admin > Website > Settings once the app is published.

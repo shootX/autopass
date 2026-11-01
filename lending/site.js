@@ -4,16 +4,6 @@
   root.classList.add("js");
   var base = String(window.AUTOPASS_APP_BASE || "https://autopass.ge").replace(/\/+$/, "");
 
-  if (typeof window.autopassLoggedInHome === "function") {
-    var token = "";
-    try { token = localStorage.getItem("access_token") || ""; } catch (err) { token = ""; }
-    var next = window.autopassLoggedInHome(base, token, location.pathname);
-    if (next) {
-      location.replace(next);
-      return;
-    }
-  }
-
   var T = window.AP_TEXT || { ka: {}, en: {}, ru: {} };
   var KA = {};
   document.querySelectorAll("[data-i18n]").forEach(function (el) {
@@ -56,19 +46,11 @@
 
   function applyConfig() {
     AP.prices = cfg.prices;
-    /* App Store when the app is published, the web app until then. */
+    /* The web panel is gone (2026-11-01): store buttons go to the App Store, or stay on the
+       page's #app section until the admin sets the link in Website > Settings. */
     document.querySelectorAll("[data-store]").forEach(function (el) {
-      var ios = cfg.ios_url;
-      el.href = ios || base + "/register";
-      var icon = el.querySelector("svg");
-      if (icon) icon.style.display = ios ? "" : "none";
-      var label = el.querySelector("[data-i18n^='hero.']") || el;
-      var swap = { "hero.cta": "hero.web", "ft.store": "ft.web" };
-      Object.keys(swap).forEach(function (store) {
-        var key = label.dataset.i18n;
-        if (!ios && key === store) label.dataset.i18n = swap[store];
-        if (ios && key === swap[store]) label.dataset.i18n = store;
-      });
+      if (!el.dataset.home) el.dataset.home = el.getAttribute("href") || "#app";
+      el.href = cfg.ios_url || el.dataset.home;
     });
     document.querySelectorAll("[data-contact]").forEach(function (el) {
       var phone = el.dataset.contact === "phone";
@@ -85,9 +67,6 @@
     });
   }
   applyConfig();
-  document.querySelectorAll("[data-app]").forEach(function (el) {
-    el.href = base + (el.getAttribute("data-app") || "/");
-  });
   document.querySelectorAll("[data-year]").forEach(function (el) {
     el.textContent = String(new Date().getFullYear());
   });

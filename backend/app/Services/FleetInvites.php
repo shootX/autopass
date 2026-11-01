@@ -42,7 +42,8 @@ class FleetInvites
         $content = __('admin.fleet_invite_sms', [
             'company' => $company,
             'plate' => FleetCars::formatPlate($car->plate),
-            'url' => rtrim((string) config('app.url'), '/').'/auth',
+            // The web panel is gone (2026-11-01): the driver signs in through the app.
+            'url' => config('services.app_stores.ios') ?: rtrim((string) config('app.url'), '/'),
         ], 'ka');
 
         SendSms::dispatch(new SmsMessage(

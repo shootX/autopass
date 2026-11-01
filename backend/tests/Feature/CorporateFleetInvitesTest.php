@@ -89,6 +89,25 @@ it('invites the driver by SMS when the admin adds a car with a phone', function 
         ->assertSee(__('admin.fleet_status_invited'))->assertSee('555 12 34 56')->assertSee('/cars/'.$car->id.'/invite', false);
 });
 
+it('links the driver to the app, not to the removed web panel', function () {
+    $model = fiCatalog();
+    $corp = fiCorp();
+    config(['app.url' => 'https://autopass.ge', 'services.app_stores.ios' => null]);
+
+    $this->actingAs(fiAdmin())->post('/dashboard/corporate/'.$corp->id.'/cars', [
+        'plate' => 'AA - 124 - BB', 'phone' => '+995 555 12 34 57', 'brand_id' => $model->brand_id, 'model_id' => $model->id, 'year' => 2020, 'body_type' => 'sedan',
+    ])->assertSessionHasNoErrors();
+    config(['services.app_stores.ios' => 'https://apps.apple.com/app/id1']);
+    $this->post('/dashboard/corporate/'.$corp->id.'/cars', [
+        'plate' => 'AA - 125 - BB', 'phone' => '+995 555 12 34 58', 'brand_id' => $model->brand_id, 'model_id' => $model->id, 'year' => 2020, 'body_type' => 'sedan',
+    ])->assertSessionHasNoErrors();
+
+    $sms = app(MockSmsGateway::class)->messages;
+    expect($sms)->toHaveCount(2)
+        ->and($sms[0]['content'])->toEndWith('https://autopass.ge')->not->toContain('/auth')
+        ->and($sms[1]['content'])->toContain('https://apps.apple.com/app/id1');
+});
+
 it('requires a valid driver phone in the manual form', function () {
     $model = fiCatalog();
     $corp = fiCorp();
