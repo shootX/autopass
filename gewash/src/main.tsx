@@ -1,24 +1,12 @@
-import { createRoot } from 'react-dom/client'
-import App from './App.tsx'
-import "./index.css"
-import "./styles/global.scss";
-import { dropExpiredAccessToken } from "./lib/accessToken";
-import { authBypassEnabled } from "./lib/productionFlags";
-import "./lib/sessionRefresh";
+import { createRoot } from "react-dom/client";
+import App from "./App.tsx";
 
-dropExpiredAccessToken();
-
-if (import.meta.env.PROD && "serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    void navigator.serviceWorker.register("/sw.js");
-  });
+// The removed web panel registered /sw.js. Drop it so old installs stop serving the panel.
+if ("serviceWorker" in navigator) {
+  void navigator.serviceWorker
+    .getRegistrations()
+    .then((all) => Promise.all(all.map((reg) => reg.unregister())))
+    .catch((error: unknown) => console.error("Service worker cleanup failed:", error));
 }
 
-if (!import.meta.env.PROD && authBypassEnabled(import.meta.env)) {
-  const { installPreviewFetch } = await import("./dev/previewFixtures");
-  installPreviewFetch();
-}
-
-createRoot(document.getElementById('root')!).render(
-    <App />
-);
+createRoot(document.getElementById("root")!).render(<App />);

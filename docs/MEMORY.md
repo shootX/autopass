@@ -431,3 +431,7 @@ The owner does not want a separate push service. `App\Services\Push\ApnsClient` 
 ## 2026-11-01 — Tech passport scan
 
 The app reads the Georgian tech passport on the phone and sends only fields; the server never gets the photo, the owner's name or personal number (owner's rule). VIN and colour are free extra fields on `user_cars` (`CarPassport::fields`), not used for prices or body type; VIN is not unique.
+
+## 2026-11-01 — No customer or manager web panel
+
+Owner's rule: on the web only the admin (`/dashboard`), the landing, the corporate panel (`/partner`) and the voucher checker stay. Customers and car-wash managers use the iOS app only. `gewash` is kept as a tiny shell so the server's deploy script (which builds `gewash` and `gewash/voucher-checker`) and Caddy's SPA fallback keep working: `/privacy` stays because the app opens `https://autopass.ge/privacy`, and `/v4/car-sedan.webp` stays because the app loads it. Every other SPA path redirects to `/`. Do not add customer screens back to `gewash`.

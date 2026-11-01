@@ -11,7 +11,7 @@ export default defineConfig({
     alias: [{ find: "@", replacement: path.resolve(root, "src") }],
   },
   test: {
-    environment: "jsdom",
+    environment: "node",
     exclude: ["voucher-checker/**", "node_modules/**", "dist/**"],
   },
 });

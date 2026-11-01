@@ -2,7 +2,7 @@
    Empty value = the part stays hidden or falls back, see README.md. */
 window.AUTOPASS_APP_BASE = "https://autopass.ge";
 
-/* App Store link. Empty: buttons open the web app (/register) and read "Open Autopass". */
+/* App Store link. Empty: buttons stay on the page (#app). There is no web app since 2026-11-01. */
 window.AUTOPASS_IOS_URL = "";
 /* Image of a real QR code for AUTOPASS_IOS_URL (e.g. "img/app-store-qr.svg"). Empty: the QR card is hidden. */
 window.AUTOPASS_IOS_QR = "";

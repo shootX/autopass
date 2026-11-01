@@ -4,8 +4,8 @@
 
 ```
 კლიენტი / მენეჯერი
-  → gewash (React SPA, Vite)
-  → VITE_API_URL + /api
+  → მხოლოდ iOS აპი (GeocarAPP); ვებ-პანელი 2026-11-01-ს წაიშალა
+  → /api
   → Laravel (JWT guard api)
   → PostgreSQL (DB_CONNECTION=pgsql)
 
@@ -85,9 +85,8 @@ backend/                 Laravel
   resources/views/       admin/, partner/, payments/
   database/migrations
   public/lang            ka.json, en.json, ru.json
-gewash/                  კლიენტის და მენეჯერის SPA
-  src/components/        ცოცხალი ეკრანები (pages, Layouts, Calendars, ui, v4)
-  src/hooks src/store src/lib src/styles src/assets/brand
+gewash/                  მცირე shell: /privacy (აპის ბმული), დანარჩენი მისამართი → / (ლენდინგი)
+  src/lib/smsDelivery.ts voucher-checker-იც იყენებს
   voucher-checker/       პარტნიორის მინი-აპი
 lending/                 მარკეტინგის გვერდი (index.html, styles.css, site.js, config.js)
 docs/                    ეს ფაილები და ძველი coverage/integration ჩანაწერები
@@ -95,9 +94,7 @@ memory.md                მოკლე სახელმძღვანელ
 fix.md                   ღია და დახურული ხარვეზები
 ```
 
-`gewash/src/pages` და ძველი ასლები წაშლილია. ახალი ეკრანი იწერება `gewash/src/components`-ში.
-
-Redux (`gewash/src/store/index.ts`): `orders`, `user`, `car`, `appointments`, `plateSlice`, `lang`.
+კლიენტისა და მენეჯერის ვებ-ეკრანები 2026-11-01-ს წაიშალა. ახალი კლიენტის ეკრანი იწერება iOS აპში, არა `gewash`-ში.
 
 ფრონტის მოთხოვნა გადის `customFetch`-ში (`gewash/src/utils/customFetch.ts`): ngrok ჰოსტზე ამატებს `ngrok-skip-browser-warning`-ს, სხვა შემთხვევაში ჩვეულებრივი `fetch`-ია.
 
