@@ -10,6 +10,7 @@ use App\Models\UserCar;
 use App\Services\CarBody;
 use App\Services\CarBodyStatus;
 use App\Services\CarCatalog;
+use App\Services\CarPassport;
 use App\Services\CarTrims;
 use App\Services\CorporateDiscounts;
 use App\Services\FleetInvites;
@@ -134,6 +135,10 @@ class CarsController extends Controller
         if ($catalogErrors !== null) {
             return response()->json(['success' => false, 'error' => $catalogErrors], 422);
         }
+        [$passport, $passportError] = CarPassport::fields($request);
+        if ($passportError !== null) {
+            return response()->json(CarPassport::error($passportError), 422);
+        }
 
         $exist = UserCar::where('plate', $request->plate)->first();
 
@@ -164,7 +169,7 @@ class CarsController extends Controller
             'plate' => $request->plate,
             'year' => $request->filled('year') ? (int) $request->input('year') : null,
             'fuel_type' => $request->input('fuel_type') ?: null,
-        ] + $trim);
+        ] + $passport + $trim);
 
         return response()->json([
             'success' => true,
@@ -387,6 +392,10 @@ class CarsController extends Controller
             if ($catalogErrors !== null) {
                 return response()->json(['success' => false, 'error' => $catalogErrors], 422);
             }
+            [$passport, $passportError] = CarPassport::fields($request);
+            if ($passportError !== null) {
+                return response()->json(CarPassport::error($passportError), 422);
+            }
 
             $car = $user->cars()->where('id', $carid)->first();
             if (! $car) {
@@ -411,6 +420,7 @@ class CarsController extends Controller
             if ($request->has('fuel_type')) {
                 $data['fuel_type'] = $request->input('fuel_type') ?: null;
             }
+            $data += $passport;
             $newModel = $request->filled('model_id') || ($request->filled('brand_name') && $request->filled('model_name'));
             $newYear = $request->has('year') && $data['year'] !== $car->year;
             if (($newModel || $newYear) && $car->holdsPackage()) {

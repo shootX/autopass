@@ -27,10 +27,15 @@ class UserCar extends Model
         'body_checked_at',
         'photo',
         'fuel_type',
+        'vin',
+        'color',
     ];
 
     /** Codes stored in user_cars.fuel_type; labels live in lang/{ka,en,ru}/cars.php and in the apps. */
     public const FUEL_TYPES = ['regular', 'premium', 'super', 'diesel', 'electric', 'gas_petrol', 'cng', 'lpg', 'hydrogen'];
+
+    /** A VIN as the tech passport prints it: 17 letters and digits, never I, O or Q. */
+    public const VIN_PATTERN = '/^[A-HJ-NPR-Z0-9]{17}$/';
 
     protected $casts = ['year' => 'integer', 'generation_id' => 'integer', 'modification_id' => 'integer'];
 
@@ -55,6 +60,8 @@ class UserCar extends Model
             // Our body type key (sedan, suv, …) that packages and company discounts use; null until confirmed.
             'car_type' => $this->carType(),
             'fuel_type' => $this->fuel_type,
+            'vin' => $this->vin,
+            'color' => $this->color,
         ] + $this->bodyPayload();
     }
 
