@@ -238,7 +238,7 @@ class User extends Authenticatable implements JWTSubject
         return $name.' ('.$contact.')';
     }
 
-    public function sendPush($title = [], $body = [], $url = 'https://app.geocar.ge/messages'): void
+    public function sendPush($title = [], $body = [], $url = 'https://autopass.ge/messages'): void
     {
         $pushTokens = $this->pushTokens()->first();
         if ($pushTokens) {

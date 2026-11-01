@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { queryRedirectPath, referralShareHref, safeCheckoutUrl } from "./navigationTarget";
 
-const ORIGIN = "https://wash.socialsave.cc";
+const ORIGIN = "https://autopass.ge";
 
 describe("query redirects", () => {
   it("never follows redirect, next, or return parameters", () => {
@@ -29,19 +29,19 @@ describe("checkout navigation", () => {
       "https://api.tbcbank.ge/checkout",
     );
     expect(
-      safeCheckoutUrl("https://wash.socialsave.cc/payment/sandbox?order=T1&access=abc", ORIGIN),
-    ).toBe("https://wash.socialsave.cc/payment/sandbox?order=T1&access=abc");
+      safeCheckoutUrl("https://autopass.ge/payment/sandbox?order=T1&access=abc", ORIGIN),
+    ).toBe("https://autopass.ge/payment/sandbox?order=T1&access=abc");
   });
 
   it("does not treat an arbitrary same-origin path as checkout", () => {
-    expect(safeCheckoutUrl("https://wash.socialsave.cc/auth", ORIGIN)).toBeNull();
+    expect(safeCheckoutUrl("https://autopass.ge/auth", ORIGIN)).toBeNull();
     expect(safeCheckoutUrl("/auth", ORIGIN)).toBeNull();
   });
 });
 
 describe("referral share links", () => {
   it("does not send the visitor through an open redirect", () => {
-    const link = "https://wash.socialsave.cc/r/abc";
+    const link = "https://autopass.ge/r/abc";
     for (const network of ["telegram", "whatsapp", "viber", "facebook"] as const) {
       const href = referralShareHref(network, link);
       expect(href).not.toMatch(/redirect\.html/i);

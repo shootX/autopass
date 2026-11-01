@@ -115,7 +115,7 @@
         }
 
         let myIp = '';
-        fetch('https://back.geocar.ge/api/ref/ip')
+        fetch('/api/ref/ip')
             .then(response => response.json())
             .then(data => myIp = data.ip)
 

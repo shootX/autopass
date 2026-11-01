@@ -84,7 +84,7 @@ export function previewResponse(url: string, method = "GET"): Response | null {
     return json(langs[code] ?? langs.ka);
   }
   if (match(url, "/me/get-referral-link")) {
-    return json({ success: true, referral_link: "https://app.geocar.ge/ref/preview" });
+    return json({ success: true, referral_link: "https://autopass.ge/ref/preview" });
   }
   if (match(url, "/me")) {
     return json({

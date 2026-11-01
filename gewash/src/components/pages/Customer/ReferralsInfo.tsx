@@ -18,7 +18,7 @@ import { dragY } from "@/lib/dragOffset";
 import { readAccessToken } from "@/lib/accessToken";
 import { referralShareHref } from "@/lib/navigationTarget";
 
-const MOCK_REFERRAL_LINK = "https://geocar.com/rnu2345681";
+const MOCK_REFERRAL_LINK = "https://autopass.ge/ref/rnu2345681";
 
 const SOCIALS = [
   {
