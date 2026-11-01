@@ -191,3 +191,11 @@ TEST_PAYMENT_PHONES=+995555000000,+995555000001
 - Every existing server check still applies: the order must be a test order (`test_mode`), the one-time access hash and its expiry are checked, the owner must still be an allowed tester, and a payment is credited only once.
 - Flitt/TBC webhooks are unchanged: no user auth, and the signature and amount are checked.
 - Afterwards run `php artisan config:clear` (or `config:cache`). To turn it off, set `TEST_PAYMENT_ALLOW_PRODUCTION=false`.
+
+## 11. GitHub Actions auto-deploy (Contabo, 2026-11-01)
+
+A push to `main`, or a manual run (`workflow_dispatch`), starts `.github/workflows/deploy-contabo.yml`. The job SSHes into Contabo and runs the script already on the server:
+
+`/opt/projects/autopass/deploy/contabo-auto-deploy.sh`
+
+The script, docker-compose and Caddyfile stay on the server. Concurrency group `deploy-contabo-autopass` does not cancel a deploy that is already running. Repo secrets `AUTOPASS_SSH_HOST`, `AUTOPASS_SSH_USER`, `AUTOPASS_SSH_KEY` and `AUTOPASS_SSH_KNOWN_HOSTS` are set on shootX/autopass and are not stored in this repo.

@@ -1,0 +1,29 @@
+name: Deploy Contabo
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-contabo-autopass
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.AUTOPASS_SSH_HOST }}
+          username: ${{ secrets.AUTOPASS_SSH_USER }}
+          key: ${{ secrets.AUTOPASS_SSH_KEY }}
+          known_hosts: ${{ secrets.AUTOPASS_SSH_KNOWN_HOSTS }}
+          script_stop: true
+          command_timeout: 30m
+          script: |
+            /opt/projects/autopass/deploy/contabo-auto-deploy.sh
