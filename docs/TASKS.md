@@ -515,3 +515,7 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 - [x] `user_push_tokens`: `kind` (`apns`; old OneSignal rows stay `onesignal` and are never sent to), `sandbox`, `lang` (push text in the app's language), `push_id` up to 255.
 - [x] Admin > Push: Apple push settings (Key ID, Team ID, bundle id, .p8 text stored encrypted and never shown); `APNS_*` in .env as fallback. `config/OneSignal.php` removed; `/api/device/push` answers OK and keeps nothing.
 - [ ] Server: `php artisan migrate` (2026_10_28_000002), `php artisan route:cache`, `php artisan config:cache`, `php artisan view:clear`; then fill Admin > Push with the Apple key. Android has no push until FCM is added.
+
+## 2026-11-01 — Contabo auto-deploy
+
+- [x] `.github/workflows/deploy-contabo.yml`: push to `main` and `workflow_dispatch` SSH into Contabo and run `/opt/projects/autopass/deploy/contabo-auto-deploy.sh`. Concurrency `deploy-contabo-autopass`, `cancel-in-progress: false`. Secrets stay in GitHub (`AUTOPASS_SSH_HOST`, `AUTOPASS_SSH_USER`, `AUTOPASS_SSH_KEY`, `AUTOPASS_SSH_KNOWN_HOSTS`). Note in `docs/DEPLOY_RUNBOOK.md` §11. App code unchanged.

@@ -423,3 +423,7 @@ The landing's content is edited in Admin > Website (owner's choice: a content ed
 
 ## 2026-10-28 — Push without OneSignal
 The owner does not want a separate push service. `App\Services\Push\ApnsClient` sends to Apple directly; settings live in `AppSettings` key `apns` (the .p8 encrypted with `Crypt`), `.env` `APNS_*` as fallback. Only `user_push_tokens.kind = apns` rows are sent to; each row carries `sandbox` (debug builds) and `lang`. There is no Android push now; adding one means FCM in the same `PushService`.
+
+## 2026-11-01 — Contabo auto-deploy
+
+`main`-ზე push (და `workflow_dispatch`) იწყებს `.github/workflows/deploy-contabo.yml`-ს. Job SSH-ით უშვებს სერვერზე უკვე არსებულ `/opt/projects/autopass/deploy/contabo-auto-deploy.sh`-ს. სკრიპტი, docker-compose და Caddyfile რეპოში არაა. საიდუმლოები (`AUTOPASS_SSH_*`) GitHub-ის repo secrets-შია და აქ არ ინახება. Concurrency ჯგუფი `deploy-contabo-autopass` მიმდინარე დეპლოის არ აუქმებს.
