@@ -2,7 +2,7 @@
 (function () {
   var root = document.documentElement;
   root.classList.add("js");
-  var base = String(window.AUTOPASS_APP_BASE || "https://wash.socialsave.cc").replace(/\/+$/, "");
+  var base = String(window.AUTOPASS_APP_BASE || "https://autopass.ge").replace(/\/+$/, "");
 
   if (typeof window.autopassLoggedInHome === "function") {
     var token = "";

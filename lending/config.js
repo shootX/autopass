@@ -1,6 +1,6 @@
 /* Site settings before the API answers. Admin > Website > Settings overrides prices, hours, contacts and links.
    Empty value = the part stays hidden or falls back, see README.md. */
-window.AUTOPASS_APP_BASE = "https://wash.socialsave.cc";
+window.AUTOPASS_APP_BASE = "https://autopass.ge";
 
 /* App Store link. Empty: buttons open the web app (/register) and read "Open Autopass". */
 window.AUTOPASS_IOS_URL = "";
@@ -18,6 +18,6 @@ window.AUTOPASS_PRIVACY_URL = "";
 window.AUTOPASS_TERMS_URL = "";
 
 /* Content API (GET /site/{page}, POST /site/lead). Default: AUTOPASS_APP_BASE + "/api". */
-window.AUTOPASS_API = "https://wash.socialsave.cc/api";
+window.AUTOPASS_API = "https://autopass.ge/api";
 /* Empty SMS: the form is hidden. The business form posts to AUTOPASS_API /site/lead; set "" to send an e-mail instead. */
 window.AUTOPASS_SMS_URL = "";

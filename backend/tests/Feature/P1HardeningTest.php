@@ -227,7 +227,7 @@ it('bans clients only via POST', function () {
 });
 
 it('ships the CORS origin default in .env.example', function () {
-    expect(file_get_contents(base_path('.env.example')))->toContain('CORS_ALLOWED_ORIGINS=https://wash.socialsave.cc');
+    expect(file_get_contents(base_path('.env.example')))->toContain('CORS_ALLOWED_ORIGINS=https://autopass.ge');
 });
 
 // BE-18

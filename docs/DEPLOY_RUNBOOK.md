@@ -1,6 +1,6 @@
 # Autopass — Deploy runbook
 
-Written 2026-10-12, for deploying the audit fixes (PRs #5–#13) to https://wash.socialsave.cc.
+Written 2026-10-12 for wash.socialsave.cc; since 2026-11-01 the site is https://autopass.ge.
 Only run this with Shota's go-ahead. `APP_ROOT` below means the server checkout (aaPanel site dir, e.g. `/www/wwwroot/<site>`). The web server user is `www` on aaPanel.
 
 ## 0. Merge order (GitHub)
@@ -38,7 +38,7 @@ cp backend/.env /root/autopass-env-$(date +%F).bak
 | `APP_ENV` | `production` | BE-06/02. BE-15: sandbox/testpay routes are only registered outside production |
 | `APP_DEBUG` | `false` | BE-02: no stack traces |
 | `LOG_LEVEL` | `error` | |
-| `CORS_ALLOWED_ORIGINS` | `https://wash.socialsave.cc` (comma-separated if there are more) | #8: if empty, browsers block the SPA's API calls |
+| `CORS_ALLOWED_ORIGINS` | `https://autopass.ge` (comma-separated if there are more) | #8: if empty, browsers block the SPA's API calls |
 | `JWT_TTL` | `43200` (30 days; code default since 2026-10-12, FE-08) | Set explicitly or leave unset to use the default |
 | `JWT_SECRET`, `APP_KEY` | must be set (unchanged) | |
 | `SEED_ADMIN_PASSWORD`, `SEED_MANAGER_PASSWORD`, `SEED_CLIENT_PASSWORD`, `SEED_PARTNER_PASSWORD` | leave empty in production (random) | BE-13. Never run seeders on production |
@@ -104,7 +104,7 @@ Fix: keep `/` = lending, but #10 adds `lending/logged-in-redirect.js`, which sen
 
 ```nginx
 server {
-    server_name wash.socialsave.cc;
+    server_name autopass.ge www.autopass.ge;
     root APP_ROOT/lending/dist;
 
     # security headers
@@ -151,13 +151,13 @@ cd APP_ROOT
 C=$(git rev-parse --short HEAD); T=$(date -Iseconds)
 printf '{"commit":"%s","built_at":"%s"}\n' "$C" "$T" | tee gewash/dist/version.json lending/dist/version.json backend/public/version.json
 ```
-Check with `curl -s https://wash.socialsave.cc/version.json`. Also log every deploy (date, commit, who) in `docs/MEMORY.md`.
+Check with `curl -s https://autopass.ge/version.json`. Also log every deploy (date, commit, who) in `docs/MEMORY.md`.
 
 ## 8. Smoke test after deploy
 
-- `curl -s https://wash.socialsave.cc/api/promo` returns only title/description/url.
-- `curl -si -X POST https://wash.socialsave.cc/api/partner/voucher/check` → 401.
-- `curl -si https://wash.socialsave.cc/payment/sandbox` → 404.
+- `curl -s https://autopass.ge/api/promo` returns only title/description/url.
+- `curl -si -X POST https://autopass.ge/api/partner/voucher/check` → 401.
+- `curl -si https://autopass.ge/payment/sandbox` → 404.
 - A missing API route returns JSON 404 with no stack trace.
 - Register → SMS → verify → set password works in the SPA (needs #9).
 - Admin: delete and ban buttons work (now POST/DELETE).

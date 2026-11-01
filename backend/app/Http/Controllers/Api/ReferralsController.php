@@ -33,7 +33,7 @@ class ReferralsController extends Controller
     public function handleRef(Request $request, $code)
     {
         $userAgent = (string) $request->userAgent();
-        $site = config('app.url') ?: 'https://geocar.ge';
+        $site = config('app.url') ?: 'https://autopass.ge';
 
         // Store links come from APP_STORE_URL_IOS / APP_STORE_URL_ANDROID; without them the site opens.
         if (preg_match('/android/i', $userAgent)) {

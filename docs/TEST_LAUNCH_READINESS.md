@@ -1,6 +1,6 @@
 # Controlled test deployment — 2026-10-14
 
-Target: https://wash.socialsave.cc/ (test server; no real customers yet).
+Target: https://autopass.ge/ (test server; no real customers yet).
 Reviewed upstream: PR #27, `37187366804d114b3b8f678348dd9e28b5d6991d`.
 Goal: a working hosted environment for designated testers, with production-style error/security settings and simulated transactions.
 

@@ -222,7 +222,7 @@ class AppointmentsController extends Controller
                         'en' => "Client {$clientLabel} canceled the record on $toDate, $toTime.",
                         'ru' => "Клиент {$clientLabel} отменил запись на $toDate, $toTime.",
                         'ka' => "კლიენტმა {$clientLabel} გააუქმა ჩანაწერი {$toDate}, {$toTime}-ზე.",
-                    ], 'https://app.geocar.ge/booking');
+                    ], 'https://autopass.ge/booking');
 
             $appointment->delete();
 

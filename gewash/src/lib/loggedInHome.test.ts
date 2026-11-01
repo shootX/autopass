@@ -8,16 +8,16 @@ const { loggedInHome } = require("../../../lending/logged-in-redirect.js") as {
 
 describe("logged-in marketing redirect", () => {
   it("sends a token holder from / to the SPA home", () => {
-    expect(loggedInHome("https://wash.socialsave.cc", "abc", "/")).toBe(
-      "https://wash.socialsave.cc/home",
+    expect(loggedInHome("https://autopass.ge", "abc", "/")).toBe(
+      "https://autopass.ge/home",
     );
   });
 
   it("leaves guests on the marketing page", () => {
-    expect(loggedInHome("https://wash.socialsave.cc", null, "/")).toBeNull();
+    expect(loggedInHome("https://autopass.ge", null, "/")).toBeNull();
   });
 
   it("does not redirect other marketing paths", () => {
-    expect(loggedInHome("https://wash.socialsave.cc/", "abc", "/home")).toBeNull();
+    expect(loggedInHome("https://autopass.ge/", "abc", "/home")).toBeNull();
   });
 });

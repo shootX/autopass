@@ -11,7 +11,7 @@
 | style-src | `'self' 'unsafe-inline'` — `maplibre-gl.css`, React-ის `style` ატრიბუტები. |
 | img-src | `'self' data: blob:` — საკუთარი SVG/PNG, QR და რუკის კანვასი. |
 | font-src | `'self'` — Plus Jakarta Sans და Noto Sans Georgian (თვითჰოსტირებული). |
-| connect-src | `'self'`. ნაგულისხმევი API არის `https://wash.socialsave.cc/api` (იგივე origin). თუ `VITE_API_URL` სხვა origin-ია, დაამატე მხოლოდ ის origin. რუკა: `/maps/georgia.pmtiles`, `/maps/fonts/`. |
+| connect-src | `'self'`. ნაგულისხმევი API არის `https://autopass.ge/api` (იგივე origin). თუ `VITE_API_URL` სხვა origin-ია, დაამატე მხოლოდ ის origin. რუკა: `/maps/georgia.pmtiles`, `/maps/fonts/`. |
 | frame-src | `'none'` |
 | frame-ancestors | `'self'` |
 | object-src | `'none'` |
