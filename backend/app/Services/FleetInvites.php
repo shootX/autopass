@@ -2,11 +2,14 @@
 
 namespace App\Services;
 
+use App\Enums\AppointmentStatus;
 use App\Jobs\SendSms;
+use App\Models\Appointment;
 use App\Models\CarModel;
 use App\Models\FleetCar;
 use App\Models\User;
 use App\Models\UserCar;
+use App\Models\UserPackage;
 use App\Services\Sms\SmsMessage;
 use App\Support\Phone;
 use Illuminate\Database\QueryException;
@@ -57,7 +60,9 @@ class FleetInvites
     }
 
     /**
-     * Sets or replaces the driver. The old driver loses the car at once and the new one is invited.
+     * Sets or replaces the driver. The old driver loses the car at once: the company link and, when the phone
+     * changes, the app car too. That app car goes to the new driver, with its running packages, the first time
+     * they sign in (owner's rule, 2026-11-03). The new driver is invited.
      *
      * @return 'sent'|'no_phone'|'blocked'|'too_soon'|'phone_invalid'
      */
@@ -70,18 +75,28 @@ class FleetInvites
         }
 
         $blocked = $car->status === FleetCar::STATUS_BLOCKED;
-        $car->forceFill([
-            'driver_phone' => $normalized,
-            'status' => $blocked ? FleetCar::STATUS_BLOCKED : FleetCar::STATUS_INVITED,
-            'user_id' => null,
-            'user_car_id' => null,
-            'activation_error' => null,
-            'activated_at' => null,
-            'invited_at' => null,
-            // The old driver's QR stops working with the change.
-            'qr_code' => null,
-            'qr_expires_at' => null,
-        ])->save();
+        $previous = $car->user_car_id ? UserCar::query()->find($car->user_car_id) : null;
+        // The same phone again (the form saved twice): that driver keeps the app car and links it again.
+        $leaves = $previous !== null && $normalized !== $car->driver_phone;
+        DB::transaction(function () use ($car, $normalized, $blocked, $previous, $leaves) {
+            $car->forceFill([
+                'driver_phone' => $normalized,
+                'status' => $blocked ? FleetCar::STATUS_BLOCKED : FleetCar::STATUS_INVITED,
+                // Kept across several changes until a driver signs in and takes the car.
+                'handover_user_car_id' => $car->user_car_id ?? $car->handover_user_car_id,
+                'user_id' => null,
+                'user_car_id' => null,
+                'activation_error' => null,
+                'activated_at' => null,
+                'invited_at' => null,
+                // The old driver's QR stops working with the change.
+                'qr_code' => null,
+                'qr_expires_at' => null,
+            ])->save();
+            if ($leaves) {
+                self::release($previous);
+            }
+        });
 
         // Linking waits for the driver to sign in or open the app after the SMS, even when the
         // phone already has an account: the company alone can't turn a car active.
@@ -141,12 +156,22 @@ class FleetInvites
     {
         // The catalog may be asked here (a model seen for the first time), so before the transaction: a failed
         // insert of a parallel request must not end it on Postgres.
-        $new = UserCar::query()->where('plate', $car->plate)->exists() ? null
+        $handedOver = $car->handover_user_car_id
+            && UserCar::onlyTrashed()->whereKey($car->handover_user_car_id)->where('plate', $car->plate)->exists();
+        $new = $handedOver || UserCar::query()->where('plate', $car->plate)->exists() ? null
             : ['model_id' => self::modelId($car), 'trim' => self::trim($car)];
 
         try {
             $linked = DB::transaction(function () use ($car, $user, $new) {
                 $userCar = UserCar::query()->where('plate', $car->plate)->lockForUpdate()->first();
+                if (! $userCar && $car->handover_user_car_id) {
+                    // The replaced driver's app car comes to this driver, with its running packages.
+                    $userCar = UserCar::onlyTrashed()->whereKey($car->handover_user_car_id)->where('plate', $car->plate)
+                        ->lockForUpdate()->first();
+                    if ($userCar) {
+                        self::handOver($userCar, $user);
+                    }
+                }
                 if ($userCar && (int) $userCar->user_id !== (int) $user->id) {
                     // Someone else has this plate in the app: an admin has to sort it out.
                     $car->forceFill(['activation_error' => 'plate_taken'])->save();
@@ -177,6 +202,7 @@ class FleetInvites
                     'status' => FleetCar::STATUS_ACTIVE,
                     'user_id' => $user->id,
                     'user_car_id' => $userCar->id,
+                    'handover_user_car_id' => null,
                     'activation_error' => null,
                     'activated_at' => now(),
                 ])->save();
@@ -196,6 +222,30 @@ class FleetInvites
 
             return false;
         }
+    }
+
+    /**
+     * Takes a replaced driver's app car out of their app: hidden with its history, its package codes void and
+     * their bookings for it cancelled. The packages wait for the next driver (handOver).
+     */
+    private static function release(UserCar $userCar): void
+    {
+        UserPackage::query()->where('user_car_id', $userCar->id)->update(['qr_expires_at' => null]);
+        Appointment::query()->where('car_id', $userCar->id)->whereIn('approved', AppointmentStatus::active())
+            ->update(['approved' => AppointmentStatus::Cancelled->value]);
+        $userCar->delete();
+    }
+
+    /**
+     * The replaced driver's app car and its running packages now belong to $user. Packages that ended stay in the
+     * old driver's history; a card kept for renewal stays with its owner, so renewal is off.
+     */
+    private static function handOver(UserCar $userCar, User $user): void
+    {
+        UserPackage::query()->where('user_car_id', $userCar->id)->where('end_date', '>', now())->withWashesLeft()
+            ->update(['user_id' => $user->id, 'rectoken' => null, 'auto_renew' => false, 'qr_expires_at' => null]);
+        $userCar->restore();
+        $userCar->forceFill(['user_id' => $user->id])->save();
     }
 
     private static function modelId(FleetCar $car): ?int
