@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\AppointmentMoveController;
 use App\Http\Controllers\Admin\AppointmentsController;
 use App\Http\Controllers\Admin\BodyCheckController;
 use App\Http\Controllers\Admin\BodyTypesController;
+use App\Http\Controllers\Admin\CarsController;
 use App\Http\Controllers\Admin\CarBrandsController;
 use App\Http\Controllers\Admin\ClientCarBodyController;
 use App\Http\Controllers\Admin\ClientPointsController;
@@ -64,6 +65,8 @@ Route::prefix('dashboard')
         Route::get('/search_car_models', [ClientsController::class, 'search_car_models'])->name('admin.search_car_models');
 
         Route::post('/set_manager_washing', [WashingController::class, 'set_manager_washing'])->name('admin.set_manager');
+
+        Route::get('/cars', [CarsController::class, 'index'])->name('admin.cars');
 
         Route::prefix('/clients')->group(function () {
 
