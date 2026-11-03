@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Mail\TemporaryPasswordMail;
 use App\Models\CorporateClient;
 use App\Models\CorporateInvoice;
+use App\Models\CorporateWash;
 use App\Models\FleetCar;
 use App\Services\CorporateWashes;
 use App\Services\FleetCars;
@@ -127,6 +128,11 @@ class CorporateController extends Controller
 
     public function delete(CorporateClient $corporate)
     {
+        // Washes, ledger and invoices would go with the company; a company with history is blocked instead.
+        if ($corporate->invoices()->exists() || $corporate->washMoves()->exists()
+            || CorporateWash::query()->where('corporate_client_id', $corporate->id)->exists()) {
+            return redirect()->route('admin.corporate')->with('error', __('admin.corporate_has_history'));
+        }
         $corporate->delete();
 
         return redirect()->route('admin.corporate')->with('message', __('admin.corporate_deleted'));

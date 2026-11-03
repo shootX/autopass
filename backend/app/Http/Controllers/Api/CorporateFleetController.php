@@ -106,7 +106,7 @@ class CorporateFleetController extends Controller
             } else {
                 // A body type we don't know lists the ones we do, to send one of them as body_type.
                 $skipped[] = ['plate' => $plate, 'reason' => $result]
-                    + ($result === 'body_type_invalid' ? ['body_types' => $body['types']] : []);
+                    + (in_array($result, ['body_type_invalid', 'body_type_mismatch'], true) ? ['body_types' => $body['types']] : []);
             }
         }
 

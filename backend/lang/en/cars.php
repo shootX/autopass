@@ -17,6 +17,9 @@ return [
     'body_unknown' => 'The car catalog does not name a body type for this car. Contact support to confirm it.',
     'car_has_package' => 'The car has an active package. The model and year can\'t change until the package ends.',
     'car_not_found' => 'Car not found.',
+    'car_has_package_remove' => 'The car has an active package or an unfinished payment. It can\'t be removed until the package ends.',
+    'car_has_package_plate' => 'The car has an active package or an unfinished payment. The plate can\'t change until the package ends.',
+    'plate_exists' => 'This plate is already registered on another car.',
     'vin_invalid' => 'The VIN must be 17 Latin letters and digits (no I, O or Q).',
     'color_invalid' => 'The colour is too long (40 characters at most).',
     'fuel' => [

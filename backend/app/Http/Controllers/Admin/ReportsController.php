@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exports\QrWashReportExport;
 use App\Exports\WashReportExport;
 use App\Http\Controllers\Controller;
 use App\Models\BodyType;
@@ -10,6 +11,7 @@ use App\Models\CarWash;
 use App\Models\CarWashService;
 use App\Models\Package;
 use App\Models\User;
+use App\Services\QrWashReport;
 use App\Services\WashReportQuery;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
@@ -63,6 +65,33 @@ class ReportsController extends Controller
             'carTypes' => BodyType::query()->ordered()->pluck('name'),
             'packageTypes' => Package::query()->distinct()->orderBy('car_type')->pluck('car_type'),
             'washCounts' => Package::query()->distinct()->orderBy('count_washes')->pluck('count_washes'),
+        ]);
+    }
+
+    /** Washes approved by QR (driver packages and company cars), booked or walk-in: what each branch really washed. */
+    public function qrWashes(Request $request)
+    {
+        $filters = $request->validate([
+            'date_from' => 'nullable|date',
+            'date_to' => 'nullable|date',
+            'kind' => 'nullable|in:'.implode(',', QrWashReport::KINDS),
+            'car_wash_id' => 'nullable|integer|min:1',
+            'manager_id' => 'nullable|integer|min:1',
+            'car_type' => 'nullable|string|max:64',
+            'plate' => 'nullable|string|max:16',
+            'export' => 'nullable',
+        ]);
+
+        if ($request->filled('export')) {
+            return Excel::download(new QrWashReportExport($filters), 'qr-washes-'.now()->format('Y-m-d-His').'.xlsx');
+        }
+
+        return view('admin.reports.qr-washes', [
+            'rows' => QrWashReport::make($filters)->paginate(20)->withQueryString(),
+            'totals' => QrWashReport::totals($filters),
+            'washes' => CarWash::withTrashed()->orderBy('name')->get(['id', 'name', 'address']),
+            'managers' => User::query()->where('role', User::ROLE_MANAGER)->orderBy('name')->get(['id', 'name', 'surname']),
+            'carTypes' => BodyType::query()->ordered()->pluck('name'),
         ]);
     }
 }

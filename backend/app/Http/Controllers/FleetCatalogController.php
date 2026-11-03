@@ -40,6 +40,8 @@ class FleetCatalogController extends Controller
         return response()->json([
             'status' => $options['status'],
             'choose' => $options['status'] === CarBody::CHOOSE,
+            // A complete list is the only choice the company has (FleetCars::add); an incomplete one is a hint.
+            'incomplete' => (bool) $options['incomplete'],
             'body_types' => CarBody::rows($options['types']),
         ]);
     }

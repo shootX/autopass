@@ -50,8 +50,8 @@ function buyDiscount(array $f, Package $package): UserPackage
 
 function scanAndApprove(User $manager, UserPackage $package): TestResponse
 {
-    $package->refresh();
-    $token = test()->withToken(cwAs($manager))->getJson('/api/checkqr/'.$package->qr_code)->assertOk()->json('approve_token');
+    // Each wash starts from the code the driver's app shows right then.
+    $token = test()->withToken(cwAs($manager))->getJson('/api/checkqr/'.freshPackageQr($package->id))->assertOk()->json('approve_token');
 
     return test()->withToken(cwAs($manager))->postJson("/api/package/{$package->id}/approve", ['approve_token' => $token]);
 }
@@ -106,7 +106,7 @@ it('shows the manager only what the driver pays, and records it on every wash of
     $manager = cwManager('555 72 00 09');
     $bought = buyDiscount($f, $f['unlimited']);
 
-    $scan = $this->withToken(cwAs($manager))->getJson('/api/checkqr/'.$bought->qr_code)->assertOk();
+    $scan = $this->withToken(cwAs($manager))->getJson('/api/checkqr/'.freshPackageQr($bought->id))->assertOk();
     expect($scan->json('package.kind'))->toBe('discount')
         ->and($scan->json('package.to_pay'))->toEqual(24)
         ->and($scan->json('package'))->not->toHaveKey('full_price');

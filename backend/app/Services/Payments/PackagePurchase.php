@@ -34,7 +34,9 @@ class PackagePurchase
             }
             $pending = TbcPayment::query()->where('user_id', $owner->id)->where('type', 'package')->where('status', 'pending')
                 ->where('payload->car_id', $car->id)->where('payload->package_id', $package->id)
-                ->where('payload->price_id', $price->id)->where('created_at', '>', now()->subMinutes(30))->first();
+                ->where('payload->price_id', $price->id)->where('created_at', '>', now()->subMinutes(TbcPayment::CHECKOUT_MINUTES))
+                // Price rows are edited in place: a page opened at an older price is not reused.
+                ->where('amount', round((float) $price->price, 2))->first();
             if ($pending) {
                 return $pending;
             }

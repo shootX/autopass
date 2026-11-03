@@ -40,6 +40,10 @@
                 <div class="sb-nav-link-icon"><i class="fas fa-file-excel"></i></div>
                 {{ __('admin.reports') }}
             </a>
+            <a class="nav-link @if(Route::is('admin.reports.qr_washes')) active @endif" href="{{ route('admin.reports.qr_washes') }}">
+                <div class="sb-nav-link-icon"><i class="fas fa-qrcode"></i></div>
+                {{ __('admin.qr_wash_report') }}
+            </a>
             <a class="nav-link @if(Route::is('admin.washings')) active @endif" href="{{route('admin.washings')}}">
                 <div class="sb-nav-link-icon"><i class="fas fa-warehouse"></i></div>
                 {{ __('admin.washings') }}

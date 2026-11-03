@@ -3,7 +3,11 @@
 @section('content')
     <div class="container-fluid px-4">
         <div class="card mt-4">
-            <div class="card-header">{{ __('admin.wash_report') }}</div>
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>{{ __('admin.wash_report') }}</span>
+                {{-- Bookings only; washes approved by QR (walk-ins too) are in their own report. --}}
+                <a href="{{ route('admin.reports.qr_washes') }}">{{ __('admin.qr_wash_report') }} →</a>
+            </div>
             <div class="card-body">
                 <form method="GET">
                     <div class="row g-3">

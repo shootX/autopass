@@ -23,6 +23,9 @@ class FlittCheckout
             'response_url' => route('payment.return'),
             'server_callback_url' => route('callback.flitt.payment'),
             'merchant_data' => $payment->merchant_payment_id,
+            // Flitt keeps an unpaid page open for 10 hours by default; ours ends with the reservation it holds
+            // (a package's pending payment, a promo code's use).
+            'lifetime' => TbcPayment::CHECKOUT_MINUTES * 60,
         ]);
 
         $url = $data->getUrl();

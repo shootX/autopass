@@ -64,6 +64,9 @@ it('takes a wash from the car type pool only', function () {
 
     // No sedan washes left on the car: sedan washes in the pool don't help an SUV.
     CorporateWashes::allocate($fleet['suv']['car'], 0, 'company');
+    // The scanned code is spent; the driver shows a fresh one.
+    $this->withToken(cwAs($manager))->getJson('/api/checkqr/'.$qr)->assertNotFound();
+    $qr = cwDriverQr($this, $fleet['suv']);
     $this->withToken(cwAs($manager))->getJson('/api/checkqr/'.$qr)->assertOk()->assertJsonPath('corporate.reason', 'no_washes');
 });
 

@@ -39,6 +39,6 @@ class CorporateWash extends Model
 
     public function washing(): BelongsTo
     {
-        return $this->belongsTo(CarWash::class, 'car_wash_id');
+        return $this->belongsTo(CarWash::class, 'car_wash_id')->withTrashed();
     }
 }

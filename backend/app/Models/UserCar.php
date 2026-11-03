@@ -4,10 +4,14 @@ namespace App\Models;
 
 use App\Models\Concerns\HasBodyStatus;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class UserCar extends Model
 {
     use HasBodyStatus;
+
+    // A removed car is only hidden: its bought packages and wash records stay with it.
+    use SoftDeletes;
 
     protected $fillable = [
         'user_id',
@@ -81,7 +85,7 @@ class UserCar extends Model
             ->withWashesLeft()->exists();
 
         return $running || TbcPayment::query()->where('type', 'package')->where('status', 'pending')
-            ->where('payload->car_id', $this->id)->where('created_at', '>', now()->subMinutes(30))->exists();
+            ->where('payload->car_id', $this->id)->where('created_at', '>', now()->subMinutes(TbcPayment::CHECKOUT_MINUTES))->exists();
     }
 
     public function model()

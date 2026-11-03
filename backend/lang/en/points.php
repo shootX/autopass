@@ -8,6 +8,7 @@ return [
     'promo_expired' => 'This promo code has expired.',
     'promo_used_up' => 'This promo code has been used up.',
     'promo_already_used' => 'You have already used this promo code.',
+    'promo_pending' => 'You have an unfinished payment with this code. Finish it or try again in 30 minutes.',
     'promo_not_discount' => 'This code gives points. Activate it on the points page.',
     'promo_discount_ready' => 'Code works: :value% off when you buy points.',
     'promo_points_added' => ':value points added.',

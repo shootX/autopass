@@ -53,7 +53,7 @@ function bodyPackage(UserCar $car, bool $legacy = false): UserPackage
     $package = UserPackage::query()->create([
         'user_id' => $car->user_id, 'user_car_id' => $car->id, 'package_id' => Package::query()->value('id'),
         'start_date' => now()->subDay(), 'end_date' => now()->addMonth(), 'number_of_washes' => 4, 'used_washes' => 0,
-        'qr_code' => Str::random(16),
+        'qr_code' => Str::random(16), 'qr_expires_at' => now()->addMinutes(5),
     ]);
     $package->forceFill(['body_legacy' => $legacy])->save();
 
@@ -194,6 +194,9 @@ it('keeps the model and year of a car with a running package', function () {
 
     $this->withToken($f['token'])->postJson("/api/mycars/{$f['suv']->id}/edit", ['year' => 2016])->assertStatus(422)
         ->assertJsonPath('error_code', 'car_has_package');
-    $this->withToken($f['token'])->postJson("/api/mycars/{$f['suv']->id}/edit", ['plate' => 'BD109BD'])->assertOk();
-    expect($f['suv']->fresh()->only(['year', 'car_type', 'plate']))->toBe(['year' => 2021, 'car_type' => 'suv', 'plate' => 'BD109BD']);
+    // Nor the plate: the package would move to another car (audit 2026-11-03, point 7).
+    $this->withToken($f['token'])->postJson("/api/mycars/{$f['suv']->id}/edit", ['plate' => 'BD109BD'])->assertStatus(422)
+        ->assertJsonPath('error_code', 'car_has_package');
+    expect($f['suv']->fresh()->only(['year', 'car_type']))->toBe(['year' => 2021, 'car_type' => 'suv'])
+        ->and($f['suv']->fresh()->plate)->not->toBe('BD109BD');
 });

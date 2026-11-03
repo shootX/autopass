@@ -54,6 +54,7 @@ Route::prefix('dashboard')
         Route::get('/sms-inbox', [SmsInboxController::class, 'index'])->name('admin.sms_inbox');
         Route::get('/sms-inbox/messages', [SmsInboxController::class, 'messages'])->name('admin.sms_inbox.messages');
         Route::get('/reports/washes', [ReportsController::class, 'washes'])->name('admin.reports.washes');
+        Route::get('/reports/qr-washes', [ReportsController::class, 'qrWashes'])->name('admin.reports.qr_washes');
 
         Route::get('/search_managers', [WashingController::class, 'search'])->name('admin.search_managers');
         Route::get('/search_wash', [WashingController::class, 'search_wash'])->name('admin.search_wash');

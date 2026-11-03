@@ -107,12 +107,14 @@ class PackagesController extends Controller
                 'percent' => $discount ? $data['percent'] : null,
             ])->save();
 
-            $package->prices()->delete();
             $prices = $discount ? [1 => $data['price_discount']]
                 : collect(self::WASH_PRICES)->mapWithKeys(fn ($month, $field) => [$month => $data[$field]])->all();
+            // Each month's row is updated in place: a payment started at the old price keeps a price row that
+            // exists, so the package it pays for is still granted. Only months the package no longer sells go.
             foreach ($prices as $month => $price) {
-                PackagePrice::create(['package_id' => $package->id, 'month' => $month, 'price' => $price]);
+                PackagePrice::query()->updateOrCreate(['package_id' => $package->id, 'month' => $month], ['price' => $price]);
             }
+            $package->prices()->whereNotIn('month', array_keys($prices))->delete();
         });
     }
 }

@@ -15,12 +15,12 @@ class PackageWash extends Model
 
     public function userPackage(): BelongsTo
     {
-        return $this->belongsTo(UserPackage::class, 'user_package_id');
+        return $this->belongsTo(UserPackage::class, 'user_package_id')->withTrashed();
     }
 
     public function washing(): BelongsTo
     {
-        return $this->belongsTo(CarWash::class, 'car_wash_id');
+        return $this->belongsTo(CarWash::class, 'car_wash_id')->withTrashed();
     }
 
     public function manager(): BelongsTo

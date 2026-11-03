@@ -20,7 +20,7 @@ function bodyCorp(): array
     return [$corp, ['X-Api-Key' => $plain]];
 }
 
-it('requires the body type over the API and takes the company word for it', function () {
+it('requires the body type over the API and takes the company word for it within geoapi.ge\'s types', function () {
     fakeYearCatalog();
     [$corp, $key] = bodyCorp();
 
@@ -33,22 +33,22 @@ it('requires the body type over the API and takes the company word for it', func
         ['plate' => 'AA555AA', 'brand' => 'Toyota', 'model' => 'Avensis', 'body_type' => 'sedan'],
         ['plate' => 'AA666AA', 'brand' => 'Toyota', 'model' => 'Avensis', 'year' => 2005, 'body_type' => 'sedan'],
     ]], $key)->assertOk()
-        ->assertJsonPath('added', 3)
+        ->assertJsonPath('added', 2)
         ->assertJsonPath('pending', [])
         ->assertJsonPath('skipped.0', ['plate' => 'AA222AA', 'reason' => 'body_type_required'])
-        ->assertJsonPath('skipped.1.reason', 'body_type_invalid')
-        ->assertJsonCount(16, 'skipped.1.body_types')
-        ->assertJsonPath('skipped.2.reason', 'year_invalid')
-        ->assertJsonPath('skipped.3.reason', 'year_invalid');
+        // geoapi.ge names every body the 2016 Avensis had (sedan, wagon): an SUV is not one of them.
+        ->assertJsonPath('skipped.1', ['plate' => 'AA444AA', 'reason' => 'body_type_mismatch', 'body_types' => ['sedan', 'wagon']])
+        ->assertJsonPath('skipped.2.reason', 'body_type_invalid')
+        ->assertJsonCount(16, 'skipped.2.body_types')
+        ->assertJsonPath('skipped.3.reason', 'year_invalid')
+        ->assertJsonPath('skipped.4.reason', 'year_invalid');
 
     $cars = FleetCar::query()->orderBy('plate')->get()->keyBy('plate');
     expect($cars['AA111AA']->only(['year', 'car_type', 'body_status', 'body_source', 'catalog_source', 'catalog_model_id', 'generation_id']))
         ->toBe(['year' => 2021, 'car_type' => 'suv', 'body_status' => 'confirmed', 'body_source' => 'catalog', 'catalog_source' => 'carapi', 'catalog_model_id' => 7, 'generation_id' => 73])
         ->and($cars['AA333AA']->only(['car_type', 'body_status', 'body_source', 'generation_id']))
         ->toBe(['car_type' => 'wagon', 'body_status' => 'confirmed', 'body_source' => 'company', 'generation_id' => 72])
-        // geoapi.ge has no SUV of 2016, but the company's word stands: it only prices the company's own washes.
-        ->and($cars['AA444AA']->only(['car_type', 'body_status', 'body_source', 'body_options', 'generation_id']))
-        ->toBe(['car_type' => 'suv', 'body_status' => 'confirmed', 'body_source' => 'company', 'body_options' => ['sedan', 'wagon'], 'generation_id' => null]);
+        ->and($cars->has('AA444AA'))->toBeFalse();
 
     $this->getJson('/api/corporate/vehicles', $key)->assertOk()
         ->assertJsonPath('vehicles.1.plate', 'AA333AA')->assertJsonPath('vehicles.1.body_status', 'confirmed')

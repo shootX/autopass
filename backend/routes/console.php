@@ -13,3 +13,4 @@ Schedule::command('app:send-manager-fifteen-minutes-before')
     ->everyMinute(); // Напоминание менеджеру за 15 минут до прибытия клиента
 Schedule::command('users:prune-unverified')->hourly(); // /register stubs that never confirmed the phone
 Schedule::command('corporate:discount-invoices')->monthlyOn(1, '01:00'); // Company discount washes of the month that ended: full price minus what drivers paid
+Schedule::command('payments:reconcile')->everyFiveMinutes()->withoutOverlapping(); // Card payments Flitt's callback never settled: asks Flitt and grants what was paid

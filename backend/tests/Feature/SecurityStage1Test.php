@@ -26,6 +26,7 @@ use App\Support\Phone;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Routing\Middleware\ThrottleRequests;
 use Illuminate\Session\TokenMismatchException;
 use Illuminate\Support\Facades\Hash;
@@ -420,7 +421,8 @@ class SecurityStage1Test extends TestCase
         $this->withToken($tokenA)->deleteJson('/api/packages/'.$packageB->id.'/remove')->assertForbidden();
         $this->assertDatabaseHas('user_packages', ['id' => $packageB->id]);
         $this->withToken($tokenA)->deleteJson('/api/packages/'.$packageA->id.'/remove')->assertOk();
-        $this->assertDatabaseMissing('user_packages', ['id' => $packageA->id]);
+        // Removed from the driver's list, kept for the payment and wash history.
+        $this->assertSoftDeleted('user_packages', ['id' => $packageA->id]);
 
         $managerA = $this->customer('555606060', 'secret12', User::ROLE_MANAGER);
         $managerB = $this->customer('555707070', 'secret12', User::ROLE_MANAGER);
@@ -506,7 +508,9 @@ class SecurityStage1Test extends TestCase
 
         $this->delete('/dashboard/clients/'.$client->id.'/delete')
             ->assertRedirect(route('admin.clients'));
-        $this->assertDatabaseMissing('users', ['id' => $client->id]);
+        // Erased, not dropped: the row keeps the client's order and wash history.
+        $this->assertStringStartsWith('deleted-', (string) DB::table('users')->where('id', $client->id)->value('phone'));
+        $this->assertNull($client->fresh()->name);
     }
 
     public function test_payment_sandbox_is_limited_and_real_checks_still_hold(): void
@@ -691,6 +695,8 @@ class SecurityStage1Test extends TestCase
             'number_of_washes' => 5,
             'used_washes' => 0,
             'qr_code' => $qr ?? bin2hex(random_bytes(8)),
+            // As if the driver's app just showed the code.
+            'qr_expires_at' => now()->addMinutes(5),
         ]);
     }
 

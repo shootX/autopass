@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -27,6 +28,20 @@ class PromoCode extends Model
         return $this->hasMany(PromoCodeUse::class);
     }
 
+    /**
+     * Points payments still open with this discount code, other users' only when $user is given. Each holds one
+     * use: the use is recorded once the payment goes through, and the page can't be paid after CHECKOUT_MINUTES.
+     */
+    public function holds(?User $except = null): Builder
+    {
+        return TbcPayment::query()
+            ->where('type', 'points')
+            ->where('status', 'pending')
+            ->where('created_at', '>', now()->subMinutes(TbcPayment::CHECKOUT_MINUTES))
+            ->where('payload->promo_code_id', $this->id)
+            ->when($except, fn (Builder $query) => $query->where('user_id', '!=', $except->id));
+    }
+
     public static function normalize(string $code): string
     {
         return mb_strtoupper(trim($code));
@@ -44,7 +59,8 @@ class PromoCode extends Model
         if ($this->ends_at && $this->ends_at->isPast()) {
             return 'promo_expired';
         }
-        if ($this->max_uses !== null && $this->used_count >= $this->max_uses) {
+        // Payments still open with this code hold a use each until they are paid or their page expires.
+        if ($this->max_uses !== null && $this->used_count + $this->holds($user)->count() >= $this->max_uses) {
             return 'promo_used_up';
         }
         if ($user && $this->uses()->where('user_id', $user->id)->exists()) {
