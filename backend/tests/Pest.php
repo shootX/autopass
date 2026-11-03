@@ -26,13 +26,16 @@ function makeUser(string $phone, int $role = User::ROLE_USER): User
     ]);
 }
 
-/** One-time approve token as GET /api/checkqr issues it (package approve accepts only this). */
+/** One-time approve token as GET /api/checkqr issues it (package approve accepts only this), for the code the app shows now. */
 function approveTokenFor(User $manager, int $packageId): string
 {
+    $code = DB::table('user_packages')->where('id', $packageId)->where('qr_expires_at', '>', now())->value('qr_code')
+        ?? freshPackageQr($packageId);
     $token = bin2hex(random_bytes(20));
     Cache::put('package-approve:'.hash('sha256', $token), [
         'manager_id' => (int) $manager->id,
         'package_id' => $packageId,
+        'qr' => hash('sha256', (string) $code),
     ], now()->addMinutes(10));
 
     return $token;

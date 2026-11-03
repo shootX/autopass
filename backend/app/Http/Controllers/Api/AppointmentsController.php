@@ -273,6 +273,8 @@ class AppointmentsController extends Controller
             Cache::put('package-approve:'.hash('sha256', $approveToken), [
                 'manager_id' => (int) $user->id,
                 'package_id' => (int) $userPackage->id,
+                // Tied to this very code: once it is spent or replaced, the token approves nothing.
+                'qr' => UserPackage::qrFingerprint($userPackage->qr_code),
             ], now()->addMinutes(10));
 
             return response()->json([

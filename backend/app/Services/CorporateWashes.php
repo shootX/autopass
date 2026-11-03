@@ -221,14 +221,21 @@ class CorporateWashes
      * Records one wash. A wash-package car gives one wash to it and to the pool; a discount car
      * keeps the price, the percent and what the driver pays on site, and the pool stays as it is.
      *
+     * $qr is the fingerprint of the code the manager scanned (CorporateQr::fingerprint): the wash goes
+     * through only while that code is still the car's live one, checked under the car's row lock and cleared
+     * with the wash, so one scanned code gives one wash however many tokens were taken from it.
+     *
      * @param  array{car_wash_id: int, manager_id: int, appointment_id: ?int, walk_in: bool}  $at
      * @return array{result: string, mode?: string, washes_left?: int, company_washes?: int, discount?: ?array}
      */
-    public static function wash(FleetCar $car, array $at): array
+    public static function wash(FleetCar $car, array $at, string $qr): array
     {
-        return DB::transaction(function () use ($car, $at) {
+        return DB::transaction(function () use ($car, $at, $qr) {
             $client = self::lockClient((int) $car->corporate_client_id);
             $locked = FleetCar::query()->whereKey($car->id)->lockForUpdate()->firstOrFail();
+            if (! CorporateQr::live($locked, $qr)) {
+                return ['result' => 'scan_again'];
+            }
             $locked->setRelation('client', $client)->load(['userCar.model', 'discountPackage.prices']);
             $blocker = self::blocker($locked);
             if ($blocker !== null) {
