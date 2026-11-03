@@ -236,12 +236,12 @@ class PartnerPanelController extends Controller
             return $data;
         }
 
-        $result = FleetCars::add($corporate, $data, 'manual');
+        $result = FleetCars::add($corporate, $data, 'manual', $body);
         if ($result !== 'added') {
             return redirect()->back()->withInput()->withErrors(FleetCars::addError($result));
         }
 
-        return redirect()->route('partner.fleet')->with('message', __('admin.fleet_car_added'));
+        return redirect()->route('partner.fleet')->with('message', FleetCars::addedMessage($body));
     }
 
     public function deleteCar(Request $request, FleetCar $car)
@@ -264,7 +264,8 @@ class PartnerPanelController extends Controller
         $result = FleetCars::importSheet($corporate, $sheet, 'excel');
 
         return redirect()->route('partner.fleet')
-            ->with('message', __('admin.fleet_imported', ['added' => $result['added'], 'skipped' => $result['skipped']]))
+            ->with('message', __('admin.fleet_imported', ['added' => $result['added'], 'skipped' => $result['skipped']])
+                .($result['pending'] > 0 ? ' '.__('admin.fleet_imported_pending', ['count' => $result['pending']]) : ''))
             ->with('fleet_import_errors', array_slice($result['errors'], 0, 50));
     }
 

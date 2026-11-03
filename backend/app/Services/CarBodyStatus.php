@@ -112,6 +112,8 @@ class CarBodyStatus
         if ($car->bodyConfirmed()) {
             return CarBody::CONFIRMED;
         }
+        // A company car waits with the type the company named: confirmed as soon as geoapi.ge lists it.
+        $hint ??= $car instanceof FleetCar ? $car->body_requested : null;
         $options = $this->options($car);
         $decision = CarBody::decide($options, $hint);
         if ($decision['error'] !== null) {
@@ -139,7 +141,10 @@ class CarBodyStatus
         if (! $car->bodyConfirmed()) {
             return;
         }
-        $fleet = FleetCar::query()->where('user_car_id', $car->id)->get()->reject(fn (FleetCar $fleet) => $fleet->bodyConfirmed());
+        // A company car waiting with the type the company named takes only that type from the driver's car;
+        // another type keeps it waiting for a geoapi.ge re-check or an admin.
+        $fleet = FleetCar::query()->where('user_car_id', $car->id)->get()->reject(fn (FleetCar $fleet) => $fleet->bodyConfirmed()
+            || (filled($fleet->body_requested) && $fleet->body_requested !== $car->car_type));
         foreach ($fleet as $fleetCar) {
             $this->saveFleet($fleetCar, ['generation_id' => $fleetCar->generation_id] + $car->bodyColumns(), $actor);
         }
