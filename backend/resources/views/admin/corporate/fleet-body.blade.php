@@ -2,14 +2,20 @@
 @if($car->bodyConfirmed())
     <small class="d-block text-muted">{{ \App\Models\BodyType::labelFor($car->car_type) }}</small>
 @else
-    <span class="badge {{ $car->body_status === 'choose' ? 'bg-info text-dark' : 'bg-warning text-dark' }}">{{ __('admin.fleet_body_status_'.($car->body_status ?: 'unknown')) }}</span>
+    @if(! empty($car->body_requested))
+        {{-- A company car: the company named a type geoapi.ge has not confirmed; a re-check or an admin does. --}}
+        <span class="badge bg-warning text-dark">{{ __('admin.fleet_body_status_waiting') }}</span>
+        <small class="d-block text-muted">{{ __('admin.fleet_body_requested', ['type' => \App\Models\BodyType::labelFor($car->body_requested)]) }}</small>
+    @else
+        <span class="badge {{ $car->body_status === 'choose' ? 'bg-info text-dark' : 'bg-warning text-dark' }}">{{ __('admin.fleet_body_status_'.($car->body_status ?: 'unknown')) }}</span>
+    @endif
     @if($car->body_options)
         <small class="d-block text-muted">{{ __('admin.fleet_body_options', ['types' => collect($car->body_options)->map(fn ($key) => \App\Models\BodyType::labelFor($key))->implode(', ')]) }}</small>
     @endif
     @if($car->body_incomplete)
         <small class="d-block text-muted">{{ __('admin.fleet_body_incomplete') }}</small>
     @endif
-    @if($car->body_status !== 'choose')
+    @if($car->body_status !== 'choose' || ! empty($car->body_requested))
         <form method="POST" action="{{ $carBase.'/'.$car->id.'/body-check' }}" class="d-inline">@csrf<button type="submit" class="btn btn-sm btn-link p-0">{{ __('admin.fleet_body_check') }}</button></form>
     @endif
     @if(! empty($adminBody))

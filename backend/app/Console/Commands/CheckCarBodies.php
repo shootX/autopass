@@ -40,7 +40,8 @@ class CheckCarBodies extends Command
             }
             foreach ($query->get() as $car) {
                 $options = $status->options($car);
-                $hint = $car instanceof UserCar || $car->catalog_model_id ? $car->car_type : null;
+                // A company car's hint is the type the company named (older cars: their old car_type).
+                $hint = $car instanceof FleetCar ? ($car->body_requested ?? ($car->catalog_model_id ? $car->car_type : null)) : $car->car_type;
                 $decision = CarBody::decide($options, $hint);
                 if ($decision['error'] !== null) {
                     $decision = CarBody::decide($options, null);

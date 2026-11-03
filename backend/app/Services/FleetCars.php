@@ -39,6 +39,7 @@ class FleetCars
     public static function importSheet(CorporateClient $client, array $rows, string $source): array
     {
         $added = 0;
+        $pending = 0;
         $errors = [];
         $header = self::headerMap($rows[0] ?? []);
         $start = $header === null ? 0 : 1;
@@ -50,15 +51,16 @@ class FleetCars
                 $car[$field] = (string) ($row[$header === null ? $index : ($header[$field] ?? -1)] ?? '');
             }
 
-            $result = self::add($client, $car, $source);
+            $result = self::add($client, $car, $source, $body);
             if ($result === 'added') {
                 $added++;
+                $pending += $body['status'] === CarBody::CONFIRMED ? 0 : 1;
             } elseif ($car['plate'] !== '' || $car['brand'] !== '' || $car['model'] !== '') {
                 $errors[] = ['row' => $i + 1, 'plate' => self::plate($car['plate']), 'reason' => $result];
             }
         }
 
-        return ['added' => $added, 'skipped' => count($errors), 'errors' => $errors];
+        return ['added' => $added, 'skipped' => count($errors), 'errors' => $errors, 'pending' => $pending];
     }
 
     /** Sheet columns in the order a sheet without a header row has them. */
@@ -67,10 +69,12 @@ class FleetCars
     /**
      * Adds a car and, when a driver phone is given, sends the driver the invite SMS. The brand and model are
      * found in the car catalog by name (or by the ids of the panel's lists). The company must name the body type
-     * (a key, its Georgian or English name, or a catalog name such as station wagon) and it is confirmed as given,
-     * as long as it is one of the types geoapi.ge names for that model and year (body_type_mismatch otherwise;
-     * any type when geoapi.ge names none, an incomplete list or is down). $body gets the status and the types
-     * geoapi.ge named (on body_type_invalid, every type there is).
+     * (a key, its Georgian or English name, or a catalog name such as station wagon). It is confirmed when it is one
+     * of the types geoapi.ge names for that model and year; a type off a full list is refused (body_type_mismatch).
+     * When geoapi.ge names none, gives an incomplete list without it, or is down, the car is added unconfirmed
+     * (unknown or choose) with the company's type kept in body_requested: it washes once a re-check finds that
+     * type or an admin confirms one. $body gets the status and the types geoapi.ge named (on body_type_invalid,
+     * every type there is).
      *
      * @param  array<string, mixed>  $row  plate, brand, model (or brand_id, model_id), year, body_type, phone
      * @param  array{status: string, types: list<string>}|null  $body
@@ -101,7 +105,7 @@ class FleetCars
             return 'year_invalid';
         }
 
-        // The company always names the body type; it is taken as it is, geoapi.ge only adds the generation.
+        // The company always names the body type; geoapi.ge confirms it (below) and adds the generation.
         if ($text('body_type') === '') {
             return 'body_type_required';
         }
@@ -113,15 +117,19 @@ class FleetCars
             return 'body_type_invalid';
         }
         $options = app(CarBody::class)->options($model['source'], $model['brand_id'], $model['model_id'], (int) $year);
-        // When geoapi.ge names every body this model had that year, the company picks one of those; with no list,
-        // an incomplete one or geoapi.ge down, the company's type is taken as it is.
+        // When geoapi.ge names every body this model had that year, the company picks one of those.
         if ($options['types'] !== [] && ! $options['incomplete'] && ! in_array($type, $options['types'], true)) {
             $body['types'] = $options['types'];
 
             return 'body_type_mismatch';
         }
-        $generations = $options['generations'][$type] ?? [];
-        $body = ['status' => CarBody::CONFIRMED, 'types' => $options['types']];
+        // The type is confirmed only when geoapi.ge lists it. With no list, an incomplete one without this type,
+        // or geoapi.ge down, the car is saved but waits: no washes until a re-check finds the type or an admin
+        // confirms one. The company's type stays as the hint for both.
+        $listed = in_array($type, $options['types'], true);
+        $status = $listed ? CarBody::CONFIRMED : ($options['types'] === [] ? CarBody::UNKNOWN : CarBody::CHOOSE);
+        $generations = $listed ? ($options['generations'][$type] ?? []) : [];
+        $body = ['status' => $status, 'types' => $options['types']];
 
         $taken = FleetCar::query()
             ->whereRaw("upper(replace(replace(plate, ' ', ''), '-', '')) = ?", [$plate])
@@ -141,12 +149,15 @@ class FleetCars
                 'catalog_source' => $model['source'],
                 'catalog_brand_id' => $model['brand_id'],
                 'catalog_model_id' => $model['model_id'],
-                'car_type' => $type,
-                'body_status' => CarBody::CONFIRMED,
+                'car_type' => $listed ? $type : null,
+                'body_status' => $status,
                 'body_options' => $options['types'] === [] ? null : $options['types'],
                 'body_incomplete' => $options['incomplete'],
-                'body_source' => $options['status'] === CarBody::CONFIRMED && $options['types'] === [$type] ? CarBody::BY_CATALOG : CarBody::BY_COMPANY,
-                'body_checked_at' => now(),
+                'body_source' => ! $listed ? null
+                    : ($options['status'] === CarBody::CONFIRMED && $options['types'] === [$type] ? CarBody::BY_CATALOG : CarBody::BY_COMPANY),
+                'body_requested' => $type,
+                // Not checked while geoapi.ge is down, so cars:check-bodies tries again.
+                'body_checked_at' => $options['unavailable'] ? null : now(),
                 'generation_id' => count($generations) === 1 ? $generations[0] : null,
             ]);
         } catch (QueryException) {
@@ -186,6 +197,14 @@ class FleetCars
             'brand' => (string) $brand['name'],
             'model' => (string) $model['name'],
         ];
+    }
+
+    /** What the panel says after a car is added: also when its body type still waits for confirmation. */
+    public static function addedMessage(?array $body): string
+    {
+        return ($body['status'] ?? CarBody::CONFIRMED) === CarBody::CONFIRMED
+            ? __('admin.fleet_car_added')
+            : __('admin.fleet_car_added_pending');
     }
 
     /** Form errors for an add() result other than 'added'. */

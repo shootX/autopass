@@ -81,8 +81,10 @@ trait FleetCarActions
     protected function recheckBody(FleetCar $car, string $back, string $actor): RedirectResponse
     {
         $status = app(CarBodyStatus::class)->recheck($car, $actor);
+        // A company car still waiting with the type the company named: no driver pick involved.
+        $key = $status !== CarBody::CONFIRMED && filled($car->body_requested) ? 'waiting' : $status;
 
-        return redirect($back)->with('message', __('admin.fleet_body_checked_'.$status, ['plate' => $car->plate]));
+        return redirect($back)->with('message', __('admin.fleet_body_checked_'.$key, ['plate' => $car->plate]));
     }
 
     /** Admin only: confirms a body type for a car geoapi.ge can't tell (or names wrongly). */

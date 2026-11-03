@@ -7,7 +7,9 @@ use App\Models\FleetCar;
 use App\Models\UserCar;
 use App\Services\CorporateDiscounts;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 
 function bodyCorp(): array
 {
@@ -123,4 +125,85 @@ it('prices the company car by the body type the company gave and hands it to the
     expect((int) $userCar->user_id)->toBe((int) $driver->id)
         ->and($userCar->only(['year', 'car_type', 'generation_id']))->toBe(['year' => 2016, 'car_type' => 'wagon', 'generation_id' => 72])
         ->and($userCar->model->external_model_id)->toBe(7);
+});
+
+it('keeps a company car waiting when geoapi.ge cannot confirm the type, until a re-check or an admin does', function () {
+    [$corp, $key] = bodyCorp();
+    // geoapi.ge knows the model but its generations don't answer (until $down is cleared).
+    Cache::flush();
+    config(['services.carapi.url' => 'https://geoapi.test/api/v1', 'services.carapi.secret' => 'geoapi_sk_test']);
+    $down = true;
+    $generations = [
+        ['id' => '71', 'name' => 'T27 Sedan', 'year_start' => 2012, 'year_end' => 2018, 'body_type' => 'Sedan'],
+        ['id' => '72', 'name' => 'T27 Wagon', 'year_start' => 2014, 'year_end' => 2018, 'body_type' => 'Station wagon'],
+    ];
+    Http::fake([
+        'geoapi.test/api/v1/models/7/generations*' => function () use (&$down, $generations) {
+            return $down
+                ? Http::response(['message' => 'down'], 503)
+                : Http::response(['data' => $generations, 'meta' => ['total' => count($generations)]]);
+        },
+        'geoapi.test/api/v1/generations/*' => Http::response(['data' => [], 'meta' => ['total' => 0]]),
+        'geoapi.test/api/v1/brands/toyota/models*' => Http::response(['data' => [['id' => '7', 'name' => 'Avensis']], 'meta' => ['total' => 1]]),
+        'geoapi.test/api/v1/brands*' => Http::response(['data' => [['id' => '501', 'name' => 'Toyota', 'slug' => 'toyota']], 'meta' => ['total' => 1]]),
+    ]);
+
+    $this->postJson('/api/corporate/vehicles', ['vehicles' => [
+        ['plate' => 'AB111AB', 'brand' => 'Toyota', 'model' => 'Avensis', 'year' => 2016, 'body_type' => 'wagon'],
+    ]], $key)->assertOk()
+        ->assertJsonPath('added', 1)
+        ->assertJsonPath('pending.0', ['plate' => 'AB111AB', 'body_status' => 'unknown', 'body_types' => []]);
+
+    $car = FleetCar::query()->where('plate', 'AB111AB')->sole();
+    expect($car->only(['car_type', 'body_status', 'body_requested']))->toBe(['car_type' => null, 'body_status' => 'unknown', 'body_requested' => 'wagon'])
+        ->and($car->carType())->toBeNull()
+        ->and($car->bodyConfirmed())->toBeFalse();
+    $this->patchJson('/api/corporate/vehicles/AB111AB', ['washes' => 1], $key)->assertStatus(422)
+        ->assertJsonPath('body_status', 'unknown');
+
+    // geoapi.ge answers again and lists a wagon for the 2016 Avensis: a re-check confirms the company's type.
+    $down = false;
+    Cache::flush();
+    $this->patchJson('/api/corporate/vehicles/AB111AB', ['body_check' => true], $key)->assertOk();
+    expect($car->fresh()->only(['car_type', 'body_status']))->toBe(['car_type' => 'wagon', 'body_status' => 'confirmed']);
+});
+
+it('confirms a type on an incomplete geoapi.ge list and keeps one off it waiting for the admin', function () {
+    [$corp, $key] = bodyCorp();
+    // 2016: a sedan generation, and one geoapi.ge names no body for, so the list may be missing types.
+    fakeYearCatalog([
+        ['id' => '71', 'name' => 'T27 Sedan', 'year_start' => 2012, 'year_end' => 2018, 'body_type' => 'Sedan'],
+        ['id' => '74', 'name' => 'T27', 'year_start' => 2014, 'year_end' => 2018, 'body_type' => null],
+    ]);
+
+    $this->postJson('/api/corporate/vehicles', ['vehicles' => [
+        ['plate' => 'AB211AB', 'brand' => 'Toyota', 'model' => 'Avensis', 'year' => 2016, 'body_type' => 'sedan'],
+        ['plate' => 'AB222AB', 'brand' => 'Toyota', 'model' => 'Avensis', 'year' => 2016, 'body_type' => 'wagon', 'phone' => '555 12 34 56'],
+    ]], $key)->assertOk()
+        ->assertJsonPath('added', 2)
+        ->assertJsonCount(1, 'pending')
+        ->assertJsonPath('pending.0', ['plate' => 'AB222AB', 'body_status' => 'choose', 'body_types' => ['sedan']]);
+
+    $cars = FleetCar::query()->get()->keyBy('plate');
+    expect($cars['AB211AB']->only(['car_type', 'body_status']))->toBe(['car_type' => 'sedan', 'body_status' => 'confirmed'])
+        ->and($cars['AB222AB']->only(['car_type', 'body_status', 'body_requested']))->toBe(['car_type' => null, 'body_status' => 'choose', 'body_requested' => 'wagon']);
+
+    // A re-check that still can't see a wagon leaves it waiting; so does the driver picking the one type listed.
+    $this->patchJson('/api/corporate/vehicles/AB222AB', ['body_check' => true], $key)->assertOk();
+    expect($cars['AB222AB']->fresh()->bodyConfirmed())->toBeFalse();
+    $driver = makeUser('555 12 34 56');
+    $driver->forceFill(['password' => Hash::make('driverpass')])->save();
+    $token = $this->postJson('/api/login', ['phone' => '555123456', 'password' => 'driverpass'])->assertOk()->json('access_token');
+    $userCar = UserCar::query()->where('plate', 'AB222AB')->sole();
+    $this->withToken($token)->postJson('/api/mycars/'.$userCar->id.'/body', ['car_type' => 'sedan'])->assertOk();
+    $this->flushHeaders();
+    expect($userCar->fresh()->car_type)->toBe('sedan')
+        ->and($cars['AB222AB']->fresh()->only(['car_type', 'body_status']))->toBe(['car_type' => null, 'body_status' => 'choose']);
+
+    // The admin confirms it by hand.
+    $this->actingAs(cwAdmin());
+    $this->get(route('admin.corporate.show', $corp))->assertOk()->assertSee(__('admin.fleet_body_status_waiting'));
+    $this->post(route('admin.corporate.cars.body', [$corp, $cars['AB222AB']]), ['body_type' => 'wagon'])->assertSessionHasNoErrors();
+    expect($cars['AB222AB']->fresh()->only(['car_type', 'body_status', 'body_source']))
+        ->toBe(['car_type' => 'wagon', 'body_status' => 'confirmed', 'body_source' => 'admin']);
 });

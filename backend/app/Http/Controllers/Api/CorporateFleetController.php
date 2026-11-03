@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\CorporateClient;
 use App\Models\FleetCar;
+use App\Services\CarBody;
 use App\Services\CarBodyStatus;
 use App\Services\CorporateDiscounts;
 use App\Services\CorporateWashes;
@@ -93,6 +94,7 @@ class CorporateFleetController extends Controller
 
         $added = 0;
         $skipped = [];
+        $pending = [];
         foreach ($payload as $row) {
             if (! is_array($row)) {
                 $skipped[] = ['plate' => '', 'reason' => 'invalid'];
@@ -103,6 +105,10 @@ class CorporateFleetController extends Controller
             $plate = FleetCars::plate(is_scalar($row['plate'] ?? null) ? (string) $row['plate'] : '');
             if ($result === 'added') {
                 $added++;
+                if ($body['status'] !== CarBody::CONFIRMED) {
+                    // Added, but geoapi.ge did not list the type: no washes until it is confirmed.
+                    $pending[] = ['plate' => $plate, 'body_status' => $body['status'], 'body_types' => $body['types']];
+                }
             } else {
                 // A body type we don't know lists the ones we do, to send one of them as body_type.
                 $skipped[] = ['plate' => $plate, 'reason' => $result]
@@ -110,8 +116,8 @@ class CorporateFleetController extends Controller
             }
         }
 
-        // pending stays for clients that read it: every car added now has its body type confirmed.
-        return response()->json(['ok' => true, 'added' => $added, 'skipped' => $skipped, 'pending' => []]);
+        // pending: cars added whose body type geoapi.ge could not confirm yet (body_check re-asks it).
+        return response()->json(['ok' => true, 'added' => $added, 'skipped' => $skipped, 'pending' => $pending]);
     }
 
     /**

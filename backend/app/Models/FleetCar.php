@@ -36,6 +36,7 @@ class FleetCar extends Model
         'body_options',
         'body_incomplete',
         'body_source',
+        'body_requested',
         'body_checked_at',
         'catalog_source',
         'catalog_brand_id',
