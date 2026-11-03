@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\ContactsController;
 use App\Http\Controllers\Api\CorporateFleetController;
 use App\Http\Controllers\Api\CorporateWashController;
 use App\Http\Controllers\Api\FaqController;
+use App\Http\Controllers\Api\FleetConsentController;
 use App\Http\Controllers\Api\PackageRenewalController;
 use App\Http\Controllers\Api\PackagesController;
 use App\Http\Controllers\Api\Partners\VoucherHistoryController;
@@ -126,6 +127,13 @@ Route::middleware(['auth:api', CorsMiddleware::class, EnsureApiSession::class])-
         Route::post('/{carid}/body/check', [CarBodyController::class, 'check'])->whereNumber('carid')->middleware('throttle:10,1');
         Route::get('/{carid}/company-qr', [CorporateWashController::class, 'qr'])->whereNumber('carid')->middleware('throttle:30,1');
         Route::get('/{carid}/company-qr/live', [CorporateWashController::class, 'qrLive'])->whereNumber('carid')->middleware('throttle:30,1');
+    });
+
+    // A company named a car the driver already has: the driver's yes or no.
+    Route::prefix('/fleet-invites')->middleware('throttle:30,1')->group(function () {
+        Route::get('/', [FleetConsentController::class, 'index']);
+        Route::post('/{id}/accept', [FleetConsentController::class, 'accept'])->whereNumber('id');
+        Route::post('/{id}/decline', [FleetConsentController::class, 'decline'])->whereNumber('id');
     });
 
     Route::prefix('/tickets')->group(function () {

@@ -5,13 +5,17 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\PromoCode;
 use App\Models\TbcPayment;
+use App\Models\User;
 use App\Services\Payments\FlittCheckout;
+use App\Services\Payments\SettleTbcPayment;
 use App\Services\Points\PointsPricing;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Throwable;
 
 class PointsController extends Controller
 {
@@ -40,6 +44,9 @@ class PointsController extends Controller
         }
         [$points, $promo] = $checked;
         $user = $request->user();
+        if ($promo) {
+            $this->askAboutClosedPages($promo, $user);
+        }
 
         // A discount code is reserved by the payment that uses it, under a lock on the code: one open payment
         // per user and no more open payments than uses left, so paying several pages can't stretch the limit.
@@ -49,9 +56,12 @@ class PointsController extends Controller
                 if ($problem = $promo->problem($user)) {
                     return $problem;
                 }
-                // Only a page that still works is handed back; a closed one waits to be settled.
-                $open = $promo->holds()->where('user_id', $user->id)
-                    ->where('created_at', '>', now()->subMinutes(TbcPayment::CHECKOUT_MINUTES))->latest('id')->first();
+                $open = $promo->holds()->where('user_id', $user->id)->latest('id')->first();
+                if ($open && $open->created_at <= now()->subMinutes(TbcPayment::CHECKOUT_MINUTES)) {
+                    // A closed page Flitt couldn't tell about yet: paid in its last minute, it already has the
+                    // discount, so a new page waits for the answer (payments:reconcile asks every few minutes).
+                    return 'promo_checking';
+                }
                 if ($open) {
                     // The same purchase again (the page was closed): the same page. Another amount waits.
                     return (int) ($open->payload['points'] ?? 0) === $points ? $open : 'promo_pending';
@@ -84,6 +94,26 @@ class PointsController extends Controller
         }
 
         return response()->json(['success' => true, 'url' => $url, 'quote' => $payment->payload['quote']]);
+    }
+
+    /**
+     * This user's pages with the code that closed without an answer: Flitt is asked now, before a new page, so a
+     * page paid in its last minute counts the code as used instead of giving the discount twice.
+     */
+    private function askAboutClosedPages(PromoCode $promo, User $user): void
+    {
+        $promo->holds()->where('user_id', $user->id)
+            ->where('created_at', '<=', now()->subMinutes(TbcPayment::CHECKOUT_MINUTES))
+            ->get()
+            ->each(function (TbcPayment $payment) {
+                try {
+                    $flitt = app(FlittCheckout::class);
+                    app(SettleTbcPayment::class)->fromFlitt($flitt->status((string) $payment->merchant_payment_id), $flitt);
+                } catch (Throwable $e) {
+                    // Still pending: the new page waits, payments:reconcile asks again.
+                    Log::warning('promo_hold_check_failed', ['payment_id' => $payment->id, 'exception' => $e::class]);
+                }
+            });
     }
 
     /** [points, promo code or null] or the error answer. */

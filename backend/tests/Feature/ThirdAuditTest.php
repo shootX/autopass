@@ -237,10 +237,11 @@ it('holds a discount code until a payment made near its page end is settled', fu
     $this->travel(TbcPayment::CHECKOUT_MINUTES + 10)->minutes();
     $this->withToken(cwAs($b))->postJson('/api/points/buy', ['amount' => 50, 'promo_code' => 'LAST'])->assertStatus(422)
         ->assertJsonPath('code', 'promo_used_up');
-    // Its owner gets a new page: the closed one can't be paid any more.
-    $url = $this->withToken(cwAs($a))->postJson('/api/points/buy', ['amount' => 50, 'promo_code' => 'LAST'])->assertOk()->json('url');
-    expect($url)->not->toContain($first->merchant_payment_id);
-    TbcPayment::query()->whereKeyNot($first->id)->delete();
+    // Its owner waits too while Flitt can't say whether the closed page was paid (fourth review, point 3).
+    $flitt->shouldReceive('status')->with($first->merchant_payment_id)->once()->andThrow(new RuntimeException('Flitt down'));
+    $this->withToken(cwAs($a))->postJson('/api/points/buy', ['amount' => 50, 'promo_code' => 'LAST'])->assertStatus(422)
+        ->assertJsonPath('code', 'promo_checking');
+    expect(TbcPayment::query()->count())->toBe(1);
 
     // Flitt says it expired unpaid: the code is free again.
     $flitt->shouldReceive('status')->with($first->merchant_payment_id)

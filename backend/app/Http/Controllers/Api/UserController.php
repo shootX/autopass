@@ -18,7 +18,12 @@ class UserController extends Controller
         // Opening the app after a company's invite SMS activates the invited fleet cars.
         FleetInvites::activateFor(auth()->user());
 
-        return response()->json(['success' => true, 'user' => auth()->user()]);
+        // A car the driver already has waits for their yes: the app asks with these.
+        return response()->json([
+            'success' => true,
+            'user' => auth()->user(),
+            'fleet_invites' => FleetInvites::awaitingFor(auth()->user()),
+        ]);
     }
 
     public function edit(Request $request)

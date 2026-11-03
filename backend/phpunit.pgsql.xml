@@ -7,6 +7,12 @@
     <testsuites>
         <testsuite name="PostgreSQL">
             <file>tests/Feature/Stage3RegressionTest.php</file>
+            <!-- Launch audits: money, codes, accounts and company cars run on the production database too. -->
+            <file>tests/Feature/LaunchAuditTest.php</file>
+            <file>tests/Feature/ThirdAuditTest.php</file>
+            <file>tests/Feature/ShopAccountRulesTest.php</file>
+            <file>tests/Feature/CorporateFleetInvitesTest.php</file>
+            <file>tests/Feature/FourthReviewTest.php</file>
             <directory>tests/Integration</directory>
         </testsuite>
     </testsuites>

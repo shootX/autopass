@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Services\CorporateQr;
 use App\Services\CorporateWashes;
 use App\Support\ApproveGrant;
+use App\Support\QrCodeId;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
@@ -32,15 +33,17 @@ class CorporateWashController extends Controller
             return response()->json(['success' => false, 'error' => __('corporate.reason_body_unconfirmed'), 'reason' => 'body_unconfirmed'], 403);
         }
 
-        $svg = QrCode::format('svg')->size(300)->generate(CorporateQr::issue($car));
+        $code = CorporateQr::issue($car);
+        $svg = QrCode::format('svg')->size(300)->generate($code);
 
         return response($svg, 200)
             ->header('Content-Type', 'image/svg+xml')
             ->header('Cache-Control', 'no-store')
-            ->header('X-QR-Expires', (string) $car->qr_expires_at->timestamp);
+            ->header('X-QR-Expires', (string) $car->qr_expires_at->timestamp)
+            ->header('X-QR-Id', QrCodeId::of($code));
     }
 
-    /** Whether the company car code the app shows still works: a wash, a newer code or its expiry ends it. */
+    /** Whether the company car code the app shows (X-QR-Id in `code`) still works: a wash, a newer code or its expiry ends it. */
     public function qrLive(Request $request, int $carid)
     {
         $car = CorporateQr::driverCar($request->user(), $carid);
@@ -48,7 +51,11 @@ class CorporateWashController extends Controller
             return response()->json(['success' => false, 'error' => 'Not found'], 404);
         }
 
-        return response()->json(['success' => true, 'live' => filled($car->qr_code) && $car->qr_expires_at?->isFuture() === true]);
+        $running = filled($car->qr_code) && $car->qr_expires_at?->isFuture() === true;
+        $live = $running && QrCodeId::shown($car->qr_code, $request->query('code'));
+
+        // replaced: another phone of this driver took a newer code (see PackagesController::qrLive).
+        return response()->json(['success' => true, 'live' => $live, 'replaced' => $running && ! $live]);
     }
 
     /** POST /corporate-wash/{id}/approve with the approve_token from checkqr. */

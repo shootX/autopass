@@ -143,7 +143,7 @@ it('activates the car when the invited phone signs in and links a new app car', 
     expect($cars)->toHaveCount(1)->and($cars[0]['company'])->toBe('Fleet Co');
 });
 
-it('links the driver own app car and refuses a plate held by someone else', function () {
+it('links the driver own app car once they agree and refuses a plate held by someone else', function () {
     $model = fiCatalog();
     $corp = fiCorp();
     $driver = fiDriver('555 12 34 56');
@@ -154,9 +154,14 @@ it('links the driver own app car and refuses a plate held by someone else', func
     $this->withSession(fiPanel($corp))->post('/partner/cars', ['plate' => 'AA123BB', 'phone' => '555 12 34 56', 'brand_id' => $model->brand_id, 'model_id' => $model->id, 'year' => 2020, 'body_type' => 'sedan']);
     $this->withSession(fiPanel($corp))->post('/partner/cars', ['plate' => 'CC456DD', 'phone' => '555 12 34 56', 'brand_id' => $model->brand_id, 'model_id' => $model->id, 'year' => 2020, 'body_type' => 'sedan']);
 
-    $this->withToken(JWTAuth::fromUser($driver))->getJson('/api/me')->assertOk();
-
+    // The driver's own car waits for their yes in the app (fourth review, point 1).
+    $invites = $this->withToken(JWTAuth::fromUser($driver))->getJson('/api/me')->assertOk()->json('fleet_invites');
     $linked = FleetCar::query()->where('plate', 'AA123BB')->first();
+    expect($linked->status)->toBe(FleetCar::STATUS_INVITED)->and($linked->activation_error)->toBe('driver_consent')
+        ->and($invites)->toHaveCount(1)->and($invites[0]['id'])->toBe($linked->id)->and($invites[0]['company'])->toBe('Fleet Co');
+    $this->withToken(cwAs($driver))->postJson('/api/fleet-invites/'.$linked->id.'/accept')->assertOk();
+
+    $linked->refresh();
     $taken = FleetCar::query()->where('plate', 'CC456DD')->first();
     expect($linked->status)->toBe(FleetCar::STATUS_ACTIVE)->and((int) $linked->user_car_id)->toBe((int) $own->id)
         ->and($taken->status)->toBe(FleetCar::STATUS_INVITED)->and($taken->activation_error)->toBe('plate_taken')
@@ -172,6 +177,8 @@ it('waits for an admin when the driver app car has another confirmed body type',
     $car->forceFill(['status' => FleetCar::STATUS_INVITED, 'driver_phone' => '555 12 34 56', 'car_type' => 'sedan', 'body_status' => 'confirmed'])->save();
 
     $this->withToken(JWTAuth::fromUser($driver))->getJson('/api/me')->assertOk();
+    $this->withToken(cwAs($driver))->postJson('/api/fleet-invites/'.$car->id.'/accept')->assertStatus(422)
+        ->assertJsonPath('error_code', 'body_conflict');
 
     expect($car->fresh()->only(['status', 'activation_error', 'user_car_id']))->toBe(['status' => 'invited', 'activation_error' => 'body_conflict', 'user_car_id' => null])
         ->and($own->fresh()->car_type)->toBe('wagon');
@@ -194,6 +201,7 @@ it('keeps a company car waiting for the type the company named when the driver c
     $car->forceFill(['status' => FleetCar::STATUS_INVITED, 'driver_phone' => '555 12 34 56', 'body_status' => 'unknown', 'body_requested' => 'wagon'])->save();
 
     $this->withToken(JWTAuth::fromUser($driver))->getJson('/api/me')->assertOk();
+    $this->withToken(cwAs($driver))->postJson('/api/fleet-invites/'.$car->id.'/accept')->assertOk();
 
     expect($car->fresh()->only(['status', 'user_car_id', 'car_type', 'body_status', 'body_requested']))
         ->toBe(['status' => 'active', 'user_car_id' => $own->id, 'car_type' => null, 'body_status' => 'unknown', 'body_requested' => 'wagon']);
@@ -216,6 +224,8 @@ it('shows the company only washes booked after activation, never a typed strange
     $this->withSession(fiPanel($corp))->post('/partner/cars', ['plate' => 'AA123BB', 'phone' => '555 12 34 56', 'brand_id' => $model->brand_id, 'model_id' => $model->id, 'year' => 2020, 'body_type' => 'sedan']);
     $this->travel(1)->minutes();
     $this->withToken(JWTAuth::fromUser($driver))->getJson('/api/me')->assertOk();
+    $invite = FleetCar::query()->where('plate', 'AA123BB')->value('id');
+    $this->withToken(cwAs($driver))->postJson('/api/fleet-invites/'.$invite.'/accept')->assertOk();
     $this->travel(1)->minutes();
     $after = fiBooking($driver, $driverCar, now()->toDateTimeString());
 

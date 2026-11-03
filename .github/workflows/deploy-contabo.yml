@@ -39,15 +39,21 @@ jobs:
             echo "deploy=false" >> "$GITHUB_OUTPUT"
           fi
 
+      # Plain ssh, so the server's key is checked against AUTOPASS_SSH_KNOWN_HOSTS: appleboy/ssh-action has no
+      # known_hosts input and skipped the check. An unknown or changed host key stops the deploy.
       - name: Deploy over SSH
         if: github.event_name == 'workflow_dispatch' || steps.head.outputs.deploy == 'true'
-        uses: appleboy/ssh-action@v1.2.0
-        with:
-          host: ${{ secrets.AUTOPASS_SSH_HOST }}
-          username: ${{ secrets.AUTOPASS_SSH_USER }}
-          key: ${{ secrets.AUTOPASS_SSH_KEY }}
-          known_hosts: ${{ secrets.AUTOPASS_SSH_KNOWN_HOSTS }}
-          script_stop: true
-          command_timeout: 30m
-          script: |
-            /opt/projects/autopass/deploy/contabo-auto-deploy.sh
+        timeout-minutes: 30
+        env:
+          SSH_HOST: ${{ secrets.AUTOPASS_SSH_HOST }}
+          SSH_USER: ${{ secrets.AUTOPASS_SSH_USER }}
+          SSH_KEY: ${{ secrets.AUTOPASS_SSH_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.AUTOPASS_SSH_KNOWN_HOSTS }}
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          printf '%s\n' "$SSH_KEY" | tr -d '\r' > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/known_hosts ~/.ssh/deploy_key
+          ssh -i ~/.ssh/deploy_key -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile=~/.ssh/known_hosts -o ServerAliveInterval=30 \
+            "$SSH_USER@$SSH_HOST" /opt/projects/autopass/deploy/contabo-auto-deploy.sh
