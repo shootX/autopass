@@ -11,6 +11,7 @@ use App\Models\PackagePrice;
 use App\Models\User;
 use App\Models\UserCar;
 use App\Models\UserPackage;
+use App\Services\AccountEraser;
 use App\Services\CarBodyStatus;
 use App\Support\AdminAudit;
 use App\Support\Phone;
@@ -36,7 +37,8 @@ class ClientsController extends Controller
                 ->withInput();
         }
 
-        $clients = User::query()->where('role', User::ROLE_USER);
+        // Erased accounts (AccountEraser) keep their row for history but are not clients any more.
+        $clients = User::query()->where('role', User::ROLE_USER)->where('phone', 'not like', 'deleted-%');
 
         if ($request->search) {
             $search = $request->search;
@@ -160,9 +162,11 @@ class ClientsController extends Controller
         if ($client->id == auth()->id()) {
             return redirect()->back()->with('error', __('admin.cannot_delete_self'));
         }
-        $client->delete();
+        // Erased like an account the user deletes: a hard delete would take their packages, bookings and,
+        // for a manager, the washes they approved along with them.
+        AccountEraser::erase($client);
 
-        return redirect()->route('admin.clients')->with('message', __('admin.client_deleted'));
+        return redirect()->route('admin.clients')->with('message', __('admin.client_erased'));
     }
 
     public function packages(Request $request, User $client)
@@ -287,6 +291,11 @@ class ClientsController extends Controller
 
     public function carDelete(Request $request, User $client, UserCar $car)
     {
+        abort_unless((int) $car->user_id === (int) $client->id, 404);
+        if ($car->holdsPackage()) {
+            return redirect()->route('admin.clients.cars', $client->id)->with('error', __('admin.car_has_package'));
+        }
+        // Only hidden, like a driver's own removal: bought packages and washes stay.
         $car->delete();
 
         return redirect()->route('admin.clients.cars', $client->id)->with('message', __('admin.car_deleted'));

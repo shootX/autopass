@@ -3,6 +3,7 @@
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -35,6 +36,15 @@ function approveTokenFor(User $manager, int $packageId): string
     ], now()->addMinutes(10));
 
     return $token;
+}
+
+/** What the driver's app does before showing a package QR: a new code, valid for a few minutes. */
+function freshPackageQr(int $packageId): string
+{
+    $code = Str::random(16);
+    DB::table('user_packages')->where('id', $packageId)->update(['qr_code' => $code, 'qr_expires_at' => now()->addMinutes(5)]);
+
+    return $code;
 }
 
 /** A Toyota Avensis (geoapi brand 501, model 7) built as a sedan and a wagon in 2014-2018, as an SUV from 2019. */

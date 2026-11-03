@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\CarBrand;
 use App\Models\CarModel;
+use App\Models\UserCar;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -44,6 +45,11 @@ class CarBrandsController extends Controller
 
     public function deleteCarBrand(Request $request, CarBrand $brand)
     {
+        // Deleting a brand deletes its models; a model a user's car is on must stay (removed cars count too,
+        // their packages and washes are history).
+        if (UserCar::withTrashed()->whereIn('model_id', $brand->models()->select('id'))->exists()) {
+            return redirect()->route('admin.car_brands')->with('error', __('admin.brand_has_cars'));
+        }
         $brand->delete();
 
         return redirect()->route('admin.car_brands')->with('message', __('admin.brand_deleted'));
@@ -106,6 +112,9 @@ class CarBrandsController extends Controller
             abort(404);
         }
 
+        if (UserCar::withTrashed()->where('model_id', $model->id)->exists()) {
+            return redirect()->route('admin.car_brand_models', $brand->id)->with('error', __('admin.model_has_cars'));
+        }
         $model->delete();
 
         return redirect()->route('admin.car_brand_models', $brand->id)->with('message', __('admin.model_deleted'));

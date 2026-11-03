@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 
 /**
@@ -12,6 +13,9 @@ use Illuminate\Support\Carbon;
  */
 class Package extends Model
 {
+    // A removed package is taken off sale only: what drivers bought keeps working until it ends.
+    use SoftDeletes;
+
     public const TYPE_WASHES = 'washes';
 
     public const TYPE_DISCOUNT = 'discount';

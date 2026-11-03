@@ -111,7 +111,9 @@ it('refuses a bare-id or static-QR approve and accepts a checkqr token', functio
     // QA round 2 (D13): the static QR alone no longer approves.
     $this->withToken($t)->postJson("/api/package/{$pkg}/approve", ['qr_code' => 'QRCODE0000000001'])->assertForbidden();
     $this->withToken($t)->postJson("/api/package/{$pkg}/approve", ['approve_token' => approveTokenFor($mgr, $pkg)])->assertOk();
-    $token = $this->withToken($t)->getJson('/api/checkqr/QRCODE0000000001')->assertOk()->json('approve_token');
+    // The wash spent the code: the same QR scans no more, the next wash needs the new one from the driver's app.
+    $this->withToken($t)->getJson('/api/checkqr/QRCODE0000000001')->assertNotFound();
+    $token = $this->withToken($t)->getJson('/api/checkqr/'.freshPackageQr($pkg))->assertOk()->json('approve_token');
     expect($token)->toBeString();
     $this->withToken($t)->postJson("/api/package/{$pkg}/approve", ['approve_token' => $token])->assertOk();
     // single use
@@ -121,7 +123,7 @@ it('refuses a bare-id or static-QR approve and accepts a checkqr token', functio
     // Another manager can't use this manager's token.
     $mgr2 = makeUser('555600022', User::ROLE_MANAGER);
     washFor($mgr2);
-    $token = $this->withToken($t)->getJson('/api/checkqr/QRCODE0000000001')->json('approve_token');
+    $token = $this->withToken($t)->getJson('/api/checkqr/'.freshPackageQr($pkg))->json('approve_token');
     afReset();
     $this->withToken(JWTAuth::fromUser($mgr2))->postJson("/api/package/{$pkg}/approve", ['approve_token' => $token])->assertForbidden();
 });

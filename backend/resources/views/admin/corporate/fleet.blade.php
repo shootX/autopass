@@ -222,6 +222,7 @@ GET {{ url('/api/corporate/balance') }}</pre>
             function clearPreselected() {
                 if (preselected) body.val('');
                 preselected = false;
+                body.find('option').prop('disabled', false);
             }
             // Each pick clears the ones after it; a late answer for an older pick is dropped.
             function load(url, query, done) {
@@ -247,13 +248,21 @@ GET {{ url('/api/corporate/balance') }}</pre>
                     if (year.val()) loadBody();
                 });
             }
-            // A year geoapi.ge names one body type for preselects it; the company's own pick is never changed.
+            // A year geoapi.ge names one body type for preselects it; a complete list of several leaves only those
+            // to pick (the server refuses others). The company's own pick from that list is never changed.
             function loadBody() {
                 clearPreselected();
-                if (!year.val() || body.val()) return;
+                if (!year.val()) return;
                 load(base + '/body-types', Object.assign(pick(), { year: year.val() }), data => {
+                    const keys = (data.body_types || []).map(row => row.key);
+                    if (keys.length && !data.incomplete) {
+                        body.find('option').each(function () {
+                            if (this.value !== '') $(this).prop('disabled', !keys.includes(this.value));
+                        });
+                        if (body.val() && !keys.includes(body.val())) body.val('');
+                    }
                     if (data.status !== 'confirmed' || body.val()) return;
-                    body.val(data.body_types[0].key);
+                    body.val(keys[0]);
                     preselected = true;
                 });
             }

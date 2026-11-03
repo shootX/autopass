@@ -5,6 +5,9 @@
         @if(session()->has('message'))
             <div class="alert alert-success mt-4">{{ session()->get('message') }}</div>
         @endif
+        @if(session()->has('error'))
+            <div class="alert alert-danger mt-4">{{ session()->get('error') }}</div>
+        @endif
 
         <div class="card mt-4 mb-4">
             <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;gap:12px;">

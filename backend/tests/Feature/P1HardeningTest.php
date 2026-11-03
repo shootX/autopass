@@ -46,6 +46,8 @@ function userPackage(int $userId, int $carId, array $extra = []): int
     return row('user_packages', $extra + [
         'user_id' => $userId, 'package_id' => 1, 'user_car_id' => $carId, 'end_date' => now()->addMonth(),
         'number_of_washes' => 5, 'used_washes' => 0, 'qr_code' => 'QR'.uniqid(),
+        // The driver's app is showing the code (GET /packages/{id}/qr sets the expiry).
+        'qr_expires_at' => now()->addMinutes(5),
     ]);
 }
 

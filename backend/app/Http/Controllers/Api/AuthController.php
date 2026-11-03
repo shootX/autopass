@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Middleware\EnsureApiSession;
 use App\Jobs\SendSms;
 use App\Models\User;
+use App\Services\AccountEraser;
 use App\Services\FleetInvites;
 use App\Services\Security\ActionGrantService;
 use App\Services\Security\AuthChallengeException;
@@ -20,7 +21,6 @@ use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
@@ -481,21 +481,8 @@ class AuthController extends Controller
     public function deleteAccount(Request $request)
     {
         $user = auth()->user();
-        // Personal data is erased; the row stays for orders/ledger history. The phone becomes a
-        // unique tombstone, so the same number can register and be deleted again.
-        $user->forceFill([
-            'name' => null,
-            'surname' => null,
-            'email' => null,
-            'pending_email' => null,
-            'date_of_birth' => null,
-            'sex' => null,
-            'password' => Str::password(40),
-            'token_version' => (int) $user->token_version + 1,
-        ])->save();
-        // Written past the phone mutator (it would strip this to digits and let tombstones collide
-        // or even look like a real number). The id makes it unique; it never matches a phone rule.
-        DB::table('users')->where('id', $user->id)->update(['phone' => 'deleted-'.$user->id.'-'.Str::lower(Str::random(6))]);
+        // Personal data, cars and push tokens go; the row stays for orders/ledger history (AccountEraser).
+        AccountEraser::erase($user);
         $token = JWTAuth::getToken();
         if ($token) {
             JWTAuth::invalidate($token);

@@ -137,6 +137,10 @@ it('takes one wash from the car and the pool when the manager approves the compa
     expect($move->amount)->toBe(-1)->and($move->balance_after)->toBe(99)->and($move->car_balance_after)->toBe(3)
         ->and((int) $move->corporate_wash_id)->toBe((int) $wash->id);
 
+    // The scanned code is spent: scanning it again gives nothing, the driver shows a fresh one.
+    $this->withToken(cwAs($manager))->getJson('/api/checkqr/'.$qr)->assertNotFound();
+    $qr = cwDriverQr($this, $fleet);
+
     // Another manager can't spend this manager's grant.
     $token = $this->withToken(cwAs($manager))->getJson('/api/checkqr/'.$qr)->json('approve_token');
     $this->withToken(cwAs(cwManager('555 80 00 02')))->postJson('/api/corporate-wash/'.$id.'/approve', ['approve_token' => $token])->assertForbidden();

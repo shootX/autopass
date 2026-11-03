@@ -3,6 +3,7 @@
 namespace App\Services\Payments;
 
 use App\Models\Package;
+use App\Models\PackagePrice;
 use App\Models\PromoCode;
 use App\Models\PromoCodeUse;
 use App\Models\TbcPayment;
@@ -36,6 +37,37 @@ class SettleTbcPayment
         }
 
         return $this->confirm($payment);
+    }
+
+    /** A Flitt order status (a signed callback, or the status API): grants a paid order, closes a failed one. */
+    public function fromFlitt(array $payload, FlittCheckout $flitt): ?TbcPayment
+    {
+        $payment = TbcPayment::query()
+            ->where('merchant_payment_id', (string) ($payload['order_id'] ?? ''))
+            ->first();
+
+        if (! $payment) {
+            return null;
+        }
+
+        if ((int) ($payload['amount'] ?? -1) !== $flitt->minor($payment)) {
+            if ($payment->status !== 'succeeded') {
+                $payment->update(['status' => 'amount_mismatch']);
+            }
+
+            return $payment;
+        }
+
+        $status = (string) ($payload['order_status'] ?? '');
+        if ($status === 'approved') {
+            return $this->grantNow($payment);
+        }
+
+        if (in_array($status, ['declined', 'expired', 'reversed'], true) && $payment->status !== 'succeeded') {
+            $payment->update(['status' => $status]);
+        }
+
+        return $payment->fresh();
     }
 
     public function grantNow(TbcPayment $payment): TbcPayment
@@ -120,12 +152,14 @@ class SettleTbcPayment
     {
         User::query()->whereKey($payment->user_id)->lockForUpdate()->firstOrFail();
         $payload = $payment->payload;
-        $package = Package::query()->find($payload['package_id'] ?? 0);
+        // Paid is paid: a package taken off sale (soft-deleted) while the driver was paying is still granted.
+        $package = Package::withTrashed()->find($payload['package_id'] ?? 0);
         if (! $package) {
             throw new \RuntimeException('Package for this payment no longer exists');
         }
 
-        $exists = UserPackage::query()
+        // A package the driver removed since still counts as granted (tbc_payment_id is unique).
+        $exists = UserPackage::withTrashed()
             ->where('tbc_payment_id', $payment->id)
             ->exists();
 
@@ -141,7 +175,8 @@ class SettleTbcPayment
             'user_id' => $payment->user_id,
             'user_car_id' => $payload['car_id'],
             'package_id' => $package->id,
-            'price_id' => $payload['price_id'] ?? null,
+            // The price row is only a reference; a month the admin stopped selling must not fail the grant.
+            'price_id' => PackagePrice::query()->whereKey($payload['price_id'] ?? 0)->exists() ? $payload['price_id'] : null,
             'start_date' => now(),
             'end_date' => $discount ? now()->addDays(Package::DISCOUNT_DAYS) : now()->addMonths((int) ($payload['month'] ?? 1)),
             'number_of_washes' => $washes,

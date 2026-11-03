@@ -67,14 +67,14 @@ class FleetCars
     /**
      * Adds a car and, when a driver phone is given, sends the driver the invite SMS. The brand and model are
      * found in the car catalog by name (or by the ids of the panel's lists). The company must name the body type
-     * (a key, its Georgian or English name, or a catalog name such as station wagon) and it is confirmed as given:
-     * a company usually knows only brand, model and year, and a wrong pick only prices its own washes. geoapi.ge
-     * is asked only for the generation of that type. $body gets the status and the types geoapi.ge named (on
-     * body_type_invalid, every type there is).
+     * (a key, its Georgian or English name, or a catalog name such as station wagon) and it is confirmed as given,
+     * as long as it is one of the types geoapi.ge names for that model and year (body_type_mismatch otherwise;
+     * any type when geoapi.ge names none, an incomplete list or is down). $body gets the status and the types
+     * geoapi.ge named (on body_type_invalid, every type there is).
      *
      * @param  array<string, mixed>  $row  plate, brand, model (or brand_id, model_id), year, body_type, phone
      * @param  array{status: string, types: list<string>}|null  $body
-     * @return 'added'|'duplicate'|'invalid'|'unknown_model'|'year_invalid'|'body_type_required'|'body_type_invalid'|'phone_invalid'
+     * @return 'added'|'duplicate'|'invalid'|'unknown_model'|'year_invalid'|'body_type_required'|'body_type_invalid'|'body_type_mismatch'|'phone_invalid'
      */
     public static function add(CorporateClient $client, array $row, string $source, ?array &$body = null): string
     {
@@ -113,6 +113,13 @@ class FleetCars
             return 'body_type_invalid';
         }
         $options = app(CarBody::class)->options($model['source'], $model['brand_id'], $model['model_id'], (int) $year);
+        // When geoapi.ge names every body this model had that year, the company picks one of those; with no list,
+        // an incomplete one or geoapi.ge down, the company's type is taken as it is.
+        if ($options['types'] !== [] && ! $options['incomplete'] && ! in_array($type, $options['types'], true)) {
+            $body['types'] = $options['types'];
+
+            return 'body_type_mismatch';
+        }
         $generations = $options['generations'][$type] ?? [];
         $body = ['status' => CarBody::CONFIRMED, 'types' => $options['types']];
 
@@ -190,6 +197,7 @@ class FleetCars
             'unknown_model' => ['model_id' => __('admin.fleet_reason_unknown_model')],
             'year_invalid' => ['year' => __('admin.fleet_reason_year_invalid')],
             'body_type_required', 'body_type_invalid' => ['body_type' => __('admin.fleet_reason_'.$result)],
+            'body_type_mismatch' => ['body_type' => __('admin.fleet_reason_body_type_mismatch')],
             default => ['plate' => __('admin.fleet_plate_format')],
         };
     }

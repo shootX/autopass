@@ -401,8 +401,17 @@ class CarsController extends Controller
             if (! $car) {
                 return response()->json(['success' => false, 'error' => 'Машина не найдена'], 404);
             }
-            if ($request->filled('plate') && $request->input('plate') !== $car->plate && FleetInvites::isCompanyCar((int) $car->id)) {
+            $newPlate = $request->filled('plate') && $request->input('plate') !== $car->plate;
+            if ($newPlate && FleetInvites::isCompanyCar((int) $car->id)) {
                 return response()->json(['success' => false, 'error' => __('admin.fleet_company_car_locked'), 'error_code' => 'company_car'], 403);
+            }
+            // A package belongs to the car it was bought for: a new plate would move it to another car.
+            if ($newPlate && $car->holdsPackage()) {
+                return response()->json(['success' => false, 'error' => __('cars.car_has_package_plate'), 'error_code' => 'car_has_package'], 422);
+            }
+            // The same check as adding a car: one plate, one car.
+            if ($newPlate && UserCar::query()->where('plate', $request->input('plate'))->whereKeyNot($car->id)->exists()) {
+                return response()->json(['success' => false, 'error' => __('cars.plate_exists'), 'error_code' => 'plate_exists'], 400);
             }
 
             if ($request->filled('year') && ! $request->filled('model_id') && ! $request->filled('model_name') && $car->model->source === CarCatalog::REMOTE) {
@@ -479,14 +488,19 @@ class CarsController extends Controller
     {
         try {
             $user = auth()->user();
-            $owned = $user->cars()->where('id', $carid)->value('id');
-            if ($owned !== null && FleetInvites::isCompanyCar((int) $owned)) {
-                return response()->json(['success' => false, 'error' => __('admin.fleet_company_car_locked'), 'error_code' => 'company_car'], 403);
-            }
-            $deleted = $user->cars()->where('id', $carid)->delete();
-            if ($deleted === 0) {
+            $car = $user->cars()->where('id', $carid)->first();
+            if (! $car) {
                 return response()->json(['success' => false, 'error' => 'Машина не найдена'], 404);
             }
+            if (FleetInvites::isCompanyCar((int) $car->id)) {
+                return response()->json(['success' => false, 'error' => __('admin.fleet_company_car_locked'), 'error_code' => 'company_car'], 403);
+            }
+            // A running package or a payment in progress would be lost with the car.
+            if ($car->holdsPackage()) {
+                return response()->json(['success' => false, 'error' => __('cars.car_has_package_remove'), 'error_code' => 'car_has_package'], 422);
+            }
+            // Only hidden: the car's bought packages and wash records stay for history and settlement.
+            $car->delete();
 
             return response()->json([
                 'success' => true,

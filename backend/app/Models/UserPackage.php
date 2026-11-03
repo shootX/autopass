@@ -6,9 +6,16 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class UserPackage extends Model
 {
+    // A removed package is only hidden: its wash records stay for reports and partner settlement.
+    use SoftDeletes;
+
+    /** How long a package QR works after the app asked for it. */
+    public const QR_TTL_SECONDS = 300;
+
     protected $fillable = [
         'user_id',
         'tbc_payment_id',
@@ -21,6 +28,7 @@ class UserPackage extends Model
         'used_washes',
         'rectoken',
         'qr_code',
+        'qr_expires_at',
         'unlimited',
         'full_price',
         'discount_percent',
@@ -29,6 +37,7 @@ class UserPackage extends Model
 
     protected $casts = [
         'body_legacy' => 'boolean',
+        'qr_expires_at' => 'datetime',
         'unlimited' => 'boolean',
         'full_price' => 'decimal:2',
         'discount_percent' => 'integer',
@@ -97,12 +106,12 @@ class UserPackage extends Model
 
     public function package(): BelongsTo
     {
-        return $this->belongsTo(Package::class, 'package_id');
+        return $this->belongsTo(Package::class, 'package_id')->withTrashed();
     }
 
     public function car(): BelongsTo
     {
-        return $this->belongsTo(UserCar::class, 'user_car_id');
+        return $this->belongsTo(UserCar::class, 'user_car_id')->withTrashed();
     }
 
     public function washes(): HasMany

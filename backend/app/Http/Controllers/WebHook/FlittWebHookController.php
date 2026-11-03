@@ -36,33 +36,9 @@ class FlittWebHookController extends Controller
         return response('OK', 200);
     }
 
+    /** A status from Flitt (signed callback, or asked by the server): settles or closes the payment. */
     public function apply(array $payload, FlittCheckout $flitt, SettleTbcPayment $settle): ?TbcPayment
     {
-        $payment = TbcPayment::query()
-            ->where('merchant_payment_id', (string) ($payload['order_id'] ?? ''))
-            ->first();
-
-        if (! $payment) {
-            return null;
-        }
-
-        if ((int) ($payload['amount'] ?? -1) !== $flitt->minor($payment)) {
-            if ($payment->status !== 'succeeded') {
-                $payment->update(['status' => 'amount_mismatch']);
-            }
-
-            return $payment;
-        }
-
-        $status = (string) ($payload['order_status'] ?? '');
-        if ($status === 'approved') {
-            return $settle->grantNow($payment);
-        }
-
-        if (in_array($status, ['declined', 'expired', 'reversed'], true) && $payment->status !== 'succeeded') {
-            $payment->update(['status' => $status]);
-        }
-
-        return $payment->fresh();
+        return $settle->fromFlitt($payload, $flitt);
     }
 }

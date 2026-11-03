@@ -171,14 +171,17 @@ class PackagesController extends Controller
                 return response()->json(['success' => false, 'error' => __('cars.body_unconfirmed'), 'error_code' => 'body_unconfirmed'], 422);
             }
 
+            // A fresh code replaces the previous one and works for a few minutes only, like a company car's.
             $package->update([
                 'qr_code' => Str::random(16),
+                'qr_expires_at' => now()->addSeconds(UserPackage::QR_TTL_SECONDS),
             ]);
 
             $qrCodeSvg = QrCode::format('svg')->size(300)->generate($package->qr_code);
 
             return response($qrCodeSvg, 200)
-                ->header('Content-Type', 'image/svg+xml');
+                ->header('Content-Type', 'image/svg+xml')
+                ->header('X-QR-Expires', (string) $package->qr_expires_at->timestamp);
         } catch (\Exception $e) {
             Log::warning('package_request_failed', ['exception' => $e::class]);
 
@@ -287,6 +290,8 @@ class PackagesController extends Controller
             $bookingUnused = $hereAppointment
                 && ! PackageWash::query()->where('appointment_id', $hereAppointment->id)->exists();
             $locked->increment('used_washes');
+            // The scanned code is spent: the next wash needs a new QR from the driver's phone.
+            $locked->forceFill(['qr_code' => Str::random(16), 'qr_expires_at' => null])->save();
             PackageWash::create([
                 'user_package_id' => $userPackage->id,
                 'car_wash_id' => $washId,
@@ -298,6 +303,7 @@ class PackagesController extends Controller
                 'discount_percent' => $locked->discount_percent,
                 'to_pay' => $locked->toPay(),
             ]);
+            Appointment::completeByWash($bookingUnused ? (int) $hereAppointment->id : null);
 
             return true;
         });
@@ -316,7 +322,7 @@ class PackagesController extends Controller
             'ka' => 'სარეცხი პროცესი დაიწყო',
         ]);
 
-        return response()->json(['success' => true, 'package' => $userPackage->fresh(),
+        return response()->json(['success' => true, 'package' => $userPackage->fresh()->makeHidden(['qr_code', 'qr_expires_at']),
             'to_pay' => $userPackage->isDiscount() ? (float) $userPackage->toPay() : null]);
     }
 

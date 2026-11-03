@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Appointment;
 use App\Models\BodyType;
 use App\Models\CorporateClient;
 use App\Models\CorporatePackage;
@@ -233,6 +234,10 @@ class CorporateWashes
             if ($blocker !== null) {
                 return ['result' => $blocker];
             }
+
+            // The scanned code is spent: the next wash needs a new QR from the driver's phone.
+            $locked->forceFill(['qr_code' => null, 'qr_expires_at' => null])->save();
+            Appointment::completeByWash($at['appointment_id'] ?? null);
 
             $row = [
                 'corporate_client_id' => $client->id,

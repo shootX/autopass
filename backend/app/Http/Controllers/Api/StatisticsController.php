@@ -7,6 +7,7 @@ use App\Models\Appointment;
 use App\Models\BodyType;
 use App\Models\CarWash;
 use App\Models\User;
+use App\Services\QrWashReport;
 use App\Services\WashReportQuery;
 use App\Support\Phone;
 use Carbon\Carbon;
@@ -68,6 +69,10 @@ class StatisticsController extends Controller
         $query = WashReportQuery::make($filters);
         $total = (clone $query)->count();
         $appointments = $query->limit(300)->get();
+        // Washes approved here by QR, booked or walk-in: what the branch really washed.
+        $qr = QrWashReport::make($filters);
+        $qrTotal = (clone $qr)->count();
+        $qrWashes = $qr->limit(300)->get();
 
         return response()->json([
             'success' => true,
@@ -94,6 +99,18 @@ class StatisticsController extends Controller
                     'services' => $appointment->servicesList,
                 ];
             })->values(),
+            'qr_total' => $qrTotal,
+            'qr_washes' => $qrWashes->map(fn (object $row) => [
+                'id' => $row->kind.'-'.$row->id,
+                'date' => Carbon::parse($row->created_at)->format('d.m.Y'),
+                'time' => Carbon::parse($row->created_at)->format('H:i'),
+                'kind' => $row->kind,
+                'client' => QrWashReport::client($row),
+                'plate' => $row->plate,
+                'body_type' => $row->car_type,
+                'walk_in' => $row->appointment_id === null,
+                'to_pay' => $row->to_pay !== null ? (float) $row->to_pay : null,
+            ])->values(),
         ]);
     }
 

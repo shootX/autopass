@@ -8,6 +8,9 @@
                 {{ session()->get('message') }}
             </div>
         @endif
+        @if(session()->has('error'))
+            <div class="alert alert-danger mt-4">{{ session()->get('error') }}</div>
+        @endif
         @error('body_type')
             <div class="alert alert-danger mt-4">{{ $message }}</div>
         @enderror

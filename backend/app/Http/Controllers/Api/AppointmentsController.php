@@ -259,6 +259,10 @@ class AppointmentsController extends Controller
 
                 return response()->json(['success' => false, 'error' => 'Not found'], 404);
             }
+            // A package code works only for a few minutes after the app asked for it, and once.
+            if (! $userPackage->qr_expires_at || $userPackage->qr_expires_at->isPast()) {
+                return response()->json(['success' => false, 'error' => __('corporate.qr_expired'), 'error_code' => 'qr_expired'], 410);
+            }
             if (! $userPackage->bodyAllowsWash()) {
                 // No approve token: the car's body type is not confirmed, so the wash can't be approved.
                 return response()->json(['success' => false, 'error' => __('cars.body_unconfirmed'), 'error_code' => 'body_unconfirmed'], 422);

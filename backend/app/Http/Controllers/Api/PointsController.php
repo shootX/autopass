@@ -9,6 +9,7 @@ use App\Services\Payments\FlittCheckout;
 use App\Services\Points\PointsPricing;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 
@@ -38,25 +39,49 @@ class PointsController extends Controller
             return $checked;
         }
         [$points, $promo] = $checked;
-        $quote = PointsPricing::quote($points, $promo);
+        $user = $request->user();
 
-        $payment = TbcPayment::create([
-            'merchant_payment_id' => 'P'.strtoupper(Str::random(16)),
-            'user_id' => auth()->id(),
-            'type' => 'points',
-            'amount' => $quote['total'],
-            'currency' => 'GEL',
-            'status' => 'pending',
-            'payload' => [
-                'points' => $points,
-                'promo_code_id' => $quote['promo_code'] ? $promo->id : null,
-                'quote' => $quote,
-            ],
-        ]);
+        // A discount code is reserved by the payment that uses it, under a lock on the code: one open payment
+        // per user and no more open payments than uses left, so paying several pages can't stretch the limit.
+        $payment = DB::transaction(function () use ($points, $promo, $user) {
+            if ($promo) {
+                $promo = PromoCode::query()->lockForUpdate()->findOrFail($promo->id);
+                if ($problem = $promo->problem($user)) {
+                    return $problem;
+                }
+                $open = $promo->holds()->where('user_id', $user->id)->latest('id')->first();
+                if ($open) {
+                    // The same purchase again (the page was closed): the same page. Another amount waits.
+                    return (int) ($open->payload['points'] ?? 0) === $points ? $open : 'promo_pending';
+                }
+            }
+            $quote = PointsPricing::quote($points, $promo);
 
-        $url = app(FlittCheckout::class)->checkoutUrl($payment, 'Autopass points');
+            return TbcPayment::create([
+                'merchant_payment_id' => 'P'.strtoupper(Str::random(16)),
+                'user_id' => $user->id,
+                'type' => 'points',
+                'amount' => $quote['total'],
+                'currency' => 'GEL',
+                'status' => 'pending',
+                'payload' => [
+                    'points' => $points,
+                    'promo_code_id' => $quote['promo_code'] ? $promo->id : null,
+                    'quote' => $quote,
+                ],
+            ]);
+        });
+        if (is_string($payment)) {
+            return response()->json(['success' => false, 'error' => __('points.'.$payment), 'code' => $payment], 422);
+        }
 
-        return response()->json(['success' => true, 'url' => $url, 'quote' => $quote]);
+        $url = $payment->payload['checkout_url'] ?? null;
+        if (! is_string($url) || $url === '') {
+            $url = app(FlittCheckout::class)->checkoutUrl($payment, 'Autopass points');
+            $payment->update(['payload' => $payment->payload + ['checkout_url' => $url]]);
+        }
+
+        return response()->json(['success' => true, 'url' => $url, 'quote' => $payment->payload['quote']]);
     }
 
     /** [points, promo code or null] or the error answer. */

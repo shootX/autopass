@@ -7,9 +7,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class CarWash extends Model
 {
+    // A removed branch is only hidden: its bookings and wash records stay for reports and settlement.
+    use SoftDeletes;
+
     protected $fillable = [
         'name',
         'address',
