@@ -435,3 +435,15 @@ The app reads the Georgian tech passport on the phone and sends only fields; the
 ## 2026-11-01 — No customer or manager web panel
 
 Owner's rule: on the web only the admin (`/dashboard`), the landing, the corporate panel (`/partner`) and the voucher checker stay. Customers and car-wash managers use the iOS app only. `gewash` is kept as a tiny shell so the server's deploy script (which builds `gewash` and `gewash/voucher-checker`) and Caddy's SPA fallback keep working: `/privacy` stays because the app opens `https://autopass.ge/privacy`, and `/v4/car-sedan.webp` stays because the app loads it. Every other SPA path redirects to `/`. Do not add customer screens back to `gewash`.
+
+
+## 2026-11-03 — Confirmed audit fixes (Codex)
+
+- Saving the same driver phone preserves the active fleet link, consent, handover state and QR. Driver changes and consent answers lock the company and fleet row; stale yes/no answers cannot consent for a replacement phone. SMS reservation takes a row lock, keeps its timestamp across phone saves/changes, and the partner driver route is throttled.
+- `GET /fleet-invites` discovers invites created after sign-in. Migration `000008` marks pre-existing links without a recorded yes as `driver_consent_required`, voids corporate QR, and preserves owners/packages/balances. Until the driver answers, a company cannot transfer that car. No only detaches the fleet link; yes authorizes future handover. New company-created cars continue to activate without taking an existing personal car.
+- Owner's body rule supersedes the previous company-pick rule: a complete single catalog type confirms automatically; several/incomplete types wait for the driver's selection. A company hint and a company re-check never choose for them. No corporate discount-package assignment or wash allocation before confirmation. Migration `000009` reopens company-only ambiguous/unknown confirmations, retaining allocated balances and paid packages; a matching explicit driver/admin/catalog confirmation stays confirmed.
+- All package QR/approvals now require a confirmed body matching the package type, including `body_legacy` packages. A mismatched paid package stays stored and returns `package_body_mismatch`; support must resolve its terms, never silently change its price/type. This supersedes the old legacy-QR exception.
+- Unresolved promo payments retain reservations regardless of age; reconciliation also includes old promo reservations outside its normal lookback. Only a final provider answer releases a reservation.
+- Shop tickets expose remaining stock capped at the purchase maximum (20); `my_tickets` keeps archived detail with `left=0`.
+- Manual deployment now requires successful push checks for current main. Repository branch-protection settings need GitHub administration access and are not changed by this PR. The server-owned deployment script is not in this checkout; its use of an immutable tested SHA still needs operator verification.
+- Release order matters: distribute the accompanying GeocarAPP consent UI before applying the new backend migrations. No production database or deployment is changed by preparing this branch.

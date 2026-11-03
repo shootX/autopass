@@ -1,7 +1,7 @@
 name: Deploy Contabo
 
 # A push to main reaches the server only after "Product regression checks" passed on it, so a red main is never
-# deployed. Running this by hand (workflow_dispatch) deploys main as it is, without waiting for the checks.
+# deployed. Manual runs must also find successful push checks for the current main commit.
 on:
   workflow_run:
     workflows: [Product regression checks]
@@ -15,6 +15,7 @@ concurrency:
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
   deploy:
@@ -23,26 +24,32 @@ jobs:
     steps:
       # The server script deploys main as it is now. When main moved on since the tested commit, the newer
       # commit's own checks deploy it once they pass: deploying here would ship code no check has passed yet.
-      - name: Check main is still the tested commit
+      - name: Require passing checks on the current main commit
         id: head
-        if: github.event_name == 'workflow_run'
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
           TESTED: ${{ github.event.workflow_run.head_sha }}
         run: |
           current=$(gh api "repos/$REPO/commits/main" --jq .sha)
-          if [ "$current" = "$TESTED" ]; then
-            echo "deploy=true" >> "$GITHUB_OUTPUT"
-          else
+          if [ -n "$TESTED" ] && [ "$current" != "$TESTED" ]; then
             echo "main is at $current, the checks passed on $TESTED: the newer commit deploys after its own checks."
             echo "deploy=false" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
+          passed=$(gh api --method GET "repos/$REPO/actions/workflows/product-checks.yml/runs" \
+            -f head_sha="$current" -f event=push -f status=success -f per_page=10 \
+            --jq '.workflow_runs[] | select(.conclusion == "success" and .status == "completed") | .head_sha')
+          if ! printf '%s\n' "$passed" | grep -Fxq "$current"; then
+            echo "No successful push checks for main at $current. Deployment refused."
+            exit 1
+          fi
+          echo "deploy=true" >> "$GITHUB_OUTPUT"
 
       # Plain ssh, so the server's key is checked against AUTOPASS_SSH_KNOWN_HOSTS: appleboy/ssh-action has no
       # known_hosts input and skipped the check. An unknown or changed host key stops the deploy.
       - name: Deploy over SSH
-        if: github.event_name == 'workflow_dispatch' || steps.head.outputs.deploy == 'true'
+        if: steps.head.outputs.deploy == 'true'
         timeout-minutes: 30
         env:
           SSH_HOST: ${{ secrets.AUTOPASS_SSH_HOST }}

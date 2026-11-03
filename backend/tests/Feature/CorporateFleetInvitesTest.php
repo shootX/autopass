@@ -192,7 +192,7 @@ it('waits for an admin when the driver app car has another confirmed body type',
         ->toBe(['status' => 'active', 'activation_error' => null, 'user_car_id' => $own->id, 'car_type' => 'wagon']);
 });
 
-it('keeps a company car waiting for the type the company named when the driver confirmed another', function () {
+it('uses the driver confirmed body rather than the company hint', function () {
     $model = fiCatalog();
     $corp = fiCorp();
     $driver = fiDriver('555 12 34 56');
@@ -204,7 +204,7 @@ it('keeps a company car waiting for the type the company named when the driver c
     $this->withToken(cwAs($driver))->postJson('/api/fleet-invites/'.$car->id.'/accept')->assertOk();
 
     expect($car->fresh()->only(['status', 'user_car_id', 'car_type', 'body_status', 'body_requested']))
-        ->toBe(['status' => 'active', 'user_car_id' => $own->id, 'car_type' => null, 'body_status' => 'unknown', 'body_requested' => 'wagon']);
+        ->toBe(['status' => 'active', 'user_car_id' => $own->id, 'car_type' => 'sedan', 'body_status' => 'confirmed', 'body_requested' => 'wagon']);
 });
 
 it('shows the company only washes booked after activation, never a typed stranger plate', function () {
@@ -394,7 +394,7 @@ it('takes the driver phone over the API and edits it with PATCH', function () {
         ->assertJsonPath('vehicles.0.status', 'invited')->assertJsonPath('vehicles.0.phone', '555 12 34 56');
 
     $this->patchJson('/api/corporate/vehicles/AA-123-BB', ['phone' => 'nope'], $key)->assertStatus(422);
-    $this->patchJson('/api/corporate/vehicles/AA123BB', ['phone' => '577 00 00 01'], $key)->assertOk()->assertJsonPath('invite', 'sent');
+    $this->patchJson('/api/corporate/vehicles/AA123BB', ['phone' => '577 00 00 01'], $key)->assertOk()->assertJsonPath('invite', 'too_soon');
     $this->patchJson('/api/corporate/vehicles/AA123BB', ['blocked' => true], $key)->assertOk()->assertJsonPath('status', 'blocked');
     $this->patchJson('/api/corporate/vehicles/ZZ999ZZ', ['blocked' => true], $key)->assertNotFound();
     expect(FleetCar::query()->first()->driver_phone)->toBe('577 00 00 01');

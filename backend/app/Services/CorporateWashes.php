@@ -162,6 +162,9 @@ class CorporateWashes
         if (! in_array($mode, FleetCar::MODES, true)) {
             return false;
         }
+        if ($mode === FleetCar::MODE_DISCOUNT && ! $car->bodyConfirmed()) {
+            return false;
+        }
         $package = $mode === FleetCar::MODE_DISCOUNT ? ($package ?? CorporateDiscounts::fallback($car)) : null;
         $car->forceFill(['mode' => $mode, 'corporate_package_id' => $package?->id])->save();
         $car->setRelation('discountPackage', $package);
@@ -202,7 +205,7 @@ class CorporateWashes
         if ($car->client?->ban) {
             return 'company_blocked';
         }
-        if ($car->status !== FleetCar::STATUS_ACTIVE || ! $car->user_car_id) {
+        if ($car->driver_consent_required || $car->status !== FleetCar::STATUS_ACTIVE || ! $car->user_car_id) {
             return 'car_blocked';
         }
         if (! $car->bodyConfirmed()) {

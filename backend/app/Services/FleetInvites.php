@@ -6,6 +6,7 @@ use App\Enums\AppointmentStatus;
 use App\Jobs\SendSms;
 use App\Models\Appointment;
 use App\Models\CarModel;
+use App\Models\CorporateClient;
 use App\Models\FleetCar;
 use App\Models\User;
 use App\Models\UserCar;
@@ -36,18 +37,27 @@ class FleetInvites
     /** @return 'sent'|'no_phone'|'blocked'|'too_soon' */
     public static function invite(FleetCar $car): string
     {
-        if ($car->status === FleetCar::STATUS_BLOCKED) {
-            return 'blocked';
-        }
-        if ($car->driver_phone === null) {
-            return 'no_phone';
-        }
-        if ($car->invited_at && $car->invited_at->gt(now()->subSeconds(self::RESEND_SECONDS))) {
-            return 'too_soon';
+        $result = DB::transaction(function () use ($car) {
+            $locked = FleetCar::query()->whereKey($car->id)->lockForUpdate()->firstOrFail();
+            if ($locked->status === FleetCar::STATUS_BLOCKED) {
+                return 'blocked';
+            }
+            if ($locked->driver_phone === null) {
+                return 'no_phone';
+            }
+            if ($locked->invited_at && $locked->invited_at->gt(now()->subSeconds(self::RESEND_SECONDS))) {
+                return 'too_soon';
+            }
+            $locked->forceFill(['invited_at' => now()] + ($locked->activation_error === self::DECLINED ? ['activation_error' => null] : []))->save();
+            $car->setRawAttributes($locked->getAttributes(), true);
+
+            return 'sent';
+        });
+        if ($result !== 'sent') {
+            return $result;
         }
 
         // Inviting again is asking again: a driver who said no is asked once more in the app.
-        $car->forceFill(['invited_at' => now()] + ($car->activation_error === self::DECLINED ? ['activation_error' => null] : []))->save();
         $company = (string) $car->client?->name;
         $content = __('admin.fleet_invite_sms', [
             'company' => $company,
@@ -71,7 +81,7 @@ class FleetInvites
      * changes, the app car too. That app car goes to the new driver, with its running packages, the first time
      * they sign in (owner's rule, 2026-11-03). The new driver is invited.
      *
-     * @return 'sent'|'no_phone'|'blocked'|'too_soon'|'phone_invalid'
+     * @return 'sent'|'no_phone'|'blocked'|'too_soon'|'phone_invalid'|'driver_consent'
      */
     public static function setDriver(FleetCar $car, ?string $phone): string
     {
@@ -81,31 +91,39 @@ class FleetInvites
             return 'phone_invalid';
         }
 
-        $blocked = $car->status === FleetCar::STATUS_BLOCKED;
-        $previous = $car->user_car_id ? UserCar::query()->find($car->user_car_id) : null;
-        // The same phone again (the form saved twice): that driver keeps the app car and links it again.
-        $leaves = $previous !== null && $normalized !== $car->driver_phone;
-        DB::transaction(function () use ($car, $normalized, $blocked, $previous, $leaves) {
+        $result = DB::transaction(function () use ($car, $normalized) {
+            CorporateClient::query()->whereKey($car->corporate_client_id)->lockForUpdate()->firstOrFail();
+            $locked = FleetCar::query()->whereKey($car->id)->lockForUpdate()->firstOrFail();
+            $car->setRawAttributes($locked->getAttributes(), true);
+            if ($normalized === $car->driver_phone) {
+                // Saving the same driver preserves ownership, consent, cooldown and the live code.
+                return null;
+            }
+            if ($car->driver_consent_required) {
+                return self::AWAITING_DRIVER;
+            }
+            $previous = $car->user_car_id ? UserCar::query()->find($car->user_car_id) : null;
             $car->forceFill([
                 'driver_phone' => $normalized,
-                // A yes was this driver's: a new phone is asked again.
-                'driver_consented_at' => $normalized === $car->driver_phone ? $car->driver_consented_at : null,
-                'status' => $blocked ? FleetCar::STATUS_BLOCKED : FleetCar::STATUS_INVITED,
-                // Kept across several changes until a driver signs in and takes the car.
+                'driver_consented_at' => null,
+                'status' => $car->status === FleetCar::STATUS_BLOCKED ? FleetCar::STATUS_BLOCKED : FleetCar::STATUS_INVITED,
                 'handover_user_car_id' => $car->user_car_id ?? $car->handover_user_car_id,
                 'user_id' => null,
                 'user_car_id' => null,
                 'activation_error' => null,
                 'activated_at' => null,
-                'invited_at' => null,
-                // The old driver's QR stops working with the change.
                 'qr_code' => null,
                 'qr_expires_at' => null,
             ])->save();
-            if ($leaves) {
+            if ($previous) {
                 self::release($previous);
             }
+
+            return null;
         });
+        if ($result !== null) {
+            return $result;
+        }
 
         // Linking waits for the driver to sign in or open the app after the SMS, even when the
         // phone already has an account: the company alone can't turn a car active.
@@ -164,6 +182,8 @@ class FleetInvites
      */
     public static function awaitingFor(User $user): array
     {
+        // A refresh must discover invites created after sign-in, not depend on a previous /me request.
+        self::activateFor($user);
         $phone = Phone::normalize($user->phone);
         if ($phone === null) {
             return [];
@@ -172,8 +192,9 @@ class FleetInvites
         return FleetCar::query()
             ->with('client:id,name')
             ->where('driver_phone', $phone)
-            ->where('status', FleetCar::STATUS_INVITED)
-            ->where('activation_error', self::AWAITING_DRIVER)
+            ->where(fn ($query) => $query->where('driver_consent_required', true)
+                ->orWhere(fn ($query) => $query->where('status', FleetCar::STATUS_INVITED)->where('activation_error', self::AWAITING_DRIVER)))
+            ->where('status', '!=', FleetCar::STATUS_BLOCKED)
             ->orderBy('id')
             ->get()
             ->map(fn (FleetCar $car) => [
@@ -191,20 +212,48 @@ class FleetInvites
     /** The driver agreed in the app: their own car joins the company. The answer is null or the activation error. */
     public static function accept(FleetCar $car, User $user): ?string
     {
-        // Kept: when an admin has to fix something first (body_conflict), the next sign-in links without asking again.
-        $car->forceFill(['driver_consented_at' => now()])->save();
-        if (self::link($car, $user)) {
-            return null;
-        }
-        $error = $car->fresh()?->activation_error;
+        return DB::transaction(function () use ($car, $user) {
+            CorporateClient::query()->whereKey($car->corporate_client_id)->lockForUpdate()->firstOrFail();
+            $locked = FleetCar::query()->whereKey($car->id)->lockForUpdate()->firstOrFail();
+            if (! self::answerable($locked, $user)) {
+                return 'invite_gone';
+            }
+            $car->setRawAttributes($locked->getAttributes(), true);
+            $car->forceFill(['driver_consented_at' => now(), 'driver_consent_required' => false, 'status' => FleetCar::STATUS_INVITED])->save();
+            if (self::link($car, $user)) {
+                return null;
+            }
+            $error = $car->fresh()?->activation_error;
 
-        return $error && $error !== self::AWAITING_DRIVER ? (string) $error : 'failed';
+            return $error && $error !== self::AWAITING_DRIVER ? (string) $error : 'failed';
+        });
     }
 
-    /** The driver said no: their car stays their own and the company sees the answer. */
-    public static function decline(FleetCar $car): void
+    /** Declining preserves the driver's car and every package, including a link predating consent. */
+    public static function decline(FleetCar $car, User $user): bool
     {
-        $car->forceFill(['activation_error' => self::DECLINED])->save();
+        return DB::transaction(function () use ($car, $user) {
+            CorporateClient::query()->whereKey($car->corporate_client_id)->lockForUpdate()->firstOrFail();
+            $locked = FleetCar::query()->whereKey($car->id)->lockForUpdate()->firstOrFail();
+            if (! self::answerable($locked, $user)) {
+                return false;
+            }
+            $locked->forceFill(['activation_error' => self::DECLINED, 'driver_consent_required' => false,
+                'status' => FleetCar::STATUS_INVITED, 'user_id' => null, 'user_car_id' => null,
+                'handover_user_car_id' => null, 'driver_consented_at' => null,
+                'qr_code' => null, 'qr_expires_at' => null])->save();
+
+            return true;
+        });
+    }
+
+    private static function answerable(FleetCar $car, User $user): bool
+    {
+        $phone = Phone::normalize($user->phone);
+
+        return $phone !== null && $car->driver_phone === $phone
+            && $car->status !== FleetCar::STATUS_BLOCKED
+            && ($car->driver_consent_required || ($car->status === FleetCar::STATUS_INVITED && $car->activation_error === self::AWAITING_DRIVER));
     }
 
     /** The invite this user may answer: theirs by phone and still waiting for them. */
@@ -215,8 +264,9 @@ class FleetInvites
         return $phone === null ? null : FleetCar::query()
             ->whereKey($id)
             ->where('driver_phone', $phone)
-            ->where('status', FleetCar::STATUS_INVITED)
-            ->where('activation_error', self::AWAITING_DRIVER)
+            ->where(fn ($query) => $query->where('driver_consent_required', true)
+                ->orWhere(fn ($query) => $query->where('status', FleetCar::STATUS_INVITED)->where('activation_error', self::AWAITING_DRIVER)))
+            ->where('status', '!=', FleetCar::STATUS_BLOCKED)
             ->first();
     }
 
@@ -228,6 +278,9 @@ class FleetInvites
 
     private static function link(FleetCar $car, User $user): bool
     {
+        if ($car->driver_consent_required) {
+            return false;
+        }
         $consented = $car->driver_consented_at !== null;
         // The catalog may be asked here (a model seen for the first time), so before the transaction: a failed
         // insert of a parallel request must not end it on Postgres.
@@ -301,8 +354,7 @@ class FleetInvites
                 return $userCar;
             });
             if ($linked instanceof UserCar && $linked->bodyConfirmed() && ! $car->bodyConfirmed()
-                && ($car->body_options === null || in_array($linked->car_type, $car->body_options, true))
-                && (blank($car->body_requested) || $car->body_requested === $linked->car_type)) {
+                && ($car->body_options === null || in_array($linked->car_type, $car->body_options, true))) {
                 // The driver had confirmed this car's body type already: the company car takes it, unless it waits
                 // for another type the company named (then a geoapi.ge re-check or an admin decides).
                 app(CarBodyStatus::class)->save($car, $linked->bodyColumns(), 'system');

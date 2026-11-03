@@ -23,6 +23,9 @@ trait FleetCarActions
         if ($result === 'phone_invalid') {
             return redirect($back)->withErrors(['fleet' => __('admin.fleet_phone_invalid')]);
         }
+        if ($result === FleetInvites::AWAITING_DRIVER) {
+            return redirect($back)->withErrors(['fleet' => __('admin.fleet_invite_driver_consent')]);
+        }
 
         return redirect($back)->with('message', __('admin.fleet_driver_saved'));
     }
@@ -60,7 +63,9 @@ trait FleetCarActions
                 return redirect($back)->withErrors(['fleet' => __('admin.cd_package_unknown')]);
             }
         }
-        CorporateWashes::setMode($car, $data['mode'], $package);
+        if (! CorporateWashes::setMode($car, $data['mode'], $package)) {
+            return redirect($back)->withErrors(['fleet' => __('corporate.reason_body_unconfirmed')]);
+        }
 
         return redirect($back)->with('message', __('admin.cw_mode_saved'));
     }

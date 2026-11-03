@@ -263,9 +263,9 @@ class AppointmentsController extends Controller
             if (! $userPackage->qr_expires_at || $userPackage->qr_expires_at->isPast()) {
                 return response()->json(['success' => false, 'error' => __('corporate.qr_expired'), 'error_code' => 'qr_expired'], 410);
             }
-            if (! $userPackage->bodyAllowsWash()) {
+            if ($bodyProblem = $userPackage->bodyBlocker()) {
                 // No approve token: the car's body type is not confirmed, so the wash can't be approved.
-                return response()->json(['success' => false, 'error' => __('cars.body_unconfirmed'), 'error_code' => 'body_unconfirmed'], 422);
+                return response()->json(['success' => false, 'error' => __('cars.'.$bodyProblem), 'error_code' => $bodyProblem], 422);
             }
 
             // One-time, manager-bound token for POST /package/{id}/approve (10 minutes).

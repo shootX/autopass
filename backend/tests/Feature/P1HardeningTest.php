@@ -1,6 +1,7 @@
 <?php
 
 use App\Jobs\SendSms;
+use App\Models\Package;
 use App\Models\Partner;
 use App\Models\SmsTemp;
 use App\Models\User;
@@ -43,8 +44,11 @@ function washFor(User $manager): int
 
 function userPackage(int $userId, int $carId, array $extra = []): int
 {
+    $type = DB::table('user_cars')->where('id', $carId)->value('car_type') ?? 'sedan';
+    $package = Package::query()->firstOrCreate(['car_type' => $type, 'count_washes' => 5]);
+
     return row('user_packages', $extra + [
-        'user_id' => $userId, 'package_id' => 1, 'user_car_id' => $carId, 'end_date' => now()->addMonth(),
+        'user_id' => $userId, 'package_id' => $package->id, 'user_car_id' => $carId, 'end_date' => now()->addMonth(),
         'number_of_washes' => 5, 'used_washes' => 0, 'qr_code' => 'QR'.uniqid(),
         // The driver's app is showing the code (GET /packages/{id}/qr sets the expiry).
         'qr_expires_at' => now()->addMinutes(5),

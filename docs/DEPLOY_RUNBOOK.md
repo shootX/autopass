@@ -205,3 +205,12 @@ Since 2026-11-03 the job uses plain `ssh` and checks the server's host key again
 Don't edit files in the server checkout: `git pull` in the script stops on any local change (2026-11-03 a hand edit of this runbook held back two deploys). Run `git status` there if a deploy fails at the pull.
 
 To stop red code reaching `main` at all, the owner turns on branch protection in GitHub: Settings > Branches > Add rule for `main`, tick "Require a pull request before merging" and "Require status checks to pass", and pick the `backend` and `frontend` checks.
+
+
+## 2026-11-03 — Fleet consent and body correction rollout
+
+Deploy the companion GeocarAPP consent UI to drivers before migrating this change. Older app builds cannot answer fleet-consent requests. Back up the database and inspect existing active links without `driver_consented_at`, plus company-confirmed cars with ambiguous/unknown `body_options`.
+
+Migration `2026_11_03_000008` preserves car/package owners and company balances, marks older unconsented links, and voids corporate QR. Drivers can accept or decline in their app; a decline keeps their own car/packages. Until an answer, the company cannot hand that car over. Migration `000009` reopens company-only ambiguous body confirmations, preserves allocated balances and paid package rows, and clears corporate discount assignment/QR. Explicit matching driver confirmations are preserved. Package QR now requires a confirmed body matching the purchased category even for legacy packages. Resolve category mismatches through support; never erase the purchase or silently rewrite its paid terms.
+
+Both automated and manual deployment require successful push checks for the current main commit. GitHub branch rules are account settings, not repository source changes. The server script `/opt/projects/autopass/deploy/contabo-auto-deploy.sh` is outside this checkout: verify separately that it deploys the tested immutable SHA rather than a later moving main.

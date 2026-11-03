@@ -32,7 +32,7 @@ Route::prefix('partner')->group(function () {
         Route::post('/account', [PartnerPanelController::class, 'saveAccount'])->name('partner.account.save');
         Route::post('/cars', [PartnerPanelController::class, 'storeCar'])->name('partner.cars.store');
         Route::delete('/cars/{car}/delete', [PartnerPanelController::class, 'deleteCar'])->name('partner.cars.delete');
-        Route::post('/cars/{car}/driver', [PartnerFleetController::class, 'driver'])->name('partner.cars.driver');
+        Route::post('/cars/{car}/driver', [PartnerFleetController::class, 'driver'])->middleware('throttle:20,1')->name('partner.cars.driver');
         Route::post('/cars/{car}/invite', [PartnerFleetController::class, 'invite'])->middleware('throttle:20,1')->name('partner.cars.invite');
         Route::post('/cars/{car}/block', [PartnerFleetController::class, 'block'])->name('partner.cars.block');
         Route::post('/cars/{car}/mode', [PartnerFleetController::class, 'mode'])->name('partner.cars.mode');

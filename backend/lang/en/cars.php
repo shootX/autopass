@@ -11,6 +11,7 @@ return [
     'modification_required' => 'Choose the modification.',
     'body_type_required' => 'This model has several body types in this year. Pick the body type.',
     'body_type_invalid' => 'This body type does not match the model and year.',
+    'package_body_mismatch' => 'This package was bought for another body type. Contact support to resolve it.',
     'body_unconfirmed' => 'The body type of this car is not confirmed yet. Confirm the body type first.',
     'body_confirmed' => 'The body type of this car is already confirmed. Contact support to change it.',
     'body_unavailable' => 'The body type could not be checked: the car catalog is not answering. Try again later.',

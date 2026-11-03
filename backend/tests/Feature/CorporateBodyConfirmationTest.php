@@ -80,8 +80,8 @@ it('checks cars from before against geoapi.ge: a report first, and on apply a co
     $this->artisan('cars:check-bodies --apply')->assertSuccessful();
     expect($hinted->fresh()->only(['car_type', 'body_status', 'body_source']))->toBe(['car_type' => 'wagon', 'body_status' => 'confirmed', 'body_source' => 'legacy'])
         ->and($plain->fresh()->only(['car_type', 'body_status']))->toBe(['car_type' => null, 'body_status' => 'choose'])
-        // The package bought before keeps working; nothing about it changed.
-        ->and($package->fresh()->bodyAllowsWash())->toBeTrue()
+        // The paid package stays, but also waits for the body to be confirmed.
+        ->and($package->fresh()->bodyAllowsWash())->toBeFalse()
         ->and($fleet['car']->fresh()->only(['car_type', 'body_status', 'washes_left']))->toBe(['car_type' => 'suv', 'body_status' => 'confirmed', 'washes_left' => 0])
         // The company still owns its 10 sedan washes; the 3 given to the car are free again.
         ->and(CorporateWashes::balance($fleet['corp']->fresh())['types'])->toBe(['sedan' => ['total' => 10, 'allocated' => 0, 'free' => 10]])

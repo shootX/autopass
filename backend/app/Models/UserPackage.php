@@ -87,8 +87,8 @@ class UserPackage extends Model
     }
 
     /**
-     * A wash needs the car's body type confirmed. A package bought before body types were confirmed
-     * (body_legacy) keeps working until it ends, so nothing already paid stops at the wash.
+     * A wash needs the car's body type confirmed. A paid legacy package also waits for confirmation;
+     * its stored terms must match the confirmed type.
      */
     /**
      * The fingerprint an approve grant carries: the code the manager scanned. It matches only while that very
@@ -108,7 +108,16 @@ class UserPackage extends Model
 
     public function bodyAllowsWash(): bool
     {
-        return (bool) $this->body_legacy || (bool) $this->car?->bodyConfirmed();
+        return $this->bodyBlocker() === null;
+    }
+
+    public function bodyBlocker(): ?string
+    {
+        if (! $this->car?->bodyConfirmed()) {
+            return 'body_unconfirmed';
+        }
+
+        return $this->package?->car_type === $this->car->carType() ? null : 'package_body_mismatch';
     }
 
     protected $hidden = [

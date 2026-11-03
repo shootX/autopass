@@ -154,6 +154,13 @@ class CorporateFleetController extends Controller
             return response()->json(['ok' => false, 'message' => 'Invalid phone'], 422);
         }
         // A discount package puts the car in discount mode at that package.
+        if (($request->has('discount_package_id') || $request->input('mode') === FleetCar::MODE_DISCOUNT) && ! $car->bodyConfirmed()) {
+            return response()->json(['ok' => false, 'message' => __('corporate.reason_body_unconfirmed'), 'body_status' => $car->body_status], 422);
+        }
+        if ($request->has('phone') && $car->driver_consent_required
+            && Phone::normalize((string) $request->input('phone')) !== $car->driver_phone) {
+            return response()->json(['ok' => false, 'message' => __('admin.fleet_invite_driver_consent'), 'error_code' => 'driver_consent'], 422);
+        }
         $package = null;
         if ($request->has('discount_package_id')) {
             $package = CorporateDiscounts::find($client, $request->integer('discount_package_id'));
