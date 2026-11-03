@@ -533,3 +533,10 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 - [x] `lending`: `logged-in-redirect.js` deleted; App Store buttons go to the App Store link from Admin > Website > Settings, or stay on `#app` when it is empty (no more `/register`).
 - [x] Fleet driver invite SMS links to `APP_STORE_URL_IOS`, or the site root, instead of `/auth`.
 - [ ] Server: nothing new; the auto-deploy rebuilds `gewash` as before. Set `APP_STORE_URL_IOS` and the App Store link in Admin > Website > Settings once the app is published.
+
+## 2026-11-03 — Admin > Cars (`claude/project-thread-lbiyh6`)
+- [x] New menu "ავტომობილები" (`/dashboard/cars`, `Admin\CarsController`): every car on one page. Drivers' own cars (`user_cars`), company cars a driver activated (a `user_car` linked from `fleet_cars`), and company cars still waiting for their driver (`fleet_cars` without `user_car_id`; the driver's phone stands in for the owner).
+- [x] Columns: plate, make/model, year, VIN, colour, owner (link to the client profile), company (link to the company, with the fleet status), added. Filters: search (plate, VIN, owner, phone, company, make, model), personal/company, company.
+- [x] The app stores a listed colour by its English name; `admin.car_colors` shows it in the admin language (also on the client profile cars tab).
+- [x] Tests: `AdminCarsListTest`. Not run locally (container composer can't download from GitHub); CI runs them on pgsql.
+- No migration. Server: `php artisan route:cache` and `view:clear` after deploy.

@@ -10,7 +10,7 @@
             <td>{{ $car->fuel_type ? __('cars.fuel.'.$car->fuel_type) : '—' }}</td>
             <td>{{ $car->plate }}</td>
             <td class="text-nowrap">{{ $car->vin ?: '—' }}</td>
-            <td>{{ $car->color ?: '—' }}</td>
+            <td>{{ $car->color ? \Illuminate\Support\Arr::get(trans('admin.car_colors'), $car->color, $car->color) : '—' }}</td>
             <td>{{ $kpi['car_visits'][$car->id] ?? 0 }}</td>
             <td class="text-nowrap">{{ $fmt($car->created_at) }}</td>
         </tr>

@@ -16,6 +16,10 @@
                 <div class="sb-nav-link-icon"><i class="fas fa-users"></i></div>
                 {{ __('admin.clients') }}
             </a>
+            <a class="nav-link @if(Route::is('admin.cars')) active @endif" href="{{ route('admin.cars') }}">
+                <div class="sb-nav-link-icon"><i class="fas fa-car"></i></div>
+                {{ __('admin.cars_menu') }}
+            </a>
             <a class="nav-link @if(Route::is('admin.managers')) active @endif" href="{{route('admin.managers')}}">
                 <div class="sb-nav-link-icon"><i class="fas fa-user"></i></div>
                 {{ __('admin.managers') }}
