@@ -10,12 +10,13 @@ use App\Models\UserTicket;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class TicketsController extends Controller
 {
     public function getTickets(Request $request)
     {
-        $tickets = Ticket::orderByDesc('id')->paginate(50);
+        $tickets = Ticket::query()->onSale()->orderByDesc('id')->paginate(50);
 
         return response()->json(['success' => true, 'tickets' => $tickets]);
     }
@@ -23,7 +24,7 @@ class TicketsController extends Controller
     public function buyTicket(Request $request)
     {
         $validate = Validator::make($request->all(), [
-            'ticket_id' => 'required|exists:App\Models\Ticket,id',
+            'ticket_id' => ['required', 'integer', Rule::exists('tickets', 'id')->whereNull('deleted_at')],
             'qty' => 'required|integer|min:1|max:20',
         ]);
 
@@ -38,6 +39,13 @@ class TicketsController extends Controller
             // Balance + stock check, deduction, tickets and ledger row in one transaction with row locks.
             $result = DB::transaction(function () use ($request, $qty, $userId) {
                 $ticket = Ticket::query()->whereKey($request->ticket_id)->lockForUpdate()->firstOrFail();
+                // Not sold after its draw date, nor at a price below zero (that would add points).
+                if (! Ticket::query()->whereKey($ticket->id)->onSale()->exists()) {
+                    return 'Ticket expired';
+                }
+                if ((int) $ticket->price < 0) {
+                    return 'Ticket unavailable';
+                }
                 $user = User::query()->whereKey($userId)->lockForUpdate()->firstOrFail();
                 $total = (int) $ticket->price * $qty;
 

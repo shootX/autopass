@@ -30,14 +30,15 @@ class PromoCode extends Model
 
     /**
      * Points payments still open with this discount code, other users' only when $user is given. Each holds one
-     * use: the use is recorded once the payment goes through, and the page can't be paid after CHECKOUT_MINUTES.
+     * use: the use is recorded once the payment goes through. The page can't be paid after CHECKOUT_MINUTES, but
+     * one paid near its end may be settled later, so the hold lasts SETTLE_MINUTES (or until it is closed).
      */
     public function holds(?User $except = null): Builder
     {
         return TbcPayment::query()
             ->where('type', 'points')
             ->where('status', 'pending')
-            ->where('created_at', '>', now()->subMinutes(TbcPayment::CHECKOUT_MINUTES))
+            ->where('created_at', '>', now()->subMinutes(TbcPayment::SETTLE_MINUTES))
             ->where('payload->promo_code_id', $this->id)
             ->when($except, fn (Builder $query) => $query->where('user_id', '!=', $except->id));
     }

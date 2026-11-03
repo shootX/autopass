@@ -49,7 +49,9 @@ class PointsController extends Controller
                 if ($problem = $promo->problem($user)) {
                     return $problem;
                 }
-                $open = $promo->holds()->where('user_id', $user->id)->latest('id')->first();
+                // Only a page that still works is handed back; a closed one waits to be settled.
+                $open = $promo->holds()->where('user_id', $user->id)
+                    ->where('created_at', '>', now()->subMinutes(TbcPayment::CHECKOUT_MINUTES))->latest('id')->first();
                 if ($open) {
                     // The same purchase again (the page was closed): the same page. Another amount waits.
                     return (int) ($open->payload['points'] ?? 0) === $points ? $open : 'promo_pending';

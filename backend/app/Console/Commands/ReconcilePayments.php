@@ -16,7 +16,7 @@ use Throwable;
  */
 class ReconcilePayments extends Command
 {
-    protected $signature = 'payments:reconcile {--hours=48 : how far back to look}';
+    protected $signature = 'payments:reconcile {--hours=168 : how far back to look}';
 
     protected $description = 'Settle pending card payments from the status Flitt reports';
 

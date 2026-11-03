@@ -90,12 +90,16 @@ class TbcCheckoutController extends Controller
     {
         $flittOrder = (string) $request->input('order_id', '');
         if ($flittOrder !== '') {
-            try {
-                $payload = $flitt->status($flittOrder);
-                $payment = $flittWebhook->apply($payload, $flitt, $settle);
-            } catch (Throwable $e) {
-                report($e);
-                $payment = TbcPayment::query()->where('merchant_payment_id', $flittOrder)->first();
+            // Flitt is asked only about our own order still waiting for its answer: a made-up or settled
+            // order_id costs no call to the provider (the route is also rate-limited per IP).
+            $payment = TbcPayment::query()->where('merchant_payment_id', $flittOrder)->first();
+            if ($payment && $payment->status === 'pending') {
+                try {
+                    $payment = $flittWebhook->apply($flitt->status($flittOrder), $flitt, $settle) ?? $payment;
+                } catch (Throwable $e) {
+                    report($e);
+                    $payment = $payment->fresh();
+                }
             }
 
             return redirect($this->resultUrl($payment, $payment && $payment->status === 'succeeded'));

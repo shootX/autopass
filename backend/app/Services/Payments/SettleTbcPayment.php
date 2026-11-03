@@ -51,11 +51,7 @@ class SettleTbcPayment
         }
 
         if ((int) ($payload['amount'] ?? -1) !== $flitt->minor($payment)) {
-            if ($payment->status !== 'succeeded') {
-                $payment->update(['status' => 'amount_mismatch']);
-            }
-
-            return $payment;
+            return $this->close($payment, 'amount_mismatch');
         }
 
         $status = (string) ($payload['order_status'] ?? '');
@@ -63,18 +59,39 @@ class SettleTbcPayment
             return $this->grantNow($payment);
         }
 
-        if (in_array($status, ['declined', 'expired', 'reversed'], true) && $payment->status !== 'succeeded') {
-            $payment->update(['status' => $status]);
+        // A reversal after success changes nothing: money and points are not taken back (owner's rule, 2026-11-03).
+        if (in_array($status, ['declined', 'expired', 'reversed'], true)) {
+            return $this->close($payment, $status);
         }
 
         return $payment->fresh();
+    }
+
+    /**
+     * Writes a failed status under the same row lock the grant takes, and never over a paid payment: an older
+     * answer arriving late can't turn a success into a failure (and let a later approval grant it again).
+     */
+    private function close(TbcPayment $payment, string $status): TbcPayment
+    {
+        return DB::transaction(function () use ($payment, $status) {
+            $locked = TbcPayment::query()->whereKey($payment->id)->lockForUpdate()->first();
+            if (! $locked) {
+                return $payment;
+            }
+            if ($locked->status !== 'succeeded' && $locked->paid_at === null) {
+                $locked->update(['status' => $status]);
+            }
+
+            return $locked->fresh();
+        });
     }
 
     public function grantNow(TbcPayment $payment): TbcPayment
     {
         return DB::transaction(function () use ($payment) {
             $locked = TbcPayment::query()->whereKey($payment->id)->lockForUpdate()->first();
-            if (! $locked || $locked->status === 'succeeded') {
+            // paid_at is set once, with the grant: a payment granted before is never granted again.
+            if (! $locked || $locked->status === 'succeeded' || $locked->paid_at !== null) {
                 return $locked ?? $payment;
             }
 
@@ -114,7 +131,7 @@ class SettleTbcPayment
 
         if ($status !== 'Succeeded') {
             if (in_array($status, ['Failed', 'Expired', 'Returned', 'PartialReturned'], true)) {
-                $payment->update(['status' => $status]);
+                return $this->close($payment, $status);
             }
 
             return $payment->fresh();
@@ -122,14 +139,12 @@ class SettleTbcPayment
 
         $reported = isset($details['amount']) ? (float) $details['amount'] : null;
         if ($reported !== null && abs($reported - (float) $payment->amount) > 0.01) {
-            $payment->update(['status' => 'amount_mismatch']);
-
-            return $payment->fresh();
+            return $this->close($payment, 'amount_mismatch');
         }
 
         return DB::transaction(function () use ($payment, $details) {
             $locked = TbcPayment::query()->whereKey($payment->id)->lockForUpdate()->first();
-            if (! $locked || $locked->status === 'succeeded') {
+            if (! $locked || $locked->status === 'succeeded' || $locked->paid_at !== null) {
                 return $locked ?? $payment;
             }
 

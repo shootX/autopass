@@ -18,16 +18,17 @@
     @if($car->body_status !== 'choose' || ! empty($car->body_requested))
         <form method="POST" action="{{ $carBase.'/'.$car->id.'/body-check' }}" class="d-inline">@csrf<button type="submit" class="btn btn-sm btn-link p-0">{{ __('admin.fleet_body_check') }}</button></form>
     @endif
-    @if(! empty($adminBody))
-        <form method="POST" action="{{ $carBase.'/'.$car->id.'/body' }}" class="d-flex gap-1 mt-1">
-            @csrf
-            <select name="body_type" class="form-control form-control-sm" required>
-                <option value="">{{ __('admin.fleet_select_body') }}</option>
-                @foreach($bodyOptions as $key => $label)
-                    <option value="{{ $key }}">{{ $label }}</option>
-                @endforeach
-            </select>
-            <button type="submit" class="btn btn-sm btn-outline-primary">{{ __('admin.fleet_body_confirm') }}</button>
-        </form>
-    @endif
+@endif
+{{-- The driver's app car has another confirmed type (activation_error body_conflict): an admin sets the right one. --}}
+@if(! empty($adminBody) && (! $car->bodyConfirmed() || $car->activation_error === 'body_conflict'))
+    <form method="POST" action="{{ $carBase.'/'.$car->id.'/body' }}" class="d-flex gap-1 mt-1">
+        @csrf
+        <select name="body_type" class="form-control form-control-sm" required>
+            <option value="">{{ __('admin.fleet_select_body') }}</option>
+            @foreach($bodyOptions as $key => $label)
+                <option value="{{ $key }}">{{ $label }}</option>
+            @endforeach
+        </select>
+        <button type="submit" class="btn btn-sm btn-outline-primary">{{ __('admin.fleet_body_confirm') }}</button>
+    </form>
 @endif

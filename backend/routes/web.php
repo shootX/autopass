@@ -61,6 +61,7 @@ Route::post('/payment/sandbox', [TbcCheckoutController::class, 'sandboxConfirm']
     ->name('payment.sandbox.confirm');
 
 Route::any('/payment/return', [TbcCheckoutController::class, 'returned'])
+    ->middleware('throttle:public')
     ->name('payment.return');
 
 Route::any('/callback/tbc/payment', [TbcCheckoutController::class, 'callback'])
