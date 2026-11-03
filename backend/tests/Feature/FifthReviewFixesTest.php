@@ -184,3 +184,20 @@ it('preserves an explicit matching driver body confirmation during the company b
     expect($f['car']->fresh()->body_status)->toBe('confirmed')
         ->and($f['car']->fresh()->body_source)->toBe('driver');
 });
+
+it('keeps the purchased category when the catalogue changes while a payment is open', function () {
+    $f = cwFleet();
+    $plan = Package::create(['car_type' => 'sedan', 'count_washes' => 4]);
+    $price = $plan->prices()->create(['month' => 1, 'price' => 40]);
+    $flitt = Mockery::mock(FlittCheckout::class)->makePartial();
+    $flitt->shouldReceive('checkoutUrl')->andReturn('https://pay.example/snapshot');
+    app()->instance(FlittCheckout::class, $flitt);
+    $this->withToken(cwAs($f['driver']))->postJson('/api/packages/buy', ['car_id' => $f['userCar']->id,
+        'package_id' => $plan->id, 'sub_term' => 1, 'renewal' => false])->assertOk();
+    $payment = TbcPayment::query()->sole();
+    expect($payment->payload['body_type'])->toBe('sedan');
+    $plan->update(['car_type' => 'wagon']);
+    app(SettleTbcPayment::class)->grantNow($payment);
+    $bought = UserPackage::query()->where('tbc_payment_id', $payment->id)->sole();
+    expect($bought->body_type)->toBe('sedan')->and($bought->bodyAllowsWash())->toBeTrue();
+});

@@ -201,6 +201,7 @@ class SettleTbcPayment
             'user_id' => $owner,
             'user_car_id' => $payload['car_id'],
             'package_id' => $package->id,
+            'body_type' => $payload['body_type'] ?? $package->car_type,
             // The price row is only a reference; a month the admin stopped selling must not fail the grant.
             'price_id' => PackagePrice::query()->whereKey($payload['price_id'] ?? 0)->exists() ? $payload['price_id'] : null,
             'start_date' => now(),

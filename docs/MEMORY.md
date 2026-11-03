@@ -447,3 +447,5 @@ Owner's rule: on the web only the admin (`/dashboard`), the landing, the corpora
 - Shop tickets expose remaining stock capped at the purchase maximum (20); `my_tickets` keeps archived detail with `left=0`.
 - Manual deployment now requires successful push checks for current main. Repository branch-protection settings need GitHub administration access and are not changed by this PR. The server-owned deployment script is not in this checkout; its use of an immutable tested SHA still needs operator verification.
 - Release order matters: distribute the accompanying GeocarAPP consent UI before applying the new backend migrations. No production database or deployment is changed by preparing this branch.
+
+2026-11-03: `user_packages.body_type` and the checkout payload snapshot the purchased category, so a later catalog edit cannot invalidate the driver's paid terms. Migration `000010` backfills the only category still available for historical purchases; past catalog edits cannot be reconstructed and require support review if mismatched.

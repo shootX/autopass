@@ -20,6 +20,7 @@ class UserPackage extends Model
         'user_id',
         'tbc_payment_id',
         'package_id',
+        'body_type',
         'price_id',
         'user_car_id',
         'start_date',
@@ -43,6 +44,13 @@ class UserPackage extends Model
         'discount_percent' => 'integer',
         'auto_renew' => 'boolean',
     ];
+
+    protected static function booted(): void
+    {
+        static::creating(function (self $package) {
+            $package->body_type ??= Package::withTrashed()->find($package->package_id)?->car_type;
+        });
+    }
 
     /** Whether auto-renewal is offered at all (`AUTO_RENEW_ENABLED`); hidden everywhere while off. */
     public static function renewalEnabled(): bool
@@ -117,7 +125,9 @@ class UserPackage extends Model
             return 'body_unconfirmed';
         }
 
-        return $this->package?->car_type === $this->car->carType() ? null : 'package_body_mismatch';
+        $boughtType = $this->body_type ?? $this->package?->car_type;
+
+        return $boughtType === $this->car->carType() ? null : 'package_body_mismatch';
     }
 
     protected $hidden = [

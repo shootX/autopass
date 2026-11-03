@@ -44,7 +44,7 @@ class PackagePurchase
             return TbcPayment::create([
                 'merchant_payment_id' => 'P'.strtoupper(Str::random(16)), 'user_id' => $owner->id,
                 'type' => 'package', 'amount' => round((float) $price->price, 2), 'currency' => 'GEL', 'status' => 'pending',
-                'payload' => ['car_id' => $car->id, 'package_id' => $package->id, 'price_id' => $price->id,
+                'payload' => ['car_id' => $car->id, 'package_id' => $package->id, 'body_type' => $package->car_type, 'price_id' => $price->id,
                     'month' => (int) $price->month, 'washes' => (int) $package->count_washes]
                     // The discount the driver pays for is the one kept, whatever the admin changes before the payment lands.
                     + ($package->isDiscount() ? ['type' => Package::TYPE_DISCOUNT, 'full_price' => (string) $package->full_price,
