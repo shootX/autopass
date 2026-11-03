@@ -226,10 +226,12 @@ class PackagesController extends Controller
         if (! $package) {
             return response()->json(['success' => false, 'error' => 'Not found'], 404);
         }
-        $live = $package->qr_expires_at !== null && $package->qr_expires_at->isFuture()
-            && QrCodeId::shown($package->qr_code, $request->query('code'));
+        $running = $package->qr_expires_at !== null && $package->qr_expires_at->isFuture();
+        $live = $running && QrCodeId::shown($package->qr_code, $request->query('code'));
 
-        return response()->json(['success' => true, 'live' => $live]);
+        // replaced: another phone of this driver took a newer code. The app says so instead of taking it back,
+        // which would end that phone's code in turn.
+        return response()->json(['success' => true, 'live' => $live, 'replaced' => $running && ! $live]);
     }
 
     public function removePackage(Request $request, UserPackage $userPackage)

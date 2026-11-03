@@ -51,10 +51,11 @@ class CorporateWashController extends Controller
             return response()->json(['success' => false, 'error' => 'Not found'], 404);
         }
 
-        $live = filled($car->qr_code) && $car->qr_expires_at?->isFuture() === true
-            && QrCodeId::shown($car->qr_code, $request->query('code'));
+        $running = filled($car->qr_code) && $car->qr_expires_at?->isFuture() === true;
+        $live = $running && QrCodeId::shown($car->qr_code, $request->query('code'));
 
-        return response()->json(['success' => true, 'live' => $live]);
+        // replaced: another phone of this driver took a newer code (see PackagesController::qrLive).
+        return response()->json(['success' => true, 'live' => $live, 'replaced' => $running && ! $live]);
     }
 
     /** POST /corporate-wash/{id}/approve with the approve_token from checkqr. */

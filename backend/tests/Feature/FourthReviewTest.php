@@ -247,13 +247,18 @@ it('tells the app the code it shows is gone once another phone took a newer one'
         ->assertHeader('X-QR-Id')->headers->get('X-QR-Id');
     expect($shown)->toBe(QrCodeId::of((string) $f['bought']->fresh()->qr_code));
 
-    $live = fn (?string $id = null) => $this->withToken(cwAs($f['driver']))
-        ->getJson('/api/packages/'.$f['bought']->id.'/qr/live'.($id === null ? '' : '?code='.$id))->assertOk()->json('live');
-    expect($live($shown))->toBeTrue();
+    $check = fn (?string $id = null) => $this->withToken(cwAs($f['driver']))
+        ->getJson('/api/packages/'.$f['bought']->id.'/qr/live'.($id === null ? '' : '?code='.$id))->assertOk()->json();
+    expect($check($shown))->toMatchArray(['live' => true, 'replaced' => false]);
 
     // Another phone of the same driver takes a newer code: this one is gone, even though a code is live.
     $this->withToken(cwAs($f['driver']))->get('/api/packages/'.$f['bought']->id.'/qr')->assertOk();
-    expect($live($shown))->toBeFalse()->and($live())->toBeTrue();
+    expect($check($shown))->toMatchArray(['live' => false, 'replaced' => true])
+        ->and($check()['live'])->toBeTrue();
+
+    // A wash spends the code: gone, and not because of another phone.
+    $f['bought']->forceFill(['qr_expires_at' => null])->save();
+    expect($check($shown))->toMatchArray(['live' => false, 'replaced' => false]);
 });
 
 it('checks the company code the app shows the same way', function () {
@@ -265,9 +270,9 @@ it('checks the company code the app shows the same way', function () {
     $carId = (int) $fleet->fresh()->user_car_id;
 
     $shown = $this->withToken(cwAs($driver))->get('/api/mycars/'.$carId.'/company-qr')->assertOk()->headers->get('X-QR-Id');
-    $live = fn () => $this->withToken(cwAs($driver))->getJson('/api/mycars/'.$carId.'/company-qr/live?code='.$shown)->assertOk()->json('live');
-    expect($live())->toBeTrue();
+    $check = fn () => $this->withToken(cwAs($driver))->getJson('/api/mycars/'.$carId.'/company-qr/live?code='.$shown)->assertOk()->json();
+    expect($check())->toMatchArray(['live' => true, 'replaced' => false]);
 
     $this->withToken(cwAs($driver))->get('/api/mycars/'.$carId.'/company-qr')->assertOk();
-    expect($live())->toBeFalse();
+    expect($check())->toMatchArray(['live' => false, 'replaced' => true]);
 });
