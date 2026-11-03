@@ -9,6 +9,7 @@ use App\Models\PromoCodeUse;
 use App\Models\TbcPayment;
 use App\Models\Transaction;
 use App\Models\User;
+use App\Models\UserCar;
 use App\Models\UserPackage;
 use App\Services\Points\ReferralReward;
 use App\Support\TestPayments;
@@ -185,9 +186,19 @@ class SettleTbcPayment
         $discount = ($payload['type'] ?? null) === Package::TYPE_DISCOUNT;
         $washes = (int) ($payload['washes'] ?? $package->count_washes);
 
+        // A company may have given the car to its next driver while this was being paid: the package goes with the
+        // car, like the running ones did (owner's rule). The payer's card stays the payer's, so it doesn't renew.
+        // A car waiting for its next driver (trashed) keeps the payer here; the handover moves the package with it.
+        $owner = (int) $payment->user_id;
+        $car = UserCar::query()->whereKey($payload['car_id'] ?? 0)->first(['id', 'user_id']);
+        if ($car && (int) $car->user_id !== $owner) {
+            $owner = (int) $car->user_id;
+            $recId = '';
+        }
+
         UserPackage::create([
             'tbc_payment_id' => $payment->id,
-            'user_id' => $payment->user_id,
+            'user_id' => $owner,
             'user_car_id' => $payload['car_id'],
             'package_id' => $package->id,
             // The price row is only a reference; a month the admin stopped selling must not fail the grant.

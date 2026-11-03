@@ -200,4 +200,8 @@ TEST_PAYMENT_PHONES=+995555000000,+995555000001
 
 The script, docker-compose and Caddyfile stay on the server. Concurrency group `deploy-contabo-autopass` does not cancel a deploy that is already running. Repo secrets `AUTOPASS_SSH_HOST`, `AUTOPASS_SSH_USER`, `AUTOPASS_SSH_KEY` and `AUTOPASS_SSH_KNOWN_HOSTS` are set on shootX/autopass and are not stored in this repo.
 
+Since 2026-11-03 the job uses plain `ssh` and checks the server's host key against `AUTOPASS_SSH_KNOWN_HOSTS` (the action used before ignored that secret). If a deploy stops with `Host key verification failed`, check the key on the server before you trust a new one: `ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub` there must show the same SHA256 as `ssh-keyscan -t ed25519 <host> | ssh-keygen -lf -` from your computer. Then put that `ssh-keyscan` line in the secret (GitHub > Settings > Secrets and variables > Actions).
+
+Don't edit files in the server checkout: `git pull` in the script stops on any local change (2026-11-03 a hand edit of this runbook held back two deploys). Run `git status` there if a deploy fails at the pull.
+
 To stop red code reaching `main` at all, the owner turns on branch protection in GitHub: Settings > Branches > Add rule for `main`, tick "Require a pull request before merging" and "Require status checks to pass", and pick the `backend` and `frontend` checks.

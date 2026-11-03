@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\AppointmentStatus;
 use App\Models\Appointment;
+use App\Models\FleetCar;
 use App\Models\User;
 use App\Models\UserPackage;
 use App\Support\SessionRevoker;
@@ -31,6 +32,9 @@ class AccountDeletion
                 ->whereDate('date', '>=', now()->toDateString())
                 ->update(['approved' => AppointmentStatus::Cancelled->value]);
             UserPackage::query()->where('user_id', $user->id)->update(['auto_renew' => false]);
+            // Codes already on a screen or in a photo stop at once, not when their few minutes run out.
+            UserPackage::query()->where('user_id', $user->id)->whereNotNull('qr_expires_at')->update(['qr_expires_at' => null]);
+            FleetCar::query()->where('user_id', $user->id)->whereNotNull('qr_code')->update(['qr_code' => null, 'qr_expires_at' => null]);
             $user->pushTokens()->delete();
             SessionRevoker::user($user);
         });

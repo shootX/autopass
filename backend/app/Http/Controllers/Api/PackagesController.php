@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Models\UserCar;
 use App\Models\UserPackage;
 use App\Services\Payments\PackagePurchase;
+use App\Support\QrCodeId;
 use Carbon\Carbon;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -206,7 +207,8 @@ class PackagesController extends Controller
 
             return response($qrCodeSvg, 200)
                 ->header('Content-Type', 'image/svg+xml')
-                ->header('X-QR-Expires', (string) $package->qr_expires_at->timestamp);
+                ->header('X-QR-Expires', (string) $package->qr_expires_at->timestamp)
+                ->header('X-QR-Id', QrCodeId::of($package->qr_code));
         } catch (\Exception $e) {
             Log::warning('package_request_failed', ['exception' => $e::class]);
 
@@ -214,15 +216,20 @@ class PackagesController extends Controller
         }
     }
 
-    /** Whether the package code the app shows still works: a wash, a newer code or its expiry ends it. */
+    /**
+     * Whether the package code the app shows still works: a wash, a newer code or its expiry ends it. `code` is the
+     * X-QR-Id the app got with it; a newer code taken on another phone ends this one too.
+     */
     public function qrLive(Request $request, int $id)
     {
-        $package = $request->user()->packages()->whereKey($id)->first(['id', 'qr_expires_at']);
+        $package = $request->user()->packages()->whereKey($id)->first(['id', 'qr_code', 'qr_expires_at']);
         if (! $package) {
             return response()->json(['success' => false, 'error' => 'Not found'], 404);
         }
+        $live = $package->qr_expires_at !== null && $package->qr_expires_at->isFuture()
+            && QrCodeId::shown($package->qr_code, $request->query('code'));
 
-        return response()->json(['success' => true, 'live' => $package->qr_expires_at !== null && $package->qr_expires_at->isFuture()]);
+        return response()->json(['success' => true, 'live' => $live]);
     }
 
     public function removePackage(Request $request, UserPackage $userPackage)

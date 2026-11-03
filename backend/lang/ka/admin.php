@@ -556,6 +556,8 @@ return [
     'fleet_activation_plate_taken' => 'ეს ნომერი აპში სხვა მომხმარებელს აქვს. მიმართეთ ადმინისტრატორს.',
     'fleet_activation_model_missing' => 'მოდელი კატალოგში ვერ მოიძებნა.',
     'fleet_activation_body_conflict' => 'მძღოლის აპის მანქანას სხვა ძარის ტიპი აქვს დადასტურებული. სწორი ტიპი ერთ-ერთზე მიუთითეთ.',
+    'fleet_activation_driver_consent' => 'მძღოლს ეს მანქანა აპში უკვე აქვს. ველოდებით მის თანხმობას აპში.',
+    'fleet_activation_driver_declined' => 'მძღოლმა უარი თქვა. ხელახალი მოწვევა მას ისევ ჰკითხავს.',
     'fleet_invite_no_phone' => 'მძღოლის ტელეფონი არ არის მითითებული.',
     'fleet_invite_blocked' => 'მანქანა დაბლოკილია.',
     'fleet_invite_too_soon' => 'მოწვევა ახლახან გაიგზავნა. სცადეთ ერთ წუთში.',

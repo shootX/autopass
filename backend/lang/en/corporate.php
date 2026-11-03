@@ -10,4 +10,9 @@ return [
     'reason_no_washes' => 'The car has no washes left.',
     'qr_expired' => 'The QR code has expired. Ask the driver to refresh it.',
     'scan_again' => 'Scan the QR code again.',
+    'invite_accepted' => 'The car was added to the company fleet.',
+    'invite_declined' => 'The company was told no. The car stays yours.',
+    'invite_gone' => 'This invite is no longer valid.',
+    'invite_failed' => 'The car could not be added. Try again later.',
+    'invite_body_conflict' => 'Your car has another body type than the company gave. An administrator sets the right one, then you can accept.',
 ];

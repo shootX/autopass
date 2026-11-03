@@ -49,6 +49,7 @@ class FleetCar extends Model
     protected $casts = [
         'invited_at' => 'datetime',
         'activated_at' => 'datetime',
+        'driver_consented_at' => 'datetime',
         'blocked_at' => 'datetime',
         'qr_expires_at' => 'datetime',
         'washes_left' => 'integer',

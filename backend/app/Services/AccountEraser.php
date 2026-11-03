@@ -42,15 +42,15 @@ class AccountEraser
                     'user_id' => null,
                     'user_car_id' => null,
                     'activated_at' => null,
+                    'driver_consented_at' => null,
                     'qr_code' => null,
                     'qr_expires_at' => null,
                 ])->save();
             });
 
-            UserCar::query()->where('user_id', $user->id)->get()->each(function (UserCar $car) {
-                $car->forceFill(['vin' => null])->save();
-                $car->delete();
-            });
+            // Cars removed from the app before are kept hidden for the history: their VIN goes too.
+            UserCar::withTrashed()->where('user_id', $user->id)->whereNotNull('vin')->update(['vin' => null]);
+            UserCar::query()->where('user_id', $user->id)->get()->each(fn (UserCar $car) => $car->delete());
         });
     }
 }
