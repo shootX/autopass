@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
+use App\Models\FleetCar;
 use App\Models\Package;
 use App\Models\PackageWash;
 use App\Models\User;
+use App\Models\UserCar;
 use App\Models\UserPackage;
 use App\Services\Payments\PackagePurchase;
 use Carbon\Carbon;
@@ -118,7 +120,13 @@ class PackagesController extends Controller
     {
         try {
             $user = auth()->user();
+            // A company car handed to its next driver takes its running packages along: they leave this list
+            // at once, before that driver signs in and takes them.
+            $leaving = UserCar::onlyTrashed()
+                ->whereIn('id', FleetCar::query()->whereNotNull('handover_user_car_id')->select('handover_user_car_id'))
+                ->select('id');
             $packages = $user->packages()->with(['package', 'car'])
+                ->where(fn ($query) => $query->where('end_date', '<=', now())->orWhereNotIn('user_car_id', $leaving))
                 ->withSum('washes as saved_sum', DB::raw('full_price - to_pay'))->get();
 
             //            if($packages->isEmpty()) {
@@ -166,6 +174,10 @@ class PackagesController extends Controller
             $package = $user->packages()->where('id', $id)->first();
             if (! $package) {
                 return response()->json(['success' => false, 'error' => 'Not found'], 404);
+            }
+            if ($package->car?->trashed()) {
+                // The car left this driver's app (a company gave it to its next driver): its packages go along.
+                return response()->json(['success' => false, 'error' => __('cars.car_not_found')], 404);
             }
             if (! $package->bodyAllowsWash()) {
                 return response()->json(['success' => false, 'error' => __('cars.body_unconfirmed'), 'error_code' => 'body_unconfirmed'], 422);

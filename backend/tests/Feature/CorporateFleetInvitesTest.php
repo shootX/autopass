@@ -5,9 +5,11 @@ use App\Models\CarBrand;
 use App\Models\CarModel;
 use App\Models\CorporateClient;
 use App\Models\FleetCar;
+use App\Models\Package;
 use App\Models\Partner;
 use App\Models\User;
 use App\Models\UserCar;
+use App\Models\UserPackage;
 use App\Services\Sms\MockSmsGateway;
 use App\Services\WashReportQuery;
 use Illuminate\Http\UploadedFile;
@@ -224,6 +226,93 @@ it('blocks, unblocks, resends and changes the driver from the panel', function (
     // Another company's car is not reachable.
     $this->withSession(fiPanel($other))->post('/partner/cars/'.$car->id.'/block')->assertNotFound();
     $this->withSession($panel)->get('/partner/fleet')->assertOk()->assertSee('577 00 00 01');
+});
+
+it('hands the company car and its running packages to the next driver when the company changes the phone', function () {
+    $model = fiCatalog();
+    $corp = fiCorp();
+    $panel = fiPanel($corp);
+    $this->withSession($panel)->post('/partner/cars', ['plate' => 'AA123BB', 'phone' => '555 12 34 56', 'brand_id' => $model->brand_id, 'model_id' => $model->id, 'year' => 2020, 'body_type' => 'sedan']);
+    $car = FleetCar::query()->firstOrFail();
+    $old = fiDriver('555 12 34 56');
+    $this->withToken(cwAs($old))->getJson('/api/me')->assertOk();
+    $userCar = UserCar::query()->where('plate', 'AA123BB')->sole();
+    expect((int) $car->fresh()->user_car_id)->toBe((int) $userCar->id);
+    $userCar->forceFill(['car_type' => 'sedan', 'body_status' => 'confirmed'])->save();
+
+    // The old driver bought washes of their own for this car, used one up earlier and booked a wash.
+    $package = Package::query()->create(['car_type' => 'sedan', 'count_washes' => 4]);
+    $running = UserPackage::query()->create(['user_id' => $old->id, 'user_car_id' => $userCar->id, 'package_id' => $package->id,
+        'start_date' => now(), 'end_date' => now()->addMonth(), 'number_of_washes' => 4, 'used_washes' => 1, 'qr_code' => 'HOPKG1',
+        'qr_expires_at' => now()->addMinutes(5), 'rectoken' => 'old-card']);
+    $ended = UserPackage::query()->create(['user_id' => $old->id, 'user_car_id' => $userCar->id, 'package_id' => $package->id,
+        'start_date' => now()->subMonths(2), 'end_date' => now()->subMonth(), 'number_of_washes' => 4, 'used_washes' => 4, 'qr_code' => 'HOPKG2']);
+    $booking = fiBooking($old, $userCar, now()->toDateTimeString());
+
+    $this->withSession($panel)->post('/partner/cars/'.$car->id.'/driver', ['phone' => '577 00 00 01'])->assertSessionHasNoErrors();
+
+    // The old driver loses the car at once, with its running package; the ended one stays in their history.
+    $token = cwAs($old);
+    expect($this->withToken($token)->getJson('/api/mycars')->assertOk()->json('cars'))->toBe([])
+        ->and(collect($this->withToken($token)->getJson('/api/packages/my')->assertOk()->json('packages'))->pluck('id')->all())->toBe([$ended->id]);
+    $this->withToken($token)->get('/api/packages/'.$running->id.'/qr')->assertNotFound();
+    expect($running->fresh()->qr_expires_at)->toBeNull()
+        ->and((int) $booking->fresh()->approved)->toBe(2)
+        ->and((int) $car->fresh()->handover_user_car_id)->toBe((int) $userCar->id);
+
+    // The new driver signs in: same car, the running package with it, no admin needed.
+    $new = fiDriver('577 00 00 01');
+    $this->withToken(cwAs($new))->getJson('/api/me')->assertOk();
+    $car->refresh();
+    expect($car->status)->toBe(FleetCar::STATUS_ACTIVE)
+        ->and($car->activation_error)->toBeNull()
+        ->and((int) $car->user_id)->toBe((int) $new->id)
+        ->and((int) $car->user_car_id)->toBe((int) $userCar->id)
+        ->and($car->handover_user_car_id)->toBeNull()
+        ->and((int) $userCar->fresh()->user_id)->toBe((int) $new->id)
+        ->and($userCar->fresh()->trashed())->toBeFalse()
+        ->and($running->fresh()->only(['user_id', 'rectoken', 'auto_renew', 'used_washes']))
+        ->toBe(['user_id' => $new->id, 'rectoken' => null, 'auto_renew' => false, 'used_washes' => 1])
+        ->and((int) $ended->fresh()->user_id)->toBe((int) $old->id);
+    $token = cwAs($new);
+    expect(collect($this->withToken($token)->getJson('/api/packages/my')->assertOk()->json('packages'))->pluck('id')->all())->toBe([$running->id]);
+    $this->withToken($token)->get('/api/packages/'.$running->id.'/qr')->assertOk();
+});
+
+it('gives the car back to the replaced driver when the company deletes it before the next one signs in', function () {
+    $model = fiCatalog();
+    $corp = fiCorp();
+    $panel = fiPanel($corp);
+    $this->withSession($panel)->post('/partner/cars', ['plate' => 'AA123BB', 'phone' => '555 12 34 56', 'brand_id' => $model->brand_id, 'model_id' => $model->id, 'year' => 2020, 'body_type' => 'sedan']);
+    $car = FleetCar::query()->firstOrFail();
+    $old = fiDriver('555 12 34 56');
+    $this->withToken(cwAs($old))->getJson('/api/me')->assertOk();
+    $userCar = UserCar::query()->where('plate', 'AA123BB')->sole();
+
+    $this->withSession($panel)->post('/partner/cars/'.$car->id.'/driver', ['phone' => '577 00 00 01'])->assertSessionHasNoErrors();
+    expect($userCar->fresh()->trashed())->toBeTrue();
+    $this->withSession($panel)->delete('/partner/cars/'.$car->id.'/delete')->assertRedirect();
+
+    expect($userCar->fresh()->trashed())->toBeFalse()->and((int) $userCar->fresh()->user_id)->toBe((int) $old->id);
+});
+
+it('keeps the app car with the driver when the company saves the same phone again', function () {
+    $model = fiCatalog();
+    $corp = fiCorp();
+    $panel = fiPanel($corp);
+    $this->withSession($panel)->post('/partner/cars', ['plate' => 'AA123BB', 'phone' => '555 12 34 56', 'brand_id' => $model->brand_id, 'model_id' => $model->id, 'year' => 2020, 'body_type' => 'sedan']);
+    $car = FleetCar::query()->firstOrFail();
+    $driver = fiDriver('555 12 34 56');
+    $this->withToken(cwAs($driver))->getJson('/api/me')->assertOk();
+    $userCar = UserCar::query()->where('plate', 'AA123BB')->sole();
+
+    $this->travel(2)->minutes();
+    $this->withSession($panel)->post('/partner/cars/'.$car->id.'/driver', ['phone' => '555 12 34 56'])->assertSessionHasNoErrors();
+    expect($userCar->fresh()->trashed())->toBeFalse();
+
+    $this->withToken(cwAs($driver))->getJson('/api/me')->assertOk();
+    expect($car->fresh()->only(['status', 'user_car_id', 'handover_user_car_id']))
+        ->toBe(['status' => FleetCar::STATUS_ACTIVE, 'user_car_id' => $userCar->id, 'handover_user_car_id' => null]);
 });
 
 it('keeps the company car in the driver app', function () {

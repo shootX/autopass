@@ -10,6 +10,7 @@ use App\Models\CorporateWash;
 use App\Models\CorporateWashMove;
 use App\Models\CorporateWashPool;
 use App\Models\FleetCar;
+use App\Models\UserCar;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 
@@ -185,6 +186,11 @@ class CorporateWashes
                     'actor' => $actor,
                     'actor_id' => $actorId,
                 ]);
+            }
+            // A car still waiting for its next driver goes back to the driver it was taken from, packages and all.
+            $waiting = $locked->handover_user_car_id ? UserCar::onlyTrashed()->whereKey($locked->handover_user_car_id)->first() : null;
+            if ($waiting && ! UserCar::query()->where('plate', $waiting->plate)->exists()) {
+                $waiting->restore();
             }
             $locked->delete();
         });
