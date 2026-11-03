@@ -34,6 +34,18 @@ class CorporateQr
         return $code;
     }
 
+    public static function fingerprint(?string $code): string
+    {
+        return hash('sha256', (string) $code);
+    }
+
+    /** The code a grant was given for is still the car's live one. */
+    public static function live(FleetCar $car, string $fingerprint): bool
+    {
+        return filled($car->qr_code) && $car->qr_expires_at !== null && $car->qr_expires_at->isFuture()
+            && hash_equals(self::fingerprint($car->qr_code), $fingerprint);
+    }
+
     /** @return FleetCar|'expired'|null */
     public static function find(string $qr): FleetCar|string|null
     {
@@ -55,7 +67,9 @@ class CorporateQr
     {
         $blocker = CorporateWashes::blocker($car);
         $token = $blocker === null
-            ? ApproveGrant::issue(self::GRANT_SCOPE, ['manager_id' => $managerId, 'fleet_car_id' => (int) $car->id])
+            // Tied to this very code: once a wash clears it or the app shows a new one, the token approves nothing.
+            ? ApproveGrant::issue(self::GRANT_SCOPE, ['manager_id' => $managerId, 'fleet_car_id' => (int) $car->id,
+                'qr' => self::fingerprint($car->qr_code)])
             : null;
 
         return [

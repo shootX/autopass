@@ -18,6 +18,7 @@ use App\Models\User;
 use App\Models\UserCar;
 use App\Models\UserPackage;
 use App\Models\UserPushToken;
+use App\Services\CorporateQr;
 use App\Services\CorporateWashes;
 use App\Services\Payments\FlittCheckout;
 use App\Services\Payments\SettleTbcPayment;
@@ -90,6 +91,55 @@ it('gives a package QR that lasts five minutes and is spent by a wash', function
     // The scanned code is gone: a photo of it gives no second approve token.
     $this->withToken(cwAs($manager))->getJson('/api/checkqr/'.$qr)->assertNotFound();
     expect($f['bought']->fresh()->used_washes)->toBe(1);
+});
+
+it('gives one wash per scanned package code, however many tokens were taken from it', function () {
+    $f = auditDriver('555 73 00 21', 'LC100LC');
+    $manager = cwManager('555 73 00 22');
+    $qr = auditShowQr($this, $f);
+    // Scanning the same code three times before approving gives three tokens...
+    $tokens = collect(range(1, 3))->map(fn () => $this->withToken(cwAs($manager))->getJson('/api/checkqr/'.$qr)->assertOk()->json('approve_token'));
+    $approve = fn (string $token) => $this->withToken(cwAs($manager))->postJson('/api/package/'.$f['bought']->id.'/approve', ['approve_token' => $token]);
+
+    // ...but only the first one washes: the wash spends the code and every token given for it.
+    $approve($tokens[0])->assertOk();
+    $approve($tokens[1])->assertForbidden()->assertJsonPath('error_code', 'scan_again');
+    $approve($tokens[2])->assertForbidden();
+    expect($f['bought']->fresh()->used_washes)->toBe(1)
+        ->and(PackageWash::query()->count())->toBe(1);
+
+    // A token for a code the app has since replaced, or one that ran out, washes nothing either.
+    $qr = auditShowQr($this, $f);
+    $stale = $this->withToken(cwAs($manager))->getJson('/api/checkqr/'.$qr)->json('approve_token');
+    auditShowQr($this, $f);
+    $approve($stale)->assertForbidden()->assertJsonPath('error_code', 'scan_again');
+    $qr = auditShowQr($this, $f);
+    $late = $this->withToken(cwAs($manager))->getJson('/api/checkqr/'.$qr)->json('approve_token');
+    $this->travel(UserPackage::QR_TTL_SECONDS + 1)->seconds();
+    $approve($late)->assertForbidden();
+    expect($f['bought']->fresh()->used_washes)->toBe(1);
+});
+
+it('gives one wash per scanned company car code, however many tokens were taken from it', function () {
+    $fleet = cwFleet(10, 5, 'LC200LC');
+    $manager = cwManager('555 73 00 23');
+    $qr = cwDriverQr($this, $fleet);
+    $tokens = collect(range(1, 3))->map(fn () => $this->withToken(cwAs($manager))->getJson('/api/checkqr/'.$qr)->assertOk()->json('approve_token'));
+    $approve = fn (string $token) => $this->withToken(cwAs($manager))->postJson('/api/corporate-wash/'.$fleet['car']->id.'/approve', ['approve_token' => $token]);
+
+    $approve($tokens[0])->assertOk();
+    $approve($tokens[1])->assertForbidden()->assertJsonPath('reason', 'scan_again');
+    $approve($tokens[2])->assertForbidden();
+    expect($fleet['car']->fresh()->washes_left)->toBe(4)
+        ->and(CorporateWash::query()->count())->toBe(1)
+        ->and($fleet['corp']->fresh()->washes_balance)->toBe(9);
+
+    // The driver showing a new code voids a token taken from the older one.
+    $qr = cwDriverQr($this, $fleet);
+    $stale = $this->withToken(cwAs($manager))->getJson('/api/checkqr/'.$qr)->json('approve_token');
+    cwDriverQr($this, $fleet);
+    $approve($stale)->assertForbidden();
+    expect($fleet['car']->fresh()->washes_left)->toBe(4);
 });
 
 // 2. History kept
@@ -290,7 +340,8 @@ it('refuses deleting a company with washes, and deletes one without history', fu
     $fleet = cwFleet(5, 1, 'LB100LB');
     $manager = cwManager('555 73 00 17');
     $washId = (int) DB::table('car_washes')->where('manager_id', $manager->id)->value('id');
-    CorporateWashes::wash($fleet['car'], ['car_wash_id' => $washId, 'manager_id' => $manager->id, 'appointment_id' => null, 'walk_in' => true]);
+    CorporateWashes::wash($fleet['car'], ['car_wash_id' => $washId, 'manager_id' => $manager->id, 'appointment_id' => null, 'walk_in' => true],
+        CorporateQr::fingerprint(CorporateQr::issue($fleet['car'])));
     $this->actingAs(cwAdmin());
 
     $this->delete(route('admin.corporate.delete', $fleet['corp']))->assertSessionHas('error');

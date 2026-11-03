@@ -97,7 +97,10 @@ class CorporateWashController extends Controller
             'manager_id' => (int) $user->id,
             'appointment_id' => $bookingUnused ? (int) $here->id : null,
             'walk_in' => $here === null,
-        ]);
+        ], (string) ($grant['qr'] ?? ''));
+        if ($done['result'] === 'scan_again') {
+            return response()->json(['success' => false, 'error' => __('corporate.scan_again'), 'reason' => 'scan_again'], 403);
+        }
         if ($done['result'] !== 'ok') {
             return response()->json([
                 'success' => false,

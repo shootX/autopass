@@ -90,6 +90,22 @@ class UserPackage extends Model
      * A wash needs the car's body type confirmed. A package bought before body types were confirmed
      * (body_legacy) keeps working until it ends, so nothing already paid stops at the wash.
      */
+    /**
+     * The fingerprint an approve grant carries: the code the manager scanned. It matches only while that very
+     * code is the package's live one, so a wash (which replaces the code) or a new code shown in the app
+     * voids every grant given for the older code.
+     */
+    public static function qrFingerprint(?string $code): string
+    {
+        return hash('sha256', (string) $code);
+    }
+
+    public function qrIsLive(string $fingerprint): bool
+    {
+        return filled($this->qr_code) && $this->qr_expires_at !== null && $this->qr_expires_at->isFuture()
+            && hash_equals(self::qrFingerprint($this->qr_code), $fingerprint);
+    }
+
     public function bodyAllowsWash(): bool
     {
         return (bool) $this->body_legacy || (bool) $this->car?->bodyConfirmed();

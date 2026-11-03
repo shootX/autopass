@@ -264,9 +264,10 @@ class PackagesController extends Controller
         if ($presented === 'busy') {
             return response()->json(['success' => false, 'error' => 'Approval already in progress'], 409);
         }
-        if ($presented !== 'ok') {
+        if (! is_array($presented)) {
             return response()->json(['success' => false, 'error' => 'Scan the package QR code'], 403);
         }
+        $qr = (string) ($presented['qr'] ?? '');
 
         if ($userPackage->start_date && now()->lessThan(Carbon::parse($userPackage->start_date)->startOfDay())) {
             return response()->json(['success' => false, 'error' => 'Package is not active'], 422);
@@ -281,10 +282,15 @@ class PackagesController extends Controller
             return response()->json(['success' => false, 'error' => __('cars.body_unconfirmed'), 'error_code' => 'body_unconfirmed'], 422);
         }
 
-        $approved = DB::transaction(function () use ($userPackage, $washId, $user, $hereAppointment) {
+        $approved = DB::transaction(function () use ($userPackage, $washId, $user, $hereAppointment, $qr) {
             $locked = UserPackage::query()->whereKey($userPackage->id)->lockForUpdate()->first();
-            if (! $locked || ! $locked->hasWashesLeft()) {
-                return false;
+            // Checked under the row lock, with the deduction: one scanned code gives one wash, however many
+            // tokens were taken from it, and parallel approvals can't both see it live.
+            if (! $locked || ! $locked->qrIsLive($qr)) {
+                return 'scan_again';
+            }
+            if (! $locked->hasWashesLeft()) {
+                return 'no_washes';
             }
             // The booking is linked to its first wash only; later washes count as walk-ins.
             $bookingUnused = $hereAppointment
@@ -305,10 +311,13 @@ class PackagesController extends Controller
             ]);
             Appointment::completeByWash($bookingUnused ? (int) $hereAppointment->id : null);
 
-            return true;
+            return 'ok';
         });
 
-        if (! $approved) {
+        if ($approved === 'scan_again') {
+            return response()->json(['success' => false, 'error' => __('corporate.scan_again'), 'error_code' => 'scan_again'], 403);
+        }
+        if ($approved !== 'ok') {
             return response()->json(['success' => false, 'error' => 'No washes left'], 422);
         }
 
@@ -326,8 +335,8 @@ class PackagesController extends Controller
             'to_pay' => $userPackage->isDiscount() ? (float) $userPackage->toPay() : null]);
     }
 
-    /** Consumes the checkqr token (qr_code is ignored). @return 'ok'|'busy'|'no' */
-    private function presentedPackage(Request $request, UserPackage $userPackage, int $managerId): string
+    /** Consumes the checkqr token (qr_code is ignored). @return array<string, mixed>|'busy'|'no' the grant when it is this manager's for this package */
+    private function presentedPackage(Request $request, UserPackage $userPackage, int $managerId): array|string
     {
         $token = (string) $request->input('approve_token', '');
         if ($token === '') {
@@ -350,6 +359,6 @@ class PackagesController extends Controller
 
         return is_array($grant)
             && (int) ($grant['manager_id'] ?? 0) === $managerId
-            && (int) ($grant['package_id'] ?? 0) === (int) $userPackage->id ? 'ok' : 'no';
+            && (int) ($grant['package_id'] ?? 0) === (int) $userPackage->id ? $grant : 'no';
     }
 }
