@@ -158,7 +158,8 @@ class User extends Authenticatable implements JWTSubject
             ->where('user_id', $this->id)
             ->groupBy('ticket_id');
 
-        $tickets = Ticket::query()
+        // A giveaway the admin removed stays in its buyers' list.
+        $tickets = Ticket::withTrashed()
             ->joinSub($sub, 'ut', function ($join) {
                 $join->on('tickets.id', '=', 'ut.ticket_id');
             })

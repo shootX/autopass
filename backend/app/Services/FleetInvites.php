@@ -164,19 +164,27 @@ class FleetInvites
         try {
             $linked = DB::transaction(function () use ($car, $user, $new) {
                 $userCar = UserCar::query()->where('plate', $car->plate)->lockForUpdate()->first();
+                $handover = null;
                 if (! $userCar && $car->handover_user_car_id) {
                     // The replaced driver's app car comes to this driver, with its running packages.
-                    $userCar = UserCar::onlyTrashed()->whereKey($car->handover_user_car_id)->where('plate', $car->plate)
+                    $userCar = $handover = UserCar::onlyTrashed()->whereKey($car->handover_user_car_id)->where('plate', $car->plate)
                         ->lockForUpdate()->first();
-                    if ($userCar) {
-                        self::handOver($userCar, $user);
-                    }
                 }
-                if ($userCar && (int) $userCar->user_id !== (int) $user->id) {
+                if ($userCar && ! $handover && (int) $userCar->user_id !== (int) $user->id) {
                     // Someone else has this plate in the app: an admin has to sort it out.
                     $car->forceFill(['activation_error' => 'plate_taken'])->save();
 
                     return false;
+                }
+                if ($userCar && $car->bodyConfirmed() && $userCar->bodyConfirmed() && $userCar->car_type !== $car->car_type) {
+                    // One car with two confirmed body types: the company's price and the driver's packages would
+                    // count different cars. An admin sets the right type on one of them; the next sign-in links it.
+                    $car->forceFill(['activation_error' => 'body_conflict'])->save();
+
+                    return false;
+                }
+                if ($handover) {
+                    self::handOver($handover, $user);
                 }
 
                 if (! $userCar) {
@@ -210,8 +218,10 @@ class FleetInvites
                 return $userCar;
             });
             if ($linked instanceof UserCar && $linked->bodyConfirmed() && ! $car->bodyConfirmed()
-                && ($car->body_options === null || in_array($linked->car_type, $car->body_options, true))) {
-                // The driver had confirmed this car's body type already: the company car takes it.
+                && ($car->body_options === null || in_array($linked->car_type, $car->body_options, true))
+                && (blank($car->body_requested) || $car->body_requested === $linked->car_type)) {
+                // The driver had confirmed this car's body type already: the company car takes it, unless it waits
+                // for another type the company named (then a geoapi.ge re-check or an admin decides).
                 app(CarBodyStatus::class)->save($car, $linked->bodyColumns(), 'system');
             }
 

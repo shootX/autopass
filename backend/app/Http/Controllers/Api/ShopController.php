@@ -22,6 +22,7 @@ class ShopController extends Controller
             ->get();
 
         $tickets = Ticket::query()
+            ->onSale()
             ->latest('id')
             ->limit(50)
             ->get();

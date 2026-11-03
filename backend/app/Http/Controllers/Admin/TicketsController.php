@@ -39,7 +39,7 @@ class TicketsController extends Controller
             'name' => 'required|string|min:3',
             'description' => 'required|min:5',
             'photo' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-            'price' => 'required|numeric',
+            'price' => 'required|numeric|min:0',
             'date_to' => 'required|date',
             'count' => 'nullable|numeric',
         ]);
@@ -117,7 +117,7 @@ class TicketsController extends Controller
             'name' => 'required|string|min:3',
             'description' => 'required|min:5',
             'photo' => 'sometimes|nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-            'price' => 'required|numeric',
+            'price' => 'required|numeric|min:0',
             'date_to' => 'required|date',
             'count' => 'nullable|numeric',
         ]);

@@ -548,6 +548,7 @@ return [
     'fleet_status_blocked' => 'Blocked',
     'fleet_activation_plate_taken' => 'Another app user has this plate. Contact the administrator.',
     'fleet_activation_model_missing' => 'Model not found in the catalog.',
+    'fleet_activation_body_conflict' => 'The driver\'s app car has another confirmed body type. Set the right type on one of them.',
     'fleet_invite_no_phone' => 'No driver phone yet.',
     'fleet_invite_blocked' => 'The car is blocked.',
     'fleet_invite_too_soon' => 'An invite was just sent. Try again in a minute.',

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\AppointmentStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
 use App\Models\CorporateWash;
@@ -74,6 +75,8 @@ class CorporateWashController extends Controller
         $todays = Appointment::query()
             ->where('car_id', $car->user_car_id)
             ->whereDate('date', now()->toDateString())
+            // Only a booking still on: one cancelled, done or expired at another branch blocks nothing.
+            ->whereIn('approved', AppointmentStatus::active())
             ->get(['id', 'car_wash_id']);
         $here = $todays->firstWhere('car_wash_id', $washId);
         if (! $here && $todays->isNotEmpty()) {

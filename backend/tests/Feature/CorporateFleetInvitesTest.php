@@ -163,6 +163,42 @@ it('links the driver own app car and refuses a plate held by someone else', func
         ->and(UserCar::query()->where('user_id', $driver->id)->count())->toBe(1);
 });
 
+it('waits for an admin when the driver app car has another confirmed body type', function () {
+    $model = fiCatalog();
+    $corp = fiCorp();
+    $driver = fiDriver('555 12 34 56');
+    $own = UserCar::query()->create(['user_id' => $driver->id, 'model_id' => $model->id, 'plate' => 'AA123BB', 'car_type' => 'wagon', 'body_status' => 'confirmed']);
+    $car = FleetCar::query()->create(['corporate_client_id' => $corp->id, 'plate' => 'AA123BB', 'brand' => 'Toyota', 'model' => 'Camry', 'source' => 'manual']);
+    $car->forceFill(['status' => FleetCar::STATUS_INVITED, 'driver_phone' => '555 12 34 56', 'car_type' => 'sedan', 'body_status' => 'confirmed'])->save();
+
+    $this->withToken(JWTAuth::fromUser($driver))->getJson('/api/me')->assertOk();
+
+    expect($car->fresh()->only(['status', 'activation_error', 'user_car_id']))->toBe(['status' => 'invited', 'activation_error' => 'body_conflict', 'user_car_id' => null])
+        ->and($own->fresh()->car_type)->toBe('wagon');
+    $this->actingAs(fiAdmin())->get('/dashboard/corporate/'.$corp->id)->assertOk()
+        ->assertSee(__('admin.fleet_activation_body_conflict'))->assertSee('/cars/'.$car->id.'/body', false);
+
+    // The admin sets the type the car really has: the driver's next app open links it.
+    $this->post('/dashboard/corporate/'.$corp->id.'/cars/'.$car->id.'/body', ['body_type' => 'wagon'])->assertSessionHasNoErrors();
+    $this->withToken(cwAs($driver))->getJson('/api/me')->assertOk();
+    expect($car->fresh()->only(['status', 'activation_error', 'user_car_id', 'car_type']))
+        ->toBe(['status' => 'active', 'activation_error' => null, 'user_car_id' => $own->id, 'car_type' => 'wagon']);
+});
+
+it('keeps a company car waiting for the type the company named when the driver confirmed another', function () {
+    $model = fiCatalog();
+    $corp = fiCorp();
+    $driver = fiDriver('555 12 34 56');
+    $own = UserCar::query()->create(['user_id' => $driver->id, 'model_id' => $model->id, 'plate' => 'AA123BB', 'car_type' => 'sedan', 'body_status' => 'confirmed']);
+    $car = FleetCar::query()->create(['corporate_client_id' => $corp->id, 'plate' => 'AA123BB', 'brand' => 'Toyota', 'model' => 'Camry', 'source' => 'manual']);
+    $car->forceFill(['status' => FleetCar::STATUS_INVITED, 'driver_phone' => '555 12 34 56', 'body_status' => 'unknown', 'body_requested' => 'wagon'])->save();
+
+    $this->withToken(JWTAuth::fromUser($driver))->getJson('/api/me')->assertOk();
+
+    expect($car->fresh()->only(['status', 'user_car_id', 'car_type', 'body_status', 'body_requested']))
+        ->toBe(['status' => 'active', 'user_car_id' => $own->id, 'car_type' => null, 'body_status' => 'unknown', 'body_requested' => 'wagon']);
+});
+
 it('shows the company only washes booked after activation, never a typed stranger plate', function () {
     $model = fiCatalog();
     $corp = fiCorp();

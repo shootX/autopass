@@ -78,6 +78,10 @@ class VouchersController extends Controller
         $voucher = Voucher::query()->findOrFail($request->voucher_id);
         $price = (int) $voucher->price;
         $userId = (int) auth()->id();
+        // A price below zero would add points: such an offer is not sold, whatever was typed in the admin.
+        if ($price < 0) {
+            return response()->json(['success' => false, 'message' => 'Voucher unavailable']);
+        }
 
         try {
             // Balance check, deduction, voucher and ledger row are one unit: any failure rolls all of it back.

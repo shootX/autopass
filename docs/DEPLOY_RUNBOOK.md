@@ -194,8 +194,10 @@ TEST_PAYMENT_PHONES=+995555000000,+995555000001
 
 ## 11. GitHub Actions auto-deploy (Contabo, 2026-11-01)
 
-A push to `main`, or a manual run (`workflow_dispatch`), starts `.github/workflows/deploy-contabo.yml`. The job SSHes into Contabo and runs the script already on the server:
+`.github/workflows/deploy-contabo.yml` starts when "Product regression checks" finish green on a push to `main` (since 2026-11-03; before that every push deployed, even with red tests), or on a manual run (`workflow_dispatch`, which deploys `main` as it is without waiting for checks). If `main` moved on while the checks ran, that run skips the deploy and the newer commit deploys after its own checks pass. The job SSHes into Contabo and runs the script already on the server:
 
 `/opt/projects/autopass/deploy/contabo-auto-deploy.sh`
 
 The script, docker-compose and Caddyfile stay on the server. Concurrency group `deploy-contabo-autopass` does not cancel a deploy that is already running. Repo secrets `AUTOPASS_SSH_HOST`, `AUTOPASS_SSH_USER`, `AUTOPASS_SSH_KEY` and `AUTOPASS_SSH_KNOWN_HOSTS` are set on shootX/autopass and are not stored in this repo.
+
+To stop red code reaching `main` at all, the owner turns on branch protection in GitHub: Settings > Branches > Add rule for `main`, tick "Require a pull request before merging" and "Require status checks to pass", and pick the `backend` and `frontend` checks.

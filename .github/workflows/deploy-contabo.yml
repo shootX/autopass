@@ -1,7 +1,11 @@
 name: Deploy Contabo
 
+# A push to main reaches the server only after "Product regression checks" passed on it, so a red main is never
+# deployed. Running this by hand (workflow_dispatch) deploys main as it is, without waiting for the checks.
 on:
-  push:
+  workflow_run:
+    workflows: [Product regression checks]
+    types: [completed]
     branches: [main]
   workflow_dispatch:
 
@@ -14,9 +18,29 @@ permissions:
 
 jobs:
   deploy:
+    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.event == 'push' && github.event.workflow_run.conclusion == 'success')
     runs-on: ubuntu-latest
     steps:
+      # The server script deploys main as it is now. When main moved on since the tested commit, the newer
+      # commit's own checks deploy it once they pass: deploying here would ship code no check has passed yet.
+      - name: Check main is still the tested commit
+        id: head
+        if: github.event_name == 'workflow_run'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          TESTED: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          current=$(gh api "repos/$REPO/commits/main" --jq .sha)
+          if [ "$current" = "$TESTED" ]; then
+            echo "deploy=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "main is at $current, the checks passed on $TESTED: the newer commit deploys after its own checks."
+            echo "deploy=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Deploy over SSH
+        if: github.event_name == 'workflow_dispatch' || steps.head.outputs.deploy == 'true'
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.AUTOPASS_SSH_HOST }}
