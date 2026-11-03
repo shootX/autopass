@@ -87,12 +87,12 @@ class CheckCarBodies extends Command
             $packages = UserPackage::query()->with('package')->where('user_car_id', $car->id)->where('end_date', '>', now())
                 ->withWashesLeft()->get();
             foreach ($packages as $package) {
-                $bought = (string) $package->package?->car_type;
+                $bought = (string) ($package->body_type ?? $package->package?->car_type);
                 if ($type === null) {
                     $notes[] = "{$car->plate}: running package ({$bought}), body {$outcome}; "
-                        .($package->body_legacy ? 'the package keeps working, the app asks the driver.' : 'washes wait for the body type.');
+                        .'washes wait for the body type.';
                 } elseif ($bought !== $type) {
-                    $notes[] = "{$car->plate}: running package bought as {$bought}, geoapi.ge says {$type}; the package keeps working until it ends.";
+                    $notes[] = "{$car->plate}: running package bought as {$bought}, geoapi.ge says {$type}; washes wait for support to resolve the category mismatch.";
                 }
             }
 

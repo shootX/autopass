@@ -26,9 +26,16 @@ class ShopController extends Controller
 
         $tickets = Ticket::query()
             ->onSale()
+            ->withCount('users as sold_count')
             ->latest('id')
             ->limit(50)
             ->get();
+
+        foreach ($tickets as $ticket) {
+            $ticket->setAttribute('left', (int) $ticket->count > 0
+                ? max(0, min(20, (int) $ticket->count - (int) $ticket->sold_count)) : 20);
+            $ticket->makeHidden('sold_count');
+        }
 
         // One row per purchase, so two of the same offer open their own codes: id is the purchase, voucher_id
         // the offer. Expired ones are in the history only.
@@ -64,6 +71,10 @@ class ShopController extends Controller
                 return $row;
             })
             ->values();
+
+        $history = Ticket::withTrashed()->whereIn('id', $myTickets->pluck('id'))->get()->keyBy('id');
+        $myTickets = $myTickets->map(fn ($row) => array_merge($history->get($row->id)?->toArray() ?? [],
+            (array) $row, ['left' => 0]));
 
         return response()->json([
             'success' => true,

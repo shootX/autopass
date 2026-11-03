@@ -13,6 +13,9 @@
             <file>tests/Feature/ShopAccountRulesTest.php</file>
             <file>tests/Feature/CorporateFleetInvitesTest.php</file>
             <file>tests/Feature/FourthReviewTest.php</file>
+            <file>tests/Feature/FifthReviewFixesTest.php</file>
+            <file>tests/Feature/CorporateCarBodyTest.php</file>
+            <file>tests/Feature/CorporateBodyConfirmationTest.php</file>
             <directory>tests/Integration</directory>
         </testsuite>
     </testsuites>

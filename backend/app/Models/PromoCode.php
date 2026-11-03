@@ -29,16 +29,14 @@ class PromoCode extends Model
     }
 
     /**
-     * Points payments still open with this discount code, other users' only when $user is given. Each holds one
-     * use: the use is recorded once the payment goes through. The page can't be paid after CHECKOUT_MINUTES, but
-     * one paid near its end may be settled later, so the hold lasts SETTLE_MINUTES (or until it is closed).
+     * Every unresolved payment reserves its promo use until the provider reports paid or unpaid.
+     * Age alone cannot prove an order was not paid while its callback/status API was unavailable.
      */
     public function holds(?User $except = null): Builder
     {
         return TbcPayment::query()
             ->where('type', 'points')
             ->where('status', 'pending')
-            ->where('created_at', '>', now()->subMinutes(TbcPayment::SETTLE_MINUTES))
             ->where('payload->promo_code_id', $this->id)
             ->when($except, fn (Builder $query) => $query->where('user_id', '!=', $except->id));
     }
@@ -60,7 +58,7 @@ class PromoCode extends Model
         if ($this->ends_at && $this->ends_at->isPast()) {
             return 'promo_expired';
         }
-        // Payments still open with this code hold a use each until they are paid or their page expires.
+        // Payments still open with this code hold a use each until their payment receives a final answer.
         if ($this->max_uses !== null && $this->used_count + $this->holds($user)->count() >= $this->max_uses) {
             return 'promo_used_up';
         }

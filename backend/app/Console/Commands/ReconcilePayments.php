@@ -30,7 +30,8 @@ class ReconcilePayments extends Command
             ->whereIn('type', ['package', 'points'])
             // A page still open may be paid any moment; past its lifetime Flitt has the final word.
             ->where('created_at', '<', now()->subMinutes(TbcPayment::CHECKOUT_MINUTES + 5))
-            ->where('created_at', '>', now()->subHours(max(1, (int) $this->option('hours'))))
+            ->where(fn ($query) => $query->where('created_at', '>', now()->subHours(max(1, (int) $this->option('hours'))))
+                ->orWhere(fn ($query) => $query->where('type', 'points')->whereNotNull('payload->promo_code_id')))
             ->orderBy('id')
             ->chunkById(50, function ($payments) use ($flitt, $settle, &$checked, &$settled) {
                 foreach ($payments as $payment) {

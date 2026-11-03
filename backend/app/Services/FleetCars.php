@@ -68,13 +68,9 @@ class FleetCars
 
     /**
      * Adds a car and, when a driver phone is given, sends the driver the invite SMS. The brand and model are
-     * found in the car catalog by name (or by the ids of the panel's lists). The company must name the body type
-     * (a key, its Georgian or English name, or a catalog name such as station wagon). It is confirmed when it is one
-     * of the types geoapi.ge names for that model and year; a type off a full list is refused (body_type_mismatch).
-     * When geoapi.ge names none, gives an incomplete list without it, or is down, the car is added unconfirmed
-     * (unknown or choose) with the company's type kept in body_requested: it washes once a re-check finds that
-     * type or an admin confirms one. $body gets the status and the types geoapi.ge named (on body_type_invalid,
-     * every type there is).
+     * found in the catalog. The company gives a body type as a hint: one complete catalog type confirms
+     * automatically, but an ambiguous/incomplete list waits for the driver to pick. Unknown types are refused;
+     * unavailable catalog data leaves the car unconfirmed. No QR or package allocation precedes confirmation.
      *
      * @param  array<string, mixed>  $row  plate, brand, model (or brand_id, model_id), year, body_type, phone
      * @param  array{status: string, types: list<string>}|null  $body
@@ -127,8 +123,10 @@ class FleetCars
         // or geoapi.ge down, the car is saved but waits: no washes until a re-check finds the type or an admin
         // confirms one. The company's type stays as the hint for both.
         $listed = in_array($type, $options['types'], true);
-        $status = $listed ? CarBody::CONFIRMED : ($options['types'] === [] ? CarBody::UNKNOWN : CarBody::CHOOSE);
-        $generations = $listed ? ($options['generations'][$type] ?? []) : [];
+        // Several possible bodies belong to the driver's decision, even when the company named one.
+        $confirmed = $listed && $options['status'] === CarBody::CONFIRMED;
+        $status = $confirmed ? CarBody::CONFIRMED : ($options['types'] === [] ? CarBody::UNKNOWN : CarBody::CHOOSE);
+        $generations = $confirmed ? ($options['generations'][$type] ?? []) : [];
         $body = ['status' => $status, 'types' => $options['types']];
 
         $taken = FleetCar::query()
@@ -149,12 +147,11 @@ class FleetCars
                 'catalog_source' => $model['source'],
                 'catalog_brand_id' => $model['brand_id'],
                 'catalog_model_id' => $model['model_id'],
-                'car_type' => $listed ? $type : null,
+                'car_type' => $confirmed ? $type : null,
                 'body_status' => $status,
                 'body_options' => $options['types'] === [] ? null : $options['types'],
                 'body_incomplete' => $options['incomplete'],
-                'body_source' => ! $listed ? null
-                    : ($options['status'] === CarBody::CONFIRMED && $options['types'] === [$type] ? CarBody::BY_CATALOG : CarBody::BY_COMPANY),
+                'body_source' => $confirmed ? CarBody::BY_CATALOG : null,
                 'body_requested' => $type,
                 // Not checked while geoapi.ge is down, so cars:check-bodies tries again.
                 'body_checked_at' => $options['unavailable'] ? null : now(),

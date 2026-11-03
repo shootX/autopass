@@ -50,6 +50,7 @@ class FleetCar extends Model
         'invited_at' => 'datetime',
         'activated_at' => 'datetime',
         'driver_consented_at' => 'datetime',
+        'driver_consent_required' => 'boolean',
         'blocked_at' => 'datetime',
         'qr_expires_at' => 'datetime',
         'washes_left' => 'integer',

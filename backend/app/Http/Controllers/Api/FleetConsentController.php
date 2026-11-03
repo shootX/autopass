@@ -26,6 +26,9 @@ class FleetConsentController extends Controller
         }
 
         $error = FleetInvites::accept($car, $request->user());
+        if ($error === 'invite_gone') {
+            return response()->json(['success' => false, 'error' => __('corporate.invite_gone'), 'error_code' => 'invite_gone'], 404);
+        }
         if ($error !== null) {
             $key = $error === 'body_conflict' ? 'corporate.invite_body_conflict' : 'corporate.invite_failed';
 
@@ -42,7 +45,9 @@ class FleetConsentController extends Controller
             return response()->json(['success' => false, 'error' => __('corporate.invite_gone'), 'error_code' => 'invite_gone'], 404);
         }
 
-        FleetInvites::decline($car);
+        if (! FleetInvites::decline($car, $request->user())) {
+            return response()->json(['success' => false, 'error' => __('corporate.invite_gone'), 'error_code' => 'invite_gone'], 404);
+        }
 
         return response()->json(['success' => true, 'message' => __('corporate.invite_declined')]);
     }

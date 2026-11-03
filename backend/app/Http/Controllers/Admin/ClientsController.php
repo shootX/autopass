@@ -263,6 +263,7 @@ class ClientsController extends Controller
         UserPackage::create([
             'user_id' => $client->id,
             'package_id' => $price->package_id,
+            'body_type' => $price->package->car_type,
             'price_id' => $price->id,
             'user_car_id' => $request->car_id,
             'start_date' => now(),

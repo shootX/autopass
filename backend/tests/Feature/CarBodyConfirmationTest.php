@@ -51,7 +51,7 @@ function waitingCar(User $user, int $year, string $plate): UserCar
 function bodyPackage(UserCar $car, bool $legacy = false): UserPackage
 {
     $package = UserPackage::query()->create([
-        'user_id' => $car->user_id, 'user_car_id' => $car->id, 'package_id' => Package::query()->value('id'),
+        'user_id' => $car->user_id, 'user_car_id' => $car->id, 'package_id' => Package::query()->where('car_type', $car->carType() ?? 'sedan')->value('id'),
         'start_date' => now()->subDay(), 'end_date' => now()->addMonth(), 'number_of_washes' => 4, 'used_washes' => 0,
         'qr_code' => Str::random(16), 'qr_expires_at' => now()->addMinutes(5),
     ]);
@@ -118,7 +118,7 @@ it('lets the admin give a package only to a car of a confirmed body type', funct
     $this->actingAs(cwAdmin())->get('/dashboard/clients/'.$f['user']->id.'/cars')->assertOk();
 });
 
-it('shows no QR and approves no wash for an unconfirmed car, but keeps a package bought before the change working', function () {
+it('requires body confirmation for every QR including packages bought before the change', function () {
     $f = bodyDriver('555 71 00 03');
     $manager = makeUser('555 71 00 08', User::ROLE_MANAGER);
     cwManager('555 71 00 07');
@@ -132,8 +132,10 @@ it('shows no QR and approves no wash for an unconfirmed car, but keeps a package
         ->assertStatus(422)->assertJsonPath('error_code', 'body_unconfirmed');
     expect($new->fresh()->used_washes)->toBe(0);
 
-    // A package bought before body types were confirmed still washes.
+    // A paid legacy package stays intact but also waits for confirmation.
     $old = bodyPackage($f['pending'], true);
+    $this->withToken(cwAs($f['user']))->get("/api/packages/{$old->id}/qr")->assertStatus(422);
+    $this->withToken(cwAs($f['user']))->postJson("/api/mycars/{$f['pending']->id}/body", ['car_type' => 'sedan'])->assertOk();
     $this->withToken(cwAs($f['user']))->get("/api/packages/{$old->id}/qr")->assertOk();
     $token = $this->withToken(cwAs($manager))->getJson('/api/checkqr/'.$old->fresh()->qr_code)->assertOk()->json('approve_token');
     $this->withToken(cwAs($manager))->postJson("/api/package/{$old->id}/approve", ['approve_token' => $token])->assertOk();

@@ -183,8 +183,8 @@ class PackagesController extends Controller
                 // The car left this driver's app (a company gave it to its next driver): its packages go along.
                 return response()->json(['success' => false, 'error' => __('cars.car_not_found')], 404);
             }
-            if (! $package->bodyAllowsWash()) {
-                return response()->json(['success' => false, 'error' => __('cars.body_unconfirmed'), 'error_code' => 'body_unconfirmed'], 422);
+            if ($bodyProblem = $package->bodyBlocker()) {
+                return response()->json(['success' => false, 'error' => __('cars.'.$bodyProblem), 'error_code' => $bodyProblem], 422);
             }
             // No code for a package a wash would be refused on: past its exact end time, not started, used up.
             if ($package->end_date && now()->greaterThan($package->end_date)) {
@@ -325,8 +325,8 @@ class PackagesController extends Controller
         if (! $userPackage->hasWashesLeft()) {
             return response()->json(['success' => false, 'error' => 'No washes left'], 422);
         }
-        if (! $userPackage->bodyAllowsWash()) {
-            return response()->json(['success' => false, 'error' => __('cars.body_unconfirmed'), 'error_code' => 'body_unconfirmed'], 422);
+        if ($bodyProblem = $userPackage->bodyBlocker()) {
+            return response()->json(['success' => false, 'error' => __('cars.'.$bodyProblem), 'error_code' => $bodyProblem], 422);
         }
 
         $approved = DB::transaction(function () use ($userPackage, $washId, $user, $hereAppointment, $qr) {

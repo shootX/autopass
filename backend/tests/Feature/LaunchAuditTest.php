@@ -267,9 +267,9 @@ it('holds a discount code for an open payment so its limit cannot be stretched',
     $this->withToken($b)->postJson('/api/points/buy', ['amount' => 50, 'promo_code' => 'ONCE'])->assertStatus(422)
         ->assertJsonPath('code', 'promo_used_up');
 
-    // The first page was never settled: once nothing can pay it any more, the code is free again.
+    // An old unresolved page may already have been paid: age alone never frees the code.
     $this->travel(TbcPayment::SETTLE_MINUTES + 1)->minutes();
-    $this->withToken($b)->postJson('/api/points/buy', ['amount' => 50, 'promo_code' => 'ONCE'])->assertOk();
+    $this->withToken($b)->postJson('/api/points/buy', ['amount' => 50, 'promo_code' => 'ONCE'])->assertStatus(422);
 });
 
 // 7. Plate

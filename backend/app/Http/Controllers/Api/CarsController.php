@@ -68,6 +68,7 @@ class CarsController extends Controller
             $cars = $user->cars()->with(['model.brand'])->get();
             $companies = FleetCar::query()->whereIn('user_car_id', $cars->pluck('id'))
                 ->where('user_id', $user->id)
+                ->where('driver_consent_required', false)
                 ->where('status', FleetCar::STATUS_ACTIVE)->with(['client:id,name,ban', 'discountPackage.prices'])->get()
                 ->keyBy(fn (FleetCar $fleet) => (int) $fleet->user_car_id);
 

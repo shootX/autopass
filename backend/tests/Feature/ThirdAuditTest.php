@@ -251,7 +251,7 @@ it('holds a discount code until a payment made near its page end is settled', fu
     $this->withToken(cwAs($b))->postJson('/api/points/buy', ['amount' => 50, 'promo_code' => 'LAST'])->assertOk();
 });
 
-it('frees a discount code held by a payment nobody could settle after two hours', function () {
+it('keeps a discount reserved when nobody could settle its payment after two hours', function () {
     taFlitt();
     AppSettings::store(['point_price' => 1, 'point_discount' => 0]);
     PromoCode::query()->create(['code' => 'STUCK', 'kind' => 'discount', 'value' => 90, 'max_uses' => 1]);
@@ -261,7 +261,7 @@ it('frees a discount code held by a payment nobody could settle after two hours'
     $this->travel(TbcPayment::SETTLE_MINUTES - 1)->minutes();
     $this->withToken(cwAs($b))->postJson('/api/points/buy', ['amount' => 50, 'promo_code' => 'STUCK'])->assertStatus(422);
     $this->travel(2)->minutes();
-    $this->withToken(cwAs($b))->postJson('/api/points/buy', ['amount' => 50, 'promo_code' => 'STUCK'])->assertOk();
+    $this->withToken(cwAs($b))->postJson('/api/points/buy', ['amount' => 50, 'promo_code' => 'STUCK'])->assertStatus(422);
 });
 
 it('settles payments up to a week old', function () {

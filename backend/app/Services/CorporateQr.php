@@ -21,6 +21,7 @@ class CorporateQr
             ->where('user_car_id', $userCarId)
             ->where('user_id', $user->id)
             ->where('status', FleetCar::STATUS_ACTIVE)
+            ->where('driver_consent_required', false)
             ->with('client')
             ->first();
     }

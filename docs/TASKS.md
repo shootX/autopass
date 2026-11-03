@@ -540,3 +540,16 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 - [x] The app stores a listed colour by its English name; `admin.car_colors` shows it in the admin language (also on the client profile cars tab).
 - [x] Tests: `AdminCarsListTest`. Not run locally (container composer can't download from GitHub); CI runs them on pgsql.
 - No migration. Server: `php artisan route:cache` and `view:clear` after deploy.
+
+
+## 2026-11-03 — Confirmed audit fixes (Codex)
+- [x] Preserve same-phone fleet state; guard stale consent and legacy-link handovers; enforce SMS cooldown under a row lock.
+- [x] Discover post-login invites through the invites endpoint.
+- [x] Require driver's ambiguous body selection and confirmed matching body for QR; block package allocation beforehand. Preserve money/history during corrective migrations.
+- [x] Hold promo reservations until a final payment answer; reconcile old promo orders.
+- [x] Send ticket availability and archived details; companion iOS changes preserve retries for temporary errors.
+- [x] Require checks for manual deployment as well as automatic deployment. Add FifthReviewFixesTest to SQLite and PostgreSQL regression coverage.
+- [ ] Merge/release companion iOS changes and verify on a device before applying backend migrations 000008–000010. Review affected legacy links/body choices and any incompatible paid packages.
+- [ ] Configure required PR reviews/checks on GitHub main with administration access; verify server deploy checks out the immutable tested SHA.
+
+2026-11-03: `user_packages.body_type` and the checkout payload snapshot the purchased category, so a later catalog edit cannot invalidate the driver's paid terms. Migration `000010` backfills the only category still available for historical purchases; past catalog edits cannot be reconstructed and require support review if mismatched.
