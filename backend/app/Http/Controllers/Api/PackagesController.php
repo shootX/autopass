@@ -141,6 +141,8 @@ class PackagesController extends Controller
                     'car' => $package->car,
                     'start_date' => $package->start_date,
                     'end_date' => $package->end_date,
+                    // The exact moment it stops working, with its zone: the app compares this, not the day.
+                    'ends_at' => $package->end_date ? Carbon::parse($package->end_date)->toIso8601String() : null,
                     'number_of_washes' => $package->number_of_washes,
                     'used_washes' => $package->used_washes,
                     'renewal' => $package->renews(),
@@ -183,6 +185,16 @@ class PackagesController extends Controller
             if (! $package->bodyAllowsWash()) {
                 return response()->json(['success' => false, 'error' => __('cars.body_unconfirmed'), 'error_code' => 'body_unconfirmed'], 422);
             }
+            // No code for a package a wash would be refused on: past its exact end time, not started, used up.
+            if ($package->end_date && now()->greaterThan($package->end_date)) {
+                return response()->json(['success' => false, 'error' => __('cars.package_expired'), 'error_code' => 'package_expired'], 422);
+            }
+            if ($package->start_date && now()->lessThan(Carbon::parse($package->start_date)->startOfDay())) {
+                return response()->json(['success' => false, 'error' => __('cars.package_not_started'), 'error_code' => 'package_not_started'], 422);
+            }
+            if (! $package->hasWashesLeft()) {
+                return response()->json(['success' => false, 'error' => __('cars.package_used_up'), 'error_code' => 'package_used_up'], 422);
+            }
 
             // A fresh code replaces the previous one and works for a few minutes only, like a company car's.
             $package->update([
@@ -200,6 +212,17 @@ class PackagesController extends Controller
 
             return response()->json(['success' => false, 'error' => 'Request failed']);
         }
+    }
+
+    /** Whether the package code the app shows still works: a wash, a newer code or its expiry ends it. */
+    public function qrLive(Request $request, int $id)
+    {
+        $package = $request->user()->packages()->whereKey($id)->first(['id', 'qr_expires_at']);
+        if (! $package) {
+            return response()->json(['success' => false, 'error' => 'Not found'], 404);
+        }
+
+        return response()->json(['success' => true, 'live' => $package->qr_expires_at !== null && $package->qr_expires_at->isFuture()]);
     }
 
     public function removePackage(Request $request, UserPackage $userPackage)

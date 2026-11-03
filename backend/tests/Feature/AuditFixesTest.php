@@ -298,13 +298,15 @@ it('stores OTP codes as a keyed hash, not plain sha256', function () {
     expect($row->code)->not->toBe(hash('sha256', $code));
 });
 
-// L8 — account deletion anonymises
+// L8 — account deletion anonymises (90 days after it was asked for, 2026-11-03)
 it('anonymises personal data on account deletion and allows deleting twice', function () {
     foreach ([1, 2] as $i) {
         $u = makeUser('555600140');
         $u->forceFill(['name' => 'Nino', 'surname' => 'B', 'email' => "n$i@example.com", 'date_of_birth' => '1990-01-01'])->save();
         afReset();
         $this->withToken(JWTAuth::fromUser($u))->postJson('/api/account/delete')->assertOk();
+        $this->travel(91)->days();
+        $this->artisan('accounts:erase-deleted')->assertSuccessful();
         $f = $u->fresh();
         expect($f->name)->toBeNull()->and($f->surname)->toBeNull()->and($f->email)->toBeNull()->and($f->date_of_birth)->toBeNull()
             ->and($f->phone)->toStartWith('deleted-'.$u->id.'-');

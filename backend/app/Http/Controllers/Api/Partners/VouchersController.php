@@ -36,6 +36,10 @@ class VouchersController extends Controller
             // Same answer as an unknown code: a partner can't probe other partners' codes.
             return response()->json(['success' => false, 'message' => 'Incorrect code']);
         }
+        // Past its last day it can't be used (an offer only disabled in the admin still can).
+        if ($voucher->voucher->expired()) {
+            return response()->json(['success' => false, 'message' => 'Voucher expired', 'error_code' => 'voucher_expired'], 422);
+        }
 
         // Dedupe: one SMS per voucher+recipient per window. The lock serialises parallel checks;
         // a repeat inside the window gets the still-open challenge back instead of a new SMS.
@@ -138,6 +142,9 @@ class VouchersController extends Controller
             if ($voucher->used_at !== null) {
                 return 'used';
             }
+            if ($voucher->voucher->expired()) {
+                return 'expired';
+            }
             $voucher->forceFill(['used_at' => now(), 'used_by_partner_id' => $partnerId])->save();
 
             return 'ok';
@@ -146,6 +153,7 @@ class VouchersController extends Controller
         return match ($result) {
             'ok' => response()->json(['success' => true, 'message' => 'You successfully used voucher']),
             'used' => response()->json(['success' => false, 'message' => 'Voucher already used'], 422),
+            'expired' => response()->json(['success' => false, 'message' => 'Voucher expired', 'error_code' => 'voucher_expired'], 422),
             default => response()->json(['success' => false, 'message' => 'Incorrect SMS code'], 422),
         };
     }

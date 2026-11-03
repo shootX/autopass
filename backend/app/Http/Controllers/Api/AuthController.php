@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Middleware\EnsureApiSession;
 use App\Jobs\SendSms;
 use App\Models\User;
-use App\Services\AccountEraser;
+use App\Services\AccountDeletion;
 use App\Services\FleetInvites;
 use App\Services\Security\ActionGrantService;
 use App\Services\Security\AuthChallengeException;
@@ -196,6 +196,8 @@ class AuthController extends Controller
             return response()->json(['success' => false, 'error' => 'Не верный логин либо пароль.'], 401);
         }
         [, , $cookie] = $this->refreshTokens->start($user->fresh(), $family);
+        // An account deleted in the app less than 90 days ago comes back by signing in with the same phone.
+        $restored = AccountDeletion::restore($user);
         FleetInvites::activateFor($user);
 
         return response()->json([
@@ -204,6 +206,7 @@ class AuthController extends Controller
             'token_type' => 'bearer',
             'expires_in' => auth('api')->factory()->getTTL() * 60,
             'user' => auth('api')->user(),
+            'restored' => $restored,
         ])->withCookie($cookie);
     }
 
@@ -481,15 +484,21 @@ class AuthController extends Controller
     public function deleteAccount(Request $request)
     {
         $user = auth()->user();
-        // Personal data, cars and push tokens go; the row stays for orders/ledger history (AccountEraser).
-        AccountEraser::erase($user);
+        // Kept for 90 days with everything on it and restored by signing in with the same phone; erased after
+        // (AccountDeletion, owner's rule 2026-11-03).
+        $eraseAt = AccountDeletion::request($user);
         $token = JWTAuth::getToken();
         if ($token) {
             JWTAuth::invalidate($token);
         }
         auth()->logout();
 
-        return response()->json(['success' => true, 'message' => 'Аккаунт успешно удалён.']);
+        return response()->json([
+            'success' => true,
+            'message' => 'Аккаунт удалён. Войдите с тем же номером в течение 90 дней, чтобы восстановить его.',
+            'restore_days' => AccountDeletion::RESTORE_DAYS,
+            'erase_at' => $eraseAt?->toIso8601String(),
+        ]);
     }
 
     public function registerDevice(Request $request)

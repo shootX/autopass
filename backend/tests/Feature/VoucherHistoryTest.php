@@ -35,16 +35,21 @@ class VoucherHistoryTest extends TestCase
         UserVoucher::query()->create(['user_id' => $user->id, 'voucher_id' => $gone->id, 'code' => 'GONE0001']);
         UserVoucher::query()->create(['user_id' => $user->id, 'voucher_id' => $live->id, 'code' => 'LIVE0001']);
         UserVoucher::query()->create(['user_id' => $other->id, 'voucher_id' => $live->id, 'code' => 'OTHR0001']);
+        $past = Voucher::query()->create(['name' => 'Past', 'description' => 'x', 'photo' => 'p.png',
+            'category_id' => $category->id, 'price' => 5, 'date_to' => now()->subDay()->toDateString()]);
+        UserVoucher::query()->create(['user_id' => $user->id, 'voucher_id' => $past->id, 'code' => 'PAST0001']);
 
         $rows = $this->withToken(auth('api')->login($user))->getJson('/api/vouchers/history')
             ->assertOk()->assertJsonPath('success', true)->json('vouchers');
 
-        $this->assertSame(['LIVE0001', 'GONE0001', 'USED0001'], array_column($rows, 'code'));
-        $this->assertSame(['active', 'unavailable', 'used'], array_column($rows, 'status'));
-        $this->assertSame('Shop', $rows[0]['partner']);
-        $this->assertSame('Fuel', $rows[0]['category']);
-        $this->assertNull($rows[0]['used_at']);
-        $this->assertNotNull($rows[2]['used_at']);
+        // A disabled offer only stops selling: the one bought before still works until its last day.
+        $this->assertSame(['PAST0001', 'LIVE0001', 'GONE0001', 'USED0001'], array_column($rows, 'code'));
+        $this->assertSame(['expired', 'active', 'active', 'used'], array_column($rows, 'status'));
+        $this->assertSame(now()->subDay()->toDateString(), $rows[0]['date_to']);
+        $this->assertSame('Shop', $rows[1]['partner']);
+        $this->assertSame('Fuel', $rows[1]['category']);
+        $this->assertNull($rows[1]['used_at']);
+        $this->assertNotNull($rows[3]['used_at']);
     }
 
     public function test_history_needs_a_login(): void

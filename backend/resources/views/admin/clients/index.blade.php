@@ -53,6 +53,10 @@
                             <td class="text-nowrap">
                                 <a href="{{ route('admin.clients.show', $client) }}">{{ \App\Support\Phone::format($client->phone) }}</a>
                                 <a class="text-muted ms-1" href="tel:{{ \App\Support\Phone::digits($client->phone) }}"><i class="fas fa-phone"></i></a>
+                                @if($client->deletion_requested_at)
+                                    {{-- Deleted in the app: kept until this day, back if the same phone signs in. --}}
+                                    <small class="d-block text-danger">{{ __('admin.client_deletion_requested', ['date' => \App\Services\AccountDeletion::eraseAt($client)->toDateString()]) }}</small>
+                                @endif
                             </td>
                             <td>{{ $client->sex === 'male' ? __('admin.male') : ($client->sex === 'female' ? __('admin.female') : '—') }}</td>
                             <td>{{$client->date_of_birth}}</td>

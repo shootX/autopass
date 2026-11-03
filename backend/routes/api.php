@@ -125,6 +125,7 @@ Route::middleware(['auth:api', CorsMiddleware::class, EnsureApiSession::class])-
         Route::post('/{carid}/body', [CarBodyController::class, 'choose'])->whereNumber('carid')->middleware('throttle:30,1');
         Route::post('/{carid}/body/check', [CarBodyController::class, 'check'])->whereNumber('carid')->middleware('throttle:10,1');
         Route::get('/{carid}/company-qr', [CorporateWashController::class, 'qr'])->whereNumber('carid')->middleware('throttle:30,1');
+        Route::get('/{carid}/company-qr/live', [CorporateWashController::class, 'qrLive'])->whereNumber('carid')->middleware('throttle:30,1');
     });
 
     Route::prefix('/tickets')->group(function () {
@@ -163,6 +164,8 @@ Route::middleware(['auth:api', CorsMiddleware::class, EnsureApiSession::class])-
         Route::post('/buy', [PackagesController::class, 'buyPackage']);
         Route::get('/my', [PackagesController::class, 'myPackages']);
         Route::get('/{id}/qr', [PackagesController::class, 'qrCode']);
+        // The open QR screen asks every few seconds whether its code still works (a wash spends it).
+        Route::get('/{id}/qr/live', [PackagesController::class, 'qrLive'])->whereNumber('id')->middleware('throttle:30,1');
         Route::delete('/{userPackage}/remove', [PackagesController::class, 'removePackage']);
         Route::post('/{userPackage}/renewal', [PackageRenewalController::class, 'update'])->whereNumber('userPackage');
     });

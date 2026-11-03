@@ -32,6 +32,8 @@
                             <th scope="col">{{ __('admin.type') }}</th>
                             <th scope="col">{{ __('admin.price') }}</th>
                             <th scope="col">{{ __('admin.quantity') }}</th>
+                            <th scope="col">{{ __('admin.voucher_user_limit') }}</th>
+                            <th scope="col">{{ __('admin.voucher_date_to') }}</th>
                             <th scope="col">{{ __('admin.sold') }}</th>
                             <th scope="col">{{ __('admin.created_at') }}</th>
                             <th scope="col">{{ __('admin.actions') }}</th>
@@ -64,6 +66,15 @@
                                     {{ __('admin.unlimited') }}
                                 @endif
                             </td>
+                            <td>{{ (int) $voucher->user_limit }}</td>
+                            <td>
+                                @if($voucher->date_to)
+                                    <span @class(['text-danger' => $voucher->expired()])>{{ substr((string) $voucher->date_to, 0, 10) }}</span>
+                                    @if($voucher->expired())<small class="d-block text-danger">{{ __('admin.voucher_expired') }}</small>@endif
+                                @else
+                                    <span class="text-warning">{{ __('admin.voucher_date_missing') }}</span>
+                                @endif
+                            </td>
                             <td>{{ __('admin.pcs', ['count' => \App\Models\UserVoucher::where('voucher_id', $voucher->id)->count()]) }}</td>
                             <td>{{$voucher->created_at}}</td>
                             <td>
@@ -76,7 +87,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="11">{{ __('admin.dash_empty') }}</td></tr>
+                        <tr><td colspan="13">{{ __('admin.dash_empty') }}</td></tr>
                     @endforelse
                     </tbody>
                 </table>
