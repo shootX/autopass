@@ -40,6 +40,17 @@ class CorporateWashController extends Controller
             ->header('X-QR-Expires', (string) $car->qr_expires_at->timestamp);
     }
 
+    /** Whether the company car code the app shows still works: a wash, a newer code or its expiry ends it. */
+    public function qrLive(Request $request, int $carid)
+    {
+        $car = CorporateQr::driverCar($request->user(), $carid);
+        if (! $car) {
+            return response()->json(['success' => false, 'error' => 'Not found'], 404);
+        }
+
+        return response()->json(['success' => true, 'live' => filled($car->qr_code) && $car->qr_expires_at?->isFuture() === true]);
+    }
+
     /** POST /corporate-wash/{id}/approve with the approve_token from checkqr. */
     public function approve(Request $request, int $id)
     {

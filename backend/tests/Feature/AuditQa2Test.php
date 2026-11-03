@@ -113,6 +113,8 @@ it('gives deleted accounts unique non-phone tombstones', function () {
     foreach (['555770501', '555770502', '555770501'] as $phone) {
         $u = qa2Client($phone);
         $this->withToken(JWTAuth::fromUser($u))->postJson('/api/account/delete')->assertOk();
+        $this->travel(91)->days();
+        $this->artisan('accounts:erase-deleted')->assertSuccessful();
         qa2Reset();
         $phones[] = (string) DB::table('users')->where('id', $u->id)->value('phone');
         expect(end($phones))->toStartWith('deleted-'.$u->id.'-');

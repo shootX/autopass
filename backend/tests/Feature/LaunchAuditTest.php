@@ -301,6 +301,9 @@ it('erases an account: personal data, cars, push tokens and the company link go,
     $token = cwAs($driver);
 
     $this->withToken($token)->postJson('/api/account/delete')->assertOk();
+    // Kept 90 days for a sign-in to bring it back (2026-11-03), then erased.
+    $this->travel(91)->days();
+    $this->artisan('accounts:erase-deleted')->assertSuccessful();
 
     $erased = User::query()->find($driver->id);
     expect($erased->name)->toBeNull()->and($erased->email)->toBeNull()

@@ -74,6 +74,8 @@
 
 
                     <x-form-input type="number" title="{{ __('admin.quantity') }}" placeholder="{{ __('admin.unlimited_hint') }}" name="count"/>
+                    <x-form-input required type="number" title="{{ __('admin.voucher_user_limit') }}" value="1" small="{{ __('admin.voucher_user_limit_hint') }}" name="user_limit"/>
+                    <x-form-input required type="date" title="{{ __('admin.voucher_date_to') }}" small="{{ __('admin.voucher_date_to_hint') }}" name="date_to"/>
 
 
                     <x-form-input required rows="5" type="textarea" title="{{ __('admin.footer_left') }}" name="footer_text"/>

@@ -57,6 +57,7 @@ class User extends Authenticatable implements JWTSubject
         'remember_token',
         'referral_id',
         'token_version',
+        'deletion_requested_at',
     ];
 
     protected $appends = [
@@ -73,6 +74,7 @@ class User extends Authenticatable implements JWTSubject
         return [
             'email_verified_at' => 'datetime',
             'phone_verified_at' => 'datetime',
+            'deletion_requested_at' => 'datetime',
             'password' => 'hashed',
             'points' => 'integer',
             'enable_push_special_promotions' => 'boolean',

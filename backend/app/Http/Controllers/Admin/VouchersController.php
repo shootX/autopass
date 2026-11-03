@@ -49,7 +49,10 @@ class VouchersController extends Controller
             'conditions' => 'sometimes',
             'footer_text' => 'required',
             'footer_geo' => 'required',
-            'count' => 'nullable|numeric',
+            'count' => 'nullable|integer|min:0',
+            // Every voucher has a last day; one user buys at most user_limit of it (owner's rule, 2026-11-03).
+            'date_to' => 'required|date|after_or_equal:today',
+            'user_limit' => 'required|integer|min:1|max:100',
         ]);
 
         if ($validate->fails()) {
@@ -62,10 +65,7 @@ class VouchersController extends Controller
         }
 
         $data = $validate->validated();
-
-        if ($data['count'] == null) {
-            $data['count'] = 0;
-        }
+        $data['count'] = (int) ($data['count'] ?? 0);
 
         $data['photo'] = $photoPath;
 
@@ -172,7 +172,9 @@ class VouchersController extends Controller
             'conditions' => 'sometimes',
             'footer_text' => 'required',
             'footer_geo' => 'required',
-            'count' => 'nullable|numeric',
+            'count' => 'nullable|integer|min:0',
+            'date_to' => 'required|date',
+            'user_limit' => 'required|integer|min:1|max:100',
         ]);
 
         if ($validate->fails()) {
@@ -185,6 +187,7 @@ class VouchersController extends Controller
         }
 
         $data = $validate->validated();
+        $data['count'] = (int) ($data['count'] ?? 0);
 
         unset($data['voucher_type']);
 

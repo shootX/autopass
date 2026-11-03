@@ -29,12 +29,14 @@ class VouchersController extends Controller
             ]);
         }
 
-        $vouchers = Voucher::with('category');
+        // Only what is still sold: not disabled, not past its last day.
+        $vouchers = Voucher::with('category')->onSale();
 
         if ($request->has('category_id')) {
             $vouchers->where('category_id', $request->category_id);
         }
         $vouchers = $vouchers->paginate(50);
+        Voucher::fillForUser($vouchers->getCollection(), (int) auth()->id());
 
         return response()->json([
             'success' => true,
@@ -52,61 +54,75 @@ class VouchersController extends Controller
         ]);
     }
 
-    private function uniqueCode(): string
+    /** @return list<string> */
+    private function uniqueCodes(int $count): array
     {
         // Picked before the insert: a failed INSERT would abort the surrounding Postgres transaction.
-        for ($i = 0; $i < 10; $i++) {
+        $codes = [];
+        for ($i = 0; $i < 10 * $count && count($codes) < $count; $i++) {
             $code = strtoupper(Str::random(8));
-            if (! UserVoucher::query()->where('code', $code)->exists()) {
-                return $code;
+            if (! in_array($code, $codes, true) && ! UserVoucher::query()->where('code', $code)->exists()) {
+                $codes[] = $code;
             }
         }
+        if (count($codes) < $count) {
+            throw new \RuntimeException('Could not generate a voucher code');
+        }
 
-        throw new \RuntimeException('Could not generate a voucher code');
+        return $codes;
     }
 
     public function buyVoucher(Request $request)
     {
         $validate = Validator::make($request->all(), [
             'voucher_id' => 'required|exists:App\Models\Voucher,id',
+            'qty' => 'sometimes|integer|min:1|max:20',
         ]);
 
         if ($validate->fails()) {
             return response()->json(['success' => false, 'message' => $validate->errors()]);
         }
 
-        $voucher = Voucher::query()->findOrFail($request->voucher_id);
-        $price = (int) $voucher->price;
+        $qty = (int) $request->input('qty', 1);
         $userId = (int) auth()->id();
-        // A price below zero would add points: such an offer is not sold, whatever was typed in the admin.
-        if ($price < 0) {
-            return response()->json(['success' => false, 'message' => 'Voucher unavailable']);
-        }
 
         try {
-            // Balance check, deduction, voucher and ledger row are one unit: any failure rolls all of it back.
-            $points = DB::transaction(function () use ($userId, $voucher, $price) {
+            // Sale rules, balance, deduction, vouchers and ledger row are one unit under row locks: the voucher's
+            // (its stock) and the user's (balance and how many they own).
+            $result = DB::transaction(function () use ($request, $qty, $userId) {
+                $voucher = Voucher::query()->whereKey($request->voucher_id)->lockForUpdate()->firstOrFail();
+                // A price below zero would add points: such an offer is not sold, whatever was typed in the admin.
+                if ($voucher->deleted || (int) $voucher->price < 0) {
+                    return 'Voucher unavailable';
+                }
+                if ($voucher->expired()) {
+                    return 'Voucher expired';
+                }
                 $user = User::query()->whereKey($userId)->lockForUpdate()->firstOrFail();
-                if ($user->realPoints() < $price) {
-                    return null;
+                $owned = UserVoucher::query()->where('voucher_id', $voucher->id)->where('user_id', $user->id)->count();
+                $sold = UserVoucher::query()->where('voucher_id', $voucher->id)->count();
+                if ($qty > $voucher->leftFor($owned, $sold)) {
+                    return 'Voucher limit reached';
+                }
+                $total = (int) $voucher->price * $qty;
+                if ($user->realPoints() < $total) {
+                    return 'Not enough points';
                 }
 
-                $user->points = (int) $user->points - $price;
+                $user->points = (int) $user->points - $total;
                 $user->save();
 
-                UserVoucher::query()->create([
-                    'user_id' => $user->id,
-                    'voucher_id' => $voucher->id,
-                    'code' => $this->uniqueCode(),
-                ]);
+                foreach ($this->uniqueCodes($qty) as $code) {
+                    UserVoucher::query()->create(['user_id' => $user->id, 'voucher_id' => $voucher->id, 'code' => $code]);
+                }
 
                 Transaction::query()->create([
                     'user_id' => $user->id,
-                    'amount' => $price,
+                    'amount' => $total,
                     'type' => 'outcome',
                     'system' => 'Points',
                     'status' => true,
-                    'comment' => 'Voucher',
+                    'comment' => $qty > 1 ? $qty.' vouchers' : 'Voucher',
                 ]);
 
                 return (int) $user->points;
@@ -117,20 +133,21 @@ class VouchersController extends Controller
             return response()->json(['success' => false, 'message' => 'Some error']);
         }
 
-        if ($points === null) {
-            return response()->json(['success' => false, 'message' => 'Not enough points']);
+        if (is_string($result)) {
+            return response()->json(['success' => false, 'message' => $result]);
         }
 
         return response()->json([
             'success' => true,
             'message' => 'Voucher purchased successfully',
-            'points' => $points,
+            'points' => $result,
         ]);
     }
 
     /**
-     * Every voucher the user bought, newest first, with its status:
-     * active (can be shown to the partner), used, or unavailable (withdrawn from the shop before use).
+     * Every voucher the user bought, newest first, with its status: active (can be shown to the partner), used,
+     * expired (past its last day, can't be used) or unavailable (the offer is gone). An offer the admin only
+     * disabled stays active for the ones bought before (owner's rule, 2026-11-03).
      */
     public function history(Request $request)
     {
@@ -144,7 +161,8 @@ class VouchersController extends Controller
                 $voucher = $row->voucher;
                 $status = match (true) {
                     $row->used_at !== null => 'used',
-                    ! $voucher || $voucher->deleted => 'unavailable',
+                    ! $voucher => 'unavailable',
+                    $voucher->expired() => 'expired',
                     default => 'active',
                 };
 
@@ -159,6 +177,7 @@ class VouchersController extends Controller
                     'partner' => $row->partner?->name ?? $voucher?->partner?->name,
                     'code' => $row->code,
                     'status' => $status,
+                    'date_to' => $voucher?->date_to ? substr((string) $voucher->date_to, 0, 10) : null,
                     'purchased_at' => $row->created_at?->toIso8601String(),
                     'used_at' => $row->used_at ? Carbon::parse($row->used_at)->toIso8601String() : null,
                 ];
@@ -175,9 +194,12 @@ class VouchersController extends Controller
     {
         try {
             $user = auth()->user();
-            $v = $user->vouchers()->withPivot('code')->paginate(10);
+            // Ones that can still be used: an expired one is in the history only.
+            $v = $user->vouchers()->withPivot('id', 'code')->notExpired()->paginate(10);
             foreach ($v as $item) {
                 $item['code'] = $item->pivot->code;
+                $item['user_voucher_id'] = $item->pivot->id;
+                $item['voucher_id'] = $item->id;
             }
 
             return response()->json([
