@@ -181,7 +181,7 @@ Route::middleware(['auth:api', CorsMiddleware::class, EnsureApiSession::class])-
     Route::prefix('appointments')->group(function () {
 
         Route::post('/{appointment}/edit', [AppointmentsController::class, 'setStatus']);
-        Route::post('/add', [AppointmentsController::class, 'addAppointment']);
+        Route::post('/add', [AppointmentsController::class, 'addAppointment'])->middleware('throttle:10,1');
         Route::delete('/{id}/remove', [AppointmentsController::class, 'removeAppointment']);
 
     });

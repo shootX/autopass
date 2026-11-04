@@ -102,6 +102,17 @@ class RefreshTokens
         $this->revokeFamily(DB::table('refresh_tokens')->where('token_hash', hash('sha256', $plain))->value('family'));
     }
 
+    /** The account a refresh cookie belongs to, revoked or not; null for an unknown one. */
+    public function userIdFor(string $plain): ?int
+    {
+        if ($plain === '' || strlen($plain) > 128) {
+            return null;
+        }
+        $id = DB::table('refresh_tokens')->where('token_hash', hash('sha256', $plain))->value('user_id');
+
+        return $id === null ? null : (int) $id;
+    }
+
     public function revokeFamily(?string $family): void
     {
         if ($family) {

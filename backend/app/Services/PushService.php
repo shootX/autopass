@@ -48,8 +48,12 @@ class PushService
             });
     }
 
-    private function localized(array $source, string $code): string
+    private function localized(array|string $source, string $code): string
     {
+        // A plain text is the same in every language.
+        if (is_string($source)) {
+            return $source;
+        }
         if ($code === 'ka') {
             return (string) ($source['ka'] ?? $source['ge'] ?? $source['en'] ?? '');
         }

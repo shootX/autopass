@@ -12,4 +12,13 @@ return [
     'terminal' => 'A finished or cancelled appointment cannot be changed.',
     'active_package' => 'An active package for this vehicle already exists.',
     'payment_finished' => 'This payment has already been processed.',
+    'week_limit' => 'This vehicle already has an active booking this week. One active booking per week is allowed.',
+    'cancel_too_late' => 'A booking can be cancelled up to :hours hours before it starts. Please call the branch.',
+    'cancel_closed' => 'A finished or cancelled booking cannot be cancelled.',
+    'not_found' => 'Booking not found.',
+    'cancelled' => 'The booking was cancelled.',
+    'branch_closed_title' => 'Booking cancelled',
+    'branch_closed_body' => 'Branch :branch is closed, so your booking for :date, :time was cancelled.',
+    'payment_checking' => 'We are still checking your previous payment for this package. Try again in a few minutes.',
+    'no_access' => 'Access denied.',
 ];

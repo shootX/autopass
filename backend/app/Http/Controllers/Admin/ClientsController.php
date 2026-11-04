@@ -6,6 +6,7 @@ use App\Exports\ClientsExport;
 use App\Http\Controllers\Controller;
 use App\Models\CarBrand;
 use App\Models\CarModel;
+use App\Models\FleetCar;
 use App\Models\Package;
 use App\Models\PackagePrice;
 use App\Models\User;
@@ -74,6 +75,11 @@ class ClientsController extends Controller
     public function ban(Request $request, User $client)
     {
         $client->forceFill(['ban' => ! $client->ban])->save();
+        if ($client->ban) {
+            // Codes already on the phone stop at once, not when their few minutes run out (QA audit 2026-11-04).
+            UserPackage::query()->where('user_id', $client->id)->whereNotNull('qr_expires_at')->update(['qr_expires_at' => null]);
+            FleetCar::query()->where('user_id', $client->id)->whereNotNull('qr_code')->update(['qr_code' => null, 'qr_expires_at' => null]);
+        }
         // Existing JWTs and web sessions stop working at once (middleware also checks the ban flag).
         SessionRevoker::user($client);
         AdminAudit::record('user', (int) $client->id, $client->ban ? 'ban' : 'unban');

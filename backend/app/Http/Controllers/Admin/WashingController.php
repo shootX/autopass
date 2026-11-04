@@ -2,15 +2,19 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\AppointmentStatus;
 use App\Exports\WashingsExport;
 use App\Http\Controllers\Controller;
+use App\Models\Appointment;
 use App\Models\CarWash;
 use App\Models\CarWashService;
 use App\Models\CarWashServicesList;
 use App\Models\Review;
 use App\Models\User;
 use App\Support\Phone;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -185,7 +189,27 @@ class WashingController extends Controller
 
     public function remove(Request $request, CarWash $washing)
     {
-        $washing->delete();
+        // Bookings ahead at a branch that closes are cancelled and their drivers told (QA audit 2026-11-04).
+        $upcoming = DB::transaction(function () use ($washing) {
+            $rows = Appointment::query()->with('user')->where('car_wash_id', $washing->id)
+                ->whereIn('approved', AppointmentStatus::active())
+                ->whereDate('date', '>=', now()->toDateString())
+                ->lockForUpdate()->get();
+            Appointment::query()->whereKey($rows->modelKeys())->update(['approved' => AppointmentStatus::Cancelled->value]);
+            $washing->delete();
+
+            return $rows;
+        });
+        foreach ($upcoming as $appointment) {
+            $date = Carbon::parse($appointment->date)->format('d.m.Y');
+            $time = Carbon::parse($appointment->time)->format('H:i');
+            $words = fn (string $lang) => __('booking.branch_closed_body', ['branch' => $washing->name, 'date' => $date, 'time' => $time], $lang);
+            $appointment->user?->sendPush(
+                ['en' => __('booking.branch_closed_title', [], 'en'), 'ru' => __('booking.branch_closed_title', [], 'ru'), 'ka' => __('booking.branch_closed_title', [], 'ka')],
+                ['en' => $words('en'), 'ru' => $words('ru'), 'ka' => $words('ka')],
+                setting: User::PUSH_BOOKINGS
+            );
+        }
 
         return redirect()->route('admin.washings')->with('success', __('admin.washing_deleted'));
     }
@@ -206,7 +230,8 @@ class WashingController extends Controller
             'work_time_start' => 'required|string|max:8',
             'work_time_end' => 'required|string|max:8',
             'location' => 'required|string|max:255',
-            'manager_id' => ['sometimes', 'nullable', Rule::exists('users', 'id')->where('role', User::ROLE_MANAGER)],
+            // Every branch has a manager (the column is required): the field can be changed, never emptied.
+            'manager_id' => ['sometimes', 'required', Rule::exists('users', 'id')->where('role', User::ROLE_MANAGER)],
             'services' => 'array|nullable',
         ]);
         unset($data['services']);

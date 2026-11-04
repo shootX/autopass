@@ -10,6 +10,7 @@ use App\Models\CorporateWash;
 use App\Models\CorporateWashMove;
 use App\Models\CorporateWashPool;
 use App\Models\FleetCar;
+use App\Models\User;
 use App\Models\UserCar;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
@@ -72,7 +73,8 @@ class CorporateWashes
         if ($amount === 0 || ($type === CorporateWashMove::TYPE_CREDIT && $amount < 0)) {
             return 'zero';
         }
-        $carType = $package?->car_type ?: $carType;
+        // A paid invoice credits the type it was issued for; a manual credit takes the package's type, else the one named.
+        $carType = $invoiceId !== null && filled($carType) ? $carType : ($package?->car_type ?: $carType);
         if ($carType === null || $carType === '') {
             return 'no_body_type';
         }
@@ -205,7 +207,8 @@ class CorporateWashes
         if ($car->client?->ban) {
             return 'company_blocked';
         }
-        if ($car->driver_consent_required || $car->status !== FleetCar::STATUS_ACTIVE || ! $car->user_car_id) {
+        if ($car->driver_consent_required || $car->status !== FleetCar::STATUS_ACTIVE || ! $car->user_car_id
+            || User::query()->whereKey($car->user_id)->where('ban', true)->exists()) {
             return 'car_blocked';
         }
         if (! $car->bodyConfirmed()) {
