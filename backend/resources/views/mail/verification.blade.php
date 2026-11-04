@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ka">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
-    <title>Подтверждение email</title>
+    <title>Autopass · ელფოსტის დადასტურება</title>
 
     <style>
         body {
@@ -54,7 +54,7 @@
                    border="0"
                    style="width:600px; max-width:600px; background-color:#ffffff;">
 
-                <!-- Top blue line -->
+                
                 <tr>
                     <td style="height:6px; background-color:#14482F; font-size:0; line-height:0;">
                         &nbsp;
@@ -66,19 +66,7 @@
                     <td align="center"
                         style="padding:35px 20px 30px 20px;">
 
-                        <!--
-                            ЛОГОТИП
-
-                            Вставьте сюда свой SVG:
-
-                            <svg ...>
-                                ...
-                            </svg>
-
-                            Или:
-
-                            <img src="..." width="180" alt="Logo">
-                        -->
+                        
 
 
 
@@ -118,11 +106,11 @@
                             line-height:26px;
                             color:#5f6b78;
                         ">
-                            Здравствуйте!
+                            გამარჯობა!
                             <br><br>
-                            Для подтверждения вашего email-адреса
+                            ელფოსტის მისამართის დასადასტურებლად
                             <br>
-                            используйте код ниже.
+                            გამოიყენეთ ქვემოთ მოცემული კოდი.
                         </div>
 
                         <!-- Code -->
@@ -164,9 +152,9 @@
                             line-height:22px;
                             color:#7a8694;
                         ">
-                            Код действителен в течение
+                            კოდი მოქმედებს
                             <strong style="color:#14482F;">
-                                {{ (int) config('security.sms_ttl_minutes') }} минут
+                                {{ (int) config('security.sms_ttl_minutes') }} წუთის განმავლობაში
                             </strong>
                         </div>
 
@@ -176,8 +164,7 @@
                             line-height:22px;
                             color:#9aa3ad;
                         ">
-                            Если вы не запрашивали подтверждение,
-                            просто проигнорируйте это письмо.
+                            თუ დადასტურება არ მოგითხოვიათ, უბრალოდ უგულებელყავით ეს წერილი.
                         </div>
 
                     </td>
@@ -208,7 +195,7 @@
                                         color:#9fb1c5;
                                     ">
                                         © {{ date('Y') }}
-                                        autopass
+                                        Autopass · autopass.ge
                                     </div>
 
                                 </td>

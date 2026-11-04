@@ -6,6 +6,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
+use Illuminate\Mail\Mailables\Headers;
 use Illuminate\Queue\SerializesModels;
 
 class TemporaryPasswordMail extends Mailable
@@ -23,8 +24,16 @@ class TemporaryPasswordMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'autopass temporary password',
+            subject: 'Autopass · დროებითი პაროლი',
         );
+    }
+
+    public function headers(): Headers
+    {
+        return new Headers(text: [
+            'List-Unsubscribe' => '<mailto:noreply@autopass.ge?subject=unsubscribe>',
+            'X-Mailer' => 'Autopass',
+        ]);
     }
 
     public function content(): Content
