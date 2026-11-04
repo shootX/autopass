@@ -252,7 +252,7 @@ it('does not push a booking confirmation to a user who switched booking pushes o
     $model = CarModel::query()->forceCreate(['name' => 'Camry', 'type' => 'sedan', 'brand_id' => $brand->id]);
     $car = DB::table('user_cars')->insertGetId(['car_type' => 'sedan', 'body_status' => 'confirmed', 'user_id' => $client->id, 'model_id' => $model->id, 'plate' => 'QA44QA'] + $now);
     $id = DB::table('appointments')->insertGetId(['user_id' => $client->id, 'car_wash_id' => $wash, 'car_id' => $car,
-        'date' => now()->addDay()->toDateString(), 'time' => '10:00', 'qr_code' => 'Q'.uniqid(), 'approved' => 0] + $now);
+        'date' => now()->addDay()->toDateString(), 'time' => '10:00', 'qr_code' => 'QA05BOOK1', 'approved' => 0] + $now);
     Queue::fake([SendPush::class]);
 
     $this->withToken(cwAs($manager))->postJson('/api/appointments/'.$id.'/edit', ['status' => AppointmentStatus::Confirmed->value])
