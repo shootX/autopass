@@ -11,6 +11,7 @@ use App\Services\Payments\SettleTbcPayment;
 use App\Services\Points\PointsPricing;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
@@ -87,10 +88,31 @@ class PointsController extends Controller
             return response()->json(['success' => false, 'error' => __('points.'.$payment), 'code' => $payment], 422);
         }
 
-        $url = $payment->payload['checkout_url'] ?? null;
-        if (! is_string($url) || $url === '') {
-            $url = app(FlittCheckout::class)->checkoutUrl($payment, 'Autopass points');
-            $payment->update(['payload' => $payment->payload + ['checkout_url' => $url]]);
+        // One request at a time makes the page: a failure below can't close a page another request just handed out.
+        $url = Cache::lock('points-checkout:'.$payment->id, 60)->block(10, function () use ($payment) {
+            $current = $payment->fresh();
+            $url = $current->payload['checkout_url'] ?? null;
+            if (is_string($url) && $url !== '') {
+                return $url;
+            }
+            if ($current->status !== 'pending') {
+                return null;
+            }
+            try {
+                $url = app(FlittCheckout::class)->checkoutUrl($current, 'Autopass points');
+                $current->update(['payload' => $current->payload + ['checkout_url' => $url]]);
+            } catch (Throwable $e) {
+                // No link reached the driver, so nothing can be paid: the code's use is let go at once.
+                report($e);
+                app(SettleTbcPayment::class)->closeUnopened($current);
+
+                return null;
+            }
+
+            return $url;
+        });
+        if ($url === null) {
+            return response()->json(['success' => false, 'error' => __('points.checkout_failed'), 'code' => 'checkout_failed'], 503);
         }
 
         return response()->json(['success' => true, 'url' => $url, 'quote' => $payment->payload['quote']]);
@@ -107,8 +129,8 @@ class PointsController extends Controller
             ->get()
             ->each(function (TbcPayment $payment) {
                 try {
-                    $flitt = app(FlittCheckout::class);
-                    app(SettleTbcPayment::class)->fromFlitt($flitt->status((string) $payment->merchant_payment_id), $flitt);
+                    // A page Flitt never made is let go here, so the code is free again at once.
+                    app(SettleTbcPayment::class)->fromFlittOrUnopened($payment, app(FlittCheckout::class));
                 } catch (Throwable $e) {
                     // Still pending: the new page waits, payments:reconcile asks again.
                     Log::warning('promo_hold_check_failed', ['payment_id' => $payment->id, 'exception' => $e::class]);

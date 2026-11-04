@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\DB;
+use Throwable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
 class User extends Authenticatable implements JWTSubject
@@ -241,11 +242,27 @@ class User extends Authenticatable implements JWTSubject
         return $name.' ('.$contact.')';
     }
 
-    public function sendPush($title = [], $body = [], $url = 'https://autopass.ge/messages'): void
+    /** A setting (PUSH_BOOKINGS, PUSH_RENEWALS) the user can switch off; null for pushes always sent. */
+    public const PUSH_BOOKINGS = 'enable_push_wash_appointment';
+
+    public const PUSH_RENEWALS = 'enable_push_renewal_subscription';
+
+    /**
+     * Best effort: a push follows work already saved (a wash, a booking change), so a queue that can't take
+     * the job is logged and never turns that saved work into an error answer.
+     */
+    public function sendPush($title = [], $body = [], $url = 'https://autopass.ge/messages', ?string $setting = null): void
     {
-        $pushTokens = $this->pushTokens()->first();
-        if ($pushTokens) {
-            SendPush::dispatch($pushTokens->push_id, $title, $body, $url ? ['url' => $url] : null);
+        if ($setting !== null && $this->getAttribute($setting) === false) {
+            return;
+        }
+        try {
+            $pushTokens = $this->pushTokens()->first();
+            if ($pushTokens) {
+                SendPush::dispatch($pushTokens->push_id, $title, $body, $url ? ['url' => $url] : null);
+            }
+        } catch (Throwable $e) {
+            report($e);
         }
     }
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
+use App\Models\User;
 use App\Services\BookingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -28,7 +29,8 @@ class AppointmentMoveController extends Controller
         $time = substr((string) $appointment->time, 0, 5);
         $appointment->user?->sendPush(
             ['en' => 'Appointment rescheduled', 'ru' => 'Запись перенесена', 'ka' => 'ჩანაწერის დრო შეიცვალა'],
-            ['en' => "Your appointment is now $date, $time.", 'ru' => "Новое время записи: $date, $time.", 'ka' => "ჯავშნის ახალი დროა $date, $time."]
+            ['en' => "Your appointment is now $date, $time.", 'ru' => "Новое время записи: $date, $time.", 'ka' => "ჯავშნის ახალი დროა $date, $time."],
+            setting: User::PUSH_BOOKINGS
         );
 
         return redirect()->route('admin.appointments')->with('message', __('admin.appointment_moved', ['date' => $date, 'time' => $time]));

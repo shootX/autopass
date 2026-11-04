@@ -10,6 +10,9 @@ class TbcPayment extends Model
     /** A checkout page works this long (Flitt `lifetime`); a pending payment older than this can't be paid any more. */
     public const CHECKOUT_MINUTES = 30;
 
+    /** A pending payment closed because its page link never reached the driver. */
+    public const STATUS_UNOPENED = 'checkout_failed';
+
     /**
      * A payment made in the last minute of its page can still be pending for a while after: Flitt's callback
      * may be late or lost and payments:reconcile only asks about pages already closed. What a pending payment

@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
+use App\Models\User;
 use App\Models\UserPackage;
 use Carbon\Carbon;
 
@@ -33,7 +34,7 @@ class SendSubscriptionEndingNotifications extends Command
                 'en' => 'Your package expires in 3 days. Renew your subscription to continue using the service!',
                 'ru' => 'Срок действия вашего пакета истекает через 3 дня. Продлите подписку, чтобы продолжить пользоваться услугами!',
                 'ka' => 'თქვენი პაკეტის ვადა 3 დღეში იწურება. სერვისით სარგებლობის გასაგრძელებლად განაახლეთ თქვენი გამოწერა!'
-            ]);
+            ], setting: User::PUSH_RENEWALS);
 
         }
 

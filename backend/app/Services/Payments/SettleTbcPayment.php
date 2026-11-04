@@ -13,6 +13,7 @@ use App\Models\UserCar;
 use App\Models\UserPackage;
 use App\Services\Points\ReferralReward;
 use App\Support\TestPayments;
+use Flitt\Exception\ApiException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -84,6 +85,49 @@ class SettleTbcPayment
             }
 
             return $locked->fresh();
+        });
+    }
+
+    /**
+     * Asks Flitt about a pending payment and settles it. One whose page link never reached the driver and that
+     * Flitt has no order for (it answers with an error, or with no order status) is closed: nobody can pay it.
+     * A dropped connection proves nothing, so it leaves the payment pending and throws.
+     */
+    public function fromFlittOrUnopened(TbcPayment $payment, FlittCheckout $flitt): ?TbcPayment
+    {
+        $unopened = ! filled($payment->payload['checkout_url'] ?? null);
+        try {
+            $answer = $flitt->status((string) $payment->merchant_payment_id);
+        } catch (ApiException $e) {
+            if ($unopened && $this->closeUnopened($payment)) {
+                return $payment->fresh();
+            }
+            throw $e;
+        }
+        if ($unopened && ! isset($answer['order_status'])) {
+            $this->closeUnopened($payment);
+
+            return $payment->fresh();
+        }
+
+        return $this->fromFlitt($answer, $flitt);
+    }
+
+    /**
+     * Closes a pending payment whose page link never reached the driver (Flitt didn't make the page, or the
+     * answer was lost): with no link nobody can pay it, so its promo code use and package hold are let go.
+     * A late approval from Flitt still grants it (grantNow ignores the closed status). True when it closed.
+     */
+    public function closeUnopened(TbcPayment $payment): bool
+    {
+        return DB::transaction(function () use ($payment) {
+            $locked = TbcPayment::query()->whereKey($payment->id)->lockForUpdate()->first();
+            if (! $locked || $locked->status !== 'pending' || $locked->paid_at !== null || filled($locked->payload['checkout_url'] ?? null)) {
+                return false;
+            }
+            $locked->update(['status' => TbcPayment::STATUS_UNOPENED]);
+
+            return true;
         });
     }
 

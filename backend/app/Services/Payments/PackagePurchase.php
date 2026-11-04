@@ -36,19 +36,23 @@ class PackagePurchase
                 ->where('payload->car_id', $car->id)->where('payload->package_id', $package->id)
                 ->where('payload->price_id', $price->id)->where('created_at', '>', now()->subMinutes(TbcPayment::CHECKOUT_MINUTES))
                 // Price rows are edited in place: a page opened at an older price is not reused.
-                ->where('amount', round((float) $price->price, 2))->first();
-            if ($pending) {
-                return $pending;
+                ->where('amount', round((float) $price->price, 2))->get();
+            $payload = ['car_id' => $car->id, 'package_id' => $package->id, 'body_type' => $package->car_type, 'price_id' => $price->id,
+                'month' => (int) $price->month, 'washes' => (int) $package->count_washes]
+                // The discount the driver pays for is the one kept, whatever the admin changes before the payment lands.
+                + ($package->isDiscount() ? ['type' => Package::TYPE_DISCOUNT, 'full_price' => (string) $package->full_price,
+                    'percent' => (int) $package->percent] : []);
+            // Nor one opened before the admin changed the package's terms (discount, full price, washes): the
+            // driver pays for what the catalogue shows now. That older page still grants its own terms if paid.
+            $same = $pending->first(fn (TbcPayment $open) => self::sameTerms((array) $open->payload, $payload));
+            if ($same) {
+                return $same;
             }
 
             return TbcPayment::create([
                 'merchant_payment_id' => 'P'.strtoupper(Str::random(16)), 'user_id' => $owner->id,
                 'type' => 'package', 'amount' => round((float) $price->price, 2), 'currency' => 'GEL', 'status' => 'pending',
-                'payload' => ['car_id' => $car->id, 'package_id' => $package->id, 'body_type' => $package->car_type, 'price_id' => $price->id,
-                    'month' => (int) $price->month, 'washes' => (int) $package->count_washes]
-                    // The discount the driver pays for is the one kept, whatever the admin changes before the payment lands.
-                    + ($package->isDiscount() ? ['type' => Package::TYPE_DISCOUNT, 'full_price' => (string) $package->full_price,
-                        'percent' => (int) $package->percent] : []),
+                'payload' => $payload,
             ]);
         });
 
@@ -66,5 +70,17 @@ class PackagePurchase
 
             return $url;
         });
+    }
+
+    /** @param array<string, mixed> $open @param array<string, mixed> $now */
+    private static function sameTerms(array $open, array $now): bool
+    {
+        foreach (['washes', 'type', 'percent'] as $key) {
+            if ((string) ($open[$key] ?? '') !== (string) ($now[$key] ?? '')) {
+                return false;
+            }
+        }
+
+        return round((float) ($open['full_price'] ?? 0), 2) === round((float) ($now['full_price'] ?? 0), 2);
     }
 }

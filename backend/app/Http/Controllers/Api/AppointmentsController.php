@@ -58,17 +58,20 @@ class AppointmentsController extends Controller
         if ($moved) {
             $appointment->user->sendPush(
                 ['en' => 'Appointment rescheduled', 'ru' => 'Запись перенесена', 'ka' => 'ჩანაწერის დრო შეიცვალა'],
-                ['en' => "Your appointment is now $date, $time.", 'ru' => "Новое время записи: $date, $time.", 'ka' => "ჯავშნის ახალი დროა $date, $time."]
+                ['en' => "Your appointment is now $date, $time.", 'ru' => "Новое время записи: $date, $time.", 'ka' => "ჯავშნის ახალი დროა $date, $time."],
+                setting: User::PUSH_BOOKINGS
             );
         } elseif ($status === AppointmentStatus::Confirmed->value) {
             $appointment->user->sendPush(
                 ['en' => 'Appointment confirmed', 'ru' => 'Запись подтверждена', 'ka' => 'ჩანაწერი დადასტურებულია'],
-                ['en' => "Your appointment for $date, $time is confirmed.", 'ru' => "Запись на $date, $time подтверждена.", 'ka' => "ჯავშანი $date, $time-ზე დადასტურებულია."]
+                ['en' => "Your appointment for $date, $time is confirmed.", 'ru' => "Запись на $date, $time подтверждена.", 'ka' => "ჯავშანი $date, $time-ზე დადასტურებულია."],
+                setting: User::PUSH_BOOKINGS
             );
         } elseif ($status === AppointmentStatus::Cancelled->value) {
             $appointment->user->sendPush(
                 ['en' => 'Appointment cancelled', 'ru' => 'Запись отменена', 'ka' => 'ჯავშანი გაუქმებულია'],
-                ['en' => 'Your appointment was cancelled.', 'ru' => 'Ваша запись отменена.', 'ka' => 'თქვენი ჯავშანი გაუქმებულია.']
+                ['en' => 'Your appointment was cancelled.', 'ru' => 'Ваша запись отменена.', 'ka' => 'თქვენი ჯავშანი გაუქმებულია.'],
+                setting: User::PUSH_BOOKINGS
             );
         }
 
