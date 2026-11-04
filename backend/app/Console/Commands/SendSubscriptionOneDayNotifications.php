@@ -30,7 +30,7 @@ class SendSubscriptionOneDayNotifications extends Command
 
         foreach ($packages as $package) {
 
-            $package->user->sendPush([
+            $package->user?->sendPush([
                 'en' => 'Automatic package renewal',
                 'ru' => 'Автопродление пакета',
                 'ka' => 'პაკეტის ავტომატური განახლება',

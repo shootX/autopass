@@ -553,3 +553,15 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 - [ ] Configure required PR reviews/checks on GitHub main with administration access; verify server deploy checks out the immutable tested SHA.
 
 2026-11-03: `user_packages.body_type` and the checkout payload snapshot the purchased category, so a later catalog edit cannot invalidate the driver's paid terms. Migration `000010` backfills the only category still available for historical purchases; past catalog edits cannot be reconstructed and require support review if mismatched.
+
+## 2026-11-04 — Strict QA audit fixes (QA-01..QA-13)
+- [x] Wash-package invoices keep their body type (`corporate_invoices.car_type`, migration `2026_11_04_000001`): paying one credits that type even after the package was edited or deleted.
+- [x] Manager 15-minute reminder: three languages, only active bookings, one bad row doesn't stop the rest; PushService takes plain text too.
+- [x] 3-days-left reminder only for packages with washes left on a car still in the app; "package ended" push follows the renewal switch.
+- [x] Bookings: one active booking per car per calendar week; add throttled 10/min; driver cancels up to 1 hour before, kept as cancelled; deleting a branch cancels its bookings ahead and tells the drivers.
+- [x] `/allrecords` shows the manager only name, surname and phone of a booked client.
+- [x] Pushes go to every signed-in phone (max 10 per account); logout with `apns_token` drops that phone only.
+- [x] Branch edit can't empty the manager; ban voids live QR codes and refuses banned accounts at checkqr and corporate approve.
+- [x] A closed, unanswered package page is asked at Flitt before a new page for the same package.
+- [x] Fixed API texts are translated when the app sends `X-App-Lang` (lang/api_messages.php).
+- Tests: `QaAudit20261104FixesTest` (SQLite + PostgreSQL suite). Server: migrate, route:cache, view:clear.

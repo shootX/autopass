@@ -17,6 +17,7 @@
             <file>tests/Feature/CorporateCarBodyTest.php</file>
             <file>tests/Feature/CorporateBodyConfirmationTest.php</file>
             <file>tests/Feature/QaReport20261104Test.php</file>
+            <file>tests/Feature/QaAudit20261104FixesTest.php</file>
             <directory>tests/Integration</directory>
         </testsuite>
     </testsuites>

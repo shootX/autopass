@@ -7,6 +7,7 @@ use App\Models\TbcPayment;
 use App\Models\User;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
@@ -14,6 +15,8 @@ class PackagePurchase
 {
     public function checkout(User $user, array $data): string
     {
+        $this->askAboutClosedPages($user, (int) $data['car_id']);
+
         $payment = DB::transaction(function () use ($user, $data) {
             // All package reservations for an owner are serialised; no provider request inside this lock.
             $owner = User::query()->lockForUpdate()->findOrFail($user->id);
@@ -31,6 +34,11 @@ class PackagePurchase
             if ($owner->packages()->where('package_id', $package->id)->where('user_car_id', $car->id)
                 ->where('end_date', '>', now())->withWashesLeft()->exists()) {
                 throw ValidationException::withMessages(['car_id' => __('booking.active_package')]);
+            }
+            // A closed page Flitt hasn't answered about may have been paid in its last minute: a new page waits for
+            // the answer, so the same package isn't bought twice (QA audit 2026-11-04, QA-12).
+            if (self::closedPages($owner, (int) $car->id)->where('payload->package_id', $package->id)->exists()) {
+                throw ValidationException::withMessages(['car_id' => __('booking.payment_checking')]);
             }
             $pending = TbcPayment::query()->where('user_id', $owner->id)->where('type', 'package')->where('status', 'pending')
                 ->where('payload->car_id', $car->id)->where('payload->package_id', $package->id)
@@ -69,6 +77,26 @@ class PackagePurchase
             $current->update(['payload' => $current->payload + ['checkout_url' => $url]]);
 
             return $url;
+        });
+    }
+
+    /** This driver's package pages for the car that closed while still pending (no answer from Flitt yet). */
+    private static function closedPages(User $user, int $carId)
+    {
+        return TbcPayment::query()->where('user_id', $user->id)->where('type', 'package')->where('status', 'pending')
+            ->where('payload->car_id', $carId)
+            ->where('created_at', '<=', now()->subMinutes(TbcPayment::CHECKOUT_MINUTES));
+    }
+
+    /** Asks Flitt about those pages first: a paid one is granted now, an unpaid one closed, a silent one stays. */
+    private function askAboutClosedPages(User $user, int $carId): void
+    {
+        self::closedPages($user, $carId)->get()->each(function (TbcPayment $payment) {
+            try {
+                app(SettleTbcPayment::class)->fromFlittOrUnopened($payment, app(FlittCheckout::class));
+            } catch (\Throwable $e) {
+                Log::warning('package_page_check_failed', ['payment_id' => $payment->id, 'exception' => $e::class]);
+            }
         });
     }
 

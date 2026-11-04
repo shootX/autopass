@@ -46,6 +46,8 @@ class CorporateInvoices
             return self::create($locked, [
                 'kind' => CorporateInvoice::KIND_WASHES,
                 'corporate_package_id' => $package->id,
+                // Kept on the invoice: paying it credits this type even if the package is edited or deleted later.
+                'car_type' => $package->car_type,
                 // The body type the washes are for is part of what is bought, so it is on the invoice too.
                 'title' => mb_substr($package->title.' · '.BodyType::labelFor($package->car_type), 0, 120),
                 'washes' => (int) $package->washes,
@@ -146,6 +148,7 @@ class CorporateInvoices
                     __('admin.inv_credit_note', ['number' => $locked->number]),
                     $adminId,
                     (int) $locked->id,
+                    $locked->car_type,
                 );
                 if ($result !== 'ok') {
                     return 'not_open';

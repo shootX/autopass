@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Middleware\EnsureApiSession;
 use App\Jobs\SendSms;
 use App\Models\User;
+use App\Models\UserPushToken;
 use App\Services\AccountDeletion;
 use App\Services\FleetInvites;
 use App\Services\Security\ActionGrantService;
@@ -271,6 +272,11 @@ class AuthController extends Controller
     {
         $presented = $request->cookie(RefreshTokens::COOKIE);
         if (is_string($presented)) {
+            // Only the cookie's own account can drop a device token here, so nobody can unregister someone else's phone.
+            $owner = $this->refreshTokens->userIdFor($presented);
+            if ($owner !== null) {
+                UserPushToken::forgetDevice($owner, $request->input('apns_token'));
+            }
             $this->refreshTokens->revokeByToken($presented);
         }
         try {
@@ -331,8 +337,10 @@ class AuthController extends Controller
         ])->withCookie($cookie);
     }
 
-    public function logout()
+    public function logout(Request $request)
     {
+        // This phone stops getting the account's pushes; the account's other phones keep theirs.
+        UserPushToken::forgetDevice((int) auth()->id(), $request->input('apns_token'));
         $token = JWTAuth::getToken();
         if ($token) {
             $this->refreshTokens->revokeFamily(JWTAuth::setToken($token)->getPayload()->get('sid'));

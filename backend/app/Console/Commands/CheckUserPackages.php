@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\User;
 use App\Models\UserPackage;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
@@ -32,7 +33,9 @@ class CheckUserPackages extends Command
                             ['en' => 'Package expired', 'ru' => 'Пакет закончился', 'ka' => 'პაკეტი დასრულებულია'],
                             ['en' => 'Your package has expired. You can purchase a new package.',
                                 'ru' => 'Срок пакета истёк. Вы можете приобрести новый пакет.',
-                                'ka' => 'პაკეტის ვადა ამოიწურა. შეგიძლიათ შეიძინოთ ახალი პაკეტი.']
+                                'ka' => 'პაკეტის ვადა ამოიწურა. შეგიძლიათ შეიძინოთ ახალი პაკეტი.'],
+                            // The driver's "renewal" switch covers this one too (owner's rule, 2026-11-04).
+                            setting: User::PUSH_RENEWALS
                         );
                     });
                 }

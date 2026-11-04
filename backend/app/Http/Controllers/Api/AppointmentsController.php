@@ -205,36 +205,33 @@ class AppointmentsController extends Controller
         }
     }
 
+    /** The driver cancels a booking: it stays in the history as cancelled and the branch manager is told. */
     public function removeAppointment(Request $request, $id)
     {
-        try {
-            $user = auth()->user();
-            $appointment = $user->appointments()->where('id', $id)->first();
-            $client = $appointment->user;
-            $clientLabel = $client->displayName();
-            $toDate = Carbon::parse($appointment->date)->format('d.m.Y');
-            $toTime = Carbon::parse($appointment->time)->format('H:i');
-
-            $appointment->washing->manager
-                ->sendPush([
-                    'en' => 'Cancel an appointment',
-                    'ru' => 'Отмена записи',
-                    'ka' => 'შეხვედრის გაუქმება',
-                ],
-                    [
-                        'en' => "Client {$clientLabel} canceled the record on $toDate, $toTime.",
-                        'ru' => "Клиент {$clientLabel} отменил запись на $toDate, $toTime.",
-                        'ka' => "კლიენტმა {$clientLabel} გააუქმა ჩანაწერი {$toDate}, {$toTime}-ზე.",
-                    ], 'https://autopass.ge/booking');
-
-            $appointment->delete();
-
-            return response()->json(['success' => true, 'message' => 'Запись успешно удалена']);
-        } catch (\Exception $e) {
-            Log::warning('appointment_request_failed', ['exception' => $e::class]);
-
-            return response()->json(['success' => false, 'error' => 'Request failed'], 400);
+        $appointment = $request->user()->appointments()->with('washing.manager')->whereKey((int) $id)->first();
+        if (! $appointment) {
+            return response()->json(['success' => false, 'error' => __('booking.not_found')], 404);
         }
+        try {
+            $appointment = app(BookingService::class)->cancelByDriver($appointment);
+        } catch (ValidationException $e) {
+            return response()->json(['success' => false, 'error' => collect($e->errors())->flatten()->first()], 422);
+        }
+
+        $clientLabel = $request->user()->displayName();
+        $toDate = Carbon::parse($appointment->date)->format('d.m.Y');
+        $toTime = Carbon::parse($appointment->time)->format('H:i');
+        $appointment->washing?->manager?->sendPush([
+            'en' => 'Booking cancelled',
+            'ru' => 'Отмена записи',
+            'ka' => 'ჯავშნის გაუქმება',
+        ], [
+            'en' => "Client {$clientLabel} cancelled the booking on $toDate, $toTime.",
+            'ru' => "Клиент {$clientLabel} отменил запись на $toDate, $toTime.",
+            'ka' => "კლიენტმა {$clientLabel} გააუქმა ჯავშანი {$toDate}, {$toTime}-ზე.",
+        ]);
+
+        return response()->json(['success' => true, 'message' => __('booking.cancelled'), 'status' => (int) $appointment->approved]);
     }
 
     public function checkQr(Request $request, $qr)
@@ -262,8 +259,9 @@ class AppointmentsController extends Controller
 
                 return response()->json(['success' => false, 'error' => 'Not found'], 404);
             }
-            // A package code works only for a few minutes after the app asked for it, and once.
-            if (! $userPackage->qr_expires_at || $userPackage->qr_expires_at->isPast()) {
+            // A package code works only for a few minutes after the app asked for it, and once; never for a banned account.
+            if (! $userPackage->qr_expires_at || $userPackage->qr_expires_at->isPast()
+                || User::query()->whereKey($userPackage->user_id)->where('ban', true)->exists()) {
                 return response()->json(['success' => false, 'error' => __('corporate.qr_expired'), 'error_code' => 'qr_expired'], 410);
             }
             if ($bodyProblem = $userPackage->bodyBlocker()) {
@@ -320,15 +318,18 @@ class AppointmentsController extends Controller
             $user = auth()->user();
             if ($user->role == User::ROLE_MANAGER) {
 
+                // A booking shows the manager who comes and how to reach them: name and phone only, never the
+                // email, points, birthday or referral code (owner's rule, 2026-11-04). A QR scan shows no phone.
                 $records = $user->washing?->appointments()
-                    ->with('user')
+                    ->with(['user' => fn ($query) => $query->select(['id', 'name', 'surname', 'phone'])])
                     ->with('car')
                     ->with('services')
                     ->get();
+                $records?->each(fn (Appointment $appointment) => $appointment->user?->setAppends([]));
 
                 return response()->json(['success' => true, 'appointments' => $records]);
             } else {
-                return response()->json(['success' => false, 'error' => 'Нет доступа'], 400);
+                return response()->json(['success' => false, 'error' => __('booking.no_access')], 403);
             }
         } catch (\Exception $e) {
             Log::warning('appointment_request_failed', ['exception' => $e::class]);
