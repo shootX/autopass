@@ -27,6 +27,15 @@ trait FleetCarActions
             return redirect($back)->withErrors(['fleet' => __('admin.fleet_invite_driver_consent')]);
         }
 
+        if ($result === 'too_soon') {
+            // Saved; the SMS waits for the one-a-minute window and then goes out by itself.
+            return redirect($back)->with('message', __('admin.fleet_driver_saved_too_soon'));
+        }
+        if ($result !== 'sent') {
+            // Saved, but no SMS went out (a blocked car): say so instead of "invite sent".
+            return redirect($back)->withErrors(['fleet' => __('admin.fleet_driver_saved_'.$result)]);
+        }
+
         return redirect($back)->with('message', __('admin.fleet_driver_saved'));
     }
 

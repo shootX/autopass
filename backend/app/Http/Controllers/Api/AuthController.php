@@ -400,8 +400,11 @@ class AuthController extends Controller
         }
 
         $user = auth()->user();
+        $oldPhone = $user->phone;
         $user->phone = $request->phone;
         $user->save();
+        // The company's driver phone is this account's phone (owner's rule, 2026-11-04): it follows the change.
+        FleetInvites::phoneChanged($user, $oldPhone);
 
         return response()->json(['success' => true, 'message' => 'Номер телефона успешно изменён.']);
     }

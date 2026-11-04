@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\AppointmentStatus;
+use App\Jobs\SendFleetInvite;
 use App\Jobs\SendSms;
 use App\Models\Appointment;
 use App\Models\CarModel;
@@ -127,7 +128,22 @@ class FleetInvites
 
         // Linking waits for the driver to sign in or open the app after the SMS, even when the
         // phone already has an account: the company alone can't turn a car active.
-        return self::invite($car);
+        $sent = self::invite($car);
+        if ($sent === 'too_soon' && $car->driver_phone !== null) {
+            // The car's resend window is still open (one SMS a minute, however often the phone changes): the
+            // new driver's SMS goes out when it closes, and only if the phone is still theirs by then.
+            SendFleetInvite::dispatch((int) $car->id, (string) $car->driver_phone)->delay(self::resendAt($car));
+        }
+
+        return $sent;
+    }
+
+    /** When the car's resend window closes. */
+    public static function resendAt(FleetCar $car): \DateTimeInterface
+    {
+        $at = $car->invited_at?->copy()->addSeconds(self::RESEND_SECONDS + 1);
+
+        return $at && $at->isFuture() ? $at : now();
     }
 
     public static function setBlocked(FleetCar $car, bool $blocked): void
@@ -147,6 +163,21 @@ class FleetInvites
             'status' => $car->user_car_id ? FleetCar::STATUS_ACTIVE : FleetCar::STATUS_INVITED,
             'blocked_at' => null,
         ])->save();
+    }
+
+    /**
+     * The driver changed their sign-in phone (SMS-checked): the company cars linked to this account keep the
+     * driver and show the new phone, so the company does not see a stale number or, by typing the new one,
+     * hand the car over as if to someone else. Cars only invited to the old number stay as they are.
+     */
+    public static function phoneChanged(User $user, ?string $oldPhone): int
+    {
+        $phone = Phone::normalize($user->phone);
+        if ($phone === null || $phone === Phone::normalize($oldPhone)) {
+            return 0;
+        }
+
+        return FleetCar::query()->where('user_id', $user->id)->update(['driver_phone' => $phone, 'updated_at' => now()]);
     }
 
     /** Activates every car this user's phone was invited to. Cheap when there is none. */

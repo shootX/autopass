@@ -37,7 +37,7 @@ class ReconcilePayments extends Command
                 foreach ($payments as $payment) {
                     $checked++;
                     try {
-                        $result = $settle->fromFlitt($flitt->status((string) $payment->merchant_payment_id), $flitt);
+                        $result = $settle->fromFlittOrUnopened($payment, $flitt);
                         if ($result?->status === 'succeeded') {
                             $settled++;
                         }
