@@ -72,6 +72,7 @@ class BookingService
             if ($moved && in_array($status->value, AppointmentStatus::active(), true)) {
                 UserCar::query()->whereKey($locked->car_id)->lockForUpdate()->firstOrFail();
                 $this->validateSlot($wash, $date, $time, $locked->id, $locked->car_id);
+                $this->validateWeek((int) $locked->car_id, $date, (int) $locked->id);
             }
             $locked->fill(['date' => $date, 'time' => $time, 'approved' => $status->value])->save();
 
@@ -101,10 +102,11 @@ class BookingService
     }
 
     /** The car's lock is held by the caller, so two requests can't both pass. */
-    private function validateWeek(int $carId, string $date): void
+    private function validateWeek(int $carId, string $date, ?int $except = null): void
     {
         $day = Carbon::parse($date, config('app.timezone'));
         $taken = Appointment::query()->where('car_id', $carId)
+            ->when($except !== null, fn ($query) => $query->whereKeyNot($except))
             ->whereIn('approved', AppointmentStatus::active())
             ->whereDate('date', '>=', $day->copy()->startOfWeek(Carbon::MONDAY)->toDateString())
             ->whereDate('date', '<=', $day->copy()->endOfWeek(Carbon::SUNDAY)->toDateString())

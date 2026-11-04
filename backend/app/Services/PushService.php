@@ -16,7 +16,7 @@ class PushService
 
     private $data = [];
 
-    public function __construct($device, $title = [], $text = [], $data = [])
+    public function __construct($device, $title = [], $text = [], $data = [], private ?array $recipients = null)
     {
         $this->device = $device;
         $this->title = $title;
@@ -32,8 +32,12 @@ class PushService
         }
         $apns = app(ApnsClient::class);
         UserPushToken::query()->where('kind', UserPushToken::KIND_APNS)->whereIn('push_id', $ids)
+            ->when($this->recipients !== null, fn ($query) => $query->whereKey(array_keys($this->recipients)))
             ->get()
             ->each(function (UserPushToken $token) use ($apns) {
+                if ($this->recipients !== null && (int) ($this->recipients[$token->id] ?? 0) !== (int) $token->user_id) {
+                    return;
+                }
                 $lang = in_array($token->lang, ['ka', 'en', 'ru'], true) ? $token->lang : 'ka';
                 $result = $apns->send(
                     $token->push_id,
