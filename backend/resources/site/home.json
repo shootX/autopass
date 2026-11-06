@@ -295,9 +295,9 @@
   },
   "feat.vchs": {
    "group": "feat",
-   "ka": "ქულებს ცვლით პარტნიორების ვაუჩერებზე და გათამაშების ბილეთებზე.",
-   "en": "Swap points for partner vouchers and giveaway tickets.",
-   "ru": "Меняйте баллы на ваучеры партнёров и билеты розыгрышей."
+   "ka": "ქულებს ცვლით პარტნიორების ვაუჩერებზე.",
+   "en": "Swap points for partner vouchers.",
+   "ru": "Меняйте баллы на ваучеры партнёров."
   },
   "br.h": {
    "group": "branches",
@@ -527,15 +527,15 @@
     {
      "ka": [
       "რისთვის მჭირდება ქულები?",
-      "ქულებს მოწვეული მეგობრების პაკეტებიდან იღებთ ან ბარათით ყიდულობთ. მათ ცვლით პარტნიორების ვაუჩერებზე ან გათამაშების ბილეთებზე."
+      "ქულებს მოწვეული მეგობრების პაკეტებიდან იღებთ ან ბარათით ყიდულობთ. მათ ცვლით პარტნიორების ვაუჩერებზე."
      ],
      "en": [
       "What are points for?",
-      "You earn points from the packages of friends you invite, or buy them by card. Swap them for partner vouchers or giveaway tickets."
+      "You earn points from the packages of friends you invite, or buy them by card. Swap them for partner vouchers."
      ],
      "ru": [
       "Зачем нужны баллы?",
-      "Баллы начисляются за пакеты приглашённых друзей, их можно и купить картой. Меняйте их на ваучеры партнёров или билеты розыгрышей."
+      "Баллы начисляются за пакеты приглашённых друзей, их можно и купить картой. Меняйте их на ваучеры партнёров."
      ]
     },
     {
