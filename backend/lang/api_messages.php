@@ -49,8 +49,5 @@ return [
     'Voucher expired' => ['ka' => 'ვაუჩერის ვადა ამოიწურა.', 'en' => 'This voucher has expired.', 'ru' => 'Срок ваучера истёк.'],
     'Voucher limit reached' => ['ka' => 'ვაუჩერის ლიმიტი ამოიწურა.', 'en' => 'Voucher limit reached.', 'ru' => 'Лимит ваучеров исчерпан.'],
     'Not enough points' => ['ka' => 'ქულა არ გყოფნით.', 'en' => 'Not enough points.', 'ru' => 'Не хватает баллов.'],
-    'Ticket expired' => ['ka' => 'ბილეთის გაყიდვა დასრულდა.', 'en' => 'Ticket sales have ended.', 'ru' => 'Продажа билетов завершена.'],
-    'Ticket unavailable' => ['ka' => 'ბილეთი მიუწვდომელია.', 'en' => 'This ticket is unavailable.', 'ru' => 'Билет недоступен.'],
-    'Ticket limit reached' => ['ka' => 'ბილეთები ამოიწურა.', 'en' => 'Tickets are sold out.', 'ru' => 'Билеты закончились.'],
     'Нет доступа' => ['ka' => 'წვდომა არ გაქვთ.', 'en' => 'Access denied.', 'ru' => 'Нет доступа.'],
 ];

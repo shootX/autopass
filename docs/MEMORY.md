@@ -457,3 +457,7 @@ Owner's rule: on the web only the admin (`/dashboard`), the landing, the corpora
 - Queued pushes snapshot device registration IDs and owners, and skip removed/reassigned registrations. Legacy jobs without a snapshot are dropped; restart queue workers on release. Broadcasts also snapshot their recipients.
 - Rescheduling applies the calendar-week booking limit under the car lock, excluding the booking being moved.
 - Regression coverage: IndependentRecheck20261104Test (account switch and conflicting/valid reschedules).
+
+## 2026-11-06 — Giveaways removed (owner)
+
+The owner removed giveaways (lottery tickets) from the product. A ticket was bought with points and points with money, so a paid entry for a prize reads as a lottery, which App Review allows only with a licence (Guideline 5.3.4). Gone: the ticket API (`/api/tickets`, `/api/tickets/buy`, `/api/tickets/my`), `tickets` and `my_tickets` in `/api/shop/home`, the admin giveaway pages, exports, dashboard tile and client-profile table, the `Ticket` / `UserTicket` models and the landing copy. Migration `2026_11_06_000001_drop_giveaways` drops `user_tickets` and `tickets` with the bought tickets in them; by the owner's choice the points spent are not returned (their `transactions` rows stay). The GeocarAPP iOS app stopped showing giveaways in the same change. Bring giveaways back only with a licence or a free way to enter. Release: make a database backup before this deploys; `down()` brings back empty tables only.

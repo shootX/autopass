@@ -13,7 +13,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Facades\DB;
 use Throwable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
@@ -147,29 +146,6 @@ class User extends Authenticatable implements JWTSubject
     public function getReferralCode()
     {
         return route('referral.link', $this->ref_code);
-    }
-
-    public function tickets(): BelongsToMany
-    {
-        return $this->belongsToMany(Ticket::class, 'user_tickets');
-    }
-
-    public function getPurchasedTicketsAttribute()
-    {
-        $sub = DB::table('user_tickets')
-            ->select('ticket_id', DB::raw('COUNT(*) as qty'))
-            ->where('user_id', $this->id)
-            ->groupBy('ticket_id');
-
-        // A giveaway the admin removed stays in its buyers' list.
-        $tickets = Ticket::withTrashed()
-            ->joinSub($sub, 'ut', function ($join) {
-                $join->on('tickets.id', '=', 'ut.ticket_id');
-            })
-            ->select('tickets.*', 'ut.qty')
-            ->paginate(10);
-
-        return $tickets;
     }
 
     public function vouchers(): BelongsToMany

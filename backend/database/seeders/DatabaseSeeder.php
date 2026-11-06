@@ -14,11 +14,9 @@ use App\Models\PackagePrice;
 use App\Models\Partner;
 use App\Models\Promo;
 use App\Models\Review;
-use App\Models\Ticket;
 use App\Models\User;
 use App\Models\UserCar;
 use App\Models\UserPackage;
-use App\Models\UserTicket;
 use App\Models\UserVoucher;
 use App\Models\Voucher;
 use App\Models\VoucherCategory;
@@ -212,22 +210,6 @@ class DatabaseSeeder extends Seeder
             ['code' => 'GE22779A'],
             ['user_id' => $users[0]->id, 'voucher_id' => $voucher->id],
         );
-
-        $ticket = Ticket::query()->updateOrCreate(
-            ['name' => 'iPhone გათამაშება'],
-            [
-                'description' => 'ყოველთვიური გათამაშება',
-                'photo' => '/images/shop/ticket_1.png',
-                'price' => 50,
-                'date_to' => now()->addMonth()->toDateString(),
-                'count' => 100,
-                'footer_text' => 'გამარჯვებული ცხადდება თვის ბოლოს',
-            ],
-        );
-        UserTicket::query()->firstOrCreate([
-            'user_id' => $users[1]->id,
-            'ticket_id' => $ticket->id,
-        ]);
 
         Partner::query()->updateOrCreate(
             ['login' => 'partner'],

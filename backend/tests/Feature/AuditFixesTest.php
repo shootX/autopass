@@ -252,7 +252,7 @@ it('answers the same for unknown and foreign vouchers', function () {
 
 // L3 — no svg uploads
 it('rejects svg uploads in admin forms', function () {
-    foreach (['Admin/TicketsController.php', 'Admin/VouchersController.php', 'Admin/BodyTypesController.php'] as $f) {
+    foreach (['Admin/VouchersController.php', 'Admin/BodyTypesController.php'] as $f) {
         expect(file_get_contents(app_path('Http/Controllers/'.$f)))->not->toMatch('/mimes:[^\'"]*svg/');
     }
 });

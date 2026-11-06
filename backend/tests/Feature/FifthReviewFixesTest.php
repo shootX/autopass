@@ -5,9 +5,7 @@ use App\Models\FleetCar;
 use App\Models\Package;
 use App\Models\PromoCode;
 use App\Models\TbcPayment;
-use App\Models\Ticket;
 use App\Models\UserPackage;
-use App\Models\UserTicket;
 use App\Services\CorporateQr;
 use App\Services\FleetInvites;
 use App\Services\Payments\FlittCheckout;
@@ -150,19 +148,6 @@ it('keeps a promo reserved past two hours until the provider gives a final answe
     app(SettleTbcPayment::class)->fromFlitt(['order_id' => $payment->merchant_payment_id,
         'order_status' => 'approved', 'amount' => $flitt->minor($payment)], $flitt);
     expect(PromoCode::query()->sole()->used_count)->toBe(1)->and(TbcPayment::query()->count())->toBe(1);
-});
-
-it('returns ticket stock and the purchase cap and preserves archived ticket detail', function () {
-    $user = makeUser('555 91 00 08');
-    $ticket = Ticket::create(['name' => 'Giveaway', 'description' => 'Original details', 'photo' => 'giveaway.jpg',
-        'price' => 1, 'count' => 3, 'date_to' => now()->addDay()]);
-    UserTicket::create(['user_id' => $user->id, 'ticket_id' => $ticket->id]);
-    $this->withToken(cwAs($user))->getJson('/api/shop/home')->assertOk()->assertJsonPath('tickets.0.left', 2);
-    $ticket->forceFill(['count' => 100])->save();
-    $this->withToken(cwAs($user))->getJson('/api/shop/home')->assertOk()->assertJsonPath('tickets.0.left', 20);
-    $ticket->delete();
-    $this->withToken(cwAs($user))->getJson('/api/shop/home')->assertOk()->assertJsonCount(0, 'tickets')
-        ->assertJsonPath('my_tickets.0.description', 'Original details')->assertJsonPath('my_tickets.0.left', 0);
 });
 
 it('refuses a paid package for a different confirmed body without consuming its washes', function () {

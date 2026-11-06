@@ -119,7 +119,7 @@ it('caps test payments per user per day', function () {
     $this->withToken($t)->getJson('/api/testpay?amount=100')->assertOk();
 });
 
-it('does not let sandbox points buy real vouchers or tickets', function () {
+it('does not let sandbox points buy real vouchers', function () {
     $u = makeUser('555650502', User::ROLE_ADMIN);
     $u->forceFill(['points' => 30])->save();
     $p = TbcPayment::query()->create([
@@ -137,10 +137,6 @@ it('does not let sandbox points buy real vouchers or tickets', function () {
     qaReset();
     $this->withToken(JWTAuth::fromUser($u))->postJson('/api/vouchers/buy', ['voucher_id' => $cheap])->assertJson(['success' => true]);
     expect((int) $u->fresh()->points)->toBe(100)->and((int) $u->fresh()->test_points)->toBe(100);
-
-    $ticket = s2Ticket(10);
-    qaReset();
-    $this->withToken(JWTAuth::fromUser($u))->postJson('/api/tickets/buy', ['ticket_id' => $ticket, 'qty' => 1])->assertJson(['success' => false]);
 });
 
 // D6

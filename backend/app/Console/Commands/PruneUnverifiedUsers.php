@@ -14,7 +14,7 @@ class PruneUnverifiedUsers extends Command
 
     protected $description = 'Delete unverified registration stubs older than --hours that have no related data';
 
-    private const OWNED = ['user_cars', 'user_packages', 'tbc_payments', 'transactions', 'appointments', 'user_vouchers', 'user_tickets', 'reviews'];
+    private const OWNED = ['user_cars', 'user_packages', 'tbc_payments', 'transactions', 'appointments', 'user_vouchers', 'reviews'];
 
     public function handle(): int
     {

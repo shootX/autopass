@@ -571,3 +571,8 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 - Queued pushes snapshot device registration IDs and owners, and skip removed/reassigned registrations. Legacy jobs without a snapshot are dropped; restart queue workers on release. Broadcasts also snapshot their recipients.
 - Rescheduling applies the calendar-week booking limit under the car lock, excluding the booking being moved.
 - Regression coverage: IndependentRecheck20261104Test (account switch and conflicting/valid reschedules).
+
+## 2026-11-06 — Giveaways removed
+- [x] Ticket API, shop fields, admin pages, exports, dashboard tile, client-profile table, models, seeder, translations and landing copy removed.
+- [x] Migration `2026_11_06_000001_drop_giveaways` drops `user_tickets` and `tickets`; no refund (owner). Regression test: `GiveawaysRemovedTest`.
+- [ ] Before deploy: database backup on the server (the drop can't be undone).

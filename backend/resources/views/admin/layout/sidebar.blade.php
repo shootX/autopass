@@ -64,10 +64,6 @@
                 <div class="sb-nav-link-icon"><i class="fas fa-globe"></i></div>
                 {{ __('admin.site') }}
             </a>
-            <a class="nav-link @if(Route::is('admin.tickets')) active @endif" href="{{route('admin.tickets')}}">
-                <div class="sb-nav-link-icon"><i class="fa-solid fa-ticket-simple"></i></div>
-                {{ __('admin.tickets') }}
-            </a>
             <a class="nav-link @if(Route::is('admin.vouchers')) active @endif" href="{{route('admin.vouchers')}}">
                 <div class="sb-nav-link-icon"><i class="fas fa-sticky-note"></i></div>
                 {{ __('admin.vouchers') }}
