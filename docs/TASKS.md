@@ -565,3 +565,9 @@ voucher-checker: `temp_code` მხოლოდ სტრინგია, რი
 - [x] A closed, unanswered package page is asked at Flitt before a new page for the same package.
 - [x] Fixed API texts are translated when the app sends `X-App-Lang` (lang/api_messages.php).
 - Tests: `QaAudit20261104FixesTest` (SQLite + PostgreSQL suite). Server: migrate, route:cache, view:clear.
+
+## 2026-11-04 — Push ownership and booking reschedule fixes
+
+- Queued pushes snapshot device registration IDs and owners, and skip removed/reassigned registrations. Legacy jobs without a snapshot are dropped; restart queue workers on release. Broadcasts also snapshot their recipients.
+- Rescheduling applies the calendar-week booking limit under the car lock, excluding the booking being moved.
+- Regression coverage: IndependentRecheck20261104Test (account switch and conflicting/valid reschedules).

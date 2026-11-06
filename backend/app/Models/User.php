@@ -260,7 +260,7 @@ class User extends Authenticatable implements JWTSubject
             // Every phone the account is signed in on (owner's rule, 2026-11-04): one job sends to all of them.
             $devices = $this->pushTokens()->where('kind', UserPushToken::KIND_APNS)->pluck('push_id')->all();
             if ($devices !== []) {
-                SendPush::dispatch($devices, $title, $body, $url ? ['url' => $url] : null);
+                SendPush::dispatch($devices, $title, $body, $url ? ['url' => $url] : null, (int) $this->id);
             }
         } catch (Throwable $e) {
             report($e);

@@ -451,3 +451,9 @@ Owner's rule: on the web only the admin (`/dashboard`), the landing, the corpora
 2026-11-03: `user_packages.body_type` and the checkout payload snapshot the purchased category, so a later catalog edit cannot invalidate the driver's paid terms. Migration `000010` backfills the only category still available for historical purchases; past catalog edits cannot be reconstructed and require support review if mismatched.
 
 2026-11-04: Owner's rules from the strict QA audit: one active booking per car per week (washing without a booking is unlimited); a driver cancels up to 1 hour before, the booking stays as cancelled; the manager sees the client's phone only on a booking, never on a QR scan; pushes go to every phone the account is signed in on; the renewal switch also silences "package ended".
+
+## 2026-11-04 — Push ownership and booking reschedule fixes
+
+- Queued pushes snapshot device registration IDs and owners, and skip removed/reassigned registrations. Legacy jobs without a snapshot are dropped; restart queue workers on release. Broadcasts also snapshot their recipients.
+- Rescheduling applies the calendar-week booking limit under the car lock, excluding the booking being moved.
+- Regression coverage: IndependentRecheck20261104Test (account switch and conflicting/valid reschedules).
