@@ -66,7 +66,7 @@ API პრეფიქსი Laravel-ის ნაგულისხმევი
 - მანქანა: `CarBrand`, `CarModel`, `BodyType`, კლიენტის მანქანა `UserCar`.
 - ჯავშანი: `Appointment` + `AppointmentsService`. `AppointmentStatus` არის საერთო კონტრაქტი: `0` მოლოდინი, `1` დადასტურებული, `2` გაუქმებული, `3` დასრულებული, `4` ვადაგასული, `5` გადატანილი. PostgreSQL-ზე `approved` არის smallint + check (0–5). გაუქმება ისტორიას არ შლის. `BookingService` ფილიალსა და მანქანას ბლოკავს, ამოწმებს მფლობელს, ფილიალის სერვისებს, სამუშაო საათსა და ზუსტ დროს, შემდეგ ჯავშანსა და სერვისებს ერთ ტრანზაქციაში ინახავს. დასრულების სტატისტიკა ითვლის `3`-ს.
 - პაკეტი: `Package`, `PackagePrice`, `UserPackage` (QR, ვადა, დარჩენილი რეცხვა).
-- მაღაზია: `Ticket` / `UserTicket`, `Voucher` / `UserVoucher` / `VoucherCategory`.
+- მაღაზია: `Voucher` / `UserVoucher` / `VoucherCategory`. გათამაშებები (`Ticket` / `UserTicket`) 2026-11-06-ს ამოღებულია.
 - ქულები: `users.points`, `Transaction`.
 - გადახდა: `TbcPayment`. Flitt-ის ლოგიკა `FlittCheckout` და `FlittWebHookController`.
 - კორპორატიული: `CorporateClient`, `FleetCar`.
