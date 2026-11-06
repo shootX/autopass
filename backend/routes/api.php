@@ -23,7 +23,6 @@ use App\Http\Controllers\Api\ReviewsController;
 use App\Http\Controllers\Api\ShopController;
 use App\Http\Controllers\Api\SiteController;
 use App\Http\Controllers\Api\StatisticsController;
-use App\Http\Controllers\Api\TicketsController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\VouchersController;
 use App\Http\Middleware\CorsMiddleware;
@@ -134,12 +133,6 @@ Route::middleware(['auth:api', CorsMiddleware::class, EnsureApiSession::class])-
         Route::get('/', [FleetConsentController::class, 'index']);
         Route::post('/{id}/accept', [FleetConsentController::class, 'accept'])->whereNumber('id');
         Route::post('/{id}/decline', [FleetConsentController::class, 'decline'])->whereNumber('id');
-    });
-
-    Route::prefix('/tickets')->group(function () {
-        Route::get('/', [TicketsController::class, 'getTickets']);
-        Route::post('/buy', [TicketsController::class, 'buyTicket']);
-        Route::get('/my', [TicketsController::class, 'myTickets']);
     });
 
     Route::get('/shop/home', [ShopController::class, 'home']);

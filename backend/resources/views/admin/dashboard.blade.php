@@ -52,11 +52,6 @@
                 <span class="umami-metric-value">{{ $stats['vouchers_issued'] }}</span>
                 <span class="umami-metric-hint">{{ $stats['vouchers'] }}</span>
             </a>
-            <a class="umami-metric" href="{{ route('admin.tickets') }}">
-                <span class="umami-metric-label">{{ __('admin.tickets') }}</span>
-                <span class="umami-metric-value">{{ $stats['tickets_issued'] }}</span>
-                <span class="umami-metric-hint">{{ $stats['tickets'] }}</span>
-            </a>
             <div class="umami-metric">
                 <span class="umami-metric-label">{{ __('admin.dash_reviews') }}</span>
                 <span class="umami-metric-value">{{ $stats['reviews'] }}</span>

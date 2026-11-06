@@ -29,7 +29,6 @@ use App\Http\Controllers\Admin\PushBroadcastController;
 use App\Http\Controllers\Admin\ReportsController;
 use App\Http\Controllers\Admin\SiteController;
 use App\Http\Controllers\Admin\SmsInboxController;
-use App\Http\Controllers\Admin\TicketsController;
 use App\Http\Controllers\Admin\VouchersController;
 use App\Http\Controllers\Admin\WashingController;
 use App\Http\Controllers\FleetCatalogController;
@@ -207,19 +206,6 @@ Route::prefix('dashboard')
             Route::delete('/{voucher}/delete', [VouchersController::class, 'delete'])->name('admin.delete_vouchers');
             Route::get('/{voucher}/edit', [VouchersController::class, 'editPageVoucher'])->name('admin.vouchers.edit');
             Route::post('/{voucher}/save', [VouchersController::class, 'saveVoucher'])->name('admin.vouchers.save');
-
-        });
-
-        Route::prefix('/tickets')->group(function () {
-
-            Route::get('/', [TicketsController::class, 'index'])->name('admin.tickets');
-            Route::get('/add', [TicketsController::class, 'addPage'])->name('admin.tickets.add');
-            Route::post('/store', [TicketsController::class, 'store'])->name('admin.tickets.store');
-            Route::delete('/{ticket}/delete', [TicketsController::class, 'delete'])->name('admin.tickets.delete');
-            Route::get('/{ticket}/edit', [TicketsController::class, 'edit'])->name('admin.tickets.edit');
-            Route::post('/{ticket}/save', [TicketsController::class, 'save'])->name('admin.tickets.save');
-
-            Route::get('/{ticket}/export', [TicketsController::class, 'export'])->name('admin.tickets.export');
 
         });
 

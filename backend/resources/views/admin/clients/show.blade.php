@@ -12,7 +12,7 @@
         'packages' => [__('admin.packages'), $packages->count()],
         'payments' => [__('admin.p_tab_payments'), $payments->count() + $transactions->count()],
         'cars' => [__('admin.p_tab_cars'), $cars->count()],
-        'vouchers' => [__('admin.vouchers'), $vouchers->count() + $tickets->count()],
+        'vouchers' => [__('admin.vouchers'), $vouchers->count()],
         'reviews' => [__('admin.reviews'), $reviews->count()],
         'audit' => [__('admin.p_tab_audit'), $audit->count()],
     ];

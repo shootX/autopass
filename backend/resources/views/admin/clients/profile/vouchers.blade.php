@@ -15,14 +15,3 @@
     @endforelse
     </tbody>
 </table>
-<h6 class="mt-4">{{ __('admin.tickets') }}</h6>
-<table class="table table-sm table-hover">
-    <thead><th>{{ __('admin.p_bought') }}</th><th>{{ __('admin.p_ticket') }}</th><th>{{ __('admin.price') }}</th></thead>
-    <tbody>
-    @forelse($tickets as $t)
-        <tr><td class="text-nowrap">{{ $fmt($t->created_at) }}</td><td>{{ $t->name }}</td><td>{{ $t->price }}</td></tr>
-    @empty
-        <tr><td colspan="3">{{ __('admin.dash_empty') }}</td></tr>
-    @endforelse
-    </tbody>
-</table>

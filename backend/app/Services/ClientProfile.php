@@ -49,10 +49,6 @@ class ClientProfile
         $cars = UserCar::query()->where('user_id', $client->id)->with('model.brand')->orderByDesc('created_at')->get();
         $vouchers = UserVoucher::query()->where('user_id', $client->id)
             ->with(['voucher', 'partner'])->orderByDesc('created_at')->get();
-        $tickets = DB::table('user_tickets')->join('tickets', 'tickets.id', '=', 'user_tickets.ticket_id')
-            ->where('user_tickets.user_id', $client->id)
-            ->select('tickets.name', 'tickets.price', 'user_tickets.created_at')
-            ->orderByDesc('user_tickets.created_at')->get();
         $reviews = Review::query()->where('user_id', $client->id)->with('washing')->orderByDesc('created_at')->get();
         $audit = DB::table('admin_audit_logs')->leftJoin('users as admins', 'admins.id', '=', 'admin_audit_logs.admin_id')
             ->where('target_type', 'user')->where('target_id', $client->id)
@@ -78,7 +74,6 @@ class ClientProfile
             'transactions' => $transactions->take(self::TAB_LIMIT),
             'cars' => $cars,
             'vouchers' => $vouchers->take(self::TAB_LIMIT),
-            'tickets' => $tickets->take(self::TAB_LIMIT),
             'reviews' => $reviews->take(self::TAB_LIMIT),
             'audit' => $audit->take(self::TAB_LIMIT),
         ];

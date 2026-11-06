@@ -1,7 +1,7 @@
 <?php
 
-// The third review (2026-11-03): bookings that no longer block a wash, prices below zero, giveaways past their
-// date or removed, the payment return page, late payment answers and how long a discount code stays held.
+// The third review (2026-11-03): bookings that no longer block a wash, prices below zero, the payment return
+// page, late payment answers and how long a discount code stays held. (Its giveaway tests went with giveaways.)
 
 use App\Enums\AppointmentStatus;
 use App\Models\Appointment;
@@ -12,11 +12,9 @@ use App\Models\Package;
 use App\Models\PackagePrice;
 use App\Models\PromoCode;
 use App\Models\TbcPayment;
-use App\Models\Ticket;
 use App\Models\User;
 use App\Models\UserCar;
 use App\Models\UserPackage;
-use App\Models\UserTicket;
 use App\Models\Voucher;
 use App\Models\VoucherCategory;
 use App\Services\Payments\FlittCheckout;
@@ -117,19 +115,12 @@ it('refuses a price below zero in the admin and never sells one', function () {
         'category_id' => $category->id, 'name' => 'Minus', 'voucher_type' => 1, 'description' => 'gives points',
         'photo' => UploadedFile::fake()->image('v.png'), 'price' => -10, 'footer_text' => 'f', 'footer_geo' => 'g',
     ])->assertSessionHasErrors('price');
-    $this->actingAs($admin)->post('/dashboard/tickets/store', [
-        'name' => 'Minus', 'description' => 'gives points', 'photo' => UploadedFile::fake()->image('t.png'),
-        'price' => -10, 'date_to' => now()->addWeek()->toDateString(),
-    ])->assertSessionHasErrors('price');
-    expect(Voucher::query()->count())->toBe(0)->and(Ticket::query()->count())->toBe(0);
+    expect(Voucher::query()->count())->toBe(0);
 
     $voucher = fn () => Voucher::query()->create(['name' => 'Old', 'description' => 'x', 'photo' => 'o.png', 'category_id' => $category->id, 'price' => -10]);
-    $ticket = fn () => DB::table('tickets')->insertGetId(['name' => 't', 'description' => 'd', 'photo' => 'p', 'price' => -10,
-        'date_to' => now()->addWeek()->toDateString(), 'created_at' => now(), 'updated_at' => now()]);
     if (DB::getDriverName() === 'pgsql') {
         // PostgreSQL refuses such a row itself.
-        expect(fn () => DB::transaction($voucher))->toThrow(QueryException::class)
-            ->and(fn () => DB::transaction($ticket))->toThrow(QueryException::class);
+        expect(fn () => DB::transaction($voucher))->toThrow(QueryException::class);
 
         return;
     }
@@ -138,42 +129,11 @@ it('refuses a price below zero in the admin and never sells one', function () {
     $user = makeUser('555 74 00 06');
     $user->forceFill(['points' => 5])->save();
     $voucher = $voucher();
-    $ticket = $ticket();
     $token = cwAs($user);
 
     $this->withToken($token)->postJson('/api/vouchers/buy', ['voucher_id' => $voucher->id])->assertJson(['success' => false]);
-    $this->withToken($token)->postJson('/api/tickets/buy', ['ticket_id' => $ticket, 'qty' => 2])->assertJson(['success' => false]);
     expect((int) $user->fresh()->points)->toBe(5)
-        ->and(UserTicket::query()->count())->toBe(0)
         ->and(DB::table('user_vouchers')->count())->toBe(0);
-});
-
-// 7. Giveaways
-
-it('stops selling a giveaway after its date and keeps the tickets bought when the admin removes it', function () {
-    $user = makeUser('555 74 00 07');
-    $user->forceFill(['points' => 100])->save();
-    $ticket = fn (string $dateTo) => DB::table('tickets')->insertGetId(['name' => 'Draw '.$dateTo, 'description' => 'd', 'photo' => 'p',
-        'price' => 5, 'date_to' => $dateTo, 'created_at' => now(), 'updated_at' => now()]);
-    $past = $ticket(now()->subDay()->toDateString());
-    $today = $ticket(now()->toDateString());
-    $token = cwAs($user);
-
-    expect(collect($this->withToken($token)->getJson('/api/tickets')->assertOk()->json('tickets.data'))->pluck('id')->all())->toBe([$today])
-        ->and(collect($this->withToken($token)->getJson('/api/shop/home')->assertOk()->json('tickets'))->pluck('id')->all())->toBe([$today]);
-    $this->withToken($token)->postJson('/api/tickets/buy', ['ticket_id' => $past, 'qty' => 1])->assertJson(['success' => false, 'message' => 'Ticket expired']);
-    $this->withToken($token)->postJson('/api/tickets/buy', ['ticket_id' => $today, 'qty' => 2])->assertJson(['success' => true]);
-    expect((int) $user->fresh()->points)->toBe(90);
-
-    $this->actingAs(cwAdmin())->delete('/dashboard/tickets/'.$today.'/delete')->assertRedirect();
-
-    $this->assertSoftDeleted('tickets', ['id' => $today]);
-    expect(UserTicket::query()->where('ticket_id', $today)->count())->toBe(2);
-    $mine = $this->withToken(cwAs($user))->getJson('/api/tickets/my')->assertOk()->json('tickets.data');
-    expect($mine)->toHaveCount(1)->and($mine[0]['id'])->toBe($today)->and((int) $mine[0]['qty'])->toBe(2);
-    // Removed: no longer listed or sold.
-    expect($this->withToken(cwAs($user))->getJson('/api/tickets')->json('tickets.data'))->toBe([]);
-    $this->withToken(cwAs($user))->postJson('/api/tickets/buy', ['ticket_id' => $today, 'qty' => 1])->assertJson(['success' => false]);
 });
 
 // 3. Payment return page

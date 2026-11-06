@@ -9,12 +9,10 @@ use App\Models\CarWash;
 use App\Models\CorporateClient;
 use App\Models\Partner;
 use App\Models\Review;
-use App\Models\Ticket;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Models\UserCar;
 use App\Models\UserPackage;
-use App\Models\UserTicket;
 use App\Models\UserVoucher;
 use App\Models\Voucher;
 use Carbon\Carbon;
@@ -48,8 +46,6 @@ class DashboardController extends Controller
             'reviews_avg' => round((float) Review::query()->avg('stars'), 1),
             'vouchers' => Voucher::query()->count(),
             'vouchers_issued' => UserVoucher::query()->count(),
-            'tickets' => Ticket::query()->count(),
-            'tickets_issued' => UserTicket::query()->count(),
             'revenue' => (float) Transaction::query()->where('status', true)->where('type', 'income')->sum('amount'),
             'payments' => Transaction::query()->where('status', true)->where('type', 'income')->count(),
         ];

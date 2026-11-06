@@ -2,12 +2,9 @@
 
 use App\Models\CorporateClient;
 use App\Models\Partner;
-use App\Models\Transaction;
 use App\Models\User;
-use App\Models\UserTicket;
 use Illuminate\Routing\Middleware\ThrottleRequests;
 use Illuminate\Support\Facades\DB;
-use Tymon\JWTAuth\Facades\JWTAuth;
 
 beforeEach(function () {
     $this->withoutMiddleware(ThrottleRequests::class);
@@ -59,37 +56,4 @@ it('only saves the known fields on admin car wash edit', function () {
         'name' => 'W3', 'address' => 'a', 'work_time_start' => '09:00', 'work_time_end' => '20:00', 'location' => 'x', 'manager_id' => $plain->id,
     ])->assertSessionHasErrors('manager_id');
     expect((int) DB::table('car_washes')->find($id)->manager_id)->toBe($mgr->id);
-});
-
-// Tickets: atomic points deduction
-function s2Ticket(int $price, int $count = 0): int
-{
-    return DB::table('tickets')->insertGetId(['name' => 't', 'description' => 'd', 'photo' => 'p', 'date_to' => now()->addMonth()->toDateString(), 'price' => $price, 'count' => $count, 'created_at' => now(), 'updated_at' => now()]);
-}
-
-it('refuses tickets on insufficient balance and fractional qty', function () {
-    $u = makeUser('555810010');
-    $u->forceFill(['points' => 5])->save();
-    $t = s2Ticket(3);
-    $tok = JWTAuth::fromUser($u);
-    $this->withToken($tok)->postJson('/api/tickets/buy', ['ticket_id' => $t, 'qty' => 2])->assertJson(['success' => false]);
-    $this->withToken($tok)->postJson('/api/tickets/buy', ['ticket_id' => $t, 'qty' => 1.5])->assertJson(['success' => false]);
-    expect((int) $u->fresh()->points)->toBe(5)->and(UserTicket::count())->toBe(0);
-});
-
-it('respects the ticket limit including qty', function () {
-    $u = makeUser('555810011');
-    $u->forceFill(['points' => 100])->save();
-    $t = s2Ticket(1, 2);
-    $this->withToken(JWTAuth::fromUser($u))->postJson('/api/tickets/buy', ['ticket_id' => $t, 'qty' => 3])->assertJson(['success' => false]);
-    expect(UserTicket::count())->toBe(0)->and((int) $u->fresh()->points)->toBe(100);
-});
-
-it('rolls back tickets and points when the ledger write fails', function () {
-    $u = makeUser('555810012');
-    $u->forceFill(['points' => 10])->save();
-    $t = s2Ticket(2);
-    Transaction::creating(fn () => throw new RuntimeException('forced'));
-    $this->withToken(JWTAuth::fromUser($u))->postJson('/api/tickets/buy', ['ticket_id' => $t, 'qty' => 2])->assertJson(['success' => false]);
-    expect((int) $u->fresh()->points)->toBe(10)->and(UserTicket::count())->toBe(0);
 });
