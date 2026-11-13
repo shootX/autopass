@@ -64,3 +64,6 @@ Thumbs.db
 .phpunit.cache/
 # Playwright CLI output (may contain credentials)
 .playwright-cli/
+
+# ---- Android app for direct download, copied to the server by hand (lending/build.sh) ----
+lending/autopass.apk
