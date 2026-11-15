@@ -8,6 +8,7 @@ use App\Services\Payments\FlittCheckout;
 use App\Services\Payments\SettleTbcPayment;
 use App\Services\Points\ReferralReward;
 use App\Support\AppSettings;
+use Illuminate\Support\Str;
 
 function fakeFlitt(): void
 {
@@ -109,4 +110,14 @@ it('pays the inviter the referral percent of a friend package, once', function (
     expect(ReferralReward::forPayment($payment))->toBe(6)
         ->and(ReferralReward::forPayment($payment->fresh()))->toBe(0)
         ->and((int) $inviter->fresh()->points)->toBe(6);
+});
+
+it('gives a new driver a referral code no one else holds', function () {
+    makeUser('555940008')->forceFill(['ref_code' => 'AAAAA'])->save();
+    Str::createRandomStringsUsingSequence(['aaaaa', 'bbbbb']);
+
+    $this->postJson('/api/register', ['phone' => '555940009'])->assertOk();
+    Str::createRandomStringsNormally();
+
+    expect(User::query()->latest('id')->value('ref_code'))->toBe('BBBBB');
 });

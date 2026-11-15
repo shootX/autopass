@@ -42,7 +42,7 @@ return [
 
     'flitt' => [
         'merchant_id' => env('FLITT_PAY_NUMBER', '1549901'),
-        'secret' => env('FLITT_PAYMENT_KEY', 'test'),
+        'secret' => env('FLITT_PAYMENT_KEY'),
     ],
 
     'tbc' => [

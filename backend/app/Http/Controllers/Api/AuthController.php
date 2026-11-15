@@ -68,7 +68,7 @@ class AuthController extends Controller
                     'date_of_birth' => null,
                     'role' => User::ROLE_USER,
                     'referral_id' => $referralId,
-                    'ref_code' => substr(strtoupper(md5($request->phone.Str::random(8))), 0, 5),
+                    'ref_code' => $this->newRefCode(),
                 ]);
                 $createdNow = true;
             } catch (UniqueConstraintViolationException) {
@@ -587,6 +587,17 @@ class AuthController extends Controller
         }
 
         return response()->json($payload, $status === SmsStatus::Unknown ? 503 : 422);
+    }
+
+    // A shared code would pay one inviter's referral points to another. The column is 5 chars with no
+    // unique index, so draw from A-Z0-9 (the app and /ref accept any 5 letters or digits) and skip taken ones.
+    private function newRefCode(): string
+    {
+        do {
+            $code = strtoupper(Str::random(5));
+        } while (User::query()->where('ref_code', $code)->exists());
+
+        return $code;
     }
 
     private function challengeError(AuthChallengeException $e): JsonResponse

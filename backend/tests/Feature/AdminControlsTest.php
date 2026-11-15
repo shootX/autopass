@@ -136,7 +136,8 @@ it('sends a promo push only to users who allow promotions', function () {
 
 function apnsTestKey(): string
 {
-    $key = openssl_pkey_new(['private_key_type' => OPENSSL_KEYTYPE_EC, 'curve_name' => 'prime256v1']);
+    // private_key_bits: without an openssl.cnf (Herd on macOS) PHP rejects even an EC key as 0 bits.
+    $key = openssl_pkey_new(['private_key_type' => OPENSSL_KEYTYPE_EC, 'curve_name' => 'prime256v1', 'private_key_bits' => 2048]);
     openssl_pkey_export($key, $pem);
 
     return $pem;
